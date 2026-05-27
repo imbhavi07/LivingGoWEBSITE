@@ -15,11 +15,13 @@ export const getWishlist = asyncHandler(async (request: Request, response: Respo
 
 export const addToWishlist = asyncHandler(async (request: Request, response: Response) => {
   const user = requireUser(request);
-  response.status(201).json(await wishlistService.addToWishlist(user.id, request.params.propertyId));
+  response.status(201).json(
+  await wishlistService.addToWishlist(user.id, String(request.params.propertyId))
+);
 });
 
 export const removeFromWishlist = asyncHandler(async (request: Request, response: Response) => {
   const user = requireUser(request);
-  await wishlistService.removeFromWishlist(user.id, request.params.propertyId);
+  await wishlistService.removeFromWishlist(user.id, String(request.params.propertyId));
   response.status(204).send();
 });

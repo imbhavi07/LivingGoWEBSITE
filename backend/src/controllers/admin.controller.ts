@@ -13,19 +13,19 @@ export const getListings = asyncHandler(async (request: Request, response: Respo
 });
 
 export const getListingDetails = asyncHandler(async (request: Request, response: Response) => {
-  response.json(await getPropertyById(request.params.id, "admin"));
+  response.json(await getPropertyById(String(request.params.id), "admin"));
 });
 
 export const approveListing = asyncHandler(async (request: Request, response: Response) => {
-  response.json(await adminService.moderateProperty(request.params.id, "approved"));
+  response.json(await adminService.moderateProperty(String(request.params.id), "approved"));
 });
 
 export const rejectListing = asyncHandler(async (request: Request, response: Response) => {
-  response.json(await adminService.moderateProperty(request.params.id, "rejected"));
+  response.json(await adminService.moderateProperty(String(request.params.id), "rejected"));
 });
 
 export const removeListing = asyncHandler(async (request: Request, response: Response) => {
-  await adminService.removeListing(request.params.id);
+  await adminService.removeListing(String(request.params.id));
   response.status(204).send();
 });
 
@@ -34,11 +34,11 @@ export const getUsers = asyncHandler(async (request: Request, response: Response
 });
 
 export const suspendUser = asyncHandler(async (request: Request, response: Response) => {
-  response.json(await adminService.updateUserStatus(request.params.id, "suspended"));
+  response.json(await adminService.updateUserStatus(String(request.params.id), "suspended"));
 });
 
 export const deleteUser = asyncHandler(async (request: Request, response: Response) => {
-  await adminService.deleteSpamUser(request.params.id);
+  await adminService.deleteSpamUser(String(request.params.id));
   response.status(204).send();
 });
 
@@ -47,13 +47,13 @@ export const getOwnerApprovals = asyncHandler(async (_request: Request, response
 });
 
 export const getOwnerApprovalById = asyncHandler(async (request: Request, response: Response) => {
-  response.json(await ownerVerificationService.getPendingOwnerApprovalById(request.params.id));
+  response.json(await ownerVerificationService.getPendingOwnerApprovalById(String(request.params.id)));
 });
 
 export const approveOwner = asyncHandler(async (request: Request, response: Response) => {
-  response.json(await ownerVerificationService.reviewOwnerApproval(request.params.id, "approved"));
+  response.json(await ownerVerificationService.reviewOwnerApproval(String(request.params.id), "approved"));
 });
 
 export const rejectOwner = asyncHandler(async (request: Request, response: Response) => {
-  response.json(await ownerVerificationService.reviewOwnerApproval(request.params.id, "rejected"));
+  response.json(await ownerVerificationService.reviewOwnerApproval(String(request.params.id), "rejected"));
 });

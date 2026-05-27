@@ -41,7 +41,7 @@ export const getProperties = asyncHandler(async (request: Request, response: Res
 });
 
 export const getPropertyById = asyncHandler(async (request: Request, response: Response) => {
-  const property = await propertyService.getPropertyById(request.params.id, request.user?.role);
+  const property = await propertyService.getPropertyById(String(request.params.id), request.user?.role);
   response.json(property);
 });
 
@@ -58,18 +58,18 @@ export const getOwnerStats = asyncHandler(async (request: Request, response: Res
 
 export const updateProperty = asyncHandler(async (request: Request, response: Response) => {
   const user = requireUser(request);
-  const property = await propertyService.updateProperty(request.params.id, user.id, user.role, request.body);
+  const property = await propertyService.updateProperty(String(request.params.id), user.id, user.role, request.body);
   response.json(property);
 });
 
 export const deleteProperty = asyncHandler(async (request: Request, response: Response) => {
   const user = requireUser(request);
-  await propertyService.deleteProperty(request.params.id, user.id, user.role);
+  await propertyService.deleteProperty(String(request.params.id), user.id, user.role);
   response.status(204).send();
 });
 
 export const togglePropertyStatus = asyncHandler(async (request: Request, response: Response) => {
   const user = requireUser(request);
-  const property = await propertyService.togglePropertyStatus(request.params.id, user.id, Boolean(request.body.isActive));
+  const property = await propertyService.togglePropertyStatus(String(request.params.id), user.id, Boolean(request.body.isActive));
   response.json(property);
 });
