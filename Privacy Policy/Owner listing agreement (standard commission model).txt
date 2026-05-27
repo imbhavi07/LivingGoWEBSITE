@@ -1,0 +1,216 @@
+
+9
+
+Automatic Zoom
+LIVINGGO PROPERTY LISTING AND 
+PLATFORM SERVICES AGREEMENT
+(STANDARD COMMISSION MODEL)
+1. PARTIES
+This Property Listing and Platform Services Agreement ("Agreement") is entered into between:
+RCT ACCOMMODATIONS AND INFRASTRUCTURE PRIVATE LIMITED, CIN 
+U68100BR2026PTC084883, having its registered office at BE.NO.005.1012, Shivpuri Colony, 
+Bettiah, West Champaran – 845438, Bihar, India, operating under the brand name "LivingGo" 
+("LivingGo", "Company", "Platform")
+AND
+The Property Owner completing registration, onboarding, verification, listing or acceptance through 
+the Platform ("Owner").
+2. APPOINTMENT
+The Owner hereby appoints LivingGo on a non-exclusive basis to:
+• list accommodation inventory;
+• market accommodation inventory;
+• generate leads;
+• facilitate bookings;
+• facilitate documentation;
+• facilitate payment collection (if opted);
+• provide platform services.
+3. OWNER REPRESENTATIONS
+The Owner represents and warrants that:
+3.1
+Owner has lawful authority to list the property.
+3.2
+Property complies with applicable laws.
+3.3
+All information supplied is accurate.
+3.4
+Property is safe and habitable.
+3.5
+Owner shall promptly notify LivingGo regarding material changes.
+4. INVENTORY DECLARATION
+Owner shall accurately disclose:
+• total beds;
+• room types;
+• pricing;
+• occupancy capacity;
+• amenities;
+• restrictions.
+Misrepresentation shall constitute material breach.
+5. LIVINGGO LEADS
+Any Student introduced through:
+• website;
+• application;
+• WhatsApp;
+• call centre;
+• social media;
+• referral systems;
+• sales representatives;
+shall constitute a LivingGo Lead.
+6. LEAD OWNERSHIP
+The Owner acknowledges that LivingGo invests substantial resources in:
+• marketing;
+• sales;
+• lead generation;
+• customer acquisition.
+Accordingly, all LivingGo Leads shall remain protected for twenty-four (24) months from first 
+introduction.
+7. COMMISSION
+For every Student who books accommodation through LivingGo:
+Owner shall pay commission equal to:
+Fifteen (15) Days of the First Month's Agreed Rent
+or
+such other amount specifically recorded by LivingGo.
+Commission becomes due immediately upon occupancy.
+8. NON-CIRCUMVENTION
+The Owner shall not:
+• bypass LivingGo;
+• divert LivingGo Leads;
+• conceal admissions;
+• structure transactions to avoid commission.
+whether directly or indirectly.
+9. LEAD PRESUMPTION
+Where:
+a) LivingGo introduced a Student;
+and
+b) such Student is subsequently found residing at, occupying or paying rent in Owner's property 
+within twenty-four (24) months;
+a rebuttable presumption shall arise that such occupancy resulted from LivingGo's introduction.
+The burden shall lie upon the Owner to prove otherwise.
+10. MANDATORY DOCUMENTATION
+Owner shall maintain:
+• admission records;
+• occupancy records;
+• tenant registers;
+• KYC records;
+• rent agreements;
+• occupancy agreements;
+• payment records.
+for minimum five (5) years.
+11. RENT AGREEMENTS
+Owner acknowledges that LivingGo may require:
+• standardized documentation;
+• booking confirmations;
+• occupancy records;
+• tenancy records.
+Where requested by LivingGo, an authorized LivingGo representative may witness such 
+documentation.
+Failure to cooperate shall constitute breach.
+12. AUDIT RIGHTS
+LivingGo may verify compliance by inspecting:
+• occupancy registers;
+• admission records;
+• KYC records;
+• booking records;
+• rent agreements;
+• payment records.
+Owner shall reasonably cooperate.
+13. FIELD VERIFICATION
+LivingGo may conduct periodic:
+• quality inspections;
+• occupancy audits;
+• lead verification visits;
+• compliance reviews.
+Such visits may be announced or unannounced.
+14. MONTHLY REPORTING
+Owner shall provide information reasonably requested by LivingGo relating to:
+• occupancy;
+• vacancies;
+• admissions;
+• departures;
+• LivingGo Leads.
+15. OWNER OBLIGATIONS
+Owner shall:
+• honour confirmed bookings;
+• provide accurate information;
+• cooperate with verification;
+• comply with laws;
+• maintain property standards.
+16. BOOKING CANCELLATION BY 
+OWNER
+Owner shall not refuse occupancy to a confirmed LivingGo booking without reasonable cause.
+Where Owner causes loss, LivingGo may:
+• relocate Student;
+• recover losses;
+• suspend listings.
+17. PAYMENT COLLECTION SERVICES 
+(OPTIONAL)
+Owner may authorize LivingGo to collect:
+• booking amounts;
+• security deposits;
+• rent payments.
+Where enabled, Owner authorizes LivingGo to receive payments as collection agent.
+18. SETTLEMENTS
+LivingGo may deduct:
+• commissions;
+• refunds;
+• chargebacks;
+• penalties;
+• taxes where applicable;
+before remitting balances.
+19. RECORD RETENTION
+Owner shall preserve records for minimum five years.
+Destruction of records during disputes shall constitute material breach.
+20. FRAUD
+LivingGo may suspend listings upon reasonable suspicion of:
+• fraud;
+• concealment;
+• misrepresentation;
+• lead diversion.
+21. DAMAGES
+Owner acknowledges that circumvention causes substantial commercial loss.
+Accordingly:
+Damages shall be the greater of:
+₹50,000
+OR
+Three (3) Times the Revenue Avoided
+plus legal costs.
+(A court or arbitrator may ultimately review such a clause; calling it "liquidated damages subject 
+to applicable law" is generally stronger than claiming it is automatically payable in every 
+situation.)
+22. TERMINATION
+LivingGo may terminate immediately for:
+• fraud;
+• concealment;
+• lead diversion;
+• non-payment;
+• repeated complaints.
+23. SURVIVAL
+The following survive termination:
+• commissions;
+• audit rights;
+• lead ownership;
+• non-circumvention;
+• damages;
+• arbitration.
+24. ARBITRATION
+Seat: Delhi
+Language: English
+Governed by Arbitration and Conciliation Act, 1996.
+25. ELECTRONIC ACCEPTANCE
+Owner agrees that:
+• OTP acceptance;
+• click-wrap acceptance;
+• electronic signatures;
+• dashboard confirmations;
+• email confirmations;
+shall constitute legally binding acceptance.
+26. ELECTRONIC EVIDENCE
+Owner agrees that LivingGo may rely upon:
+• IP logs;
+• dashboard logs;
+• call records;
+• WhatsApp records;
+• lead assignment logs;
+• email logs;
+• booking records;
+• payment records;
+• audit logs;
+as evidence.

@@ -1,0 +1,282 @@
+Automatic Zoom
+• harass occupants;
+• misuse Platform services;
+• interfere with Platform operations;
+• attempt unauthorized access.
+Violation may result in suspension or termination.
+ARTICLE 15
+COMMUNICATION CONSENT
+The Student expressly consents to receive:
+• calls;
+• SMS;
+• emails;
+• WhatsApp communications;
+• push notifications;
+• platform messages;
+relating to bookings, services, verification, payments and operational matters.
+The Student further consents to electronic communications being relied upon as evidence of 
+interactions and transactions.
+This completes Part 1 (Articles 1–15).
+The next section should cover:
+• Electronic Records & OTP Acceptance
+• Data Collection & Privacy Incorporation
+• Non-Circumvention
+• Limitation of Liability
+• Indemnity
+• Force Majeure
+• Dispute Resolution
+• Arbitration
+• Governing Law
+• Survival Clauses
+• Evidence Preservation
+• Schedule A (Booking Rules)
+• Schedule B (Digital Acceptance Framework)
+which will form the second half of the Student Terms before we move to the Privacy Policy.
+ARTICLE 16
+ELECTRONIC RECORDS AND DIGITAL 
+CONSENT
+The Student acknowledges and agrees that:
+a) all electronic actions performed on the Platform shall be legally binding;
+b) clicking acceptance buttons, checkboxes, consent prompts, booking confirmations, payment 
+authorizations and OTP verifications shall constitute valid consent;
+c) electronic records may be used as evidence in any judicial, arbitral, regulatory or administrative 
+proceeding.
+The Student expressly consents to LivingGo maintaining electronic records of:
+• registrations;
+• bookings;
+• payments;
+• communications;
+• agreements;
+• acknowledgements;
+• OTP verifications;
+• activity logs.
+ARTICLE 17
+OTP AUTHENTICATION
+Where OTP verification is utilized, the Student agrees that:
+a) successful OTP verification shall constitute proof of authorization;
+b) OTP verification shall be treated as equivalent to electronic acknowledgement of the relevant 
+transaction;
+c) the Student shall be responsible for maintaining security of devices and communication channels 
+used for OTP verification.
+The Student shall immediately notify LivingGo of unauthorized access.
+ARTICLE 18
+ELECTRONIC EVIDENCE
+The Student agrees that the following may be relied upon as evidence:
+• account activity logs;
+• OTP records;
+• email records;
+• SMS records;
+• WhatsApp records;
+• call records;
+• booking records;
+• payment records;
+• IP logs;
+• device logs;
+• geolocation logs;
+• acceptance records;
+• audit trails.
+Such records shall be presumed accurate unless demonstrated otherwise by reliable evidence.
+ARTICLE 19
+DATA COLLECTION AND PROCESSING
+The Student authorizes LivingGo to collect, process, store and utilize information reasonably 
+necessary for operation of the Platform.
+Such information may include:
+• personal information;
+• educational information;
+• emergency contact information;
+• booking history;
+• transaction history;
+• communication records;
+• technical information;
+• device information.
+Processing shall be governed by the Privacy Policy.
+ARTICLE 20
+COMMUNICATION RECORDING
+The Student acknowledges that communications with LivingGo may be monitored, recorded, 
+retained and reviewed for:
+• service quality;
+• dispute resolution;
+• fraud prevention;
+• compliance;
+• legal purposes.
+Where legally required, applicable disclosures shall be provided.
+ARTICLE 21
+PROPERTY VISITS
+Property visits arranged through LivingGo are undertaken at the Student's discretion.
+LivingGo does not guarantee:
+• admission;
+• availability;
+• occupancy;
+• future pricing;
+• continued availability of inventory.
+Availability remains subject to change.
+ARTICLE 22
+STUDENT REPRESENTATIONS
+The Student represents and warrants that:
+a) all information provided is true and complete;
+b) all documents are genuine;
+c) no information is misleading;
+d) no booking is being made for unlawful purposes.
+Any breach may result in suspension or termination.
+ARTICLE 23
+NON-CIRCUMVENTION
+The Student acknowledges that Property Owners, managers and accommodation providers 
+introduced through LivingGo constitute LivingGo-introduced contacts.
+The Student shall not knowingly participate in arrangements specifically intended to circumvent 
+valid commissions, brokerage or contractual rights lawfully due to LivingGo.
+Nothing in this Article shall prevent a Student from entering into lawful accommodation 
+arrangements.
+ARTICLE 24
+THIRD-PARTY RELATIONSHIPS
+Accommodation is ultimately provided by independent Property Owners.
+LivingGo shall not be responsible for:
+• property management;
+• housekeeping quality;
+• roommate conduct;
+• owner conduct;
+• utility failures;
+• local disputes.
+Such matters remain primarily between the Student and the Property Owner.
+ARTICLE 25
+LIMITATION OF LIABILITY
+To the fullest extent permitted by applicable law, LivingGo shall not be liable for:
+• indirect damages;
+• consequential damages;
+• special damages;
+• incidental damages;
+• loss of opportunity;
+• academic losses;
+• relocation costs;
+• emotional distress claims.
+LivingGo's liability, where legally established, shall not exceed the amount directly received by 
+LivingGo in connection with the relevant booking.
+ARTICLE 26
+INDEMNITY
+The Student agrees to indemnify and hold harmless:
+• LivingGo;
+• its directors;
+• officers;
+• employees;
+• representatives;
+• affiliates;
+against losses arising from:
+a) breach of these Terms;
+b) false information;
+c) unlawful conduct;
+d) misuse of the Platform.
+ARTICLE 27
+FRAUD PREVENTION
+LivingGo reserves the right to:
+• verify identities;
+• request additional documentation;
+• suspend transactions;
+• reject bookings;
+• freeze accounts;
+where fraud, misrepresentation or suspicious activity is reasonably suspected.
+ARTICLE 28
+FORCE MAJEURE
+LivingGo shall not be liable for delay, interruption or failure arising from events beyond reasonable 
+control, including:
+• natural disasters;
+• floods;
+• earthquakes;
+• epidemics;
+• pandemics;
+• internet outages;
+• cyber incidents;
+• strikes;
+• governmental actions;
+• civil disturbances.
+ARTICLE 29
+SUSPENSION AND TERMINATION
+LivingGo may suspend, restrict or terminate access where:
+• these Terms are breached;
+• fraudulent conduct is suspected;
+• unlawful conduct is identified;
+• risk management concerns arise.
+Termination shall not affect accrued rights or obligations.
+ARTICLE 30
+DISPUTE RESOLUTION
+Parties shall first attempt to resolve disputes amicably.
+A written notice describing the dispute shall be provided.
+The parties shall attempt resolution within thirty (30) days.
+ARTICLE 31
+ARBITRATION
+Any dispute arising out of or relating to these Terms shall be referred to arbitration in accordance 
+with the Arbitration and Conciliation Act, 1996.
+The arbitration shall be conducted by a sole arbitrator appointed in accordance with applicable law.
+The:
+• seat of arbitration shall be Delhi;
+• venue may be physical or virtual;
+• language shall be English.
+The arbitral award shall be final and binding.
+ARTICLE 32
+GOVERNING LAW
+These Terms shall be governed by and construed in accordance with the laws of India.
+Subject to applicable arbitration provisions, courts at Delhi shall have jurisdiction.
+ARTICLE 33
+INTELLECTUAL PROPERTY
+All rights relating to:
+• the Platform;
+• software;
+• branding;
+• trademarks;
+• content;
+• databases;
+remain the exclusive property of LivingGo or its licensors.
+No rights are transferred except as expressly permitted.
+ARTICLE 34
+PRIVACY POLICY INCORPORATION
+The Privacy Policy forms an integral part of these Terms.
+Acceptance of these Terms constitutes acceptance of the Privacy Policy.
+ARTICLE 35
+MODIFICATIONS
+LivingGo may modify these Terms from time to time.
+Updated versions may be published on the Platform.
+Continued use of the Platform after publication shall constitute acceptance of revised Terms.
+ARTICLE 36
+SEVERABILITY
+If any provision is determined to be invalid or unenforceable, the remaining provisions shall 
+continue in full force and effect.
+ARTICLE 37
+ENTIRE AGREEMENT
+These Terms, together with the Privacy Policy and any booking-specific documents, constitute the 
+entire agreement between the Student and LivingGo.
+ARTICLE 38
+SURVIVAL
+The following provisions shall survive termination:
+• payment-related provisions;
+• indemnities;
+• dispute resolution;
+• arbitration;
+• evidence provisions;
+• liability limitations;
+• intellectual property provisions.
+SCHEDULE A
+DIGITAL ACCEPTANCE FRAMEWORK
+For evidentiary purposes, LivingGo may maintain:
+• IP logs;
+• OTP logs;
+• acceptance timestamps;
+• agreement version records;
+• payment records;
+• booking records;
+• communication records;
+• device records;
+• audit trails.
+The Student agrees that such records may be used to establish:
+• acceptance;
+• authorization;
+• consent;
+• transaction history.
+SCHEDULE B
+BOOKING POLICY SUMMARY
+The Student expressly acknowledges:
+1. Booking Amounts are generally non-refundable.
+2. Transfer requests are exceptional accommodations and not rights.
+3. Only one transfer request may be considered.
+4. Transfer requests are only considered before check-in.
+5. Transfer requests are only considered if funds have not yet been remitted to the Property 
+Owner.
+6. Approval remains subject to LivingGo's operational determination and inventory 
+availability.

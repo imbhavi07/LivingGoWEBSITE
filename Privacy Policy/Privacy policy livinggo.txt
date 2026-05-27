@@ -1,0 +1,233 @@
+
+11
+
+Automatic Zoom
+you consent to the collection, processing and use of information in accordance with this Policy.
+3. INFORMATION WE COLLECT
+LivingGo may collect the following categories of information.
+3.1 Identity Information
+Including:
+• full name;
+• photograph;
+• date of birth;
+• gender;
+• Aadhaar details (where voluntarily provided and legally permissible);
+• PAN details;
+• passport details;
+• driving licence details;
+• student identification details;
+• institutional information.
+3.2 Contact Information
+Including:
+• mobile number;
+• alternate mobile number;
+• email address;
+• emergency contact details;
+• guardian details.
+3.3 Accommodation Information
+Including:
+• booking preferences;
+• accommodation preferences;
+• room preferences;
+• occupancy requirements;
+• check-in details;
+• tenancy-related information.
+3.4 Property Information
+For Property Owners:
+• ownership details;
+• property details;
+• bank details;
+• KYC records;
+• GST details;
+• lease documents;
+• authorization records;
+• occupancy records.
+4. PAYMENT INFORMATION
+LivingGo may collect or receive information relating to:
+• booking amounts;
+• security deposits;
+• rent payments;
+• maintenance charges;
+• refunds;
+• settlements;
+• commissions;
+• revenue-sharing arrangements.
+LivingGo generally does not store complete card information where payments are processed by 
+regulated payment service providers.
+5. TECHNICAL INFORMATION
+LivingGo may automatically collect:
+• IP addresses;
+• browser information;
+• operating system information;
+• device identifiers;
+• device fingerprints;
+• network information;
+• application logs;
+• session logs;
+• access logs.
+6. LOCATION INFORMATION
+LivingGo may collect:
+• GPS data;
+• approximate location data;
+• device location data;
+• property visit location information;
+where permitted and available.
+7. COMMUNICATION DATA
+LivingGo may collect and retain:
+• emails;
+• SMS communications;
+• WhatsApp communications;
+• support conversations;
+• platform messages;
+• call records;
+• call metadata;
+• complaint records;
+• feedback submissions.
+8. VERIFICATION DATA
+LivingGo may collect and retain:
+• OTP records;
+• KYC records;
+• identity verification records;
+• onboarding records;
+• agreement acceptance records;
+• consent records.
+9. LEAD MANAGEMENT DATA
+LivingGo may maintain records relating to:
+• lead assignments;
+• lead generation;
+• property visits;
+• lead status updates;
+• lead conversion records;
+• occupancy verification records;
+• referral records.
+10. AUDIT AND COMPLIANCE DATA
+LivingGo may maintain:
+• audit logs;
+• administrator activity records;
+• settlement records;
+• occupancy records;
+• verification records;
+• investigation records;
+• compliance records.
+11. PURPOSES OF COLLECTION
+Information may be collected and processed for purposes including:
+• account creation;
+• booking management;
+• payment processing;
+• rent collection;
+• customer support;
+• fraud prevention;
+• dispute resolution;
+• property verification;
+• lead verification;
+• occupancy verification;
+• legal compliance;
+• security monitoring;
+• service improvement.
+12. LEGAL BASIS OF PROCESSING
+Information may be processed on the basis of:
+• consent;
+• contractual necessity;
+• legal obligations;
+• legitimate business interests;
+• fraud prevention requirements;
+• dispute resolution requirements.
+13. INFORMATION SHARING
+LivingGo may share information with:
+• Property Owners;
+• Students;
+• payment gateways;
+• banking partners;
+• technology providers;
+• KYC service providers;
+• verification providers;
+• professional advisors;
+• auditors;
+• insurers;
+• government authorities;
+• courts;
+• arbitrators;
+• law enforcement agencies.
+Sharing shall be limited to what is reasonably necessary.
+14. DISCLOSURE FOR LEGAL PURPOSES
+LivingGo may disclose information where reasonably necessary to:
+• comply with law;
+• respond to legal notices;
+• investigate fraud;
+• enforce agreements;
+• protect rights;
+• defend legal claims.
+15. RECORDING OF COMMUNICATIONS
+Communications may be monitored, recorded, retained and reviewed for:
+• training;
+• quality assurance;
+• dispute resolution;
+• fraud prevention;
+• legal compliance.
+16. DATA RETENTION
+LivingGo may retain information for as long as reasonably necessary for:
+• operational purposes;
+• contractual purposes;
+• legal purposes;
+• evidentiary purposes;
+• audit purposes;
+• dispute resolution purposes.
+Certain records may be retained beyond account closure where required or reasonably necessary.
+17. EVIDENCE PRESERVATION
+The User expressly acknowledges that LivingGo may preserve:
+• agreement records;
+• booking records;
+• payment records;
+• settlement records;
+• communication records;
+• OTP records;
+• IP records;
+• audit logs;
+• occupancy records;
+• lead records.
+Such records may be relied upon in legal proceedings.
+18. SECURITY MEASURES
+LivingGo may implement reasonable administrative, technical and organizational measures 
+designed to protect information from unauthorized access, disclosure, alteration or destruction.
+No method of storage or transmission is completely secure.
+19. USER RIGHTS
+Subject to applicable law, Users may request:
+• access to information;
+• correction of inaccurate information;
+• updating of information;
+• withdrawal of certain consents where legally permissible.
+Certain information may continue to be retained where necessary.
+20. ACCOUNT CLOSURE
+Closure of an account shall not automatically result in deletion of records.
+LivingGo may retain information necessary for:
+• legal compliance;
+• audits;
+• fraud prevention;
+• dispute resolution;
+• contractual enforcement.
+21. THIRD-PARTY SERVICES
+The Platform may integrate with third-party services.
+LivingGo is not responsible for privacy practices of independent third parties.
+Users are encouraged to review third-party policies.
+22. CHILDREN
+The Platform is not intended for children lacking legal capacity to contract.
+Where applicable, parental or guardian involvement may be required.
+23. INTERNATIONAL TRANSFERS
+Information may be processed, stored or transferred through service providers operating in multiple 
+jurisdictions, subject to applicable legal requirements.
+24. CHANGES TO THIS POLICY
+LivingGo may revise this Policy from time to time.
+Updated versions may be published on the Platform.
+Continued use of the Platform shall constitute acceptance of revised versions.
+25. GRIEVANCE REDRESSAL
+For privacy-related concerns, Users may contact:
+Grievance Officer 
+RCT Accommodations and Infrastructure Private Limited 
+Email: [privacy@livinggo.in] 
+26. GOVERNING LAW
+This Policy shall be governed by the laws of India.
+Disputes shall be subject to the dispute resolution mechanisms specified in applicable LivingGo 
+agreements.
+27. ACKNOWLEDGEMENT
+By using the Platform, the User acknowledges having read, understood and accepted this Privacy 
+Policy.

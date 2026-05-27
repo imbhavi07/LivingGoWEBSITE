@@ -1,0 +1,46 @@
+import type { Request, Response } from "express";
+import { Webhook } from "svix";
+import { prisma } from "../config/prisma";
+
+export async function handleClerkWebhook(req: Request, res: Response) {
+  const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
+  if (!WEBHOOK_SECRET) throw new Error("CLERK_WEBHOOK_SECRET missing");
+
+  const wh = new Webhook(WEBHOOK_SECRET);
+  let event;
+
+  try {
+    event = wh.verify(JSON.stringify(req.body), {
+      "svix-id": req.headers["svix-id"] as string,
+      "svix-timestamp": req.headers["svix-timestamp"] as string,
+      "svix-signature": req.headers["svix-signature"] as string,
+    }) as { type: string; data: Record<string, unknown> };
+  } catch {
+    return res.status(400).json({ error: "Invalid webhook signature" });
+  }
+
+  if (event.type === "user.created") {
+    const data = event.data;
+    const email = (data.email_addresses as { email_address: string }[])[0]?.email_address;
+    const firstName = (data.first_name as string) ?? "";
+    const lastName = (data.last_name as string) ?? "";
+    const clerkId = data.id as string;
+
+    if (email) {
+      await prisma.user.upsert({
+        where: { email },
+        update: {},
+        create: {
+          name: `${firstName} ${lastName}`.trim() || email,
+          email,
+          phone: null,
+          passwordHash: clerkId,
+          role: "owner",
+          verificationStatus: "pending_approval",
+        },
+      });
+    }
+  }
+
+  res.status(200).json({ received: true });
+}
