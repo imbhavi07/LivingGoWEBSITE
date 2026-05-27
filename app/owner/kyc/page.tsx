@@ -103,7 +103,7 @@ export default function OwnerKYCPage() {
             <h1 className="text-2xl font-black text-ink">Application under review</h1>
             <p className="mt-3 text-sm leading-6 text-muted">
               Your KYC details have been submitted and are pending admin review.
-              You'll be able to list properties once approved — usually within 1–2 business days.
+              You&apos;ll be able to list properties once approved — usually within 1–2 business days.
             </p>
             <div className="mt-6 rounded-2xl bg-linen p-4 text-left text-xs text-muted space-y-1">
               <p className="font-bold text-ink text-sm mb-2">What happens next?</p>
