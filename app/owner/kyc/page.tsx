@@ -11,7 +11,7 @@ type KYCStatus = "form" | "submitting" | "submitted" | "already_pending" | "appr
 
 export default function OwnerKYCPage() {
   const { user } = useUser();
-  // const { getToken } = useAuth();
+  const { getToken } = useAuth();
   const [status, setStatus] = useState<KYCStatus>("form");
   const [error, setError] = useState<string | null>(null);
 
