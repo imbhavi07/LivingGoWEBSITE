@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
 import { buttonClasses } from "@/components/Button";
 import { PropertyCard } from "@/components/PropertyCard";
