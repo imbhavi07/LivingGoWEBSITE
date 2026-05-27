@@ -386,7 +386,7 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
               <select name="mealPlan" value={mealPlan} onChange={(e) => setMealPlan(e.target.value)} className="input">
                 <option value="Not Included">Meals Not Included</option>
                 <option value="Veg Only">Veg Only</option>
-                <option value="Non-Veg Included">Non-Veg Included</option>
+                <option value="Veg + Non-Veg">Veg + Non-Veg</option>
                 <option value="Snacks Only">Snacks Only</option>
               </select>
             </label>

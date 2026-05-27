@@ -28,7 +28,7 @@ export const ownerPropertySchema = z.object({
   roomType: z.enum(["Single", "Shared"]),
   sharedType: z.enum(["Double", "Triple", ""]).optional(),
   preference: z.enum(["Boys", "Girls", "Any"]),
-  mealPlan: z.enum(["Not Included", "Veg Only", "Non-Veg Included", "Snacks Only"]),
+  mealPlan: z.enum(["Not Included", "Veg Only", "Veg + Non-Veg", "Snacks Only"]),
   mealTimes: z.array(z.string()).optional(),
   curfewTime: z.enum(["No Curfew", "9 PM", "10 PM", "11 PM", "12 AM"]),
   noticePeriod: z.enum(["15 Days", "1 Month", "2 Months"]),

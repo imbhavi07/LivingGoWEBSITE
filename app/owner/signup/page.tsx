@@ -24,7 +24,7 @@ export default function OwnerSignupPage() {
           </div>
           <SignUp
             routing="hash"
-            afterSignUpUrl="/owner/kyc"
+            forceRedirectUrl="/owner/kyc"
             signInUrl="/owner/login"
             appearance={{
               elements: {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useToast } from "@/contexts/ToastContext";
 import { login } from "@/lib/api/auth";
@@ -10,7 +10,6 @@ import type { LoginPayload } from "@/types/auth";
 
 export function useAuth() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const authContext = useAuthContext();
   const { showToast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,7 +24,7 @@ export function useAuth() {
       await setSession(session);
       authContext.refreshSession();
       showToast("Signed in successfully.", "success");
-      router.push(searchParams.get("next") ?? "/wishlist");
+      router.push("/wishlist");
     } catch {
       setError("Unable to sign in. Please check your credentials.");
       showToast("Unable to sign in.", "error");
