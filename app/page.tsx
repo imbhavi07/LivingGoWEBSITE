@@ -34,7 +34,7 @@ export default function HomePage() {
         {/* Updated UI Panel Container/*/}
         <div className="relative mx-auto w-full max-w-[510px]">
           {/* 1. The image acts as the physical structure, dictating the exact height/width ratio */}
-          <img 
+          <Image
             src="/assets/ui-panel.png" 
             alt="Featured Property Panel" 
             className="block h-auto w-full drop-shadow-xl"

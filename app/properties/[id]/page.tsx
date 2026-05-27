@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { Check, Clock, GraduationCap, Heart, MapPin, Phone, ShieldCheck, Train, UtensilsCrossed } from "lucide-react";
+import { Check, Clock, GraduationCap, Heart, MapPin, ShieldCheck, Train, UtensilsCrossed } from "lucide-react";
 import { Button, buttonClasses } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { Gallery } from "@/components/Gallery";
