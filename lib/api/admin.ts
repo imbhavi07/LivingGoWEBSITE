@@ -1,7 +1,7 @@
 import { apiClient, isAuthApiError } from "@/lib/api/client";
 import { toAdminListing, toAdminUser, toOwnerApproval, unwrapItems, type ApiOwnerApproval, type ApiProperty, type ApiUser, type PaginatedResponse } from "@/lib/api/types";
 import { mockAdminListings, mockAdminUsers } from "@/lib/mock-data";
-import type { AdminListing, AdminStats, AdminUser, OwnerApproval } from "@/types/admin";
+import type {AdminStats} from "@/types/admin";
 
 export async function getAdminStats() {
   try {

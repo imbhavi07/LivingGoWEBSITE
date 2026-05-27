@@ -1,7 +1,7 @@
 import { apiClient, isAuthApiError } from "@/lib/api/client";
 import { toOwnerProperty, unwrapItems, type ApiProperty, type PaginatedResponse } from "@/lib/api/types";
 import { mockOwnerProperties } from "@/lib/mock-data";
-import type { OwnerProperty, OwnerPropertyPayload, OwnerStats } from "@/types/owner";
+import type { OwnerPropertyPayload, OwnerStats } from "@/types/owner";
 
 export async function getOwnerStats() {
   try {

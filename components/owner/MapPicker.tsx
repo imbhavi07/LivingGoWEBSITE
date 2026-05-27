@@ -22,7 +22,7 @@ export function MapPicker({ onConfirm, onClose, initialLat, initialLng }: MapPic
   const [address, setAddress] = useState<string>("Loading address...");
   const [pickedLat, setPickedLat] = useState<number>(initialLat ?? 28.6139);
   const [pickedLng, setPickedLng] = useState<number>(initialLng ?? 77.209);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading] = useState(false);
   const mapInstanceRef = useRef<unknown>(null);
   const markerRef = useRef<unknown>(null);
 
@@ -122,7 +122,7 @@ export function MapPicker({ onConfirm, onClose, initialLat, initialLng }: MapPic
             <p className="text-xs text-muted">Click on the map or drag the pin to your PG location</p>
           </div>
           <button
-            onClick={onClose}
+            onClick={onClose} aria-label="Close modal" title="Close"
             className="flex h-9 w-9 items-center justify-center rounded-full bg-linen text-ink hover:bg-oat"
           >
             <X className="h-4 w-4" aria-hidden />

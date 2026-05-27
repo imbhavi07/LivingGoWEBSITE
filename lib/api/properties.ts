@@ -1,7 +1,7 @@
 import { apiClient, isAuthApiError } from "@/lib/api/client";
 import { toProperty, unwrapItems, type ApiProperty, type PaginatedResponse } from "@/lib/api/types";
 import { mockProperties } from "@/lib/mock-data";
-import type { Property, PropertyFilters } from "@/types/property";
+import type {PropertyFilters } from "@/types/property";
 
 export async function getProperties(filters?: PropertyFilters) {
   try {
