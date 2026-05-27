@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { CheckCircle2, Clock, ShieldCheck, Upload, XCircle } from "lucide-react";
-import { useUser, useAuth } from "@clerk/nextjs";
+import { useUser} from "@clerk/nextjs";
 import { OwnerShell } from "@/components/owner/OwnerShell";
 import { Button } from "@/components/Button";
 
@@ -11,7 +11,7 @@ type KYCStatus = "form" | "submitting" | "submitted" | "already_pending" | "appr
 
 export default function OwnerKYCPage() {
   const { user } = useUser();
-  const { getToken } = useAuth();
+  // const { getToken } = useAuth();
   const [status, setStatus] = useState<KYCStatus>("form");
   const [error, setError] = useState<string | null>(null);
 
