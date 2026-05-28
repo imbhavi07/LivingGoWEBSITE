@@ -1,6 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import { EmptyState } from "@/components/EmptyState";
 import { PropertyCard } from "@/components/PropertyCard";
 import { buttonClasses } from "@/components/Button";
@@ -8,6 +11,16 @@ import { useWishlist } from "@/hooks/useWishlist";
 
 export default function WishlistPage() {
   const wishlist = useWishlist();
+  const { isSignedIn, isLoaded } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      router.push("/login");
+    }
+  }, [isLoaded, isSignedIn, router]);
+
+  if (!isLoaded || !isSignedIn) return null;
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 md:py-10 lg:px-8">

@@ -13,7 +13,7 @@ export default function HomePage() {
       <section className="mx-auto grid max-w-7xl gap-10 px-4 pb-12 pt-8 sm:px-6 md:grid-cols-[1fr_1.08fr] md:items-center md:pt-16 lg:px-8">
         <div>
           <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-bold text-ink shadow-soft">
-            <Sparkles className="h-4 w-4 text-clay" aria-hidden />
+            
             Verified student homes
           </div>
           <h1 className="max-w-3xl text-5xl font-black leading-[1.02] tracking-normal text-ink sm:text-6xl">

@@ -3,6 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, MapPin } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/Button";
 import { formatPrice } from "@/lib/utils";
 import type { Property } from "@/types/property";
@@ -14,6 +16,17 @@ type PropertyCardProps = {
 };
 
 export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
+  const { isSignedIn } = useUser();
+  const router = useRouter();
+
+  function handleSave() {
+    if (!isSignedIn) {
+      router.push("/login");
+      return;
+    }
+    void onSave(property.id);
+  }
+
   return (
     <article className="group overflow-hidden rounded-3xl bg-white shadow-2xl transition hover:-translate-y-3 hover:scale-[1.04] hover:shadow-lift">
       <Link href={`/properties/${property.id}`} className="block">
@@ -34,9 +47,10 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
             <h2 className="mt-1 line-clamp-1 text-lg font-bold text-ink">{property.title}</h2>
           </div>
           <button
-            onClick={() => onSave(property.id)}
+            onClick={handleSave}
             className="rounded-full bg-linen p-3 text-ink transition hover:bg-oat"
             aria-label={saved ? "Remove from wishlist" : "Save property"}
+            title={!isSignedIn ? "Login to save" : saved ? "Remove from wishlist" : "Save property"}
           >
             <Heart className={saved ? "h-5 w-5 fill-clay text-clay" : "h-5 w-5"} aria-hidden />
           </button>
