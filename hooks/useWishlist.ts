@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { mockProperties } from "@/lib/mock-data";
 import { addWishlistProperty, getWishlistIds, getWishlistProperties, removeWishlistProperty } from "@/lib/api/wishlist";
 import { getProperty } from "@/lib/api/properties";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -70,7 +69,6 @@ export function useWishlist() {
     return ids.includes(id);
   }
 
-  const localProperties: Property[] = mockProperties.filter((property) => ids.includes(property.id));
-
-  return { ids, properties: auth.user?.role === "student" ? properties : localProperties, toggle, isSaved };
+  // For non-logged-in users, properties aren't available locally without the API
+  return { ids, properties: auth.user?.role === "student" ? properties : [], toggle, isSaved };
 }

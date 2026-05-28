@@ -1,40 +1,20 @@
-import { apiClient, isAuthApiError } from "@/lib/api/client";
+import { apiClient } from "@/lib/api/client";
 import { toOwnerProperty, unwrapItems, type ApiProperty, type PaginatedResponse } from "@/lib/api/types";
-import { mockOwnerProperties } from "@/lib/mock-data";
 import type { OwnerPropertyPayload, OwnerStats } from "@/types/owner";
 
 export async function getOwnerStats() {
-  try {
-    const { data } = await apiClient.get<OwnerStats>("/owner/dashboard/stats");
-    return data;
-  } catch (error) {
-    if (isAuthApiError(error)) throw error;
-    return {
-      totalListings: mockOwnerProperties.length,
-      activeListings: mockOwnerProperties.filter((property) => property.status === "active").length,
-      pendingListings: mockOwnerProperties.filter((property) => property.status === "pending").length
-    };
-  }
+  const { data } = await apiClient.get<OwnerStats>("/owner/dashboard/stats");
+  return data;
 }
 
 export async function getOwnerProperties() {
-  try {
-    const { data } = await apiClient.get<PaginatedResponse<ApiProperty> | ApiProperty[]>("/owner/properties");
-    return unwrapItems(data).map(toOwnerProperty);
-  } catch (error) {
-    if (isAuthApiError(error)) throw error;
-    return mockOwnerProperties;
-  }
+  const { data } = await apiClient.get<PaginatedResponse<ApiProperty> | ApiProperty[]>("/owner/properties");
+  return unwrapItems(data).map(toOwnerProperty);
 }
 
 export async function getOwnerProperty(id: string) {
-  try {
-    const { data } = await apiClient.get<PaginatedResponse<ApiProperty> | ApiProperty[]>("/owner/properties");
-    return unwrapItems(data).map(toOwnerProperty).find((property) => property.id === id) ?? null;
-  } catch (error) {
-    if (isAuthApiError(error)) throw error;
-    return mockOwnerProperties.find((property) => property.id === id) ?? null;
-  }
+  const { data } = await apiClient.get<PaginatedResponse<ApiProperty> | ApiProperty[]>("/owner/properties");
+  return unwrapItems(data).map(toOwnerProperty).find((property) => property.id === id) ?? null;
 }
 
 export async function createOwnerProperty(payload: OwnerPropertyPayload) {
