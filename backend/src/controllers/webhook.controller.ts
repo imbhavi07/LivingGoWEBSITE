@@ -25,6 +25,8 @@ export async function handleClerkWebhook(req: Request, res: Response) {
     const firstName = (data.first_name as string) ?? "";
     const lastName = (data.last_name as string) ?? "";
     const clerkId = data.id as string;
+    const metadata = data.unsafe_metadata as Record<string, unknown> ?? {};
+    const role = metadata.role === "student" ? "student" : "owner";
 
     if (email) {
       await prisma.user.upsert({
@@ -35,8 +37,8 @@ export async function handleClerkWebhook(req: Request, res: Response) {
           email,
           phone: null,
           passwordHash: clerkId,
-          role: "owner",
-          verificationStatus: "pending_approval",
+          role,
+          verificationStatus: role === "student" ? "not_required" : "pending_approval",
         },
       });
     }
