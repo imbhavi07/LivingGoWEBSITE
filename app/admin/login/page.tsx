@@ -1,10 +1,16 @@
 "use client";
 
-import { FormEvent, Suspense, useState } from "react";
-import { ShieldCheck } from "lucide-react";
+import { Suspense, useState } from "react";
+import { ShieldCheck, Mail, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/Button";
+import { useRouter } from "next/navigation";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
-import { loginSchema } from "@/lib/validation";
+
+const ALLOWED_EMAILS = [
+  "rctaccommodations@gmail.com",
+  "semwalb3@gmail.com",
+  "falitnautiyal7@gmail.com",
+];
 
 export default function AdminLoginPage() {
   return (
@@ -15,25 +21,68 @@ export default function AdminLoginPage() {
 }
 
 function AdminLoginForm() {
-  const auth = useAdminAuth();
-  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+  const { setError } = useAdminAuth();
+  const [step, setStep] = useState<"email" | "otp">("email");
+  const [selectedEmail, setSelectedEmail] = useState<string>("");
+  const [otp, setOtp] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setLocalError] = useState<string | null>(null);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const parsed = loginSchema.safeParse({
-      email: formData.get("email"),
-      password: formData.get("password")
-    });
+  async function handleSendOtp(email: string) {
+    setIsLoading(true);
+    setLocalError(null);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/admin/send-otp`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        }
+      );
+      const data = await res.json() as { message?: string };
+      if (!res.ok) throw new Error(data.message ?? "Failed to send OTP");
+      setSelectedEmail(email);
+      setStep("otp");
+    } catch (err) {
+      setLocalError(err instanceof Error ? err.message : "Failed to send OTP");
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
-    if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? "Check your details.");
-      auth.setError(null);
+  async function handleVerifyOtp() {
+    if (otp.length !== 6) {
+      setLocalError("Enter the 6-digit OTP");
       return;
     }
+    setIsLoading(true);
+    setLocalError(null);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/admin/verify-otp`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ email: selectedEmail, otp }),
+        }
+      );
+      const data = await res.json() as { token?: string; message?: string };
+      if (!res.ok) throw new Error(data.message ?? "Invalid OTP");
 
-    setError(null);
-    await auth.signIn(parsed.data);
+      // Save token and redirect
+      if (data.token) {
+        localStorage.setItem("LivingGo_token", data.token);
+        localStorage.setItem("LivingGo_user", JSON.stringify({ role: "admin", email: selectedEmail }));
+      }
+      router.push("/admin/dashboard");
+    } catch (err) {
+      setLocalError(err instanceof Error ? err.message : "OTP verification failed");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -45,35 +94,89 @@ function AdminLoginForm() {
         </div>
         <div>
           <p className="text-sm font-black uppercase text-clay">Internal moderation</p>
-          <h1 className="mt-4 max-w-2xl text-6xl font-black leading-tight">Secure controls for platform trust.</h1>
+          <h1 className="mt-4 max-w-2xl text-6xl font-black leading-tight">
+            Secure controls for platform trust.
+          </h1>
           <p className="mt-5 max-w-xl text-base leading-7 text-white/60">
             Review property submissions, remove fake listings, and protect students and owners from spam accounts.
           </p>
         </div>
-        <p className="text-sm text-white/45">Admin-only access. JWT and role checks required.</p>
+        <p className="text-sm text-white/45">Admin-only access. OTP verification required.</p>
       </section>
+
       <section className="flex items-center">
-        <form onSubmit={handleSubmit} className="mx-auto w-full max-w-md rounded-[2rem] bg-white p-6 text-ink shadow-lift sm:p-8">
+        <div className="mx-auto w-full max-w-md rounded-[2rem] bg-white p-6 text-ink shadow-lift sm:p-8">
           <div className="mb-8 rounded-3xl bg-linen p-4">
             <ShieldCheck className="h-8 w-8 text-clay" aria-hidden />
             <p className="mt-3 text-sm font-bold uppercase text-clay">Admin login</p>
-            <h2 className="mt-2 text-3xl font-black">Sign in securely</h2>
+            <h2 className="mt-2 text-3xl font-black">
+              {step === "email" ? "Select your email" : "Enter OTP"}
+            </h2>
+            {step === "otp" && (
+              <p className="mt-1 text-sm text-muted">
+                OTP sent to {selectedEmail}
+              </p>
+            )}
           </div>
-          <div className="space-y-4">
-            <label className="block space-y-2">
-              <span className="text-sm font-bold">Email</span>
-              <input name="email" type="email" className="input" required />
-            </label>
-            <label className="block space-y-2">
-              <span className="text-sm font-bold">Password</span>
-              <input name="password" type="password" className="input" minLength={8} required />
-            </label>
-          </div>
-          {error || auth.error ? <p className="mt-4 rounded-2xl bg-linen p-3 text-sm font-semibold text-clay">{error ?? auth.error}</p> : null}
-          <Button className="mt-6 w-full" disabled={auth.isSubmitting}>
-            {auth.isSubmitting ? "Verifying..." : "Enter admin dashboard"}
-          </Button>
-        </form>
+
+          {step === "email" ? (
+            <div className="space-y-3">
+              {ALLOWED_EMAILS.map((email) => (
+                <button
+                  key={email}
+                  type="button"
+                  disabled={isLoading}
+                  onClick={() => void handleSendOtp(email)}
+                  className="flex w-full items-center justify-between rounded-2xl border border-black/10 bg-linen px-4 py-4 text-left text-sm font-bold text-ink transition hover:bg-oat disabled:opacity-60"
+                >
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-4 w-4 text-clay" aria-hidden />
+                    {email}
+                  </div>
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin text-muted" />
+                  ) : (
+                    <ArrowRight className="h-4 w-4 text-muted" />
+                  )}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <label className="block space-y-2">
+                <span className="text-sm font-bold">6-digit OTP</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                  className="input text-center text-2xl tracking-[0.5em] font-black"
+                  placeholder="······"
+                  autoFocus
+                />
+              </label>
+              <Button
+                className="w-full"
+                disabled={isLoading || otp.length !== 6}
+                onClick={() => void handleVerifyOtp()}
+              >
+                {isLoading ? "Verifying..." : "Verify & Enter Dashboard"}
+              </Button>
+              <button
+                type="button"
+                onClick={() => { setStep("email"); setOtp(""); setLocalError(null); }}
+                className="w-full text-center text-sm text-muted hover:text-ink"
+              >
+                Use a different email
+              </button>
+            </div>
+          )}
+
+          {error && (
+            <p className="mt-4 rounded-2xl bg-linen p-3 text-sm font-semibold text-clay">{error}</p>
+          )}
+        </div>
       </section>
     </main>
   );
