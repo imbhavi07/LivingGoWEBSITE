@@ -13,10 +13,10 @@ export function AppChrome({ children }: { children: ReactNode }) {
   if (isOwnerArea || isAdminArea) return children;
 
   return (
-    <>
+    <div className="flex min-h-screen flex-col">
       <Navbar />
-      {children}
+      <main className="flex-1">{children}</main>
       <Footer />
-    </>
+    </div>
   );
 }
