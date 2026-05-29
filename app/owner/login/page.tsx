@@ -22,7 +22,7 @@ export default function OwnerLoginPage() {
           </div>
           <SignIn
             routing="hash"
-            forceRedirectUrl="/owner/dashboard"
+            fallbackRedirectUrl="/owner/dashboard"
             signUpUrl="/owner/signup"
             appearance={{
               elements: {
