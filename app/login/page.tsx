@@ -103,11 +103,13 @@ function LoginForm() {
               </Link>
             </div>
           ) : (
-            <SignIn
-              routing="hash"
-              fallbackRedirectUrl={mode === "owner" ? "/owner/dashboard" : "/listings"}
-              signUpUrl={mode === "owner" ? "/owner/signup" : "/signup"}
-            />
+            <div className="flex justify-center">
+              <SignIn
+                routing="hash"
+                fallbackRedirectUrl={mode === "owner" ? "/owner/dashboard" : "/listings"}
+                signUpUrl={mode === "owner" ? "/owner/signup" : "/signup"}
+              />
+            </div>
           )}
         </div>
       </section>

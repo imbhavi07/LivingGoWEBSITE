@@ -32,12 +32,12 @@ export default function HomePage() {
         </div>
 
         <div className="relative mx-auto w-full max-w-[510px]">
-          <Image
+          {/* <Image
             src="/assets/ui-panel.png"
             alt="Featured Property Panel"
             className="block h-auto w-full drop-shadow-xl"
             aria-hidden="true"
-          />
+          /> */}
           <div className="absolute inset-0 px-[10%] pb-[5%] pt-[28%] sm:pt-[30%] flex flex-col items-center">
             <div className="mb-3 flex items-center gap-2 font-bold text-ink -translate-x-[70px] text-[15.5px]">
               <ShieldCheck className="h-4 w-4 text-ink" aria-hidden />

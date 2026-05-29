@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useToast } from "@/contexts/ToastContext";
+import { useClerk } from "@clerk/nextjs";
 import { login } from "@/lib/api/auth";
 import { clearSession, setSession } from "@/lib/auth";
 import type { LoginPayload } from "@/types/auth";
@@ -12,6 +13,7 @@ export function useAuth() {
   const router = useRouter();
   const authContext = useAuthContext();
   const { showToast } = useToast();
+  const { signOut: clerkSignOut } = useClerk();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,12 +35,13 @@ export function useAuth() {
     }
   }
 
-  function signOut() {
-    void clearSession();
-    authContext.refreshSession();
-    showToast("Signed out.", "info");
-    router.push("/login");
-  }
+  async function signOut() {
+  await clerkSignOut();
+  void clearSession();
+  authContext.refreshSession();
+  showToast("Signed out.", "info");
+  router.push("/login");
+}
 
   return { signIn, signOut, isSubmitting, error, setError };
 }

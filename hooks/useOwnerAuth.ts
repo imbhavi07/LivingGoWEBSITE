@@ -6,6 +6,7 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { useToast } from "@/contexts/ToastContext";
 import { ownerLogin, ownerSignup, sendOwnerOtp, verifyOwnerOtp } from "@/lib/api/owner-auth";
 import { clearSession, setSession } from "@/lib/auth";
+import { useClerk } from "@clerk/nextjs";
 import { getApiErrorMessage } from "@/lib/api/client";
 import type { LoginPayload, OwnerOtpPayload, OwnerOtpVerifyPayload, SignupPayload } from "@/types/auth";
 
@@ -13,6 +14,7 @@ export function useOwnerAuth() {
   const router = useRouter();
   const authContext = useAuthContext();
   const { showToast } = useToast();
+  const { signOut: clerkSignOut } = useClerk();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -91,11 +93,12 @@ export function useOwnerAuth() {
     }
   }
 
-  function signOut() {
-    void clearSession();
-    authContext.refreshSession();
-    showToast("Signed out.", "info");
-    router.push("/owner/login");
+  async function signOut() {
+  await clerkSignOut();
+  void clearSession();
+  authContext.refreshSession();
+  showToast("Signed out.", "info");
+  router.push("/owner/login");
   }
 
   return { signIn, signUp, signOut, requestOtp, confirmOtp, isSubmitting, error, setError };
