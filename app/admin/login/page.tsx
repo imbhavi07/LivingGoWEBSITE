@@ -108,7 +108,7 @@ function AdminLoginForm() {
       <section className="flex items-center">
         <div className="mx-auto w-full max-w-md rounded-[2rem] bg-white p-6 text-ink shadow-lift sm:p-8">
           <div className="mb-8 rounded-3xl bg-linen p-4">
-            <ShieldCheck className="h-8 w-8 text-clay" aria-hidden />
+            <ShieldCheck className="h-8 w-8 text-clay " aria-hidden />
             <p className="mt-3 text-sm font-bold uppercase text-clay">Admin login</p>
             <h2 className="mt-2 text-3xl font-black">Sign in securely</h2>
             <p className="mt-1 text-sm text-muted">Only authorized emails can access the admin panel.</p>
