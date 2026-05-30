@@ -4,6 +4,8 @@ import { Suspense, useState } from "react";
 import { ShieldCheck, Loader2 } from "lucide-react";
 import { Button } from "@/components/Button";
 import { useRouter } from "next/navigation";
+import { setSession } from "@/lib/auth";
+import type { AuthUser } from "@/types/auth";  // ← ye bhi add karo
 
 const ALLOWED_EMAILS = [
   "rctaccommodations@gmail.com",
@@ -55,36 +57,35 @@ function AdminLoginForm() {
   }
 
   async function handleVerifyOtp() {
-    if (otp.length !== 6) {
-      setError("Enter the 6-digit OTP");
-      return;
-    }
-    setIsLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/admin/verify-otp`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: email.trim().toLowerCase(), otp }),
-        }
-      );
-      const data = await res.json() as { token?: string; user?: { role: string; name: string; email: string; id: string }; message?: string };
-      if (!res.ok) throw new Error(data.message ?? "Invalid OTP");
-
-      if (data.token && data.user) {
-        localStorage.setItem("LivingGo_token", data.token);
-        localStorage.setItem("LivingGo_user", JSON.stringify(data.user));
-      }
-
-      router.push("/admin/dashboard");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "OTP verification failed");
-    } finally {
-      setIsLoading(false);
-    }
+  if (otp.length !== 6) {
+    setError("Enter the 6-digit OTP");
+    return;
   }
+  setIsLoading(true);
+  setError(null);
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/admin/verify-otp`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim().toLowerCase(), otp }),
+      }
+    );
+    const data = await res.json() as { token?: string; user?: { role: string; name: string; email: string; id: string }; message?: string };
+    if (!res.ok) throw new Error(data.message ?? "Invalid OTP");
+
+    if (data.token && data.user) {
+      await setSession({ token: data.token, user: data.user as AuthUser }); // ← ye use karo
+    }
+
+    router.push("/admin/dashboard");
+  } catch (err) {
+    setError(err instanceof Error ? err.message : "OTP verification failed");
+  } finally {
+    setIsLoading(false);
+  }
+}
 
   return (
     <main className="grid min-h-screen bg-[#111315] p-4 text-white lg:grid-cols-[1fr_480px] lg:p-0">
