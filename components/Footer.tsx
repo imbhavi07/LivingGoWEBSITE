@@ -29,14 +29,14 @@ export function Footer() {
           {/* Enquiry Section */}
           <div className="flex flex-col items-center gap-1 md:items-end">
             <p className="font-semibold text-ink">For Enquiry, Contact</p>
-            <a href="tel:+912222222222" className="hover:text-ink hover:underline transition-colors">
-              +91 2222222222
+            <a href="tel:+916200232083" className="hover:text-ink hover:underline transition-colors">
+              +91 6200232083
             </a>
-            <a href="tel:+913333333333" className="hover:text-ink hover:underline transition-colors">
-              +91 3333333333
+            <a href="tel:+917310690877" className="hover:text-ink hover:underline transition-colors">
+              +91 7310690877
             </a>
-            <a href="mailto:customercare@livinggo.com" className="hover:text-ink hover:underline transition-colors">
-              customercare@livinggo.com
+            <a href="mailto:help@livinggo.in" className="hover:text-ink hover:underline transition-colors">
+              help@livinggo.in
             </a>
           </div>
 
