@@ -15,14 +15,17 @@ const isPublicRoute = createRouteMatcher([
   "/api/auth(.*)",
 ]);
 
-const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 const isOwnerRoute = createRouteMatcher(["/owner(.*)"]);
 const isNewPropertyRoute = createRouteMatcher(["/owner/properties/new(.*)"]);
 const isKycRoute = createRouteMatcher(["/owner/kyc(.*)"]);
 
 export default clerkMiddleware(async (auth, request) => {
-  const { userId } = await auth();
   const { pathname } = request.nextUrl;
+
+  // Admin routes — completely skip Clerk, handle themselves
+  if (pathname.startsWith("/admin")) return NextResponse.next();
+
+  const { userId } = await auth();
 
   // Always allow public routes
   if (isPublicRoute(request)) return NextResponse.next();
@@ -30,7 +33,6 @@ export default clerkMiddleware(async (auth, request) => {
   // Redirect to login if not authenticated
   if (!userId) {
     const loginUrl = new URL(
-      isAdminRoute(request) ? "/admin/login" :
       isOwnerRoute(request) ? "/owner/login" : "/login",
       request.url
     );
@@ -41,21 +43,12 @@ export default clerkMiddleware(async (auth, request) => {
   const role = request.cookies.get("LivingGo_role")?.value;
   const verificationStatus = request.cookies.get("LivingGo_verification")?.value;
 
-  // Admin routes — only block if cookie exists and is NOT admin
-  // Clerk users won't have cookie so they pass through
-  if (isAdminRoute(request) && role && role !== "admin") {
-    return NextResponse.redirect(new URL("/admin/login", request.url));
-  }
-
-  // Owner routes — only block if cookie exists and has wrong role
   if (isOwnerRoute(request) && role && role !== "owner" && role !== "admin") {
     return NextResponse.redirect(new URL("/owner/login", request.url));
   }
 
-  // Always allow KYC route
   if (isKycRoute(request)) return NextResponse.next();
 
-  // New property route — only block if verification cookie exists and not approved
   if (isNewPropertyRoute(request) && verificationStatus && verificationStatus !== "approved") {
     return NextResponse.redirect(new URL("/owner/kyc", request.url));
   }

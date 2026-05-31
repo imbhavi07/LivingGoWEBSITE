@@ -58,11 +58,19 @@ apiClient.interceptors.response.use(
   (error) => {
     const status = error.response?.status;
     if (typeof window !== "undefined" && status === 401) {
-      localStorage.removeItem("LivingGo_token");
-      void fetch("/api/auth/session", { method: "DELETE" });
       const pathname = window.location.pathname;
-      const target = pathname.startsWith("/admin") ? "/admin/login" : pathname.startsWith("/owner") ? "/owner/login" : "/login";
-      window.location.assign(target);
+      const target = pathname.startsWith("/admin") 
+        ? "/admin/login" 
+        : pathname.startsWith("/owner") 
+        ? "/owner/login" 
+        : "/login";
+
+      // ← Loop prevent karo — already login page pe hai toh redirect mat karo
+      if (pathname !== target) {
+        localStorage.removeItem("LivingGo_token");
+        void fetch("/api/auth/session", { method: "DELETE" });
+        window.location.assign(target);
+      }
     }
 
     return Promise.reject(error);
