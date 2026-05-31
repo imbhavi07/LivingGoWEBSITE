@@ -13,16 +13,25 @@ export function getToken() {
 export async function setSession(session: AuthResponse) {
   localStorage.setItem(TOKEN_KEY, session.token);
   localStorage.setItem(USER_KEY, JSON.stringify(session.user));
-  await fetch("/api/auth/session", {
+
+  // ✅ Add this console log temporarily to verify role value
+  console.log("Setting session with role:", session.user.role);
+
+  const res = await fetch("/api/auth/session", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ token: session.token, role: session.user.role ?? "student" })
   });
+
+  // ✅ Add this so silent failures are caught
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(`Session cookie failed: ${JSON.stringify(err)}`);
+  }
 }
 
 export function getSessionUser() {
   if (typeof window === "undefined") return null;
-
   try {
     const user = localStorage.getItem(USER_KEY);
     return user ? (JSON.parse(user) as AuthResponse["user"]) : null;
