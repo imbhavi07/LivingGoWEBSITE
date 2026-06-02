@@ -19,20 +19,24 @@ export function useOwnerAuth() {
   const [error, setError] = useState<string | null>(null);
 
   async function signIn(payload: LoginPayload) {
-    setIsSubmitting(true);
-    setError(null);
-
-    try {
-      const session = await ownerLogin(payload);
-      if (session.user.role !== "owner" && session.user.role !== "admin") {
-        setError("This account does not have owner access.");
-        return;
-      }
+  setIsSubmitting(true);
+  setError(null);
+  try {
+    const session = await ownerLogin(payload);
+    if (session.user.role !== "owner" && session.user.role !== "admin") {
+      setError("This account does not have owner access.");
+      return;
+    }
       await setSession(session);
       authContext.refreshSession();
       showToast("Owner signed in.", "success");
-      const nextPath = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("next") : null;
-      router.push(nextPath ?? "/owner/dashboard");
+      const nextPath = typeof window !== "undefined" 
+        ? new URLSearchParams(window.location.search).get("next") 
+        : null;
+      
+      // ✅ Changed from router.push() to window.location.href
+      window.location.href = nextPath ?? "/owner/dashboard";
+      
     } catch (error) {
       const message = getApiErrorMessage(error, "Unable to sign in. Please check your owner credentials.");
       setError(message);

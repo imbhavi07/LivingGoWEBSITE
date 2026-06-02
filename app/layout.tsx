@@ -24,12 +24,12 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
     <html lang="en" suppressHydrationWarning>
       <head />
       <body className={`${inter.variable} font-sans antialiased`}>
-        <ClerkProvider
-          signInUrl="/owner/login"
-          signUpUrl="/owner/signup"
-          signInFallbackRedirectUrl="/owner/dashboard"
-          signUpFallbackRedirectUrl="/owner/kyc"
-        >
+        tsx<ClerkProvider
+          signInUrl="/login"
+          signUpUrl="/signup"
+          signInFallbackRedirectUrl="/listings"
+          signUpFallbackRedirectUrl="/listings"
+>
           <IntroOverlay />
           <ToastProvider>
             <AuthProvider>
