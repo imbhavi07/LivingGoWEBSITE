@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Building2, GraduationCap, Sparkles } from "lucide-react";
 import { SignIn, useUser } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 type LoginMode = "student" | "owner";
 
@@ -19,6 +20,10 @@ export default function LoginPage() {
 function LoginForm() {
   const [mode, setMode] = useState<LoginMode>("student");
   const { isSignedIn } = useUser();
+  const { isAuthenticated, user } = useAuthContext();
+
+  const isOwnerSignedIn = isAuthenticated && (user?.role === "owner" || user?.role === "admin");
+  const showAlreadySignedIn = mode === "owner" ? isOwnerSignedIn : isSignedIn;
 
   return (
     <main className="mx-auto grid min-h-[76vh] max-w-6xl items-center gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-8">
@@ -91,7 +96,7 @@ function LoginForm() {
         </div>
 
         <div className="mt-8">
-          {isSignedIn ? (
+          {showAlreadySignedIn ? (
             <div className="rounded-3xl bg-linen p-6 text-center">
               <p className="font-black text-ink text-lg">You&apos;re already signed in!</p>
               <p className="mt-2 text-sm text-muted">Browse listings or go to your dashboard.</p>

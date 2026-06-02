@@ -21,7 +21,7 @@ export async function setSession(session: AuthResponse) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ token: session.token, role: session.user.role ?? "student" })
-  });
+  }); 
 
   // ✅ Add this so silent failures are caught
   if (!res.ok) {

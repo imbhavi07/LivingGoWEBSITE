@@ -86,7 +86,7 @@ export default function OwnerLoginPage() {
             </div>
           </div>
         </div>
-      </section>`2d ,```
+      </section>
     </main>
   );
 }
