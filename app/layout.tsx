@@ -24,7 +24,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
     <html lang="en" suppressHydrationWarning>
       <head />
       <body className={`${inter.variable} font-sans antialiased`}>
-        tsx<ClerkProvider
+        <ClerkProvider
           signInUrl="/login"
           signUpUrl="/signup"
           signInFallbackRedirectUrl="/listings"

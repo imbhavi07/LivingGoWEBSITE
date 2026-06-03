@@ -1,14 +1,14 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
 import { Building2, GraduationCap } from "lucide-react";
 import { SignIn, useUser } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 type LoginMode = "student" | "owner";
 
-// Hides email field, divider, continue button — shows Google button only
 const googleOnlyAppearance = {
   elements: {
     dividerRow: "hidden",
@@ -28,10 +28,22 @@ export default function LoginPage() {
 function LoginForm() {
   const [mode, setMode] = useState<LoginMode>("student");
   const { isSignedIn, user } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isSignedIn || !user) return;
+    const role = user.publicMetadata?.role as string | undefined;
+
+    if (mode === "student" && (!role || role === "owner")) {
+      router.push("/signup?error=no-account");
+    }
+    // Owner login is handled separately via /owner/login (custom JWT)
+    // so we don't check owner role here
+  }, [isSignedIn, user, mode, router]);
 
   const role = user?.publicMetadata?.role as string | undefined;
-  const isOwnerSignedIn = isSignedIn && (role === "owner" || role === "admin");
-  const showAlreadySignedIn = mode === "owner" ? isOwnerSignedIn : isSignedIn;
+  const isSignedInAsStudent = isSignedIn && role === "student";
+  const showAlreadySignedIn = mode === "student" ? isSignedInAsStudent : false;
 
   return (
     <main className="mx-auto grid min-h-[76vh] max-w-6xl items-center gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-8">
@@ -67,7 +79,7 @@ function LoginForm() {
             {[
               ["24/7", "Access"],
               [mode === "student" ? "Saved" : "Active", "Listings"],
-              ["Secure", "Auth"]
+              ["Secure", "Auth"],
             ].map(([value, label]) => (
               <div key={label} className="rounded-3xl bg-white/10 p-4">
                 <p className="text-xl font-black">{value}</p>
@@ -108,18 +120,37 @@ function LoginForm() {
               <p className="font-black text-ink text-lg">You&apos;re already signed in!</p>
               <p className="mt-2 text-sm text-muted">Browse listings or go to your dashboard.</p>
               <Link
-                href={mode === "owner" ? "/owner/dashboard" : "/listings"}
+                href="/listings"
                 className="mt-4 inline-block rounded-full bg-ink px-6 py-3 text-sm font-bold text-white"
               >
-                {mode === "owner" ? "Go to Dashboard" : "Browse listings"}
+                Browse listings
               </Link>
+            </div>
+          ) : mode === "owner" ? (
+            // Owner login — redirect to dedicated owner login page
+            <div className="rounded-3xl bg-linen p-6 text-center">
+              <Building2 className="mx-auto mb-3 h-8 w-8 text-ink" />
+              <p className="font-black text-ink text-lg">Owner Portal</p>
+              <p className="mt-2 text-sm text-muted">Sign in with your owner credentials.</p>
+              <Link
+                href="/owner/login"
+                className="mt-4 inline-block rounded-full bg-ink px-6 py-3 text-sm font-bold text-white"
+              >
+                Go to Owner Login
+              </Link>
+              <p className="mt-3 text-xs text-muted">
+                New owner?{" "}
+                <Link href="/owner/signup" className="font-bold text-ink underline">
+                  Register here
+                </Link>
+              </p>
             </div>
           ) : (
             <div className="flex justify-center">
               <SignIn
                 routing="hash"
-                fallbackRedirectUrl={mode === "owner" ? "/owner/dashboard" : "/listings"}
-                signUpUrl={mode === "owner" ? "/owner/signup" : "/signup"}
+                fallbackRedirectUrl="/listings"
+                signUpUrl="/signup"
                 appearance={googleOnlyAppearance}
               />
             </div>
