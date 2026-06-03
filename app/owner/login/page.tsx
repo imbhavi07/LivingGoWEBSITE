@@ -10,8 +10,6 @@ const googleOnlyAppearance = {
     dividerRow: "hidden",
     formFieldRow: "hidden",
     formButtonPrimary: "hidden",
-    footerAction: "hidden",
-    footerPages: "hidden",
   },
 };
 

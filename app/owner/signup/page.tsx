@@ -37,8 +37,6 @@ export default function OwnerSignupPage() {
                 formButtonPrimary: "hidden",
                 formFieldRow: "hidden",
                 dividerRow: "hidden",
-                footerAction: "hidden",
-                footerPages: "hidden",
                 socialButtonsBlockButton: "bg-white border border-black/10 rounded-2xl font-semibold text-ink hover:bg-linen",
               },
             }}
