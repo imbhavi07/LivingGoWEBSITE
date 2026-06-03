@@ -3,6 +3,17 @@
 import { SignUp } from "@clerk/nextjs";
 import { GraduationCap } from "lucide-react";
 
+// Hides email field, divider, continue button — shows Google button only
+const googleOnlyAppearance = {
+  elements: {
+    dividerRow: "hidden",
+    formFieldRow: "hidden",
+    formButtonPrimary: "hidden",
+    footerAction: "hidden",
+    footerPages: "hidden",
+  },
+};
+
 export default function StudentSignupPage() {
   return (
     <main className="flex min-h-screen items-center bg-linen px-4 py-8">
@@ -17,6 +28,7 @@ export default function StudentSignupPage() {
           fallbackRedirectUrl="/listings"
           signInUrl="/login"
           unsafeMetadata={{ role: "student" }}
+          appearance={googleOnlyAppearance}
         />
       </div>
     </main>

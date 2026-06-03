@@ -2,12 +2,22 @@
 
 import { Suspense, useState } from "react";
 import Link from "next/link";
-import { Building2, GraduationCap, Sparkles } from "lucide-react";
+import { Building2, GraduationCap } from "lucide-react";
 import { SignIn, useUser } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
-import { useAuthContext } from "@/contexts/AuthContext";
 
 type LoginMode = "student" | "owner";
+
+// Hides email field, divider, continue button — shows Google button only
+const googleOnlyAppearance = {
+  elements: {
+    dividerRow: "hidden",
+    formFieldRow: "hidden",
+    formButtonPrimary: "hidden",
+    footerAction: "hidden",
+    footerPages: "hidden",
+  },
+};
 
 export default function LoginPage() {
   return (
@@ -19,10 +29,10 @@ export default function LoginPage() {
 
 function LoginForm() {
   const [mode, setMode] = useState<LoginMode>("student");
-  const { isSignedIn } = useUser();
-  const { isAuthenticated, user } = useAuthContext();
+  const { isSignedIn, user } = useUser();
 
-  const isOwnerSignedIn = isAuthenticated && (user?.role === "owner" || user?.role === "admin");
+  const role = user?.publicMetadata?.role as string | undefined;
+  const isOwnerSignedIn = isSignedIn && (role === "owner" || role === "admin");
   const showAlreadySignedIn = mode === "owner" ? isOwnerSignedIn : isSignedIn;
 
   return (
@@ -32,7 +42,6 @@ function LoginForm() {
         <div className={cn("absolute -right-20 top-20 h-56 w-56 rounded-full border border-white/10 transition duration-700", mode === "owner" && "translate-x-[-60px] translate-y-28 scale-125")} />
         <div className="relative z-10 flex min-h-[440px] flex-col justify-between">
           <div className="inline-flex w-fit items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-bold text-white">
-            
             {mode === "student" ? "Find student homes faster" : "Manage rentals with clarity"}
           </div>
           <div className="py-10">
@@ -113,6 +122,7 @@ function LoginForm() {
                 routing="hash"
                 fallbackRedirectUrl={mode === "owner" ? "/owner/dashboard" : "/listings"}
                 signUpUrl={mode === "owner" ? "/owner/signup" : "/signup"}
+                appearance={googleOnlyAppearance}
               />
             </div>
           )}

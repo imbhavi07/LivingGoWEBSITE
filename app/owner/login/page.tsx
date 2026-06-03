@@ -1,16 +1,21 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { Building2, Loader2 } from "lucide-react";
-import { Button } from "@/components/Button";
-import { useOwnerAuth } from "@/hooks/useOwnerAuth";
+import { Building2 } from "lucide-react";
+import { SignIn } from "@clerk/nextjs";
+
+// Hides email field, divider, continue button — shows Google button only
+const googleOnlyAppearance = {
+  elements: {
+    dividerRow: "hidden",
+    formFieldRow: "hidden",
+    formButtonPrimary: "hidden",
+    footerAction: "hidden",
+    footerPages: "hidden",
+  },
+};
 
 export default function OwnerLoginPage() {
-  const { signIn, isSubmitting, error } = useOwnerAuth();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
   return (
     <main className="grid min-h-screen bg-linen lg:grid-cols-[1fr_0.9fr] lg:p-0">
       <section className="hidden bg-ink p-12 text-white lg:flex lg:flex-col lg:justify-between">
@@ -36,53 +41,15 @@ export default function OwnerLoginPage() {
 
           <div className="rounded-3xl bg-white p-8 shadow-soft">
             <h2 className="text-2xl font-black text-ink">Owner Sign In</h2>
-            <p className="mt-1 text-sm text-muted">Access your owner dashboard</p>
+            <p className="mt-1 mb-6 text-sm text-muted">Access your owner dashboard</p>
 
-            <div className="mt-6 space-y-4">
-              <label className="block space-y-2">
-                <span className="text-sm font-bold text-ink">Email</span>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="input w-full"
-                  placeholder="your@email.com"
-                />
-              </label>
-
-              <label className="block space-y-2">
-                <span className="text-sm font-bold text-ink">Password</span>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="input w-full"
-                  placeholder="••••••••"
-                />
-              </label>
-
-              {error && (
-                <p className="rounded-2xl bg-linen p-3 text-sm font-semibold text-clay">
-                  {error}
-                </p>
-              )}
-
-              <Button
-                className="w-full"
-                disabled={isSubmitting || !email || !password}
-                onClick={() => void signIn({ email, password })}
-              >
-                {isSubmitting ? (
-                  <><Loader2 className="h-4 w-4 animate-spin" /> Signing in...</>
-                ) : "Sign in"}
-              </Button>
-
-              <p className="text-center text-sm text-muted">
-                Do not have an account?{" "}
-                <Link href="/owner/signup" className="font-bold text-ink hover:underline">
-                  Sign up
-                </Link>
-              </p>
+            <div className="flex justify-center">
+              <SignIn
+                routing="hash"
+                fallbackRedirectUrl="/owner/dashboard"
+                signUpUrl="/owner/signup"
+                appearance={googleOnlyAppearance}
+              />
             </div>
           </div>
         </div>
