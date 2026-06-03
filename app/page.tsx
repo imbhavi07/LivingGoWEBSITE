@@ -36,9 +36,11 @@ export default function HomePage() {
             alt="Featured Property Panel"
             className="block h-auto w-full drop-shadow-xl"
             aria-hidden="true"
+            width={510}
+            height={400}
           />
           <div className="absolute inset-0 px-[10%] pb-[5%] pt-[28%] sm:pt-[30%] flex flex-col items-center">
-            <div className="mb-3 flex items-center gap-2 font-bold text-ink -translate-x-[70px] text-[15.5px]">
+            <div className="mb-3 flex items-center gap-2 font-bold text-ink -translate-x-[30px] text-[15.5px]">
               <ShieldCheck className="h-4 w-4 text-ink" aria-hidden />
               Featured this week
             </div>
