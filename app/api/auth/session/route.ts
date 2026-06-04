@@ -1,33 +1,53 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
-export async function POST(req: Request) {
-  const { token, role } = await req.json() as { token: string; role: string };
+const sessionSchema = z.object({
+  token: z.string().min(1),
+  role: z.enum(["student", "owner", "admin"]).default("student")
+});
 
-  const cookieStore = await cookies();
-  
-  cookieStore.set("LivingGo_token", token, {
+export async function POST(request: Request) {
+  const body = await request.json();
+  const parsed = sessionSchema.safeParse(body);
+
+  if (!parsed.success) {
+    return NextResponse.json({ message: "Invalid token" }, { status: 400 });
+  }
+
+  const response = NextResponse.json({ ok: true });
+  response.cookies.set("LivingGo_token", parsed.data.token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60,
+    secure: process.env.NODE_ENV === "production",
     path: "/",
+    maxAge: 60 * 60 * 24 * 7
+  });
+  response.cookies.set("LivingGo_role", parsed.data.role, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 7
   });
 
-  cookieStore.set("LivingGo_role", role, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60,
-    path: "/",
-  });
-
-  return NextResponse.json({ ok: true });
+  return response;
 }
 
 export async function DELETE() {
-  const cookieStore = await cookies();
-  cookieStore.delete("LivingGo_token");
-  cookieStore.delete("LivingGo_role");
-  return NextResponse.json({ ok: true });
+  const response = NextResponse.json({ ok: true });
+  response.cookies.set("LivingGo_token", "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 0
+  });
+  response.cookies.set("LivingGo_role", "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 0
+  });
+  return response;
 }
