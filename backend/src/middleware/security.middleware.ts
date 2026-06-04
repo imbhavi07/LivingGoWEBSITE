@@ -8,7 +8,16 @@ export const helmetMiddleware = helmet();
 export const compressionMiddleware = compression();
 
 export const corsMiddleware = cors({
-  origin: env.CORS_ORIGIN.split(",").map((origin) => origin.trim()),
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+
+    const allowedOrigins = env.CORS_ORIGIN.split(",").map((o) => o.trim());
+
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    if (origin.endsWith(".vercel.app")) return callback(null, true);
+
+    callback(new Error("Not allowed by CORS"));
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 });
