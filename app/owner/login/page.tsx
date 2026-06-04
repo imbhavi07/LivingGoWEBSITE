@@ -4,18 +4,9 @@ import Link from "next/link";
 import { Building2 } from "lucide-react";
 import { SignIn } from "@clerk/nextjs";
 
-// Hides email field, divider, continue button — shows Google button only
-const googleOnlyAppearance = {
-  elements: {
-    dividerRow: "hidden",
-    formFieldRow: "hidden",
-    formButtonPrimary: "hidden",
-  },
-};
-
 export default function OwnerLoginPage() {
   return (
-    <main className="grid min-h-screen bg-linen lg:grid-cols-[1fr_0.9fr] lg:p-0">
+    <main className="grid min-h-screen bg-linen lg:grid-cols-[1fr_0.9fr]">
       <section className="hidden bg-ink p-12 text-white lg:flex lg:flex-col lg:justify-between">
         <Link href="/" className="text-2xl font-black">LivingGo</Link>
         <div>
@@ -24,7 +15,7 @@ export default function OwnerLoginPage() {
             Owner tools for premium student housing.
           </h1>
           <p className="mt-5 max-w-lg text-base leading-7 text-white/70">
-            Manage listings, approvals, pricing, images, and availability from one calm workspace.
+            Manage listings, approvals, pricing, images, and availability.
           </p>
         </div>
         <p className="text-sm text-white/60">PG owners and flat owners workspace</p>
@@ -36,18 +27,29 @@ export default function OwnerLoginPage() {
             <Link href="/" className="text-2xl font-black text-ink">LivingGo</Link>
             <p className="mt-1 text-sm text-muted">Owner login</p>
           </div>
-
           <div className="rounded-3xl bg-white p-8 shadow-soft">
             <h2 className="text-2xl font-black text-ink">Owner Sign In</h2>
             <p className="mt-1 mb-6 text-sm text-muted">Access your owner dashboard</p>
-
-            <div className="flex justify-center">
+            <div className="flex flex-col items-center gap-3">
               <SignIn
                 routing="hash"
                 fallbackRedirectUrl="/owner/dashboard"
                 signUpUrl="/owner/signup"
-                appearance={googleOnlyAppearance}
+                appearance={{
+                  elements: {
+                    dividerRow: "hidden",
+                    formFieldRow: "hidden",
+                    formButtonPrimary: "hidden",
+                    footer: "hidden",
+                  },
+                }}
               />
+              <p className="text-sm text-muted">
+                Don&apos;t have an account?{" "}
+                <Link href="/owner/signup" className="font-bold text-ink underline">
+                  Register as owner
+                </Link>
+              </p>
             </div>
           </div>
         </div>

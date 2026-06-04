@@ -9,14 +9,6 @@ import { useRouter } from "next/navigation";
 
 type LoginMode = "student" | "owner";
 
-const googleOnlyAppearance = {
-  elements: {
-    dividerRow: "hidden",
-    formFieldRow: "hidden",
-    formButtonPrimary: "hidden",
-  },
-};
-
 export default function LoginPage() {
   return (
     <Suspense fallback={<LoginSkeleton />}>
@@ -146,15 +138,28 @@ function LoginForm() {
               </p>
             </div>
           ) : (
-            <div className="flex justify-center">
-              <SignIn
-                routing="hash"
-                fallbackRedirectUrl="/listings"
-                signUpUrl="/signup"
-                appearance={googleOnlyAppearance}
-              />
-            </div>
-          )}
+    <div className="flex flex-col items-center gap-3">
+      <SignIn
+        routing="hash"  
+        fallbackRedirectUrl="/listings"
+        signUpUrl="/signup"
+        appearance={{
+          elements: {
+            dividerRow: "hidden",
+            formFieldRow: "hidden",
+            formButtonPrimary: "hidden",
+            footer: "hidden", // hides "Don't have an account?" + "Secured by Clerk"
+          },
+        }}
+      />
+     <p className="text-sm text-muted">
+       Don&apos;t have an account?{" "}
+       <Link href="/signup" className="font-bold text-ink underline">
+         Sign up
+       </Link>
+     </p>
+    </div>
+)}
         </div>
       </section>
     </main>

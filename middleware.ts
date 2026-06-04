@@ -5,6 +5,9 @@ const isPublicRoute = createRouteMatcher([
   "/",
   "/login(.*)",
   "/signup(.*)",
+  "/owner/login(.*)",
+  "/owner/signup(.*)",
+  "/owner/kyc(.*)",
   "/listings(.*)",
   "/properties(.*)",
   "/legal(.*)",
@@ -14,52 +17,40 @@ const isPublicRoute = createRouteMatcher([
 export default clerkMiddleware(async (auth, request) => {
   const { pathname } = request.nextUrl;
 
-  // Admin — custom JWT, Clerk bypass
+  // Admin — keep bypass for now
   if (pathname.startsWith("/admin")) return NextResponse.next();
 
-  // Owner — custom JWT, Clerk bypass
-  if (pathname.startsWith("/owner")) {
-    const token = request.cookies.get("LivingGo_token")?.value;
-    const role = request.cookies.get("LivingGo_role")?.value;
+  // Public routes — always allow
+  if (isPublicRoute(request)) return NextResponse.next();
 
-    // Login/signup/kyc always allow
-    if (
-      pathname.startsWith("/owner/login") ||
-      pathname.startsWith("/owner/signup") ||
-      pathname.startsWith("/owner/kyc")
-    ) return NextResponse.next();
+  const { userId, sessionClaims } = await auth();
 
-    // Protected owner pages — token check
-    if (!token) {
+  // Not signed in — redirect to appropriate login
+  if (!userId) {
+    if (pathname.startsWith("/owner")) {
       const loginUrl = new URL("/owner/login", request.url);
       loginUrl.searchParams.set("next", pathname);
       return NextResponse.redirect(loginUrl);
     }
-
-    // Wrong role check
-    if (role && role !== "owner" && role !== "admin") {
-      return NextResponse.redirect(new URL("/owner/login", request.url));
-    }
-
-    // KYC check
-    if (pathname.startsWith("/owner/properties/new")) {
-      const verificationStatus = request.cookies.get("LivingGo_verification")?.value;
-      if (verificationStatus && verificationStatus !== "approved") {
-        return NextResponse.redirect(new URL("/owner/kyc", request.url));
-      }
-    }
-
-    return NextResponse.next();
-  }
-
-  // Student routes — Clerk check
-  const { userId } = await auth();
-  if (isPublicRoute(request)) return NextResponse.next();
-
-  if (!userId) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
+  }
+
+  const role = (sessionClaims?.publicMetadata as { role?: string })?.role;
+
+  // Owner routes — must have owner or admin role
+  if (pathname.startsWith("/owner")) {
+    if (role !== "owner" && role !== "admin") {
+      return NextResponse.redirect(new URL("/owner/login", request.url));
+    }
+    return NextResponse.next();
+  }
+
+  // Student routes — must have student role
+  if (role === "owner") {
+    // Owner trying to access student area — redirect to owner dashboard
+    return NextResponse.redirect(new URL("/owner/dashboard", request.url));
   }
 
   return NextResponse.next();
