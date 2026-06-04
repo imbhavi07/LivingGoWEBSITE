@@ -4,11 +4,22 @@ import { createClerkClient } from "@clerk/backend";
 
 export async function getPendingOwnerApprovals() {
   return prisma.user.findMany({
-    where: { role: "owner", verificationStatus: "pending_approval" },
+    where: {
+      role: "owner",
+      verificationStatus: "pending_approval"
+    },
     select: {
-      id: true, name: true, email: true, phone: true,
-      ownerType: true, aadhaarFrontUrl: true, aadhaarBackUrl: true,
-      aadhaarNumber: true, legalAcceptedAt: true, verificationStatus: true, createdAt: true
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      ownerType: true,
+      aadhaarFrontUrl: true,
+      aadhaarBackUrl: true,
+      aadhaarNumber: true,
+      legalAcceptedAt: true,
+      verificationStatus: true,
+      createdAt: true
     },
     orderBy: { createdAt: "desc" }
   });
@@ -18,9 +29,17 @@ export async function getPendingOwnerApprovalById(id: string) {
   const user = await prisma.user.findFirst({
     where: { id, role: "owner" },
     select: {
-      id: true, name: true, email: true, phone: true,
-      ownerType: true, aadhaarFrontUrl: true, aadhaarBackUrl: true,
-      aadhaarNumber: true, legalAcceptedAt: true, verificationStatus: true, createdAt: true
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      ownerType: true,
+      aadhaarFrontUrl: true,
+      aadhaarBackUrl: true,
+      aadhaarNumber: true,
+      legalAcceptedAt: true,
+      verificationStatus: true,
+      createdAt: true
     }
   });
   if (!user) throw new AppError("Owner application not found", 404);
@@ -37,12 +56,21 @@ export async function reviewOwnerApproval(id: string, status: "approved" | "reje
     where: { id },
     data: { verificationStatus: status, reviewedAt: new Date() },
     select: {
-      id: true, name: true, email: true, phone: true,
-      ownerType: true, aadhaarFrontUrl: true, aadhaarBackUrl: true,
-      aadhaarNumber: true, legalAcceptedAt: true, verificationStatus: true, createdAt: true
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      ownerType: true,
+      aadhaarFrontUrl: true,
+      aadhaarBackUrl: true,
+      aadhaarNumber: true,
+      legalAcceptedAt: true,
+      verificationStatus: true,
+      createdAt: true
     }
   });
 
+  // ✅ Update Clerk publicMetadata so middleware can read verificationStatus
   try {
     const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
     const clerkUsers = await clerkClient.users.getUserList({ emailAddress: [user.email] });

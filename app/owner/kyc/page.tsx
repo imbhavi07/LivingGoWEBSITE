@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { CheckCircle2, Clock, ShieldCheck, Upload, XCircle } from "lucide-react";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useClerk } from "@clerk/nextjs";
 import { OwnerShell } from "@/components/owner/OwnerShell";
 import { Button } from "@/components/Button";
 
@@ -18,6 +18,7 @@ async function getClerkToken() {
 
 export default function OwnerKYCPage() {
   const { user } = useUser();
+  const { signOut } = useClerk();
   const [status, setStatus] = useState<KYCStatus>("form");
   const [error, setError] = useState<string | null>(null);
 
@@ -139,14 +140,14 @@ export default function OwnerKYCPage() {
             </div>
             <h1 className="text-2xl font-black text-ink">KYC Approved!</h1>
             <p className="mt-3 text-sm leading-6 text-muted">
-              Your identity has been verified. You can now list properties on LivingGo.
+              Your identity has been verified. Please sign in again to access your dashboard.
             </p>
-            <Link
-              href="/owner/properties/new"
+            <button
+              onClick={() => void signOut(() => { window.location.href = "/owner/login"; })}
               className="mt-6 inline-block rounded-full bg-ink px-6 py-3 text-sm font-bold text-white"
             >
-              Add your first property →
-            </Link>
+              Sign in to continue →
+            </button>
           </div>
         </div>
       </OwnerShell>
