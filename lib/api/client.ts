@@ -22,18 +22,26 @@ export function getApiErrorMessage(error: unknown, fallback: string) {
 
 apiClient.interceptors.request.use(async (config) => {
   if (typeof window !== "undefined") {
-    try {
-      // ✅ Clerk token only — no localStorage
-      const clerk = (window as unknown as { 
-        Clerk?: { session?: { getToken: () => Promise<string> } } 
-      }).Clerk;
-      
-      if (clerk?.session) {
-        const clerkToken = await clerk.session.getToken();
-        if (clerkToken) config.headers.Authorization = `Bearer ${clerkToken}`;
+    const isAdminRequest = window.location.pathname.startsWith("/admin");
+
+    if (isAdminRequest) {
+      // Admin uses custom OTP auth — attach localStorage token
+      const token = localStorage.getItem("LivingGo_token");
+      if (token) config.headers.Authorization = `Bearer ${token}`;
+    } else {
+      // Students and owners use Clerk — attach Clerk session token
+      try {
+        const clerk = (window as unknown as {
+          Clerk?: { session?: { getToken: () => Promise<string> } }
+        }).Clerk;
+
+        if (clerk?.session) {
+          const clerkToken = await clerk.session.getToken();
+          if (clerkToken) config.headers.Authorization = `Bearer ${clerkToken}`;
+        }
+      } catch {
+        // no Clerk token available
       }
-    } catch {
-      // no clerk token available
     }
   }
 
@@ -49,7 +57,7 @@ apiClient.interceptors.response.use(
       const target = pathname.startsWith("/admin")
         ? "/admin/login"
         : pathname.startsWith("/owner")
-        ? "/owner/login"
+        ? "/login"
         : "/login";
 
       if (pathname !== target) {
