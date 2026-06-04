@@ -3,11 +3,18 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { CheckCircle2, Clock, ShieldCheck, Upload, XCircle } from "lucide-react";
-import { useUser} from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import { OwnerShell } from "@/components/owner/OwnerShell";
 import { Button } from "@/components/Button";
 
 type KYCStatus = "form" | "submitting" | "submitted" | "already_pending" | "approved" | "rejected";
+
+async function getClerkToken() {
+  const clerk = (window as unknown as {
+    Clerk?: { session?: { getToken: () => Promise<string> } }
+  }).Clerk;
+  return clerk?.session?.getToken() ?? null;
+}
 
 export default function OwnerKYCPage() {
   const { user } = useUser();
@@ -19,8 +26,10 @@ export default function OwnerKYCPage() {
       const email = user?.primaryEmailAddress?.emailAddress;
       if (!email) return;
       try {
+        const token = await getClerkToken();
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/owner/kyc/status?email=${encodeURIComponent(email)}`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/owner/kyc/status?email=${encodeURIComponent(email)}`,
+          { headers: { Authorization: `Bearer ${token ?? ""}` } }
         );
         if (!res.ok) return;
         const data = await res.json();
@@ -70,12 +79,12 @@ export default function OwnerKYCPage() {
       if (!email) throw new Error("No email found. Please sign in again.");
       formData.append("clerkEmail", email);
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/owner/kyc`,
-      {
+      const token = await getClerkToken();
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/owner/kyc`, {
         method: "POST",
         body: formData,
-      }
-);
+        headers: { Authorization: `Bearer ${token ?? ""}` },
+      });
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -88,8 +97,6 @@ export default function OwnerKYCPage() {
       setStatus("form");
     }
   }
-
-  // ── Status screens ───────────────────────────────────────────────────
 
   if (status === "submitted" || status === "already_pending") {
     return (
@@ -170,8 +177,6 @@ export default function OwnerKYCPage() {
     );
   }
 
-  // ── KYC Form ─────────────────────────────────────────────────────────
-
   return (
     <OwnerShell>
       <div className="mb-6">
@@ -182,7 +187,6 @@ export default function OwnerKYCPage() {
         </p>
       </div>
 
-      {/* Steps */}
       <div className="mb-8 flex items-center gap-3 text-sm font-semibold">
         <span className="flex h-7 w-7 items-center justify-center rounded-full bg-ink text-xs font-black text-white">1</span>
         <span className="text-ink">Account created</span>
