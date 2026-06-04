@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { Webhook } from "svix";
 import { prisma } from "../config/prisma";
+import { createClerkClient } from "@clerk/backend";
 
 export async function handleClerkWebhook(req: Request, res: Response) {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
@@ -26,7 +27,7 @@ export async function handleClerkWebhook(req: Request, res: Response) {
     const lastName = (data.last_name as string) ?? "";
     const clerkId = data.id as string;
     const metadata = data.unsafe_metadata as Record<string, unknown> ?? {};
-    const role = metadata.role === "student" ? "student" : "owner";
+    const role = metadata.role === "owner" ? "owner" : "student";
 
     if (email) {
       await prisma.user.upsert({
@@ -40,6 +41,15 @@ export async function handleClerkWebhook(req: Request, res: Response) {
           role,
           verificationStatus: role === "student" ? "not_required" : "pending_approval",
         },
+      });
+
+      // ✅ Set publicMetadata in Clerk so middleware can read the role
+      const clerkClient = createClerkClient({
+        secretKey: process.env.CLERK_SECRET_KEY,
+      });
+
+      await clerkClient.users.updateUserMetadata(clerkId, {
+        publicMetadata: { role },
       });
     }
   }
