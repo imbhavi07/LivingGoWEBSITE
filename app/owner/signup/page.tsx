@@ -1,3 +1,5 @@
+"use client";
+
 import { SignUp } from "@clerk/nextjs";
 import Link from "next/link";
 
@@ -16,6 +18,7 @@ export default function OwnerSignupPage() {
           <Link href="/owner/login" className="font-bold text-white/70 underline">Sign in</Link>
         </p>
       </section>
+
       <section className="flex items-center justify-center px-4 py-8">
         <div className="w-full">
           <div className="mb-6 text-center lg:hidden">
@@ -26,15 +29,17 @@ export default function OwnerSignupPage() {
             routing="hash"
             fallbackRedirectUrl="/owner/kyc"
             signInUrl="/owner/login"
+            unsafeMetadata={{ role: "owner" }}
             appearance={{
               elements: {
                 rootBox: "w-full",
                 card: "shadow-soft rounded-3xl border-0 bg-white p-6",
                 headerTitle: "text-ink font-black",
                 headerSubtitle: "text-muted",
-                formButtonPrimary: "bg-ink hover:bg-ink/90 rounded-full font-bold text-sm",
-                formFieldInput: "rounded-2xl border-black/10 focus:ring-ink",
-                footerActionLink: "text-ink font-bold",
+                formButtonPrimary: "hidden",
+                formFieldRow: "hidden",
+                dividerRow: "hidden",
+                socialButtonsBlockButton: "bg-white border border-black/10 rounded-2xl font-semibold text-ink hover:bg-linen",
               },
             }}
           />

@@ -22,30 +22,25 @@ export function getApiErrorMessage(error: unknown, fallback: string) {
 
 apiClient.interceptors.request.use(async (config) => {
   if (typeof window !== "undefined") {
-    // Try localStorage token first (existing owner login)
-    const token = localStorage.getItem("LivingGo_token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const isAdminRequest = window.location.pathname.startsWith("/admin");
+
+    if (isAdminRequest) {
+      // Admin uses custom OTP auth — attach localStorage token
+      const token = localStorage.getItem("LivingGo_token");
+      if (token) config.headers.Authorization = `Bearer ${token}`;
     } else {
-      // Try Clerk token via window.Clerk (client-side only)
+      // Students and owners use Clerk — attach Clerk session token
       try {
-        const clerk = (window as unknown as { Clerk?: { session?: { getToken: () => Promise<string> } } }).Clerk;
+        const clerk = (window as unknown as {
+          Clerk?: { session?: { getToken: () => Promise<string> } }
+        }).Clerk;
+
         if (clerk?.session) {
           const clerkToken = await clerk.session.getToken();
           if (clerkToken) config.headers.Authorization = `Bearer ${clerkToken}`;
         }
       } catch {
-        // no clerk token available
-      }
-    }
-
-    const user = localStorage.getItem("LivingGo_user");
-    if (user) {
-      try {
-        const parsed = JSON.parse(user) as { role?: string };
-        if (parsed.role) config.headers["x-LivingGo-role"] = parsed.role;
-      } catch {
-        localStorage.removeItem("LivingGo_user");
+        // no Clerk token available
       }
     }
   }
@@ -58,11 +53,16 @@ apiClient.interceptors.response.use(
   (error) => {
     const status = error.response?.status;
     if (typeof window !== "undefined" && status === 401) {
-      localStorage.removeItem("LivingGo_token");
-      void fetch("/api/auth/session", { method: "DELETE" });
       const pathname = window.location.pathname;
-      const target = pathname.startsWith("/admin") ? "/admin/login" : pathname.startsWith("/owner") ? "/owner/login" : "/login";
-      window.location.assign(target);
+      const target = pathname.startsWith("/admin")
+        ? "/admin/login"
+        : pathname.startsWith("/owner")
+        ? "/login"
+        : "/login";
+
+      if (pathname !== target) {
+        window.location.assign(target);
+      }
     }
 
     return Promise.reject(error);

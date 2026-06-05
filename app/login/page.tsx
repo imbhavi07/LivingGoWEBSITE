@@ -1,10 +1,11 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
-import { Building2, GraduationCap, Sparkles } from "lucide-react";
+import { Building2, GraduationCap } from "lucide-react";
 import { SignIn, useUser } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 type LoginMode = "student" | "owner";
 
@@ -18,7 +19,23 @@ export default function LoginPage() {
 
 function LoginForm() {
   const [mode, setMode] = useState<LoginMode>("student");
-  const { isSignedIn } = useUser();
+  const { isSignedIn, user } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isSignedIn || !user) return;
+    const role = user.publicMetadata?.role as string | undefined;
+
+    if (mode === "student" && (!role || role === "owner")) {
+      router.push("/signup?error=no-account");
+    }
+    // Owner login is handled separately via /owner/login (custom JWT)
+    // so we don't check owner role here
+  }, [isSignedIn, user, mode, router]);
+
+  const role = user?.publicMetadata?.role as string | undefined;
+  const isSignedInAsStudent = isSignedIn && role === "student";
+  const showAlreadySignedIn = mode === "student" ? isSignedInAsStudent : false;
 
   return (
     <main className="mx-auto grid min-h-[76vh] max-w-6xl items-center gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-8">
@@ -27,7 +44,6 @@ function LoginForm() {
         <div className={cn("absolute -right-20 top-20 h-56 w-56 rounded-full border border-white/10 transition duration-700", mode === "owner" && "translate-x-[-60px] translate-y-28 scale-125")} />
         <div className="relative z-10 flex min-h-[440px] flex-col justify-between">
           <div className="inline-flex w-fit items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-bold text-white">
-            
             {mode === "student" ? "Find student homes faster" : "Manage rentals with clarity"}
           </div>
           <div className="py-10">
@@ -55,7 +71,7 @@ function LoginForm() {
             {[
               ["24/7", "Access"],
               [mode === "student" ? "Saved" : "Active", "Listings"],
-              ["Secure", "Auth"]
+              ["Secure", "Auth"],
             ].map(([value, label]) => (
               <div key={label} className="rounded-3xl bg-white/10 p-4">
                 <p className="text-xl font-black">{value}</p>
@@ -91,26 +107,59 @@ function LoginForm() {
         </div>
 
         <div className="mt-8">
-          {isSignedIn ? (
+          {showAlreadySignedIn ? (
             <div className="rounded-3xl bg-linen p-6 text-center">
               <p className="font-black text-ink text-lg">You&apos;re already signed in!</p>
               <p className="mt-2 text-sm text-muted">Browse listings or go to your dashboard.</p>
               <Link
-                href={mode === "owner" ? "/owner/dashboard" : "/listings"}
+                href="/listings"
                 className="mt-4 inline-block rounded-full bg-ink px-6 py-3 text-sm font-bold text-white"
               >
-                {mode === "owner" ? "Go to Dashboard" : "Browse listings"}
+                Browse listings
               </Link>
             </div>
-          ) : (
-            <div className="flex justify-center">
-              <SignIn
-                routing="hash"
-                fallbackRedirectUrl={mode === "owner" ? "/owner/dashboard" : "/listings"}
-                signUpUrl={mode === "owner" ? "/owner/signup" : "/signup"}
-              />
+          ) : mode === "owner" ? (
+            // Owner login — redirect to dedicated owner login page
+            <div className="rounded-3xl bg-linen p-6 text-center">
+              <Building2 className="mx-auto mb-3 h-8 w-8 text-ink" />
+              <p className="font-black text-ink text-lg">Owner Portal</p>
+              <p className="mt-2 text-sm text-muted">Sign in with your owner credentials.</p>
+              <Link
+                href="/owner/login"
+                className="mt-4 inline-block rounded-full bg-ink px-6 py-3 text-sm font-bold text-white"
+              >
+                Go to Owner Login
+              </Link>
+              <p className="mt-3 text-xs text-muted">
+                New owner?{" "}
+                <Link href="/owner/signup" className="font-bold text-ink underline">
+                  Register here
+                </Link>
+              </p>
             </div>
-          )}
+          ) : (
+    <div className="flex flex-col items-center gap-3">
+      <SignIn
+        routing="hash"  
+        fallbackRedirectUrl="/listings"
+        signUpUrl="/signup"
+        appearance={{
+          elements: {
+            dividerRow: "hidden",
+            formFieldRow: "hidden",
+            formButtonPrimary: "hidden",
+            footer: "hidden", // hides "Don't have an account?" + "Secured by Clerk"
+          },
+        }}
+      />
+     <p className="text-sm text-muted">
+       Don&apos;t have an account?{" "}
+       <Link href="/signup" className="font-bold text-ink underline">
+         Sign up
+       </Link>
+     </p>
+    </div>
+)}
         </div>
       </section>
     </main>

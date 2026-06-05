@@ -3,61 +3,54 @@ import { NextResponse } from "next/server";
 
 const isPublicRoute = createRouteMatcher([
   "/",
+  "/login(.*)",
+  "/signup(.*)",
   "/owner/login(.*)",
   "/owner/signup(.*)",
   "/owner/kyc(.*)",
-  "/admin(.*)",
-  "/login(.*)",
-  "/signup(.*)",
   "/listings(.*)",
   "/properties(.*)",
   "/legal(.*)",
   "/api/auth(.*)",
 ]);
 
-const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
-const isOwnerRoute = createRouteMatcher(["/owner(.*)"]);
-const isNewPropertyRoute = createRouteMatcher(["/owner/properties/new(.*)"]);
-const isKycRoute = createRouteMatcher(["/owner/kyc(.*)"]);
-
 export default clerkMiddleware(async (auth, request) => {
-  const { userId } = await auth();
   const { pathname } = request.nextUrl;
 
-  // Always allow public routes
+  // Admin — keep bypass for now
+  if (pathname.startsWith("/admin")) return NextResponse.next();
+
+  // Public routes — always allow
   if (isPublicRoute(request)) return NextResponse.next();
 
-  // Redirect to login if not authenticated
+  const { userId, sessionClaims } = await auth();
+
+  // Not signed in — redirect to appropriate login
   if (!userId) {
-    const loginUrl = new URL(
-      isAdminRoute(request) ? "/admin/login" :
-      isOwnerRoute(request) ? "/owner/login" : "/login",
-      request.url
-    );
+    if (pathname.startsWith("/owner")) {
+      const loginUrl = new URL("/owner/login", request.url);
+      loginUrl.searchParams.set("next", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  const role = request.cookies.get("LivingGo_role")?.value;
-  const verificationStatus = request.cookies.get("LivingGo_verification")?.value;
+  const role = (sessionClaims?.publicMetadata as { role?: string })?.role;
 
-  // Admin routes — only block if cookie exists and is NOT admin
-  // Clerk users won't have cookie so they pass through
-  if (isAdminRoute(request) && role && role !== "admin") {
-    return NextResponse.redirect(new URL("/admin/login", request.url));
+  // Owner routes — must have owner or admin role
+  if (pathname.startsWith("/owner")) {
+    if (role !== "owner" && role !== "admin") {
+      return NextResponse.redirect(new URL("/owner/login", request.url));
+    }
+    return NextResponse.next();
   }
 
-  // Owner routes — only block if cookie exists and has wrong role
-  if (isOwnerRoute(request) && role && role !== "owner" && role !== "admin") {
-    return NextResponse.redirect(new URL("/owner/login", request.url));
-  }
-
-  // Always allow KYC route
-  if (isKycRoute(request)) return NextResponse.next();
-
-  // New property route — only block if verification cookie exists and not approved
-  if (isNewPropertyRoute(request) && verificationStatus && verificationStatus !== "approved") {
-    return NextResponse.redirect(new URL("/owner/kyc", request.url));
+  // Student routes — must have student role
+  if (role === "owner") {
+    // Owner trying to access student area — redirect to owner dashboard
+    return NextResponse.redirect(new URL("/owner/dashboard", request.url));
   }
 
   return NextResponse.next();

@@ -2,6 +2,8 @@ import compression from "compression";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
+import { env } from "../config/env";
+
 // kar diya bss
 const allowedOrigins = [
   'https://living-go-website-z7ys.vercel.app/',
@@ -24,8 +26,8 @@ export const corsMiddleware = cors({
       callback(new Error('Not allowed by CORS'));
     }
   },
-  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization'],
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 });
 

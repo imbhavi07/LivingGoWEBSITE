@@ -49,6 +49,5 @@ export async function DELETE() {
     path: "/",
     maxAge: 0
   });
-
   return response;
 }
