@@ -27,8 +27,6 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         <ClerkProvider
           signInUrl="/login"
           signUpUrl="/signup"
-          signInFallbackRedirectUrl="/listings"
-          signUpFallbackRedirectUrl="/listings"
 >
           <IntroOverlay />
           <ToastProvider>

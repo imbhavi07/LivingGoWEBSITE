@@ -25,17 +25,15 @@ function LoginForm() {
   useEffect(() => {
     if (!isSignedIn || !user) return;
     const role = user.publicMetadata?.role as string | undefined;
-
-    if (mode === "student" && (!role || role === "owner")) {
-      router.push("/signup?error=no-account");
+    if (role === "student") {
+      router.push("/listings");
+    } else if (role === "owner") {
+      router.push("/owner/dashboard");
     }
-    // Owner login is handled separately via /owner/login (custom JWT)
-    // so we don't check owner role here
-  }, [isSignedIn, user, mode, router]);
+    // no role yet — stay on page, don't redirect
+  }, [isSignedIn, user, router]);
 
-  const role = user?.publicMetadata?.role as string | undefined;
-  const isSignedInAsStudent = isSignedIn && role === "student";
-  const showAlreadySignedIn = mode === "student" ? isSignedInAsStudent : false;
+  const showAlreadySignedIn = isSignedIn && (user?.publicMetadata?.role as string) === "student";
 
   return (
     <main className="mx-auto grid min-h-[76vh] max-w-6xl items-center gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-8">
@@ -140,7 +138,7 @@ function LoginForm() {
           ) : (
     <div className="flex flex-col items-center gap-3">
       <SignIn
-        routing="hash"  
+        routing="hash"
         fallbackRedirectUrl="/listings"
         signUpUrl="/signup"
         appearance={{
@@ -148,7 +146,8 @@ function LoginForm() {
             dividerRow: "hidden",
             formFieldRow: "hidden",
             formButtonPrimary: "hidden",
-            footer: "hidden", // hides "Don't have an account?" + "Secured by Clerk"
+            socialButtonsBlockButton__google: "!flex",
+            footer: "hidden",
           },
         }}
       />
