@@ -2,23 +2,31 @@ import compression from "compression";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
-import { env } from "../config/env";
+
+// kar diya bssaaa
+const allowedOrigins = [
+  'https://living-go-website-z7ys.vercel.app/',
+  'https://www.livinggo.in',
+  'https://livinggo.in',
+  'http://localhost:3000'
+];
 
 export const helmetMiddleware = helmet();
 export const compressionMiddleware = compression();
 
 export const corsMiddleware = cors({
   origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, postman, or curl)
     if (!origin) return callback(null, true);
-
-    const allowedOrigins = env.CORS_ORIGIN.split(",").map((o) => o.trim());
-
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    if (origin.endsWith(".vercel.app")) return callback(null, true);
-
-    callback(new Error("Not allowed by CORS"));
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
   },
   credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization'],
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 });
 
