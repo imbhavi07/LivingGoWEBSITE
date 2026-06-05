@@ -2,9 +2,8 @@ import compression from "compression";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
-import { env } from "../config/env";
 
-// kar diya bss
+// kar diya bssaaa
 const allowedOrigins = [
   'https://living-go-website-z7ys.vercel.app/',
   'https://www.livinggo.in',
