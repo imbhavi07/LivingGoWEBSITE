@@ -5,6 +5,8 @@ import { buttonClasses } from "@/components/Button";
 import { PropertyCard } from "@/components/PropertyCard";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useProperties } from "@/hooks/useProperties";
+import Image from "next/image";
+import logo from "@/assets/logo.png";
 
 export default function HomePage() {
   return (
@@ -15,9 +17,13 @@ export default function HomePage() {
             <Sparkles className="h-4 w-4 text-clay" aria-hidden />
             Verified student homes
           </div>
-          <h1 className="max-w-3xl text-5xl font-black leading-[1.02] tracking-normal text-ink sm:text-6xl">
-            LivingGo
-          </h1>
+          <Image
+              src={logo}
+              alt="LivingGo Logo"
+              width={992}
+              height={597}
+              className="h-21 w-auto"
+            />
           <p className="mt-5 max-w-xl text-lg leading-8 text-muted">
             Find calm, well-managed rooms near campus with transparent pricing, real facilities, and virtual tours before you visit.
           </p>
@@ -44,7 +50,7 @@ export default function HomePage() {
           {/* 2. The content area is absolutely positioned over the panel. 
              We use percentage padding to push the content exactly below the heart and within the wood border. */}
           <div className="absolute inset-0 px-[10%] pb-[5%] pt-[28%] sm:pt-[30%] flex flex-col items-center">
-            <div className="mb-3 flex items-center gap-2 font-bold text-ink -translate-x-[70px] text-[15.5px]">
+            <div className="mb-3 flex items-center gap-2 font-bold text-ink -translate-x-[10px] text-[15.5px]">
               <ShieldCheck className="h-4 w-4 text-ink" aria-hidden />
               Featured this week
             </div>
