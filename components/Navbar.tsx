@@ -74,6 +74,7 @@ export function Navbar() {
                   href={
                     user.role?.toLowerCase() === "admin" ? "/admin/dashboard" :
                     user.role?.toLowerCase() === "owner" ? "/owner/dashboard" :
+                    user.role?.toLowerCase() === "student" ? "/student/dashboard" :
                     "/"
                   }
                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink text-white transition hover:opacity-80"

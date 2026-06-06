@@ -30,7 +30,7 @@ export function useProperties(filters?: PropertyFilters) {
     return () => {
       isMounted = false;
     };
-  }, [filters?.budget, filters?.location, filters?.preference, filters?.roomType]);
+  }, [filters]);
 
   return { properties, isLoading, error };
 }
