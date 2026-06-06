@@ -66,13 +66,13 @@ export default function OwnerPropertiesPage() {
                   Visible
                 </label>
                 
-                <Link href={`/owner/properties/${property.id}/edit`} className={buttonClasses("secondary", "px-4")}>
+                <Link href={`/owner/properties/${property.id}/edit`} className={buttonClasses("secondary", undefined, "px-4")}>
                   <Edit3 className="h-4 w-4" aria-hidden />
                   Edit
                 </Link>
                 
                 <button
-                  className={buttonClasses("ghost", "px-4 text-clay")}
+                  className={buttonClasses("ghost", undefined, "px-4 text-clay")}
                   onClick={() => {
                     if (confirm("Delete this property?")) void remove(property.id);
                   }}

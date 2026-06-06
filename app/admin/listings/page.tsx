@@ -46,20 +46,20 @@ export default function AdminListingsPage() {
                 <p className="mt-1 text-xs font-semibold text-muted">Listed: {formatIST(listing.submittedAt)}</p>
               </div>
               <div className="flex flex-wrap gap-2 xl:justify-end">
-                <Link href={`/admin/listings/${listing.id}`} className={buttonClasses("secondary", "px-4")}>
+                <Link href={`/admin/listings/${listing.id}`} className={buttonClasses("secondary", undefined, "px-4")}>
                   <Eye className="h-4 w-4" aria-hidden />
                   View
                 </Link>
-                <button className={buttonClasses("secondary", "px-4 text-moss")} onClick={() => void approve(listing.id)}>
+                <button className={buttonClasses("secondary", undefined, "px-4 text-moss")} onClick={() => void approve(listing.id)}>
                   <Check className="h-4 w-4" aria-hidden />
                   Approve
                 </button>
-                <button className={buttonClasses("secondary", "px-4 text-amber-700")} onClick={() => void reject(listing.id)}>
+                <button className={buttonClasses("secondary", undefined, "px-4 text-amber-700")} onClick={() => void reject(listing.id)}>
                   <X className="h-4 w-4" aria-hidden />
                   Reject
                 </button>
                 <button
-                  className={buttonClasses("ghost", "px-4 text-red-700")}
+                  className={buttonClasses("ghost", undefined, "px-4 text-red-700")}
                   onClick={() => {
                     if (confirm("Delete this fake or spam listing?")) void remove(listing.id);
                   }}
