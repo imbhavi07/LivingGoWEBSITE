@@ -1,0 +1,149 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "windows"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  student
+  owner
+  admin
+}
+
+enum UserStatus {
+  active
+  suspended
+}
+
+enum VerificationStatus {
+  not_required
+  pending_email_verification
+  pending_approval
+  approved
+  rejected
+}
+
+enum RoomType {
+  Single
+  Shared
+}
+
+enum GenderPreference {
+  Boys
+  Girls
+  Any
+}
+
+enum PropertyStatus {
+  pending
+  approved
+  rejected
+  inactive
+}
+
+model User {
+  id                 String             @id @default(cuid())
+  name               String
+  email              String             @unique
+  phone              String?
+  passwordHash       String
+  role               Role               @default(student)
+  status             UserStatus         @default(active)
+  ownerType          String?
+  aadhaarNumber      String?
+  aadhaarFrontUrl    String?
+  aadhaarBackUrl     String?
+  legalAcceptedAt    DateTime?
+  verificationStatus VerificationStatus @default(not_required)
+  reviewedAt         DateTime?
+  properties         Property[]
+  wishlist           Wishlist[]
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@index([role])
+  @@index([status])
+  @@index([verificationStatus])
+  @@index([createdAt])
+}
+
+model EmailOtp {
+  id         String    @id @default(cuid())
+  email      String
+  codeHash   String
+  purpose    String
+  expiresAt  DateTime
+  verifiedAt DateTime?
+  usedAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([email, purpose, createdAt])
+  @@index([expiresAt])
+}
+
+model Property {
+  id                    String           @id @default(cuid())
+  ownerId               String
+  owner                 User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  title                 String
+  description           String
+  price                 Int
+  priceSingle           Int?
+  bedsSingle            Int?
+  priceDouble           Int?
+  bedsDouble            Int?
+  priceTriple           Int?
+  bedsTriple            Int?
+  securityDepositMonths String?
+  location              String
+  lat                   Float?
+  lng                   Float?
+  nearbyPlaces          Json?
+  roomType              RoomType
+  sharedType            String?
+  preference            GenderPreference
+  mealPlan              String?
+  mealTimes             String[]
+  curfewTime            String?
+  noticePeriod          String?
+  rulesStrictness       String?
+  facilities            String[]
+  status                PropertyStatus   @default(pending)
+  images                PropertyImage[]
+  wishlistedBy          Wishlist[]
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  @@index([ownerId])
+  @@index([status])
+  @@index([location])
+  @@index([price])
+  @@index([createdAt])
+}
+
+model PropertyImage {
+  id         String   @id @default(cuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  url        String
+  publicId   String?
+  createdAt  DateTime @default(now())
+
+  @@index([propertyId])
+}
+
+model Wishlist {
+  id         String   @id @default(cuid())
+  userId     String
+  propertyId String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, propertyId])
+  @@index([userId])
+  @@index([propertyId])
+}
