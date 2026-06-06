@@ -10,8 +10,11 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^7.4.1",
+    "@prisma/client": "^7.8.0",
+    "@prisma/config": "^7.8.0",
     "axios": "^1.7.9",
     "clsx": "^2.1.1",
+    "dotenv": "^17.4.2",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.468.0",
     "next": "^15.1.3",
