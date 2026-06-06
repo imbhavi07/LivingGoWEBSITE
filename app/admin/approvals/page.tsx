@@ -34,14 +34,14 @@ export default function AdminApprovalsPage() {
                 <p className="mt-1 text-xs font-semibold text-muted">Submitted: {formatIST(approval.createdAt)}</p>
               </div>
               <div className="flex flex-wrap gap-2 xl:justify-end">
-                <Link href={`/admin/approvals/${approval.id}`} className={buttonClasses("secondary", "px-4")}>
+                <Link href={`/admin/approvals/${approval.id}`} className={buttonClasses("secondary", undefined, "px-4")}>
                   <Eye className="h-4 w-4" aria-hidden />
                   Review
                 </Link>
-                <button className={buttonClasses("primary", "px-4")} onClick={() => void approve(approval.id)}>
+                <button className={buttonClasses("primary", undefined, "px-4")} onClick={() => void approve(approval.id)}>
                   Approve
                 </button>
-                <button className={buttonClasses("ghost", "px-4 text-red-700")} onClick={() => void reject(approval.id)}>
+                <button className={buttonClasses("ghost", undefined, "px-4 text-red-700")} onClick={() => void reject(approval.id)}>
                   <XCircle className="h-4 w-4" aria-hidden />
                   Reject
                 </button>
