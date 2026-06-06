@@ -40,7 +40,7 @@ export async function handleClerkWebhook(req: Request, res: Response) {
           phone: null,
           passwordHash: clerkId,
           role,
-          verificationStatus: role === "student" ? "not_required" : "pending_approval",
+          verificationStatus: "not_required",
         },
       });
 
