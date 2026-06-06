@@ -57,7 +57,7 @@ apiClient.interceptors.response.use(
       const target = pathname.startsWith("/admin")
         ? "/admin/login"
         : pathname.startsWith("/owner")
-        ? "/login"
+        ? "/owner/login"
         : "/login";
 
       if (pathname !== target) {

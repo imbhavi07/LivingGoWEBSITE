@@ -19,16 +19,6 @@ export async function getOwnerProperty(id: string) {
 
 export async function createOwnerProperty(payload: OwnerPropertyPayload) {
   const formData = toPropertyFormData(payload);
-
-  const token = typeof window !== "undefined" ? localStorage.getItem("LivingGo_token") : null;
-  if (!token && typeof window !== "undefined") {
-    const clerk = (window as Window & { Clerk?: { user?: { primaryEmailAddress?: { emailAddress?: string } } } }).Clerk;
-    if (clerk?.user) {
-      const email = clerk.user.primaryEmailAddress?.emailAddress;
-      if (email) formData.append("clerkEmail", email);
-    }
-  }
-
   const { data } = await apiClient.post<ApiProperty>("/owner/properties", formData, {
     headers: { "Content-Type": "multipart/form-data" }
   });

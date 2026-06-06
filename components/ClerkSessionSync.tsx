@@ -31,7 +31,10 @@ export function ClerkSessionSync() {
           id: user.id,
           name: user.fullName ?? user.username ?? "Student",
           email: user.primaryEmailAddress?.emailAddress ?? "",
-          role: (user.publicMetadata?.role as "student" | "owner" | "admin") ?? "student",
+      role:
+          (user.publicMetadata?.role as "student" | "owner" | "admin") ??
+          (user.unsafeMetadata?.role as "student" | "owner" | "admin") ??
+          "student",
         },
       }).then(() => refreshSession());
     });

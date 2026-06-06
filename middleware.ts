@@ -12,6 +12,7 @@ const isPublicRoute = createRouteMatcher([
   "/properties(.*)",
   "/legal(.*)",
   "/api/auth(.*)",
+  "/api/webhooks(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
@@ -40,7 +41,11 @@ export default clerkMiddleware(async (auth, request) => {
   const role = (sessionClaims?.publicMetadata as { role?: string })?.role;
 
   // Owner routes — must have owner or admin role
+  // Allow undefined role through /owner/kyc so new signups can complete KYC
   if (pathname.startsWith("/owner")) {
+    if (pathname.startsWith("/owner/kyc") && !role) {
+      return NextResponse.next();
+    }
     if (role !== "owner" && role !== "admin") {
       return NextResponse.redirect(new URL("/owner/login", request.url));
     }

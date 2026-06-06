@@ -13,10 +13,6 @@ export function getToken() {
 export async function setSession(session: AuthResponse) {
   localStorage.setItem(TOKEN_KEY, session.token);
   localStorage.setItem(USER_KEY, JSON.stringify(session.user));
-
-  // ✅ Add this console log temporarily to verify role value
-  console.log("Setting session with role:", session.user.role);
-
   const res = await fetch("/api/auth/session", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
