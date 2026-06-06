@@ -34,14 +34,15 @@ export default function IntroOverlay() {
         introState === 'fading' ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
     >
-      <video
-        src="/bootup-animation.mp4"
-        autoPlay
-        muted
-        playsInline
-        onEnded={handleVideoEnd}
-        className="w-full max-w-6xl px-4"
-      />
+      <video 
+        src="/bootup-animation.mp4" 
+        poster="/bootup-first-frame.webp" // The instant fallback image
+        autoPlay 
+        muted       // CRITICAL: Browsers will block autoplay if not muted
+        playsInline // CRITICAL: Prevents iOS from opening the video in fullscreen mode
+        preload="auto" 
+        className="w-full h-full object-cover" 
+/>
       
       <button
         onClick={handleVideoEnd}
