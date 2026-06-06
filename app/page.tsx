@@ -22,7 +22,7 @@ export default function HomePage() {
             width={992}
             height={597}
             className="h-21 w-auto"
-          />
+          />  
           <p className="mt-5 max-w-xl text-lg leading-8 text-muted">
             Find calm, well-managed rooms near campus with transparent pricing, real facilities, and virtual tours before you visit.
           </p>
@@ -43,7 +43,7 @@ export default function HomePage() {
             href="tel:+919068902886"
             className="absolute -top-4 right-2 z-10 inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-sm font-bold text-white shadow-lift transition hover:opacity-90 active:scale-95"
           >
-            <span className="text-base">📞</span>
+            <span className="text-base"></span>
             Call Us
           </a>
           <img
