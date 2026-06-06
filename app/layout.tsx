@@ -25,9 +25,8 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       <head />
       <body className={`${inter.variable} font-sans antialiased`}>
         <ClerkProvider
-          signInUrl="/login"
-          signUpUrl="/signup"
->
+          afterSignOutUrl="/"
+        >
           <IntroOverlay />
           <ToastProvider>
             <AuthProvider>
