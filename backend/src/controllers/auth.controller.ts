@@ -12,7 +12,6 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 const ALLOWED_ADMIN_EMAILS = [
   "rctaccommodations@gmail.com",
-  "semwalb3@gmail.com",
   "falitnautiyal7@gmail.com",
 ];
 

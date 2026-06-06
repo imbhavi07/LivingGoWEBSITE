@@ -6,11 +6,12 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { setSession, clearSession } from "@/lib/auth";
 
 export function ClerkSessionSync() {
-  const { isSignedIn, user } = useUser();
+  const { isLoaded, isSignedIn, user } = useUser();
   const { getToken } = useAuth();
   const { refreshSession } = useAuthContext();
 
   useEffect(() => {
+    if (!isLoaded) return;
     if (!isSignedIn || !user) {
       clearSession().then(() => refreshSession());
       return;
@@ -29,7 +30,7 @@ export function ClerkSessionSync() {
       }).then(() => refreshSession());
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSignedIn, user?.id]);
+  }, [isLoaded, isSignedIn, user?.id]);
 
   return null;
 }

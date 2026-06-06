@@ -24,16 +24,16 @@ function LoginForm() {
 
   useEffect(() => {
     if (!isSignedIn || !user) return;
-    const role = user.publicMetadata?.role as string | undefined;
-    if (role === "student") {
-      router.push("/listings");
-    } else if (role === "owner") {
+    const role = (user.publicMetadata?.role as string | undefined) ?? "student";
+    if (role === "owner") {
       router.push("/owner/dashboard");
+    } else {
+      // student or no role yet — both go to listings
+      router.push("/listings");
     }
-    // no role yet — stay on page, don't redirect
-  }, [isSignedIn, user, router]);
+  }, [isSignedIn, user?.id, router]);
 
-  const showAlreadySignedIn = isSignedIn && (user?.publicMetadata?.role as string) === "student";
+  const showAlreadySignedIn = isSignedIn && ((user?.publicMetadata?.role as string | undefined) ?? "student") === "student";
 
   return (
     <main className="mx-auto grid min-h-[76vh] max-w-6xl items-center gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:px-8">
