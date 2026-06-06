@@ -24,7 +24,7 @@ export default function HomePage() {
             className="h-21 w-auto"
           />  
           <p className="mt-5 max-w-xl text-lg leading-8 text-muted">
-            Find calm, well-managed rooms near campus with transparent pricing, real facilities, and virtual tours before you visit.
+            Find a calm, well-managed PG/flat near campus with transparent pricing, real facilities, and virtual tours before you visit.
           </p>
           {/* Buttons — hidden on mobile, shown on sm+ */}
           <div className="mt-8 hidden gap-3 sm:flex sm:flex-row">
