@@ -31,7 +31,7 @@ function LoginForm() {
       // student or no role yet — both go to listings
       router.push("/listings");
     }
-  }, [isLoaded, isSignedIn, user?.id, router]);
+  }, [isLoaded, isSignedIn, user, router]);
 
   const showAlreadySignedIn = isSignedIn && ((user?.publicMetadata?.role as string | undefined) ?? "student") === "student";
 

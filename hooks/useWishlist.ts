@@ -5,6 +5,7 @@ import { addWishlistProperty, getWishlistIds, getWishlistProperties, removeWishl
 import { getProperty } from "@/lib/api/properties";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useToast } from "@/contexts/ToastContext";
+import { useUser } from "@clerk/nextjs";
 import type { Property } from "@/types/property";
 
 const WISHLIST_KEY = "LivingGo_wishlist";
@@ -14,8 +15,26 @@ export function useWishlist() {
   const [properties, setProperties] = useState<Property[]>([]);
   const auth = useAuthContext();
   const { showToast } = useToast();
+  const { isSignedIn, isLoaded } = useUser();
 
   useEffect(() => {
+    // If Clerk hasn't loaded yet, we don't know the sign-in status.
+    if (!isLoaded) {
+      return;
+    }
+
+    if (!isSignedIn) {
+      // Not signed in: load from localStorage and return.
+      try {
+        const saved = localStorage.getItem(WISHLIST_KEY);
+        if (saved) setIds(JSON.parse(saved) as string[]);
+      } catch {
+        localStorage.removeItem(WISHLIST_KEY);
+      }
+      return;
+    }
+
+    // Signed in: now check the role from our AuthContext.
     if (auth.user?.role === "student") {
       getWishlistProperties()
         .then((nextProperties) => {
@@ -23,16 +42,16 @@ export function useWishlist() {
           setIds(getWishlistIds(nextProperties));
         })
         .catch(() => showToast("Could not load wishlist.", "error"));
-      return;
+    } else {
+      // Signed in but not a student: use localStorage.
+      try {
+        const saved = localStorage.getItem(WISHLIST_KEY);
+        if (saved) setIds(JSON.parse(saved) as string[]);
+      } catch {
+        localStorage.removeItem(WISHLIST_KEY);
+      }
     }
-
-    try {
-      const saved = localStorage.getItem(WISHLIST_KEY);
-      if (saved) setIds(JSON.parse(saved) as string[]);
-    } catch {
-      localStorage.removeItem(WISHLIST_KEY);
-    }
-  }, [auth.user?.role, showToast]);
+  }, [auth.user?.role, isLoaded, isSignedIn, showToast]);
 
   function persist(nextIds: string[]) {
     setIds(nextIds);

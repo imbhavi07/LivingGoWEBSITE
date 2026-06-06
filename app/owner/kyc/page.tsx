@@ -118,12 +118,15 @@ export default function OwnerKYCPage() {
               <p>✓ Identity is verified against registration details</p>
               <p>✓ You receive access to list properties</p>
             </div>
-            <Link
-              href="/owner/dashboard"
+            <button
+              onClick={async () => {
+                await user?.reload();
+                window.location.href = '/owner/dashboard';
+              }}
               className="mt-6 inline-block rounded-full bg-ink px-6 py-3 text-sm font-bold text-white"
             >
               Go to Dashboard
-            </Link>
+            </button>
           </div>
         </div>
       </OwnerShell>
@@ -131,28 +134,28 @@ export default function OwnerKYCPage() {
   }
 
   if (status === "approved") {
-  return (
-    <OwnerShell>
-      <div className="mx-auto max-w-lg">
-        <div className="rounded-3xl bg-white p-8 shadow-soft text-center">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-green-50">
-            <CheckCircle2 className="h-8 w-8 text-green-600" />
+    return (
+      <OwnerShell>
+        <div className="mx-auto max-w-lg">
+          <div className="rounded-3xl bg-white p-8 shadow-soft text-center">
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-green-50">
+              <CheckCircle2 className="h-8 w-8 text-green-600" />
+            </div>
+            <h1 className="text-2xl font-black text-ink">KYC Approved!</h1>
+            <p className="mt-3 text-sm leading-6 text-muted">
+              Your identity has been verified. Please sign in again to access your dashboard.
+            </p>
+            <button
+              onClick={() => void signOut({ redirectUrl: "/owner/login" })}
+              className="mt-6 inline-block rounded-full bg-ink px-6 py-3 text-sm font-bold text-white"
+            >
+              Sign in to continue →
+            </button>
           </div>
-          <h1 className="text-2xl font-black text-ink">KYC Approved!</h1>
-          <p className="mt-3 text-sm leading-6 text-muted">
-            Your identity has been verified. You can now access your dashboard.
-          </p>
-          <Link
-            href="/owner/dashboard"
-            className="mt-6 inline-block rounded-full bg-ink px-6 py-3 text-sm font-bold text-white"
-          >
-            Go to Dashboard →
-          </Link>
         </div>
-      </div>
-    </OwnerShell>
-  );
-}
+      </OwnerShell>
+    );
+  }
 
   if (status === "rejected") {
     return (
