@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../backend/node_modules/@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -11,6 +11,7 @@ async function main() {
     create: {
       name: "Test Student",
       email,
+      passwordHash: "SEED_NO_PASSWORD",
       role: "student"
     }
   });
