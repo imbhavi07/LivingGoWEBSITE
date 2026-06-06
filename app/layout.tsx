@@ -25,11 +25,8 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       <head />
       <body className={`${inter.variable} font-sans antialiased`}>
         <ClerkProvider
-          signInUrl="/login"
-          signUpUrl="/signup"
-          signInFallbackRedirectUrl="/listings"
-          signUpFallbackRedirectUrl="/listings"
->
+          afterSignOutUrl="/"
+        >
           <IntroOverlay />
           <ToastProvider>
             <AuthProvider>

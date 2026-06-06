@@ -40,6 +40,7 @@ export default function OwnerLoginPage() {
                     dividerRow: "hidden",
                     formFieldRow: "hidden",
                     formButtonPrimary: "hidden",
+                    socialButtonsBlockButton__google: "!flex",
                     footer: "hidden",
                   },
                 }}
