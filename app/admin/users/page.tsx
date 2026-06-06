@@ -65,12 +65,12 @@ export default function AdminUsersPage() {
               <AdminStatusBadge status={user.status} />
               <p className="text-xs font-semibold text-muted">{formatIST(user.joinedAt)}</p>
               <div className="flex flex-wrap gap-2 lg:justify-end">
-                <button className={buttonClasses("secondary", "px-4 text-amber-700")} onClick={() => void suspend(user.id)}>
+                <button className={buttonClasses("secondary", undefined, "px-4 text-amber-700")} onClick={() => void suspend(user.id)}>
                   <UserX className="h-4 w-4" aria-hidden />
                   Suspend
                 </button>
                 <button
-                  className={buttonClasses("ghost", "px-4 text-red-700")}
+                  className={buttonClasses("ghost", undefined, "px-4 text-red-700")}
                   onClick={() => {
                     if (confirm("Delete this spam account?")) void remove(user.id);
                   }}

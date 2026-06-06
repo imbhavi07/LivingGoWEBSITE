@@ -241,7 +241,7 @@ export default function PropertyDetailsPage() {
             <p className="text-xs font-bold text-amber-700">📍 Exact location shared after enquiry</p>
           </div>
           <div className="mt-5 grid gap-3">
-            <a className={buttonClasses("primary", "w-full")}>
+            <a className={buttonClasses("primary", undefined,"w-full")}>
               Lock Property
             </a>
             <Button variant="secondary" className="w-full" onClick={() => wishlist.toggle(property.id)}>
