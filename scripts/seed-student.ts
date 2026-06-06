@@ -12,7 +12,7 @@ async function main() {
     name: "Test Student",
     email,
     role: "student",
-    passwordHash: "dummy_hashed_password_123" // isko baad mein change karna, yeh sirf testing ke liye hai
+    passwordHash: "dummy_hashed_password_123" // isko baad mein change karna, yeh sirf testing ke liye hai!
   }
 });
 
