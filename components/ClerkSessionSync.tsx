@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { setSession, clearSession } from "@/lib/auth";
@@ -10,12 +10,18 @@ export function ClerkSessionSync() {
   const { getToken } = useAuth();
   const { refreshSession } = useAuthContext();
 
+  const clearedRef = useRef(false);
+
   useEffect(() => {
     if (!isLoaded) return;
     if (!isSignedIn || !user) {
-      clearSession().then(() => refreshSession());
+      if (!clearedRef.current) {
+        clearedRef.current = true;
+        clearSession().then(() => refreshSession());
+      }
       return;
     }
+    clearedRef.current = false;
 
     getToken().then((token) => {
       if (!token) return;
