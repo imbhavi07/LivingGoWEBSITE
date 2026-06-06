@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { Inter } from "next/font/google";
 import { AppChrome } from "@/components/AppChrome";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ClerkSessionSync } from "@/components/ClerkSessionSync";
 import { ToastProvider } from "@/contexts/ToastContext";
 import "./globals.css";
 import IntroOverlay from "@/components/IntroOverlay";
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           <IntroOverlay />
           <ToastProvider>
             <AuthProvider>
+              <ClerkSessionSync />
               <AppChrome>{children}</AppChrome>
             </AuthProvider>
           </ToastProvider>

@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../backend/node_modules/@prisma/client";
 
 declare const process: { exit(code: number): never };
 
