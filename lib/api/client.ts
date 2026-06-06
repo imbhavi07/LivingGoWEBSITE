@@ -46,21 +46,21 @@ apiClient.interceptors.request.use(async (config) => {
   return config;
 });
 
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    const status = error.response?.status;
-    if (typeof window !== "undefined" && status === 401) {
-      const pathname = window.location.pathname;
+// apiClient.interceptors.response.use(
+//   (response) => response,
+//   (error) => {
+//     const status = error.response?.status;
+//     if (typeof window !== "undefined" && status === 401) {
+//       const pathname = window.location.pathname;
 
-      const isOwnerPage = pathname.startsWith("/owner") && pathname !== "/owner/login" && pathname !== "/owner/signup";
-      const isAdminPage = pathname.startsWith("/admin") && pathname !== "/admin/login";
+//       const isOwnerPage = pathname.startsWith("/owner") && pathname !== "/owner/login" && pathname !== "/owner/signup";
+//       const isAdminPage = pathname.startsWith("/admin") && pathname !== "/admin/login";
 
-      if (!isOwnerPage && !isAdminPage) {
-        const target = pathname.startsWith("/admin") ? "/admin/login" : "/login";
-        if (pathname !== target) window.location.assign(target);
-      }
-    }
-    return Promise.reject(error);
-  }
-);
+//       if (!isOwnerPage && !isAdminPage) {
+//         const target = pathname.startsWith("/admin") ? "/admin/login" : "/login";
+//         if (pathname !== target) window.location.assign(target);
+//       }
+//     }
+//     return Promise.reject(error);
+//   }
+// );
