@@ -9,7 +9,7 @@ export function Footer() {
         <div className="mx-auto flex max-w-7xl flex-col items-center gap-6 px-4 text-sm text-muted sm:px-6 md:flex-row md:justify-between md:text-left lg:px-8">
           
           <p className="font-semibold text-ink">LivingGo.in</p>
-          <p className="text-sm text-ink md:hidden">wrapped with warmth</p>
+          <p className="font-semibold text-ink md:hidden">wrapped with warmth</p>
           
           <div className="flex flex-row gap-6 md:gap-8">
             <Link 
@@ -29,7 +29,7 @@ export function Footer() {
 
           {/* Enquiry Section */}
           <div className="flex flex-col items-center gap-1 md:items-end">
-            <p className="font-semibold text-ink">For Enquiry, Contact</p>
+            <p className="font-semibold text-ink">Mail Us</p>
             <a href="mailto:help@livinggo.in" className="hover:text-ink hover:underline transition-colors">
               help@livinggo.in
             </a>

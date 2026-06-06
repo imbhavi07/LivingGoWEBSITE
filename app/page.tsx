@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { ArrowRight, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, ShieldCheck } from "lucide-react";
 import { buttonClasses } from "@/components/Button";
 import { PropertyCard } from "@/components/PropertyCard";
 import { useWishlist } from "@/hooks/useWishlist";
@@ -17,55 +17,60 @@ export default function HomePage() {
             Verified student homes
           </div>
           <Image
-              src={logo}
-              alt="LivingGo Logo"
-              width={992}
-              height={597}
-              className="h-21 w-auto"
-            />
-          <a
-            href="tel:+919068902886"
-            className="mt-3 inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-sm font-bold text-white shadow-lift transition hover:opacity-90 active:scale-95"
-          >
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-xs">📞</span>
-            Talk to us · +91 90689 02886
-          </a>
+            src={logo}
+            alt="LivingGo Logo"
+            width={992}
+            height={597}
+            className="h-21 w-auto"
+          />
           <p className="mt-5 max-w-xl text-lg leading-8 text-muted">
             Find calm, well-managed rooms near campus with transparent pricing, real facilities, and virtual tours before you visit.
           </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          {/* Buttons — hidden on mobile, shown on sm+ */}
+          <div className="mt-8 hidden gap-3 sm:flex sm:flex-row">
             <Link href="/listings" className={buttonClasses("primary", undefined, "w-full sm:w-auto")}>
-              Browse homes <ArrowRight className="h-4 w-4" aria-hidden />
+              Find PGs <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
             <Link href="/listings" className={buttonClasses("secondary", undefined, "w-full sm:w-auto")}>
-              View wishlist
+              Find Flats
             </Link>
           </div>
         </div>
 
-        {/* Updated UI Panel Container/*/}
+        {/* UI Panel */}
         <div className="relative mx-auto w-full max-w-[510px]">
-          {/* 1. The image acts as the physical structure, dictating the exact height/width ratio */}
-          <img 
-            src="/assets/ui-panel.png" 
-            alt="Featured Property Panel" 
+          <a
+            href="tel:+919068902886"
+            className="absolute -top-4 right-2 z-10 inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-sm font-bold text-white shadow-lift transition hover:opacity-90 active:scale-95"
+          >
+            <span className="text-base">📞</span>
+            Call Us
+          </a>
+          <img
+            src="/assets/ui-panel.png"
+            alt="Featured Property Panel"
             className="block h-auto w-full drop-shadow-xl"
             aria-hidden="true"
           />
-
-          {/* 2. The content area is absolutely positioned over the panel. 
-             We use percentage padding to push the content exactly below the heart and within the wood border. */}
           <div className="absolute inset-0 px-[10%] pb-[5%] pt-[28%] sm:pt-[30%] flex flex-col items-center">
             <div className="mb-3 flex items-center gap-2 font-bold text-ink -translate-x-[10px] text-[15.5px]">
               <ShieldCheck className="h-4 w-4 text-ink" aria-hidden />
               Featured this week
             </div>
-            
-            {/* 3. We wrap PropertyPreview to give it a relative scale so it fits the small space precisely. */}
             <div className="w-full flex-1 origin-top scale-[0.75] sm:scale-[0.80] lg:scale-[0.85]">
               <PropertyPreview />
             </div>
           </div>
+        </div>
+
+        {/* Buttons — only on mobile, below image panel */}
+        <div className="flex flex-col gap-3 sm:hidden">
+          <Link href="/listings" className={buttonClasses("primary", undefined, "w-full")}>
+            Find PGs <ArrowRight className="h-4 w-4" aria-hidden />
+          </Link>
+          <Link href="/listings" className={buttonClasses("secondary", undefined, "w-full")}>
+            Find Flats
+          </Link>
         </div>
       </section>
     </main>
@@ -76,7 +81,6 @@ function PropertyPreview() {
   const wishlist = useWishlist();
   const { properties, isLoading } = useProperties();
 
-  // Show the cheapest approved property
   const property = [...(properties ?? [])]
     .sort((a, b) => a.price - b.price)[0];
 
