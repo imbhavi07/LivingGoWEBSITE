@@ -24,7 +24,7 @@ export default function IntroOverlay() {
   if (introState === 'done') {
     return null;
   }
-
+// bootup kardiya fix
   return (
     <div
       // THE CSS VARIABLE HERE LISTENS TO THE HEAD SCRIPT TO INSTANTLY HIDE ITSELF
