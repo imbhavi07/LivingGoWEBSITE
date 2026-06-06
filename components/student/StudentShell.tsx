@@ -12,7 +12,7 @@ import logo from "@/assets/logo.png";
 
 const studentLinks = [
   { href: "/student/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/properties", label: "Browse Properties", icon: Building2 },
+  { href: "/listings", label: "Browse Properties", icon: Building2 },
   { href: "/wishlist", label: "Wishlist", icon: Bookmark }
 ];
 
