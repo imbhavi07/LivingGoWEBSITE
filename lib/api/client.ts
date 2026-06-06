@@ -25,11 +25,9 @@ apiClient.interceptors.request.use(async (config) => {
     const isAdminRequest = window.location.pathname.startsWith("/admin");
 
     if (isAdminRequest) {
-      // Admin uses custom OTP auth — attach localStorage token
       const token = localStorage.getItem("LivingGo_token");
       if (token) config.headers.Authorization = `Bearer ${token}`;
     } else {
-      // Students and owners use Clerk — attach Clerk session token
       try {
         const clerk = (window as unknown as {
           Clerk?: { session?: { getToken: () => Promise<string> } }
@@ -54,17 +52,15 @@ apiClient.interceptors.response.use(
     const status = error.response?.status;
     if (typeof window !== "undefined" && status === 401) {
       const pathname = window.location.pathname;
-      const target = pathname.startsWith("/admin")
-        ? "/admin/login"
-        : pathname.startsWith("/owner")
-        ? "/owner/login"
-        : "/login";
 
-      if (pathname !== target) {
-        window.location.assign(target);
+      const isOwnerPage = pathname.startsWith("/owner") && pathname !== "/owner/login" && pathname !== "/owner/signup";
+      const isAdminPage = pathname.startsWith("/admin") && pathname !== "/admin/login";
+
+      if (!isOwnerPage && !isAdminPage) {
+        const target = pathname.startsWith("/admin") ? "/admin/login" : "/login";
+        if (pathname !== target) window.location.assign(target);
       }
     }
-
     return Promise.reject(error);
   }
 );
