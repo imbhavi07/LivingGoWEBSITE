@@ -14,7 +14,6 @@ export default function HomePage() {
       <section className="mx-auto grid max-w-7xl gap-10 px-4 pb-12 pt-8 sm:px-6 md:grid-cols-[1fr_1.08fr] md:items-center md:pt-16 lg:px-8">
         <div>
           <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-bold text-ink shadow-soft">
-            <Sparkles className="h-4 w-4 text-clay" aria-hidden />
             Verified student homes
           </div>
           <Image
@@ -24,6 +23,13 @@ export default function HomePage() {
               height={597}
               className="h-21 w-auto"
             />
+          <a
+            href="tel:+919068902886"
+            className="mt-3 inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-sm font-bold text-white shadow-lift transition hover:opacity-90 active:scale-95"
+          >
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/20 text-xs">📞</span>
+            Talk to us · +91 90689 02886
+          </a>
           <p className="mt-5 max-w-xl text-lg leading-8 text-muted">
             Find calm, well-managed rooms near campus with transparent pricing, real facilities, and virtual tours before you visit.
           </p>
