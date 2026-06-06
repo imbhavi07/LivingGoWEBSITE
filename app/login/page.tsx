@@ -143,10 +143,6 @@ function LoginForm() {
         signUpUrl="/signup"
         appearance={{
           elements: {
-            dividerRow: "hidden",
-            formFieldRow: "hidden",
-            formButtonPrimary: "hidden",
-            socialButtonsBlockButton__google: "!flex",
             footer: "hidden",
           },
         }}

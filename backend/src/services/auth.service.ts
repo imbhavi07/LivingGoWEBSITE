@@ -38,7 +38,8 @@ export async function signup(input: SignupInput) {
       email: input.email,
       phone: input.phone,
       passwordHash,
-      role: input.role
+      role: input.role,
+      verificationStatus: input.role === "owner" ? "pending_approval" : "not_required",
     },
     select: userSelect
   });

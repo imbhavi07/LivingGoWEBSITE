@@ -11,7 +11,8 @@ export async function handleClerkWebhook(req: Request, res: Response) {
   let event;
 
   try {
-    event = wh.verify(JSON.stringify(req.body), {
+    const payload = typeof req.body === "string" ? req.body : JSON.stringify(req.body);
+    event = wh.verify(payload, {
       "svix-id": req.headers["svix-id"] as string,
       "svix-timestamp": req.headers["svix-timestamp"] as string,
       "svix-signature": req.headers["svix-signature"] as string,
