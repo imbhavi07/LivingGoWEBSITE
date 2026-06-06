@@ -39,17 +39,9 @@ function SignupForm() {
           fallbackRedirectUrl="/listings"
           signInUrl="/login"
           unsafeMetadata={{ role: "student" }}
-          appearance={googleOnlyAppearance}
+          appearance={{ elements: { footer: "hidden" } }}
         />
       </div>
     </main>
   );
 }
-
-const googleOnlyAppearance = {
-  elements: {
-    dividerRow: "hidden",
-    formFieldRow: "hidden",
-    formButtonPrimary: "hidden",
-  },
-};

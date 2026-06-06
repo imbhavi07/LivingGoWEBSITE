@@ -36,13 +36,7 @@ export default function OwnerLoginPage() {
                 fallbackRedirectUrl="/owner/dashboard"
                 signUpUrl="/owner/signup"
                 appearance={{
-                  elements: {
-                    dividerRow: "hidden",
-                    formFieldRow: "hidden",
-                    formButtonPrimary: "hidden",
-                    socialButtonsBlockButton__google: "!flex",
-                    footer: "hidden",
-                  },
+                  elements: { footer: "hidden" },
                 }}
               />
               <p className="text-sm text-muted">

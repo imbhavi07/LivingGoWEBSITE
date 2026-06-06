@@ -34,12 +34,7 @@ export default function OwnerSignupPage() {
               elements: {
                 rootBox: "w-full",
                 card: "shadow-soft rounded-3xl border-0 bg-white p-6",
-                headerTitle: "text-ink font-black",
-                headerSubtitle: "text-muted",
-                formButtonPrimary: "hidden",
-                formFieldRow: "hidden",
-                dividerRow: "hidden",
-                socialButtonsBlockButton: "bg-white border border-black/10 rounded-2xl font-semibold text-ink hover:bg-linen",
+                footer: "hidden",
               },
             }}
           />
