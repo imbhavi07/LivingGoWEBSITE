@@ -38,7 +38,7 @@ export default function IntroOverlay() {
         src="/bootup-animation.mp4" 
         poster="/bootup-first-frame.webp" // The instant fallback image
         autoPlay 
-        muted       // CRITICAL: Browsers will block autoplay if not muted
+        muted       // CRITICAL: Browsers will block autoplay if not muted..
         playsInline // CRITICAL: Prevents iOS from opening the video in fullscreen mode
         preload="auto" 
         className="w-full h-full object-cover" 
