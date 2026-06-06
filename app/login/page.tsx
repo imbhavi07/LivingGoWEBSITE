@@ -19,11 +19,11 @@ export default function LoginPage() {
 
 function LoginForm() {
   const [mode, setMode] = useState<LoginMode>("student");
-  const { isSignedIn, user } = useUser();
+  const { isLoaded, isSignedIn, user } = useUser();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isSignedIn || !user) return;
+    if (!isLoaded || !isSignedIn || !user) return;
     const role = (user.publicMetadata?.role as string | undefined) ?? "student";
     if (role === "owner") {
       router.push("/owner/dashboard");
@@ -31,7 +31,7 @@ function LoginForm() {
       // student or no role yet — both go to listings
       router.push("/listings");
     }
-  }, [isSignedIn, user?.id, router]);
+  }, [isLoaded, isSignedIn, user?.id, router]);
 
   const showAlreadySignedIn = isSignedIn && ((user?.publicMetadata?.role as string | undefined) ?? "student") === "student";
 
