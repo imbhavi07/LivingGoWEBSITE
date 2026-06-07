@@ -9,6 +9,7 @@ import { Button } from "@/components/Button";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import logo from "@/assets/logo.png";
+import { useAuth } from "@/hooks/useAuth";
 
 const studentLinks = [
   { href: "/student/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -18,6 +19,7 @@ const studentLinks = [
 
 export function StudentShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  const { signOut } = useAuth();
 
   return (
     <div className="min-h-screen bg-[#F8F4F0]">
@@ -55,6 +57,7 @@ export function StudentShell({ children }: { children: ReactNode }) {
 
 function StudentSidebar({ onNavigate, onSignOut }: { onNavigate?: () => void; onSignOut: () => void }) {
   const pathname = usePathname();
+  const isMobile = typeof onNavigate === 'function';
 
   return (
     <div className="flex h-full flex-col">
@@ -96,18 +99,25 @@ function StudentSidebar({ onNavigate, onSignOut }: { onNavigate?: () => void; on
             </Link>
           );
         })}
+        {isMobile && (
+          <Link
+            href="/"
+            onClick={onSignOut}
+            className={cn(
+              "flex min-h-12 items-center gap-3 rounded-2xl px-4 text-sm font-bold text-muted transition hover:bg-linen hover:text-ink"
+            )}
+          >
+            <LogOut className="h-5 w-5" aria-hidden />
+            Sign out
+          </Link>
+        )}
       </nav>
-      <Button variant="ghost" className="mt-auto justify-start px-4" onClick={onSignOut}>
-        <LogOut className="h-5 w-5" aria-hidden />
-        Sign out
-      </Button>
+      {!isMobile && (
+        <Button variant="ghost" className="mt-auto justify-start px-4" onClick={onSignOut}>
+          <LogOut className="h-5 w-5" aria-hidden />
+          Sign out
+        </Button>
+      )}
     </div>
   );
-}
-
-// Dummy signOut function - in reality this would come from auth hook
-function signOut() {
-  // This would typically clear auth state
-  // For now, we'll just redirect to homepage
-  window.location.href = "/";
 }

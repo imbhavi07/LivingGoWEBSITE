@@ -32,6 +32,8 @@ export default function HomePage() {
           >
             Call Us
           </a>
+
+          {/* Buttons — only on sm+, hidden on mobile */}
           {/* Buttons — hidden on mobile, shown on sm+ */}
           <div className="hidden mt-6 gap-3 sm:flex sm:flex-row">
             <Link href="/listings" className={buttonClasses("primary", undefined, "w-full sm:w-auto")}>
@@ -40,6 +42,7 @@ export default function HomePage() {
             <Link href="/listings" className={buttonClasses("secondary", undefined, "w-full sm:w-auto")}>
               Find Flats
             </Link>
+            
           </div>
         </div>
 
