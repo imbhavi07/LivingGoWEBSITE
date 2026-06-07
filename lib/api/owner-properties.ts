@@ -17,15 +17,18 @@ export async function getOwnerProperty(id: string) {
   return unwrapItems(data).map(toOwnerProperty).find((property) => property.id === id) ?? null;
 }
 
-export async function createOwnerProperty(payload: OwnerPropertyPayload) {
+export async function createOwnerProperty(payload: OwnerPropertyPayload, token: string) {
   const formData = toPropertyFormData(payload);
   const { data } = await apiClient.post<ApiProperty>("/owner/properties", formData, {
-    headers: { "Content-Type": "multipart/form-data" }
+    headers: { 
+      "Content-Type": "multipart/form-data",
+      "Authorization": `Bearer ${token}`
+    }
   });
   return toOwnerProperty(data);
 }
 
-export async function updateOwnerProperty(id: string, payload: OwnerPropertyPayload) {
+export async function updateOwnerProperty(id: string, payload: OwnerPropertyPayload, token: string) {
   const { data } = await apiClient.put<ApiProperty>(`/owner/properties/${id}`, {
     title: payload.title,
     description: payload.description,
@@ -49,6 +52,8 @@ export async function updateOwnerProperty(id: string, payload: OwnerPropertyPayl
     noticePeriod: payload.noticePeriod,
     rulesStrictness: payload.rulesStrictness,
     facilities: payload.facilities
+  }, {
+    headers: { "Authorization": `Bearer ${token}` }
   });
   return toOwnerProperty(data);
 }

@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
 import { AlertTriangle, Crosshair, Loader2, MapPin, Save } from "lucide-react";
 import { Button } from "@/components/Button";
 import { ImageUploader } from "@/components/owner/ImageUploader";
@@ -32,8 +33,10 @@ type PickedLocation = {
 export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
   const router = useRouter();
   const { showToast } = useToast();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
   const [preference, setPreference] = useState<"Girls" | "Boys" | "Any">(
-  (property?.preference as "Girls" | "Boys" | "Any") ?? "Any");
+    (property?.preference as "Girls" | "Boys" | "Any") ?? "Any"
+  );
   const [images, setImages] = useState<string[]>(property?.images ?? []);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [selectedFacilities, setSelectedFacilities] = useState<string[]>(property?.facilities ?? []);
@@ -46,7 +49,6 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Location state
   const [pickedLocation, setPickedLocation] = useState<PickedLocation | null>(
     property?.lat && property?.lng
       ? { lat: property.lat, lng: property.lng, address: property.location }
@@ -104,6 +106,12 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (!isLoaded || !isSignedIn) {
+      setError("You must be signed in to save a property.");
+      return;
+    }
+
     const formData = new FormData(event.currentTarget);
 
     if (!pickedLocation) {
@@ -159,11 +167,14 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
     };
 
     try {
+      const token = await getToken();
+      if (!token) throw new Error("No auth token");
+
       if (property) {
-        await updateOwnerProperty(property.id, payload);
+        await updateOwnerProperty(property.id, payload, token);
         showToast("Property updated and sent for review.", "success");
       } else {
-        await createOwnerProperty(payload);
+        await createOwnerProperty(payload, token);
         showToast("Property submitted for admin moderation.", "success");
       }
       router.push("/owner/properties");
@@ -177,7 +188,6 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
 
   return (
     <>
-      {/* Map picker modal */}
       {showMapPicker && (
         <MapPicker
           onConfirm={(loc) => {
@@ -211,7 +221,6 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
               />
             </label>
 
-            {/* PG Type — prominent toggle */}
             <div className="space-y-2">
               <span className="text-sm font-bold text-ink">PG Type</span>
               <div className="grid grid-cols-3 gap-2 rounded-2xl bg-linen p-1">
@@ -224,14 +233,14 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
                       : "text-muted hover:text-ink"
                     }`}
                   >
-                  <input
-                    type="radio"
-                    name="preference"
-                    value={type}
-                    checked={preference === type}
-                    onChange={() => setPreference(type)}
-                    className="sr-only"
-                  />
+                    <input
+                      type="radio"
+                      name="preference"
+                      value={type}
+                      checked={preference === type}
+                      onChange={() => setPreference(type)}
+                      className="sr-only"
+                    />
                     <span>
                       {type === "Girls" ? "👩 Girls Only" : type === "Boys" ? "👨 Boys Only" : "👥 Co-ed"}
                     </span>
@@ -240,7 +249,6 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
               </div>
             </div>
 
-            {/* Location picker */}
             <div className="space-y-2">
               <span className="text-sm font-bold text-ink">Property location</span>
               <div className="flex gap-2">
@@ -266,7 +274,6 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
                 </button>
               </div>
 
-              {/* Show picked location */}
               {pickedLocation ? (
                 <div className="flex items-start gap-2 rounded-2xl bg-green-50 p-3">
                   <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-moss" aria-hidden />
@@ -297,7 +304,6 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
           <section className="space-y-5 rounded-3xl bg-white p-5 shadow-soft sm:p-6">
             <p className="text-xs font-black uppercase text-clay">Inventory & Pricing</p>
 
-            {/* Single Room */}
             <div className="space-y-4 rounded-3xl border border-black/5 bg-linen p-4">
               <label className="flex cursor-pointer items-center gap-3">
                 <input type="checkbox" checked={hasSingle} onChange={(e) => setHasSingle(e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-ink accent-ink" />
@@ -317,7 +323,6 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
               )}
             </div>
 
-            {/* Double Sharing */}
             <div className="space-y-4 rounded-3xl border border-black/5 bg-linen p-4">
               <label className="flex cursor-pointer items-center gap-3">
                 <input type="checkbox" checked={hasDouble} onChange={(e) => setHasDouble(e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-ink accent-ink" />
@@ -337,7 +342,6 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
               )}
             </div>
 
-            {/* Triple Sharing */}
             <div className="space-y-4 rounded-3xl border border-black/5 bg-linen p-4">
               <label className="flex cursor-pointer items-center gap-3">
                 <input type="checkbox" checked={hasTriple} onChange={(e) => setHasTriple(e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-ink accent-ink" />
@@ -357,7 +361,6 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
               )}
             </div>
 
-            {/* Security Deposit */}
             <div className="space-y-4 rounded-3xl border border-black/5 bg-linen p-4">
               <label className="flex cursor-pointer items-center gap-3">
                 <input type="checkbox" checked={hasDeposit} onChange={(e) => setHasDeposit(e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-ink accent-ink" />
