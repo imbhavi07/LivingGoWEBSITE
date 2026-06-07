@@ -41,14 +41,15 @@ export default function HomePage() {
         <div className="relative mx-auto w-full max-w-[510px]">
           <a
             href="tel:+919068902886"
-            className="absolute -top-4 right-2 z-10 inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-sm font-bold text-white shadow-lift transition hover:opacity-90 active:scale-95"
+            className="absolute -top-4 right-2 z-10 inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-bold font-bold text-white shadow-lift transition hover:opacity-90 active:scale-200"
           >
-            <span className="text-base"></span>
-            Call Us
+            Call Us<sup>24x7</sup> 
           </a>
-          <img
+          <Image
             src="/assets/ui-panel.png"
             alt="Featured Property Panel"
+            width={510}
+            height={650}
             className="block h-auto w-full drop-shadow-xl"
             aria-hidden="true"
           />
