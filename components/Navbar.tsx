@@ -37,7 +37,8 @@ export function Navbar() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
+  
+// navbar banadiya bccccc
   return (
     <>
       <header className="sticky top-0 z-40 hidden border-b border-black/5 bg-linen/90 backdrop-blur md:block">
