@@ -16,6 +16,8 @@ const navLinks = [
   { href: "/wishlist", label: "Wishlist", icon: Heart }
 ];
 
+// aur bhi cheezein fix kar di I guess, abhi bhi kuch bugs ho sakte hain but overall structure is good.
+
 export function Navbar() {
   const pathname = usePathname();
   const { user } = useUser();
