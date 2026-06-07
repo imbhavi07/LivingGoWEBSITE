@@ -1,6 +1,8 @@
-import { useUser, usePathname } from "@clerk/nextjs";
+"use client";
+
+import { useUser } from "@clerk/nextjs";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 
 export default function OwnerDashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoaded } = useUser();
@@ -11,7 +13,6 @@ export default function OwnerDashboardLayout({ children }: { children: React.Rea
     if (!isLoaded) return;
 
     if (!user) {
-      // Not signed in -> redirect to owner login
       const loginUrl = new URL("/owner/login", window.location.origin);
       loginUrl.searchParams.set("next", pathname);
       window.location.href = loginUrl.toString();
@@ -20,7 +21,6 @@ export default function OwnerDashboardLayout({ children }: { children: React.Rea
 
     const role = (user.publicMetadata as { role?: string })?.role;
     if (role !== "owner" && role !== "admin") {
-      // User is signed in but not owner or admin -> redirect to owner login
       const loginUrl = new URL("/owner/login", window.location.origin);
       loginUrl.searchParams.set("next", pathname);
       window.location.href = loginUrl.toString();
