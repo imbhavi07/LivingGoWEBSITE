@@ -1,0 +1,3 @@
+.overlay {
+  display: var(--intro-display, flex);
+}

@@ -1,0 +1,27 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.apiRouter = void 0;
+const express_1 = require("express");
+const admin_routes_1 = require("./admin.routes");
+const auth_routes_1 = require("./auth.routes");
+const owner_routes_1 = require("./owner.routes");
+const property_routes_1 = require("./property.routes");
+const upload_routes_1 = require("./upload.routes");
+const wishlist_routes_1 = require("./wishlist.routes");
+const kyc_routes_1 = __importDefault(require("./kyc.routes"));
+const webhook_routes_1 = __importDefault(require("./webhook.routes"));
+exports.apiRouter = (0, express_1.Router)();
+exports.apiRouter.get("/health", (_request, response) => {
+    response.json({ status: "ok", service: "LivingGo-backend" });
+});
+exports.apiRouter.use("/auth", auth_routes_1.authRouter);
+exports.apiRouter.use("/properties", property_routes_1.propertyRouter);
+exports.apiRouter.use("/wishlist", wishlist_routes_1.wishlistRouter);
+exports.apiRouter.use("/owner/kyc", kyc_routes_1.default); // ← BEFORE ownerRouter
+exports.apiRouter.use("/owner", owner_routes_1.ownerRouter);
+exports.apiRouter.use("/webhooks/clerk", webhook_routes_1.default);
+exports.apiRouter.use("/admin", admin_routes_1.adminRouter);
+exports.apiRouter.use("/uploads", upload_routes_1.uploadRouter);

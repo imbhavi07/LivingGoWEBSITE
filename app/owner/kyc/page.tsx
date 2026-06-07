@@ -7,7 +7,7 @@ import { useUser, useClerk } from "@clerk/nextjs";
 import { OwnerShell } from "@/components/owner/OwnerShell";
 import { Button } from "@/components/Button";
 
-type KYCStatus = "form" | "submitting" | "submitted" | "already_pending" | "approved" | "rejected";
+type KYCStatus = "checking" | "form" | "submitting" | "submitted" | "already_pending" | "approved" | "rejected";
 
 async function getClerkToken() {
   const clerk = (window as unknown as {
@@ -17,33 +17,36 @@ async function getClerkToken() {
 }
 
 export default function OwnerKYCPage() {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
-  const [status, setStatus] = useState<KYCStatus>("form");
+  const [status, setStatus] = useState<KYCStatus>("checking");
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!isLoaded) return;
+    const email = user?.primaryEmailAddress?.emailAddress;
+    if (!email) { setStatus("form"); return; }
+
     async function checkStatus() {
-      const email = user?.primaryEmailAddress?.emailAddress;
-      if (!email) return;
       try {
         const token = await getClerkToken();
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/owner/kyc/status?email=${encodeURIComponent(email)}`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/owner/kyc/status?email=${encodeURIComponent(email!)}`,
           { headers: { Authorization: `Bearer ${token ?? ""}` } }
         );
-        if (!res.ok) return;
+        if (!res.ok) { setStatus("form"); return; }
         const data = await res.json();
         const vs = data.data?.verificationStatus;
         if (vs === "approved") setStatus("approved");
         else if (vs === "pending_approval") setStatus("already_pending");
         else if (vs === "rejected") setStatus("rejected");
+        else setStatus("form");
       } catch {
-        // silently fail — show form as default
+        setStatus("form");
       }
     }
     void checkStatus();
-  }, [user]);
+  }, [user, isLoaded]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -98,6 +101,8 @@ export default function OwnerKYCPage() {
       setStatus("form");
     }
   }
+
+  if (status === "checking") return null;
 
   if (status === "submitted" || status === "already_pending") {
     return (

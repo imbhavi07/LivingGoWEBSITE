@@ -2,6 +2,7 @@
 
 import { ArrowRight } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
+import styles from './IntroOverlay.module.css';
 
 export default function IntroOverlay() {
   const [introState, setIntroState] = useState<'playing' | 'fading' | 'done'>('playing');
@@ -28,9 +29,8 @@ export default function IntroOverlay() {
   return (
     <div
       // THE CSS VARIABLE HERE LISTENS TO THE HEAD SCRIPT TO INSTANTLY HIDE ITSELF
-      style={{ display: 'var(--intro-display, flex)' }}
       // Note: Swap 'bg-white' with the exact beige hex code of your video if needed!
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#f7ebdc] transition-opacity duration-500 ease-in-out ${
+      className={`${styles.overlay} fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#f7ebdc] transition-opacity duration-500 ease-in-out ${
         introState === 'fading' ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
     >
