@@ -5,8 +5,11 @@ import Link from "next/link";
 import { buttonClasses } from "@/components/Button";
 import { OwnerShell } from "@/components/owner/OwnerShell";
 import { OwnerStatCard } from "@/components/owner/OwnerStatCard";
+import { useOwnerDashboard } from "@/hooks/useOwnerProperties";
 
 export default function OwnerDashboardPage() {
+  const { stats, isLoading } = useOwnerDashboard();
+
   return (
     <OwnerShell>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -18,11 +21,19 @@ export default function OwnerDashboardPage() {
           Add Property
         </Link>
       </div>
-      <section className="grid gap-5 md:grid-cols-3">
-        <OwnerStatCard label="Total listings" value={3} icon={Building2} tone="bg-linen text-clay" />
-        <OwnerStatCard label="Active listings" value={2} icon={ToggleRight} tone="bg-green-50 text-moss" />
-        <OwnerStatCard label="Pending approval" value={1} icon={Clock3} tone="bg-amber-50 text-amber-700" />
-      </section>
+      {isLoading ? (
+        <section className="grid gap-5 md:grid-cols-3">
+          <OwnerStatCard label="Total listings" value={0} icon={Building2} tone="bg-linen text-clay" />
+          <OwnerStatCard label="Active listings" value={0} icon={ToggleRight} tone="bg-green-50 text-moss" />
+          <OwnerStatCard label="Pending approval" value={0} icon={Clock3} tone="bg-amber-50 text-amber-700" />
+        </section>
+      ) : (
+        <section className="grid gap-5 md:grid-cols-3">
+          <OwnerStatCard label="Total listings" value={stats?.totalListings ?? 0} icon={Building2} tone="bg-linen text-clay" />
+          <OwnerStatCard label="Active listings" value={stats?.activeListings ?? 0} icon={ToggleRight} tone="bg-green-50 text-moss" />
+          <OwnerStatCard label="Pending approval" value={stats?.pendingListings ?? 0} icon={Clock3} tone="bg-amber-50 text-amber-700" />
+        </section>
+      )}
     </OwnerShell>
   );
 }
