@@ -1,10 +1,24 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Building2 } from "lucide-react";
 import { SignIn } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 
 export default function OwnerLoginPage() {
+  const { user, isLoaded } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isLoaded || !user) return;
+    const role = (user.publicMetadata as { role?: string })?.role;
+    if (role === "owner" || role === "admin") router.replace("/owner/dashboard");
+  }, [isLoaded, user, router]);
+
+  if (!isLoaded || user) return null;
+
   return (
     <main className="grid min-h-screen bg-linen lg:grid-cols-[1fr_0.9fr]">
       <section className="hidden bg-ink p-12 text-white lg:flex lg:flex-col lg:justify-between">
@@ -34,6 +48,7 @@ export default function OwnerLoginPage() {
               <SignIn
                 routing="hash"
                 fallbackRedirectUrl="/owner/dashboard"
+                forceRedirectUrl="/owner/dashboard"
                 signUpUrl="/owner/signup"
                 appearance={{
                   elements: { footer: "hidden" },
