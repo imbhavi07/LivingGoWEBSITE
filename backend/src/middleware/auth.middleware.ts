@@ -47,7 +47,7 @@ export async function clerkAuthenticate(request: Request, _response: Response, n
     const clerkUserId = payload.sub;
 
     const user = await prisma.user.findFirst({
-      where: { passwordHash: clerkUserId },
+      where: { clerkId: clerkUserId },
       select: { id: true, email: true, role: true, status: true }
     });
 

@@ -41,9 +41,13 @@ export default clerkMiddleware(async (auth, request) => {
   const role = (sessionClaims?.publicMetadata as { role?: string })?.role;
 
   // Owner routes — must have owner or admin role
-  // Allow undefined role through /owner/kyc so new signups can complete KYC
+  // Allow undefined role through /owner/kyc and /owner/properties so new signups can complete KYC and access property routes
   if (pathname.startsWith("/owner")) {
     if (pathname.startsWith("/owner/kyc") && !role) {
+      return NextResponse.next();
+    }
+    // Allow property routes (including new) when role is undefined
+    if (pathname.startsWith("/owner/properties") && !role) {
       return NextResponse.next();
     }
     // Allow the entire dashboard subtree without role check (we'll check in the dashboard layout)
