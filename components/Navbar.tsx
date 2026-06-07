@@ -20,6 +20,12 @@ const navLinks = [
 
 export function Navbar() {
   const pathname = usePathname();
+
+  // Hide navbar on student dashboard
+  if (pathname.startsWith("/student/dashboard")) {
+    return null;
+  }
+
   const { user } = useUser();
   const role = user?.publicMetadata?.role ?? user?.unsafeMetadata?.role ?? "student";
   const displayName = user?.fullName ?? user?.firstName ?? user?.primaryEmailAddress?.emailAddress?.split('@')[0] ?? "User";
@@ -39,8 +45,8 @@ export function Navbar() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-  
-// navbar banadiya bccccc
+
+  // navbar banadiya bccccc
   return (
     <>
       <header className="sticky top-0 z-40 hidden border-b border-black/5 bg-linen/90 backdrop-blur md:block">

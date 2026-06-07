@@ -75,7 +75,13 @@ From the `backend/` directory:
 - Tailwind CSS for styling; lucide-react for icons
 - ESLint with Next.js and TypeScript configurations
 
-### Common Tasks
+## Student Dashboard Specifics
+- Student dashboard uses `StudentShell.tsx` for layout with mobile drawer sidebar
+- Navbar component automatically hides on student dashboard via pathname check
+- Auth state managed through `useAuth()` hook from Clerk integration
+- Sign out functionality uses `clerkSignOut()` followed by session clearing
+
+## Common Tasks
 - To add a new API endpoint: create route file in `backend/src/routes/`, register in `src/server.ts`
 - To add a new frontend page: create route segment under `app/` (e.g., `app/new-page/page.tsx`)
 - To modify database: edit `backend/prisma/schema.prisma`, run `prisma migrate dev`, regenerate client
