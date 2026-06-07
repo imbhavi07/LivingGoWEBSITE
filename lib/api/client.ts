@@ -1,5 +1,31 @@
 import axios from "axios";
 
+type ClerkInstance = {
+  session?: { getToken: () => Promise<string> } | null;
+};
+
+function getClerkWithTimeout(timeoutMs = 5000): Promise<ClerkInstance | null> {
+  return new Promise((resolve) => {
+    const clerk = (window as Window & { Clerk?: ClerkInstance }).Clerk;
+
+    if (clerk?.session) return resolve(clerk);
+
+    const deadline = Date.now() + timeoutMs;
+
+    const poll = setInterval(() => {
+      const c = (window as Window & { Clerk?: ClerkInstance }).Clerk;
+      if (c?.session) {
+        clearInterval(poll);
+        return resolve(c);
+      }
+      if (Date.now() > deadline) {
+        clearInterval(poll);
+        resolve(null);
+      }
+    }, 50);
+  });
+}
+
 export const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5000/api",
   timeout: 12000,
@@ -21,28 +47,24 @@ export function getApiErrorMessage(error: unknown, fallback: string) {
 }
 
 apiClient.interceptors.request.use(async (config) => {
-  if (typeof window !== "undefined") {
-    const isAdminRequest = window.location.pathname.startsWith("/admin");
+  if (typeof window === "undefined") return config;
 
-    if (isAdminRequest) {
-      // Admin uses custom OTP auth — attach localStorage token
-      const token = localStorage.getItem("LivingGo_token");
+  const isAdminRequest = window.location.pathname.startsWith("/admin");
+
+  if (isAdminRequest) {
+    const token = localStorage.getItem("LivingGo_token");
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+    return config;
+  }
+
+  try {
+    const clerk = await getClerkWithTimeout();
+    if (clerk?.session) {
+      const token = await clerk.session.getToken();
       if (token) config.headers.Authorization = `Bearer ${token}`;
-    } else {
-      // Students and owners use Clerk — attach Clerk session token
-      try {
-        const clerk = (window as unknown as {
-          Clerk?: { session?: { getToken: () => Promise<string> } }
-        }).Clerk;
-
-        if (clerk?.session) {
-          const clerkToken = await clerk.session.getToken();
-          if (clerkToken) config.headers.Authorization = `Bearer ${clerkToken}`;
-        }
-      } catch {
-        // no Clerk token available
-      }
     }
+  } catch {
+    // Clerk not available — request proceeds without token
   }
 
   return config;

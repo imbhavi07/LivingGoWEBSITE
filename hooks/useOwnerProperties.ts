@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useAuth } from "@clerk/nextjs";
 import {
   deleteOwnerProperty,
   getOwnerProperties,
@@ -12,19 +13,22 @@ import { useToast } from "@/contexts/ToastContext";
 import type { OwnerProperty, OwnerStats } from "@/types/owner";
 
 export function useOwnerDashboard() {
+  const { isLoaded, isSignedIn } = useAuth();
   const [stats, setStats] = useState<OwnerStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!isLoaded || !isSignedIn) return;
     getOwnerStats()
       .then(setStats)
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [isLoaded, isSignedIn]);
 
   return { stats, isLoading };
 }
 
 export function useOwnerProperties() {
+  const { isLoaded, isSignedIn } = useAuth();
   const { showToast } = useToast();
   const [properties, setProperties] = useState<OwnerProperty[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,11 +46,12 @@ export function useOwnerProperties() {
         showToast("Could not load owner properties.", "error");
       })
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [showToast]);
 
   useEffect(() => {
+    if (!isLoaded || !isSignedIn) return;
     refresh();
-  }, [refresh]);
+  }, [isLoaded, isSignedIn, refresh]);
 
   async function remove(id: string) {
     await deleteOwnerProperty(id);
@@ -66,14 +71,16 @@ export function useOwnerProperties() {
 }
 
 export function useOwnerProperty(id: string) {
+  const { isLoaded, isSignedIn } = useAuth();
   const [property, setProperty] = useState<OwnerProperty | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!isLoaded || !isSignedIn) return;
     getOwnerProperty(id)
       .then(setProperty)
       .finally(() => setIsLoading(false));
-  }, [id]);
+  }, [id, isLoaded, isSignedIn]);
 
   return { property, isLoading };
 }
