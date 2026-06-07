@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { ChevronDown, Heart, Home, LogOut, Search, UserRound } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { useAuthContext } from "@/contexts/AuthContext";
+import { useUser } from "@clerk/nextjs";
 import { useAuth } from "@/hooks/useAuth";
 
 const navLinks = [
@@ -18,7 +18,9 @@ const navLinks = [
 
 export function Navbar() {
   const pathname = usePathname();
-  const { user } = useAuthContext();
+  const { user } = useUser();
+  const role = user?.publicMetadata?.role ?? user?.unsafeMetadata?.role ?? "student";
+  const displayName = user?.fullName ?? user?.firstName ?? user?.primaryEmailAddress?.emailAddress?.split('@')[0] ?? "User";
   const { signOut } = useAuth();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -66,9 +68,9 @@ export function Navbar() {
               <div className="flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-soft transition hover:bg-linen">
                 <Link
                   href={
-                    user.role?.toLowerCase() === "admin" ? "/admin/dashboard" :
-                    user.role?.toLowerCase() === "owner" ? "/owner/dashboard" :
-                    user.role?.toLowerCase() === "student" ? "/student/dashboard" :
+                    role === "admin" ? "/admin/dashboard" :
+                    role === "owner" ? "/owner/dashboard" :
+                    role === "student" ? "/student/dashboard" :
                     "/"
                   }
                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink text-white transition hover:opacity-80"
@@ -81,7 +83,10 @@ export function Navbar() {
                   className="flex items-center gap-1 text-left outline-none"
                 >
                   <span className="text-sm font-bold text-ink">
-                    {user.name} <span className="font-semibold uppercase text-muted">({user.role})</span>
+                    {displayName}
+                    {role === 'admin' && (
+                      <span className="font-semibold uppercase text-muted ml-1">(ADMIN)</span>
+                    )}
                   </span>
                   <ChevronDown
                     className={cn("h-4 w-4 text-muted transition", open && "rotate-180")}
@@ -95,8 +100,10 @@ export function Navbar() {
                     <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/20">
                       <UserRound className="h-8 w-8" aria-hidden />
                     </div>
-                    <p className="text-sm font-black">{user.name}</p>
-                    <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-bold uppercase">{user.role}</span>
+                    <p className="text-sm font-black">{displayName}</p>
+                    {role === 'admin' && (
+                      <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-bold uppercase ml-2">ADMIN</span>
+                    )}
                   </div>
                   <div className="p-3">
                     <button
@@ -138,9 +145,9 @@ export function Navbar() {
           );
         })}
         {!mounted ? null : user ? (
-          (user.role?.toLowerCase() === "admin" || user.role?.toLowerCase() === "owner") ? (
+          (role === "admin" || role === "owner") ? (
             <Link
-              href={user.role?.toLowerCase() === "admin" ? "/admin/dashboard" : "/owner/dashboard"}
+              href={role === "admin" ? "/admin/dashboard" : "/owner/dashboard"}
               className={cn(
                 "flex min-h-14 flex-col items-center justify-center rounded-3xl text-xs font-semibold text-muted transition",
                 (pathname === "/owner/dashboard" || pathname === "/admin/dashboard") && "bg-ink text-white"
