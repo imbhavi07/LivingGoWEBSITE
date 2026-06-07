@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, LayoutDashboard, LogOut, Menu, Bookmark, X, CreditCard, Activity, MapPin } from "lucide-react";
+import { Building2, LayoutDashboard, LogOut, Menu, Bookmark, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { Button } from "@/components/Button";
