@@ -51,6 +51,7 @@ export async function clerkAuthenticate(request: Request, _response: Response, n
           role: 'owner',
           status: 'active',
           clerkId: 'dev_clerk_id',
+          passwordHash: 'dummy_hash', // dummy value for development
         },
       });
     }
