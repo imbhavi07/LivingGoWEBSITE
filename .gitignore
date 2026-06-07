@@ -4,4 +4,5 @@ node_modules/
 .env.*
 .DS_Store
 *.log
-/lib/generated/prisma
+/lib/generated/prismabackend/.env
+backend/.env
