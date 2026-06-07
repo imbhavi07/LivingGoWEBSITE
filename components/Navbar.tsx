@@ -161,14 +161,17 @@ export function Navbar() {
               <span className="mt-1">Account</span>
             </Link>
           ) : (
-            <button
-              onClick={signOut}
-              className="flex min-h-14 flex-col items-center justify-center rounded-3xl text-xs font-semibold text-muted transition"
-              aria-label="Sign out"
+            <Link
+              href="/student/dashboard"
+              className={cn(
+                "flex min-h-14 flex-col items-center justify-center rounded-3xl text-xs font-semibold text-muted transition",
+                pathname === "/student/dashboard" && "bg-ink text-white"
+              )}
+              aria-label="Dashboard"
             >
-              <LogOut className="h-5 w-5" aria-hidden />
-              <span className="mt-1">Sign out</span>
-            </button>
+              <UserRound className="h-5 w-5" aria-hidden />
+              <span className="mt-1">Dashboard</span>
+            </Link>
           )
         ) : (
           <Link
