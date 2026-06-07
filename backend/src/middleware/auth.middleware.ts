@@ -39,6 +39,26 @@ export async function clerkAuthenticate(request: Request, _response: Response, n
     return next(new AppError("Authentication token is required", 401));
   }
 
+  // In development, allow a mock token for testing
+  if (process.env.NODE_ENV === 'development' && token === 'development-token') {
+    const devEmail = 'dev@example.com';
+    let user = await prisma.user.findUnique({ where: { email: devEmail } });
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email: devEmail,
+          name: 'Dev User',
+          role: 'owner',
+          status: 'active',
+          clerkId: 'dev_clerk_id',
+          passwordHash: 'dummy_hash', // dummy value for development
+        },
+      });
+    }
+    request.user = { id: user.id, email: user.email, role: user.role };
+    return next();
+  }
+
   try {
     const payload = await verifyToken(token, {
       secretKey: process.env.CLERK_SECRET_KEY,
@@ -51,14 +71,19 @@ export async function clerkAuthenticate(request: Request, _response: Response, n
       select: { id: true, email: true, role: true, status: true }
     });
 
-    if (!user || user.status === "suspended") {
+    if (!user) {
+      return next(new AppError("User not found. Please sign up first.", 401));
+    }
+
+    if (user.status === "suspended") {
       return next(new AppError("Account is inactive or suspended", 401));
     }
 
     request.user = { id: user.id, email: user.email, role: user.role };
     next();
-  } catch {
-    next(new AppError("Invalid or expired Clerk token", 401));
+  } catch (error) {
+    console.error("Clerk authentication error:", error);
+    return next(new AppError("Invalid or expired Clerk token", 401));
   }
 }
 

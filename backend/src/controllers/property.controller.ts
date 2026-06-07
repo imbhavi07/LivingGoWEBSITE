@@ -11,28 +11,37 @@ function requireUser(request: Request) {
 }
 
 export const createProperty = asyncHandler(async (request: Request, response: Response) => {
-  let userId: string;
+  try {
+    let userId: string;
 
-  if (request.user) {
-    userId = request.user.id;
-  } else {
-    // Clerk user — find by email
-    const clerkEmail = request.body.clerkEmail as string;
-    if (!clerkEmail) throw new AppError("Authentication required", 401);
-    const owner = await prisma.user.findUnique({ where: { email: clerkEmail } });
-    if (!owner) throw new AppError("Owner not found. Please sign up first.", 404);
-    userId = owner.id;
+    if (request.user) {
+      userId = request.user.id;
+    } else {
+      // Clerk user — find by email
+      const clerkEmail = request.body.clerkEmail as string;
+      if (!clerkEmail) throw new AppError("Authentication required", 401);
+      const owner = await prisma.user.findUnique({ where: { email: clerkEmail } });
+      if (!owner) throw new AppError("Owner not found. Please sign up first.", 404);
+      userId = owner.id;
+    }
+
+    const files = (request.files as Express.Multer.File[]) ?? [];
+    const uploads = await uploadMany(files);
+    const property = await propertyService.createProperty(
+      userId,
+      request.body,
+      uploads.map((upload) => ({ url: upload.secure_url, publicId: upload.public_id }))
+    );
+
+    response.status(201).json(property);
+  } catch (error) {
+    console.error("Property Creation Error:", error);
+    if (error instanceof AppError) {
+      response.status(error.statusCode).json({ error: error.message });
+    } else {
+      response.status(500).json({ error: "Internal Server Error" });
+    }
   }
-
-  const files = (request.files as Express.Multer.File[]) ?? [];
-  const uploads = await uploadMany(files);
-  const property = await propertyService.createProperty(
-    userId,
-    request.body,
-    uploads.map((upload) => ({ url: upload.secure_url, publicId: upload.public_id }))
-  );
-
-  response.status(201).json(property);
 });
 
 export const getProperties = asyncHandler(async (request: Request, response: Response) => {
