@@ -1,14 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
-import logo from "@/assets/logo.png";
-import { usePathname } from "next/navigation";
 import { ChevronDown, Heart, Home, LogOut, Search, UserRound } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { useUser } from "@clerk/nextjs";
 import { useAuth } from "@/hooks/useAuth";
+import { usePathname } from "next/navigation";
 
 const navLinks = [
   { href: "/", label: "Home", icon: Home },
@@ -19,13 +17,8 @@ const navLinks = [
 // aur bhi cheezein fix kar di I guess, abhi bhi kuch bugs ho sakte hain but overall structure is good.
 
 export function Navbar() {
+  // ALL hooks must be at the top, before any conditional logic
   const pathname = usePathname();
-
-  // Hide navbar on student dashboard
-  if (pathname.startsWith("/student/dashboard")) {
-    return null;
-  }
-
   const { user } = useUser();
   const role = user?.publicMetadata?.role ?? user?.unsafeMetadata?.role ?? "student";
   const displayName = user?.fullName ?? user?.firstName ?? user?.primaryEmailAddress?.emailAddress?.split('@')[0] ?? "User";
@@ -47,6 +40,11 @@ export function Navbar() {
   }, []);
 
   // navbar banadiya bccccc
+  // Hide navbar on student dashboard
+  if (pathname.startsWith("/student/dashboard")) {
+    return null;
+  }
+
   return (
     <>
       <header className="sticky top-0 z-40 hidden border-b border-black/5 bg-linen/90 backdrop-blur md:block">

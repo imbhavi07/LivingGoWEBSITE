@@ -1,4 +1,4 @@
-import { apiClient, isAuthApiError } from "@/lib/api/client";
+import { apiClient } from "@/lib/api/client";
 import { toProperty, unwrapItems, type ApiProperty, type PaginatedResponse } from "@/lib/api/types";
 import type { PropertyFilters } from "@/types/property";
 
