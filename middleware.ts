@@ -46,6 +46,11 @@ export default clerkMiddleware(async (auth, request) => {
     if (pathname.startsWith("/owner/kyc") && !role) {
       return NextResponse.next();
     }
+    // Allow the entire dashboard subtree without role check (we'll check in the dashboard layout)
+    if (pathname.startsWith("/owner/dashboard")) {
+      return NextResponse.next();
+    }
+    // For other owner routes, require owner or admin role
     if (role !== "owner" && role !== "admin") {
       return NextResponse.redirect(new URL("/owner/login", request.url));
     }
