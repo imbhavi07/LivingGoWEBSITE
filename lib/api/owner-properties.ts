@@ -19,16 +19,12 @@ export async function getOwnerProperty(id: string) {
 
 export async function createOwnerProperty(payload: OwnerPropertyPayload, token: string) {
   const formData = toPropertyFormData(payload);
-<<<<<<< HEAD
   const { data } = await apiClient.post<ApiProperty>("/owner/properties", formData, {
-    headers: { 
+    headers: {
       "Content-Type": "multipart/form-data",
       "Authorization": `Bearer ${token}`
     }
   });
-=======
-  const { data } = await apiClient.post<ApiProperty>("/owner/properties", formData);
->>>>>>> 23ce3c3 (Fix Bugs 4.8.6 (property upload))
   return toOwnerProperty(data);
 }
 
