@@ -36,7 +36,7 @@ export async function getAdminStats() {
 export async function getSubmittedProperties(query: Record<string, unknown>) {
   const { page, limit, skip } = getPagination(query);
   const search = query.search ? String(query.search) : undefined;
-  const status = query.status as PropertyStatus | undefined;
+  const status = (query.status as PropertyStatus | undefined) ?? "pending";
   const where: Prisma.PropertyWhereInput = {
     status,
     OR: search

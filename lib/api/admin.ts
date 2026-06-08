@@ -63,3 +63,24 @@ export async function rejectOwner(id: string) {
   const { data } = await apiClient.patch<ApiOwnerApproval>(`/admin/approvals/${id}/reject`);
   return toOwnerApproval(data);
 }
+
+export async function updateListing(id: string, payload: Partial<{
+  title: string;
+  description: string;
+  price: number;
+  priceSingle: number;
+  priceDouble: number;
+  priceTriple: number;
+  location: string;
+  roomType: string;
+  preference: string;
+  mealPlan: string;
+  mealTimes: string[];
+  curfewTime: string;
+  noticePeriod: string;
+  rulesStrictness: string;
+  facilities: string[];
+}>) {
+  const { data } = await apiClient.patch<ApiProperty>(`/admin/listings/${id}`, payload);
+  return toAdminListing(data);
+}

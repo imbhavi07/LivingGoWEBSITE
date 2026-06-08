@@ -74,13 +74,18 @@ export function useAdminListing(id: string) {
   const [listing, setListing] = useState<AdminListing | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
+  const mutate = useCallback(() => {
+    setIsLoading(true);
     getAdminListing(id)
       .then(setListing)
       .finally(() => setIsLoading(false));
   }, [id]);
 
-  return { listing, isLoading };
+  useEffect(() => {
+    mutate();
+  }, [mutate]);
+
+  return { listing, isLoading, mutate };
 }
 
 export function useAdminUsers(search = "") {
