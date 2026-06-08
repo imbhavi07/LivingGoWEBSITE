@@ -32,7 +32,8 @@ export async function handleClerkWebhook(req: Request, res: Response) {
     const lastName = (data.last_name as string) ?? "";
     const clerkId = data.id as string;
 
-    const role = "owner" as const;
+    const unsafeMetadata = (data.unsafe_metadata as Record<string, unknown>) ?? {};
+    const role = (unsafeMetadata.role === "owner" ? "owner" : "student") as "owner" | "student";
 
     if (email) {
       await prisma.user.upsert({
