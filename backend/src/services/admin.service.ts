@@ -140,3 +140,32 @@ export async function deleteSpamUser(id: string) {
 
   await prisma.user.delete({ where: { id } });
 }
+export async function updateListingByAdmin(id: string, input: Record<string, unknown>) {
+  const property = await prisma.property.findUnique({ where: { id } });
+  if (!property) throw new AppError("Property not found", 404);
+ 
+  return prisma.property.update({
+    where: { id },
+    data: {
+      ...(input.title !== undefined && { title: String(input.title) }),
+      ...(input.description !== undefined && { description: String(input.description) }),
+      ...(input.price !== undefined && { price: Number(input.price) }),
+      ...(input.priceSingle !== undefined && { priceSingle: Number(input.priceSingle) }),
+      ...(input.priceDouble !== undefined && { priceDouble: Number(input.priceDouble) }),
+      ...(input.priceTriple !== undefined && { priceTriple: Number(input.priceTriple) }),
+      ...(input.location !== undefined && { location: String(input.location) }),
+      ...(input.roomType !== undefined && { roomType: input.roomType as RoomType }),
+      ...(input.preference !== undefined && { preference: input.preference as GenderPreference }),
+      ...(input.mealPlan !== undefined && { mealPlan: String(input.mealPlan) }),  
+      ...(input.mealTimes !== undefined && { mealTimes: input.mealTimes as string[] }),
+      ...(input.curfewTime !== undefined && { curfewTime: String(input.curfewTime) }),
+      ...(input.noticePeriod !== undefined && { noticePeriod: String(input.noticePeriod) }),
+      ...(input.rulesStrictness !== undefined && { rulesStrictness: String(input.rulesStrictness) }),
+      ...(input.facilities !== undefined && { facilities: input.facilities as string[] }),
+    },
+    include: {
+      owner: { select: { id: true, name: true, email: true, phone: true } },
+      images: { select: { id: true, url: true, publicId: true } },
+    },
+  });
+}
