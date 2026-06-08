@@ -56,6 +56,11 @@ export const getOwnerApprovalById = asyncHandler(async (request: Request, respon
   response.json(await ownerVerificationService.getPendingOwnerApprovalById(String(request.params.id)));
 });
 
+export const getUserProperties = asyncHandler(async (request: Request, response: Response) => {
+  const id = String(request.params.id);
+  response.json(await adminService.getUserProperties(id));
+});
+
 export const approveOwner = asyncHandler(async (request: Request, response: Response) => {
   const id = String(request.params.id);
 

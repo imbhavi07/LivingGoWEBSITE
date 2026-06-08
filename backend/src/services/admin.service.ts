@@ -169,3 +169,32 @@ export async function updateListingByAdmin(id: string, input: Record<string, unk
     },
   });
 }
+
+export async function getUserProperties(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      role: true,
+    },
+  });
+
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  const properties = await prisma.property.findMany({
+    where: { ownerId: userId },
+    include: adminPropertyInclude,
+    orderBy: { createdAt: "desc" },
+  });
+
+  return {
+    user,
+    properties,
+  };
+}
+

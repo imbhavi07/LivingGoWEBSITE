@@ -26,3 +26,4 @@ adminRouter.get("/approvals/:id", validate(adminIdSchema), adminController.getOw
 adminRouter.patch("/approvals/:id/approve", validate(adminIdSchema), adminController.approveOwner);
 adminRouter.patch("/approvals/:id/reject", validate(adminIdSchema), adminController.rejectOwner);
 adminRouter.patch("/listings/:id", validate(adminIdSchema), adminController.updateListing);
+adminRouter.get("/users/:id/properties", validate(adminIdSchema), adminController.getUserProperties);
