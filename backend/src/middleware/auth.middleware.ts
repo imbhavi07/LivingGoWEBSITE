@@ -17,14 +17,19 @@ export async function authenticate(request: Request, _response: Response, next: 
     const payload = verifyJwt(token);
     const user = await prisma.user.findUnique({
       where: { id: payload.id },
-      select: { id: true, email: true, role: true, status: true }
+      select: { id: true, email: true, role: true, status: true, verificationStatus: true }
     });
 
     if (!user || user.status === "suspended") {
       return next(new AppError("Account is inactive or suspended", 401));
     }
 
-    request.user = { id: user.id, email: user.email, role: user.role };
+    request.user = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      verificationStatus: user.verificationStatus
+    };
     next();
   } catch {
     next(new AppError("Invalid or expired token", 401));
@@ -54,7 +59,12 @@ export async function clerkAuthenticate(request: Request, _response: Response, n
         },
       });
     }
-    request.user = { id: user.id, email: user.email, role: user.role };
+    request.user = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      verificationStatus: user.verificationStatus
+    };
     return next();
   }
 
@@ -64,13 +74,11 @@ export async function clerkAuthenticate(request: Request, _response: Response, n
     });
 
     const clerkUserId = payload.sub;
-    console.log("✅ Clerk user ID from token:", clerkUserId); // ← ADD
 
     const user = await prisma.user.findFirst({
       where: { clerkId: clerkUserId },
-      select: { id: true, email: true, role: true, status: true }
+      select: { id: true, email: true, role: true, status: true, verificationStatus: true }
     });
-    console.log("✅ User found in DB:", user); // ← ADD
 
     if (!user) {
       return next(new AppError("User not found. Please sign up first.", 401));
@@ -80,7 +88,12 @@ export async function clerkAuthenticate(request: Request, _response: Response, n
       return next(new AppError("Account is inactive or suspended", 401));
     }
 
-    request.user = { id: user.id, email: user.email, role: user.role };
+    request.user = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      verificationStatus: user.verificationStatus
+    };
     next();
   } catch (error) {
     console.error("❌ Clerk authentication error:", error);

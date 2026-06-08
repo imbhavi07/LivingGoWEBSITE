@@ -32,9 +32,7 @@ export async function handleClerkWebhook(req: Request, res: Response) {
     const lastName = (data.last_name as string) ?? "";
     const clerkId = data.id as string;
 
-    // Always create as "student" — role is elevated to "owner" only after
-    // admin approval via the KYC flow. Never trust client-supplied metadata.
-    const role = "student" as const;
+    const role = "owner" as const;
 
     if (email) {
       await prisma.user.upsert({

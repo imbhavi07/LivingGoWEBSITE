@@ -3,7 +3,6 @@ import { asyncHandler } from "../utils/async-handler";
 import { AppError } from "../utils/app-error";
 import { uploadMany } from "../services/cloudinary.service";
 import * as propertyService from "../services/property.service";
-import { prisma } from "../config/prisma";
 
 function requireUser(request: Request) {
   if (!request.user) throw new AppError("Authentication required", 401);
@@ -11,37 +10,30 @@ function requireUser(request: Request) {
 }
 
 export const createProperty = asyncHandler(async (request: Request, response: Response) => {
-  try {
-    let userId: string;
+  const user = requireUser(request);
 
-    if (request.user) {
-      userId = request.user.id;
-    } else {
-      // Clerk user — find by email
-      const clerkEmail = request.body.clerkEmail as string;
-      if (!clerkEmail) throw new AppError("Authentication required", 401);
-      const owner = await prisma.user.findUnique({ where: { email: clerkEmail } });
-      if (!owner) throw new AppError("Owner not found. Please sign up first.", 404);
-      userId = owner.id;
-    }
-
-    const files = (request.files as Express.Multer.File[]) ?? [];
-    const uploads = await uploadMany(files);
-    const property = await propertyService.createProperty(
-      userId,
-      request.body,
-      uploads.map((upload) => ({ url: upload.secure_url, publicId: upload.public_id }))
-    );
-
-    response.status(201).json(property);
-  } catch (error) {
-    console.error("Property Creation Error:", error);
-    if (error instanceof AppError) {
-      response.status(error.statusCode).json({ error: error.message });
-    } else {
-      response.status(500).json({ error: "Internal Server Error" });
-    }
+  // Only approved owners can list properties
+  // admins bypass this check
+  if (user.role === "owner" && user.verificationStatus !== "approved") {
+    const statusMessages: Record<string, string> = {
+      not_required:             "Please complete your KYC verification before listing properties.",
+      pending_email_verification: "Please verify your email before listing properties.",
+      pending_approval:         "Your KYC is under review. You can list properties once approved.",
+      rejected:                 "Your KYC verification was rejected. Please contact support.",
+    };
+    const message = statusMessages[user.verificationStatus] ?? "KYC verification required.";
+    throw new AppError(message, 403);
   }
+
+  const files = (request.files as Express.Multer.File[]) ?? [];
+  const uploads = await uploadMany(files);
+  const property = await propertyService.createProperty(
+    user.id,
+    request.body,
+    uploads.map((upload) => ({ url: upload.secure_url, publicId: upload.public_id }))
+  );
+
+  response.status(201).json(property);
 });
 
 export const getProperties = asyncHandler(async (request: Request, response: Response) => {

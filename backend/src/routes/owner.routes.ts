@@ -3,6 +3,7 @@ import * as propertyController from "../controllers/property.controller";
 import { clerkAuthenticate, authorize } from "../middleware/auth.middleware";
 import { uploadImages } from "../middleware/upload.middleware";
 import { validate } from "../middleware/validate.middleware";
+import { AppError } from "../utils/app-error";
 import {
   createPropertySchema,
   propertyIdSchema,
