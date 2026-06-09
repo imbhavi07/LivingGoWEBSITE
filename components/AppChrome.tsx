@@ -9,8 +9,9 @@ export function AppChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isOwnerArea = pathname.startsWith("/owner");
   const isAdminArea = pathname.startsWith("/admin");
+  const isStudentArea = pathname.startsWith("/student");
 
-  if (isOwnerArea || isAdminArea) return children;
+  if (isOwnerArea || isAdminArea || isStudentArea) return children;
 
   return (
     <div className="flex min-h-screen flex-col">
