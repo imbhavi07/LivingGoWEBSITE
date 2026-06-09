@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, LayoutDashboard, LogOut, Menu, Bookmark, X } from "lucide-react";
+import { Building2, LayoutDashboard, LogOut, Menu, Bookmark, X, Settings2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { Button } from "@/components/Button";
@@ -14,7 +14,8 @@ import { useAuth } from "@/hooks/useAuth";
 const studentLinks = [
   { href: "/student/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/listings", label: "Browse Properties", icon: Building2 },
-  { href: "/wishlist", label: "Wishlist", icon: Bookmark }
+  { href: "/wishlist", label: "Wishlist", icon: Bookmark },
+  { href: "/student/profile", label: "Profile", icon: Settings2 }
 ];
 
 export function StudentShell({ children }: { children: ReactNode }) {

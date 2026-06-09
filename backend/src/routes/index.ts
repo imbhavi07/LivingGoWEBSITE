@@ -5,6 +5,7 @@ import { ownerRouter } from "./owner.routes";
 import { propertyRouter } from "./property.routes";
 import { uploadRouter } from "./upload.routes";
 import { wishlistRouter } from "./wishlist.routes";
+import { userRouter } from "./user.routes";
 import kycRouter from "./kyc.routes";
 import webhookRouter from "./webhook.routes";
 
@@ -17,6 +18,7 @@ apiRouter.get("/health", (_request, response) => {
 apiRouter.use("/auth", authRouter);
 apiRouter.use("/properties", propertyRouter);
 apiRouter.use("/wishlist", wishlistRouter);
+apiRouter.use("/user", userRouter);
 apiRouter.use("/owner/kyc", kycRouter);        // ← BEFORE ownerRouter
 apiRouter.use("/owner", ownerRouter);
 apiRouter.use("/webhooks/clerk", webhookRouter);

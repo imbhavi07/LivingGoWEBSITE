@@ -61,6 +61,15 @@ model User {
   legalAcceptedAt    DateTime?
   verificationStatus VerificationStatus @default(not_required)
   reviewedAt         DateTime?
+  // Student profile fields (optional)
+  dob                DateTime?
+  mobileNumber       String?
+  instagramHandle    String?
+  xHandle            String?
+  university         String?
+  courseYear         String?
+  gender             String?
+  emergencyContact   String?
   properties         Property[]
   wishlist           Wishlist[]
   createdAt          DateTime           @default(now())
