@@ -9,6 +9,7 @@ import { buttonClasses } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { useAdminUsers } from "@/hooks/useAdmin";
 import { cn, formatIST } from "@/lib/utils";
+import Link from "next/link";
 
 type RoleFilter = "all" | "student" | "owner";
 
@@ -57,7 +58,16 @@ export default function AdminUsersPage() {
           {filtered.map((user) => (
             <article key={user.id} className="grid gap-3 border-b border-black/5 p-5 last:border-0 lg:grid-cols-[1.2fr_1fr_120px_120px_160px_180px] lg:items-center">
               <div>
-                <p className="font-black text-ink">{user.name}</p>
+                {user.role === "owner" ? (
+                  <Link
+                    href={`/admin/users/${user.id}`}
+                    className="font-black text-ink hover:underline"
+                  >
+                  {user.name}
+                  </Link>
+              ) : (
+                  <p className="font-black text-ink">{user.name}</p>
+                )}
                 <p className="mt-1 text-xs font-semibold text-muted">{user.listingsCount} listings</p>
               </div>
               <p className="text-sm font-semibold text-muted">{user.email}</p>

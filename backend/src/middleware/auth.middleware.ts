@@ -17,14 +17,19 @@ export async function authenticate(request: Request, _response: Response, next: 
     const payload = verifyJwt(token);
     const user = await prisma.user.findUnique({
       where: { id: payload.id },
-      select: { id: true, email: true, role: true, status: true }
+      select: { id: true, email: true, role: true, status: true, verificationStatus: true }
     });
 
     if (!user || user.status === "suspended") {
       return next(new AppError("Account is inactive or suspended", 401));
     }
 
-    request.user = { id: user.id, email: user.email, role: user.role };
+    request.user = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      verificationStatus: user.verificationStatus
+    };
     next();
   } catch {
     next(new AppError("Invalid or expired token", 401));
@@ -39,7 +44,6 @@ export async function clerkAuthenticate(request: Request, _response: Response, n
     return next(new AppError("Authentication token is required", 401));
   }
 
-  // In development, allow a mock token for testing
   if (process.env.NODE_ENV === 'development' && token === 'development-token') {
     const devEmail = 'dev@example.com';
     let user = await prisma.user.findUnique({ where: { email: devEmail } });
@@ -51,11 +55,16 @@ export async function clerkAuthenticate(request: Request, _response: Response, n
           role: 'owner',
           status: 'active',
           clerkId: 'dev_clerk_id',
-          passwordHash: 'dummy_hash', // dummy value for development
+          passwordHash: 'dummy_hash',
         },
       });
     }
-    request.user = { id: user.id, email: user.email, role: user.role };
+    request.user = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      verificationStatus: user.verificationStatus
+    };
     return next();
   }
 
@@ -68,7 +77,7 @@ export async function clerkAuthenticate(request: Request, _response: Response, n
 
     const user = await prisma.user.findFirst({
       where: { clerkId: clerkUserId },
-      select: { id: true, email: true, role: true, status: true }
+      select: { id: true, email: true, role: true, status: true, verificationStatus: true }
     });
 
     if (!user) {
@@ -79,10 +88,15 @@ export async function clerkAuthenticate(request: Request, _response: Response, n
       return next(new AppError("Account is inactive or suspended", 401));
     }
 
-    request.user = { id: user.id, email: user.email, role: user.role };
+    request.user = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      verificationStatus: user.verificationStatus
+    };
     next();
   } catch (error) {
-    console.error("Clerk authentication error:", error);
+    console.error("❌ Clerk authentication error:", error);
     return next(new AppError("Invalid or expired Clerk token", 401));
   }
 }

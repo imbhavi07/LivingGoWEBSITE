@@ -75,12 +75,17 @@ export function useOwnerProperty(id: string) {
   const [property, setProperty] = useState<OwnerProperty | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
+  const mutate = useCallback(() => {
     if (!isLoaded || !isSignedIn) return;
+    setIsLoading(true);
     getOwnerProperty(id)
       .then(setProperty)
       .finally(() => setIsLoading(false));
   }, [id, isLoaded, isSignedIn]);
 
-  return { property, isLoading };
+  useEffect(() => {
+    mutate();
+  }, [mutate]);
+
+  return { property, isLoading, mutate };
 }
