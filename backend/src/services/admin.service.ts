@@ -1,4 +1,4 @@
-import type { Prisma, PropertyStatus, UserStatus } from "@prisma/client";
+import { type Prisma, RoomType, GenderPreference, PropertyStatus, UserStatus } from "@prisma/client";
 import { prisma } from "../config/prisma";
 import { AppError } from "../utils/app-error";
 import { getPagination } from "../utils/pagination";
@@ -36,7 +36,7 @@ export async function getAdminStats() {
 export async function getSubmittedProperties(query: Record<string, unknown>) {
   const { page, limit, skip } = getPagination(query);
   const search = query.search ? String(query.search) : undefined;
-  const status = query.status as PropertyStatus | undefined;
+  const status = (query.status as PropertyStatus | undefined) ?? "pending";
   const where: Prisma.PropertyWhereInput = {
     status,
     OR: search
@@ -140,3 +140,61 @@ export async function deleteSpamUser(id: string) {
 
   await prisma.user.delete({ where: { id } });
 }
+export async function updateListingByAdmin(id: string, input: Record<string, unknown>) {
+  const property = await prisma.property.findUnique({ where: { id } });
+  if (!property) throw new AppError("Property not found", 404);
+ 
+  return prisma.property.update({
+    where: { id },
+    data: {
+      ...(input.title !== undefined && { title: String(input.title) }),
+      ...(input.description !== undefined && { description: String(input.description) }),
+      ...(input.price !== undefined && { price: Number(input.price) }),
+      ...(input.priceSingle !== undefined && { priceSingle: Number(input.priceSingle) }),
+      ...(input.priceDouble !== undefined && { priceDouble: Number(input.priceDouble) }),
+      ...(input.priceTriple !== undefined && { priceTriple: Number(input.priceTriple) }),
+      ...(input.location !== undefined && { location: String(input.location) }),
+      ...(input.roomType !== undefined && { roomType: input.roomType as RoomType }),
+      ...(input.preference !== undefined && { preference: input.preference as GenderPreference }),
+      ...(input.mealPlan !== undefined && { mealPlan: String(input.mealPlan) }),  
+      ...(input.mealTimes !== undefined && { mealTimes: input.mealTimes as string[] }),
+      ...(input.curfewTime !== undefined && { curfewTime: String(input.curfewTime) }),
+      ...(input.noticePeriod !== undefined && { noticePeriod: String(input.noticePeriod) }),
+      ...(input.rulesStrictness !== undefined && { rulesStrictness: String(input.rulesStrictness) }),
+      ...(input.facilities !== undefined && { facilities: input.facilities as string[] }),
+    },
+    include: {
+      owner: { select: { id: true, name: true, email: true, phone: true } },
+      images: { select: { id: true, url: true, publicId: true } },
+    },
+  });
+}
+
+export async function getUserProperties(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      role: true,
+    },
+  });
+
+  if (!user) {
+    throw new AppError("User not found", 404);
+  }
+
+  const properties = await prisma.property.findMany({
+    where: { ownerId: userId },
+    include: adminPropertyInclude,
+    orderBy: { createdAt: "desc" },
+  });
+
+  return {
+    user,
+    properties,
+  };
+}
+

@@ -31,7 +31,8 @@ export type OwnerProperty = {
   createdAt: string;
 };
 
-export type OwnerPropertyPayload = Omit<OwnerProperty, "id" | "status" | "createdAt"> & {
+export type OwnerPropertyPayload = Omit<OwnerProperty, "id" | "status" | "createdAt" | "images"> & {
+  images?: string[];
   isActive?: boolean;
   imageFiles?: File[];
   lat?: number;

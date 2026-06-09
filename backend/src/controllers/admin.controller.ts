@@ -56,6 +56,11 @@ export const getOwnerApprovalById = asyncHandler(async (request: Request, respon
   response.json(await ownerVerificationService.getPendingOwnerApprovalById(String(request.params.id)));
 });
 
+export const getUserProperties = asyncHandler(async (request: Request, response: Response) => {
+  const id = String(request.params.id);
+  response.json(await adminService.getUserProperties(id));
+});
+
 export const approveOwner = asyncHandler(async (request: Request, response: Response) => {
   const id = String(request.params.id);
 
@@ -105,5 +110,11 @@ export const rejectOwner = asyncHandler(async (request: Request, response: Respo
   }
 
   // 4. Send response
+  response.json(result);
+});
+
+export const updateListing = asyncHandler(async (request: Request, response: Response) => {
+  const id = String(request.params.id);
+  const result = await adminService.updateListingByAdmin(id, request.body);
   response.json(result);
 });
