@@ -27,7 +27,7 @@ export default function PropertyDashboardPage() {
       await updateOwnerProperty(params.id, {
         ...payload,
         imageFiles: [],
-      }, token ?? "");
+      }as never , token ?? "");
       await mutate();
       setSaveSuccess(true);
       setActiveTab("Overview");

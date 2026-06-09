@@ -64,6 +64,11 @@ export async function rejectOwner(id: string) {
   return toOwnerApproval(data);
 }
 
+export async function getAdminUserProperties(id: string) {
+  const { data } = await apiClient.get(`/admin/users/${id}/properties`);
+  return data;
+} 
+
 export async function updateListing(id: string, payload: Partial<{
   title: string;
   description: string;
