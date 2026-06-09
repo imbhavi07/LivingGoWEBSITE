@@ -89,7 +89,7 @@ export async function findNearbyPlaces(
   preference: "Boys" | "Girls" | "Any",
   location: string
 ): Promise<NearbyPlacesResult> {
-  const radius = 5000; // 5km radius
+  const radius = 30000; // 30km radius
 
   // Build Overpass query for colleges
   const collegeQuery = `
@@ -119,29 +119,47 @@ export async function findNearbyPlaces(
     hasCityMetro(location) ? queryOverpass(metroQuery) : Promise.resolve({ elements: [] }),
   ]);
 
+  console.log("College query result:", collegeData.status);
+  console.log("Metro query result:", metroData.status);
+
   // Process colleges
   const colleges: { name: string; lat: number; lng: number; isGirls: boolean }[] = [];
 
   if (collegeData.status === "fulfilled") {
-    for (const el of collegeData.value.elements) {
-      const name = el.tags?.name ?? el.tags?.["name:en"];
-      if (!name) continue;
+  console.log(
+    "Overpass colleges found:",
+    collegeData.value.elements.length
+  );
 
-      const elLat = el.lat ?? el.center?.lat;
-      const elLng = el.lon ?? el.center?.lon;
-      if (!elLat || !elLng) continue;
+  for (const el of collegeData.value.elements) {
+    const name = el.tags?.name ?? el.tags?.["name:en"];
+    if (!name) continue;
 
-      const nameLower = name.toLowerCase();
-      const isGirls =
-        nameLower.includes("girls") ||
-        nameLower.includes("women") ||
-        nameLower.includes("lady") ||
-        nameLower.includes("ladies") ||
-        el.tags?.["gender"] === "female";
+    const elLat = el.lat ?? el.center?.lat;
+    const elLng = el.lon ?? el.center?.lon;
+    if (!elLat || !elLng) continue;
 
-      colleges.push({ name, lat: elLat, lng: elLng, isGirls });
-    }
+    const nameLower = name.toLowerCase();
+
+    const isGirls =
+      nameLower.includes("girls") ||
+      nameLower.includes("women") ||
+      nameLower.includes("lady") ||
+      nameLower.includes("ladies") ||
+      el.tags?.["gender"] === "female";
+
+    colleges.push({
+      name,
+      lat: elLat,
+      lng: elLng,
+      isGirls,
+    });
   }
+
+  console.log("Processed colleges:", colleges.length);
+} else {
+  console.error("College query failed:", collegeData.reason);
+}
 
   // Filter based on preference
   let selectedColleges: typeof colleges = [];
@@ -153,6 +171,15 @@ export async function findNearbyPlaces(
   } else {
     // Boys or Any — just co-ed
     selectedColleges = colleges.filter((c) => !c.isGirls).slice(0, 3);
+  }
+
+  console.log("Selected colleges:", selectedColleges.length);
+  
+  if (selectedColleges.length > 0) {
+    console.log(
+      "First college:",
+      selectedColleges[0]
+    );
   }
 
   // Process metro stations
@@ -213,6 +240,14 @@ export async function findNearbyPlaces(
       };
     }
   }
+
+  console.log(
+  "Nearby places result:",
+  JSON.stringify({
+    colleges: collegeResults,
+    metro: metroResult,
+  })
+);
 
   return {
     colleges: collegeResults,
