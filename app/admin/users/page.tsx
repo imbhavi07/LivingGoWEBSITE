@@ -59,11 +59,11 @@ export default function AdminUsersPage() {
             <article key={user.id} className="grid gap-3 border-b border-black/5 p-5 last:border-0 lg:grid-cols-[1.2fr_1fr_120px_120px_160px_180px] lg:items-center">
               <div>
                 {user.role === "owner" ? (
-                <Link
-                  href={`/admin/users/${user.id}`}
+                  <Link
+                    href={`/admin/users/${user.id}`}
                     className="font-black text-ink hover:underline"
-                >
-                    {user.name}
+                  >
+                  {user.name}
                   </Link>
               ) : (
                   <p className="font-black text-ink">{user.name}</p>

@@ -76,7 +76,7 @@ export default function PropertyDashboardPage() {
             <span className="ml-auto text-sm text-ink">6/10 students</span>
           </div>
           <div className="h-2.5 w-full rounded-full bg-muted">
-            <div className="h-2.5 rounded-full bg-[#4CBB17]" style={{ width: "60%" }} />
+            <div className="h-2.5 w-3/5 rounded-full bg-[#4CBB17]"/>
           </div>
         </div>
 
