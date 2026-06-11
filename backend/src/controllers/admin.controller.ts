@@ -59,7 +59,7 @@ export const getOwnerApprovalById = asyncHandler(async (request: Request, respon
 });
 
 export const getUserProperties = asyncHandler(async (request: Request, response: Response) => {
-  const { id } = request.params;
+  const id= String(request.params);
  
   const user = await prisma.user.findUnique({
     where: { id },

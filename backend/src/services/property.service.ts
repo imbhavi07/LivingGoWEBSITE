@@ -385,3 +385,15 @@ export async function getOwnerStats(ownerId: string) {
 
   return { totalListings, activeListings, pendingListings };
 }
+
+export async function getApprovedPropertyList() {
+  return prisma.property.findMany({
+    where: {
+      status: "approved",
+    },
+    include: propertyInclude,
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}
