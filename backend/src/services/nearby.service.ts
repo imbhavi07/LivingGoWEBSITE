@@ -72,7 +72,7 @@ async function getDistances(
   if (!res.ok) {
     const err = await res.text();
     throw new Error(`ORS error: ${err}`);
-  }
+  } 
 
   const data = await res.json() as { distances: number[][] };
   return data.distances[0] ?? [];
@@ -174,7 +174,7 @@ export async function findNearbyPlaces(
   }
 
   console.log("Selected colleges:", selectedColleges.length);
-  
+
   if (selectedColleges.length > 0) {
     console.log(
       "First college:",

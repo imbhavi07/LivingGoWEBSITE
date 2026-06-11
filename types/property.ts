@@ -1,3 +1,5 @@
+import type { RatingData } from "@/components/StarRating";
+
 export type RoomType = "Single" | "Shared";
 export type GenderPreference = "Boys" | "Girls" | "Any";
 
@@ -9,7 +11,24 @@ export type Owner = {
   responseTime: string;
 };
 
+type Review = {
+  id: string;
+  cleanliness: number; food: number; security: number;
+  management: number; location: number;
+  comment?: string | null;
+  createdAt: string;
+  student: { id: string; name: string };
+};
+
+// Add to your Property type:
+
+
 export type Property = {
+  rating?: RatingData;
+  reviews?: Review[];
+  reviewCount?: number;
+  occupiedBeds?: number;
+  availableBeds?: number
   id: string;
   title: string;
   price: number;

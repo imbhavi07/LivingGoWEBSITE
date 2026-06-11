@@ -5,6 +5,8 @@ import { getPropertyById } from "../services/property.service";
 import * as ownerVerificationService from "../services/owner-verification.service";
 import { createClerkClient } from "@clerk/backend";
 import { prisma } from "../config/prisma";
+import { AppError } from "../utils/app-error";
+import { getPropertyRating } from "../services/property.service";
 
 const clerkClient = createClerkClient({
   secretKey: process.env.CLERK_SECRET_KEY!,
@@ -57,9 +59,60 @@ export const getOwnerApprovalById = asyncHandler(async (request: Request, respon
 });
 
 export const getUserProperties = asyncHandler(async (request: Request, response: Response) => {
-  const id = String(request.params.id);
-  response.json(await adminService.getUserProperties(id));
+  const { id } = request.params;
+ 
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      phone: true,
+      role: true,
+      status: true,
+      verificationStatus: true,
+      createdAt: true,
+      properties: {
+        select: {
+          id: true,
+          title: true,
+          location: true,
+          status: true,
+          price: true,
+          occupiedBeds: true,
+          bedsSingle: true,
+          bedsDouble: true,
+          bedsTriple: true,
+          createdAt: true,
+          _count: { select: { reviews: true, tenants: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      },
+    },
+  });
+ 
+  if (!user) throw new AppError("User not found", 404);
+ 
+  // Attach ratings to each property
+  const propertiesWithRatings = await Promise.all(
+    user.properties.map(async (property) => {
+      const rating = await getPropertyRating(property.id);
+      const totalBeds =
+        (property.bedsSingle ?? 0) +
+        (property.bedsDouble ?? 0) +
+        (property.bedsTriple ?? 0);
+      return {
+        ...property,
+        totalBeds,
+        availableBeds: Math.max(0, totalBeds - property.occupiedBeds),
+        rating,
+      };
+    })
+  );
+ 
+  response.json({ user, properties: propertiesWithRatings });
 });
+ 
 
 export const approveOwner = asyncHandler(async (request: Request, response: Response) => {
   const id = String(request.params.id);

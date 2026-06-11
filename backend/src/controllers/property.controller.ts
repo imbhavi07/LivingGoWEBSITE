@@ -4,6 +4,7 @@ import { AppError } from "../utils/app-error";
 import { uploadMany } from "../services/cloudinary.service";
 import * as propertyService from "../services/property.service";
 
+
 function requireUser(request: Request) {
   if (!request.user) throw new AppError("Authentication required", 401);
   return request.user;
@@ -43,8 +44,25 @@ export const getProperties = asyncHandler(async (request: Request, response: Res
 
 export const getPropertyById = asyncHandler(async (request: Request, response: Response) => {
   const property = await propertyService.getPropertyById(String(request.params.id), request.user?.role);
-  response.json(property);
+  const [rating, reviews] = await Promise.all([
+    propertyService.getPropertyRating(String(request.params.id)),
+    propertyService.getPropertyReviews(String(request.params.id)),
+  ]);
+  response.json({ ...property, rating, reviews });
 });
+
+export const getApprovedPropertyList = asyncHandler(async (_request: Request, response: Response) => {
+  const properties = await propertyService.getApprovedPropertyList();
+  response.json(properties);
+});
+
+export const getStudentResidence = asyncHandler(async (request: Request, response: Response) => {
+  const user = requireUser(request);
+  const residence = await propertyService.getStudentResidence(user.id);
+  response.json(residence ?? null);
+});
+
+
 
 export const getOwnerProperties = asyncHandler(async (request: Request, response: Response) => {
   const user = requireUser(request);
@@ -74,3 +92,18 @@ export const togglePropertyStatus = asyncHandler(async (request: Request, respon
   const property = await propertyService.togglePropertyStatus(String(request.params.id), user.id, Boolean(request.body.isActive));
   response.json(property);
 });
+
+export const createReview = asyncHandler(async (request: Request, response: Response) => {
+  const user = requireUser(request);
+  const propertyId = String(request.params.id);
+  const review = await propertyService.createReview(user.id, propertyId, request.body);
+  response.status(201).json(review);
+});
+
+export const markResidence = asyncHandler(async (request: Request, response: Response) => {
+  const user = requireUser(request);
+  const propertyId = String(request.params.id);
+  const result = await propertyService.markResidence(user.id, propertyId);
+  response.json({ success: true, ...result });
+});
+

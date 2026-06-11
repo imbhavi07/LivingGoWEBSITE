@@ -1,6 +1,10 @@
 "use client";
 
+// app/properties/[id]/page.tsx  (FULL REPLACEMENT)
+// Changes: added ReviewSection, rating in sidebar, rating badge in header
+
 import { useParams } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import { Check, Clock, GraduationCap, Heart, MapPin, ShieldCheck, Train, UtensilsCrossed } from "lucide-react";
 import { Button, buttonClasses } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
@@ -9,6 +13,8 @@ import { DetailsSkeleton } from "@/components/loading/DetailsSkeleton";
 import { useProperty } from "@/hooks/useProperties";
 import { useWishlist } from "@/hooks/useWishlist";
 import { formatPrice } from "@/lib/utils";
+import { StarRating, type RatingData } from "@/components/StarRating";
+import { ReviewSection } from "@/components/ReviewSection";
 
 type NearbyPlace = {
   name: string;
@@ -26,6 +32,8 @@ export default function PropertyDetailsPage() {
   const params = useParams<{ id: string }>();
   const { property, isLoading, error } = useProperty(params.id);
   const wishlist = useWishlist();
+  const { user } = useUser();
+  const userRole = (user?.publicMetadata?.role as string) ?? null;
 
   if (isLoading) return <DetailsSkeleton />;
 
@@ -40,6 +48,14 @@ export default function PropertyDetailsPage() {
   const saved = wishlist.isSaved(property.id);
   const nearbyPlaces = property.nearbyPlaces as NearbyPlacesData | null;
   const hasNearby = nearbyPlaces && (nearbyPlaces.colleges?.length > 0 || nearbyPlaces.metro);
+
+  // Rating data comes from updated getPropertyById API response
+  const rawRating = property.rating;
+  const rating: RatingData =
+    rawRating && typeof rawRating === "object" && "overall" in rawRating
+      ? (rawRating as unknown as RatingData)
+      : { overall: null, cleanliness: null, food: null, security: null, management: null, location: null, count: 0 };
+  const reviews = property.reviews ?? [];
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 md:py-10 lg:px-8">
@@ -59,6 +75,12 @@ export default function PropertyDetailsPage() {
                   {property.rulesStrictness} Rules
                 </span>
               )}
+              {/* ← NEW: Rating badge in header */}
+              {rating.overall !== null && (
+                <span className="rounded-full bg-amber-50 px-3 py-1">
+                  <StarRating value={rating.overall} count={rating.count} size="sm" />
+                </span>
+              )}
             </div>
             <h1 className="mt-3 text-3xl font-black text-ink sm:text-5xl">{property.title}</h1>
             <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-muted">
@@ -68,31 +90,20 @@ export default function PropertyDetailsPage() {
             <p className="mt-4 max-w-3xl text-base leading-8 text-muted">{property.description}</p>
           </div>
 
-          {/* Nearby colleges & metro ─────────────────────────────────── */}
+          {/* Nearby */}
           {hasNearby && (
             <section>
               <h2 className="text-2xl font-black text-ink">Nearby</h2>
               <p className="mt-1 text-sm text-muted">Walking/road distances from this PG</p>
               <div className="mt-4 space-y-3">
-
-                {/* Colleges */}
                 {nearbyPlaces.colleges?.map((place) => (
-                  <div
-                    key={place.name}
-                    className="flex items-center gap-4 rounded-2xl bg-white p-4 shadow-soft"
-                  >
-                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${
-                      place.type === "girls_college"
-                        ? "bg-pink-50 text-pink-600"
-                        : "bg-blue-50 text-blue-600"
-                    }`}>
+                  <div key={place.name} className="flex items-center gap-4 rounded-2xl bg-white p-4 shadow-soft">
+                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${place.type === "girls_college" ? "bg-pink-50 text-pink-600" : "bg-blue-50 text-blue-600"}`}>
                       <GraduationCap className="h-5 w-5" aria-hidden />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-ink truncate">{place.name}</p>
-                      <p className="text-xs text-muted">
-                        {place.type === "girls_college" ? "Girls college" : "Co-ed college"}
-                      </p>
+                      <p className="text-xs text-muted">{place.type === "girls_college" ? "Girls college" : "Co-ed college"}</p>
                     </div>
                     <div className="shrink-0 text-right">
                       <p className="text-sm font-black text-ink">{place.distance}</p>
@@ -100,8 +111,6 @@ export default function PropertyDetailsPage() {
                     </div>
                   </div>
                 ))}
-
-                {/* Metro */}
                 {nearbyPlaces.metro && (
                   <div className="flex items-center gap-4 rounded-2xl bg-white p-4 shadow-soft">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-50 text-purple-600">
@@ -117,15 +126,10 @@ export default function PropertyDetailsPage() {
                     </div>
                   </div>
                 )}
-
               </div>
-
-              {/* Privacy note */}
               <div className="mt-3 flex items-center gap-2 rounded-2xl bg-linen p-3">
                 <ShieldCheck className="h-4 w-4 shrink-0 text-muted" aria-hidden />
-                <p className="text-xs text-muted">
-                  Exact location is shared only after enquiry to protect owner privacy.
-                </p>
+                <p className="text-xs text-muted">Exact location is shared only after enquiry to protect owner privacy.</p>
               </div>
             </section>
           )}
@@ -134,24 +138,24 @@ export default function PropertyDetailsPage() {
           <section>
             <h2 className="text-2xl font-black text-ink">Pricing</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              {property.priceSingle ? (
+              {property.priceSingle && (
                 <div className="rounded-2xl bg-white p-4 shadow-soft">
                   <p className="text-xs font-bold uppercase text-muted">Single Room</p>
                   <p className="mt-1 text-2xl font-black text-ink">{formatPrice(property.priceSingle)}<span className="text-sm font-semibold text-muted">/mo</span></p>
                 </div>
-              ) : null}
-              {property.priceDouble ? (
+              )}
+              {property.priceDouble && (
                 <div className="rounded-2xl bg-white p-4 shadow-soft">
                   <p className="text-xs font-bold uppercase text-muted">Double Sharing</p>
                   <p className="mt-1 text-2xl font-black text-ink">{formatPrice(property.priceDouble)}<span className="text-sm font-semibold text-muted">/mo</span></p>
                 </div>
-              ) : null}
-              {property.priceTriple ? (
+              )}
+              {property.priceTriple && (
                 <div className="rounded-2xl bg-white p-4 shadow-soft">
                   <p className="text-xs font-bold uppercase text-muted">Triple Sharing</p>
                   <p className="mt-1 text-2xl font-black text-ink">{formatPrice(property.priceTriple)}<span className="text-sm font-semibold text-muted">/mo</span></p>
                 </div>
-              ) : null}
+              )}
               {!property.priceSingle && !property.priceDouble && !property.priceTriple && (
                 <div className="rounded-2xl bg-white p-4 shadow-soft sm:col-span-3">
                   <p className="text-xs font-bold uppercase text-muted">Monthly Rent</p>
@@ -170,9 +174,9 @@ export default function PropertyDetailsPage() {
                   <UtensilsCrossed className="h-5 w-5 text-moss" aria-hidden />
                   <p className="font-bold text-ink">{property.mealPlan}</p>
                 </div>
-                {property.mealTimes && property.mealTimes.length > 0 && (
+                {(property.mealTimes?.length ?? 0) > 0 && (
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {property.mealTimes.map((time) => (
+                    {property.mealTimes?.map((time: string) => (
                       <span key={time} className="rounded-full bg-linen px-3 py-1 text-xs font-bold text-ink">{time}</span>
                     ))}
                   </div>
@@ -185,7 +189,7 @@ export default function PropertyDetailsPage() {
           <section>
             <h2 className="text-2xl font-black text-ink">Facilities</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {property.facilities.map((facility) => (
+              {property.facilities.map((facility: string) => (
                 <div key={facility} className="flex items-center gap-3 rounded-2xl bg-white p-4 text-sm font-bold text-ink shadow-soft">
                   <Check className="h-5 w-5 text-moss" aria-hidden />
                   {facility}
@@ -202,8 +206,7 @@ export default function PropertyDetailsPage() {
                 {property.curfewTime && (
                   <div className="rounded-2xl bg-white p-4 shadow-soft">
                     <div className="flex items-center gap-2 text-xs font-bold uppercase text-muted">
-                      <Clock className="h-4 w-4" aria-hidden />
-                      Curfew
+                      <Clock className="h-4 w-4" aria-hidden />Curfew
                     </div>
                     <p className="mt-1 font-black text-ink">{property.curfewTime}</p>
                   </div>
@@ -223,12 +226,29 @@ export default function PropertyDetailsPage() {
               </div>
             </section>
           )}
+
+          {/* ← NEW: Reviews section (login-gated form, always shows reviews) */}
+          <ReviewSection
+            propertyId={property.id}
+            rating={rating}
+            reviews={reviews}
+            userRole={userRole}
+          />
+
         </div>
 
         {/* Sidebar */}
         <aside className="h-fit rounded-3xl bg-white p-6 shadow-soft">
           <p className="text-sm font-bold uppercase text-muted">Starting from</p>
           <p className="mt-2 text-4xl font-black text-ink">{formatPrice(property.price)}<span className="text-sm font-semibold text-muted">/mo</span></p>
+
+          {/* ← NEW: Rating in sidebar */}
+          {rating.overall !== null && (
+            <div className="mt-3">
+              <StarRating value={rating.overall} count={rating.count} size="md" />
+            </div>
+          )}
+
           <div className="mt-5 space-y-3 rounded-3xl bg-linen p-4">
             <p className="text-sm font-bold text-ink">Owner info</p>
             <p className="text-lg font-black text-ink">{property.owner.name}</p>
@@ -241,9 +261,7 @@ export default function PropertyDetailsPage() {
             <p className="text-xs font-bold text-amber-700">📍 Exact location shared after enquiry</p>
           </div>
           <div className="mt-5 grid gap-3">
-            <a className={buttonClasses("primary", undefined,"w-full")}>
-              Lock Property
-            </a>
+            <a className={buttonClasses("primary", undefined, "w-full")}>Lock Property</a>
             <Button variant="secondary" className="w-full" onClick={() => wishlist.toggle(property.id)}>
               <Heart className={saved ? "h-4 w-4 fill-clay text-clay" : "h-4 w-4"} aria-hidden />
               {saved ? "Saved" : "Save property"}

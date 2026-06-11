@@ -28,6 +28,9 @@ type ApiOwner = {
 };
 
 export type ApiProperty = {
+  occupiedBeds?: number;
+  rating?: number;
+  reviewCount?: number;
   id: string;
   title: string;
   description: string;

@@ -180,6 +180,172 @@ export async function deleteProperty(id: string, actorId: string, actorRole: Rol
   await prisma.property.delete({ where: { id } });
 }
 
+export async function createReview(
+  studentId: string,
+  propertyId: string,
+  body: {
+    cleanliness: number;
+    food: number;
+    security: number;
+    management: number;
+    location: number;
+    comment?: string;
+  }
+) {
+  // Validate all ratings are 1-5
+  const fields = ["cleanliness", "food", "security", "management", "location"] as const;
+  for (const field of fields) {
+    const val = body[field];
+    if (!Number.isInteger(val) || val < 1 || val > 5) {
+      throw new AppError(`${field} must be an integer between 1 and 5`, 400);
+    }
+  }
+ 
+  const property = await prisma.property.findUnique({ where: { id: propertyId } });
+  if (!property) throw new AppError("Property not found", 404);
+ 
+  // Upsert: one review per student per property (@@unique constraint)
+  const review = await prisma.review.upsert({
+    where: { studentId_propertyId: { studentId, propertyId } },
+    update: { ...body },
+    create: { studentId, propertyId, ...body },
+    include: {
+      student: { select: { id: true, name: true } },
+    },
+  });
+ 
+  return review;
+}
+
+export async function markResidence(studentId: string, propertyId: string) {
+  const property = await prisma.property.findUnique({ where: { id: propertyId } });
+  if (!property) throw new AppError("Property not found", 404);
+ 
+  // Calculate total beds
+  const totalBeds =
+    (property.bedsSingle ?? 0) +
+    (property.bedsDouble ?? 0) +
+    (property.bedsTriple ?? 0);
+ 
+  // Check for existing residence (student can only live in one place)
+  const existing = await prisma.tenantResidence.findUnique({
+    where: { studentId },
+  });
+ 
+  // Guard: already in same property — check before transaction
+  if (existing && existing.propertyId === propertyId) {
+    throw new AppError("You are already marked as a tenant here", 400);
+  }
+ 
+  await prisma.$transaction(async (tx) => {
+    if (existing) {
+      // Free up a bed in old property
+      await tx.property.update({
+        where: { id: existing.propertyId },
+        data: { occupiedBeds: { decrement: 1 } },
+      });
+      // Update residence to new property
+      await tx.tenantResidence.update({
+        where: { studentId },
+        data: { propertyId },
+      });
+    } else {
+      // Check capacity only for new residents
+      if (totalBeds > 0 && property.occupiedBeds >= totalBeds) {
+        throw new AppError("This property is at full capacity", 400);
+      }
+      await tx.tenantResidence.create({ data: { studentId, propertyId } });
+    }
+ 
+    // Increment occupiedBeds in new property
+    await tx.property.update({
+      where: { id: propertyId },
+      data: { occupiedBeds: { increment: 1 } },
+    });
+  });
+ 
+  // Return updated property snapshot
+  const updated = await prisma.property.findUnique({ where: { id: propertyId } });
+  return {
+    propertyId,
+    occupiedBeds: updated!.occupiedBeds,
+    totalBeds,
+    availableBeds: Math.max(0, totalBeds - updated!.occupiedBeds),
+  };
+}
+
+export async function getStudentResidence(studentId: string) {
+  const residence = await prisma.tenantResidence.findUnique({
+    where: { studentId },
+    include: {
+      property: {
+        select: {
+          id: true,
+          title: true,
+          location: true,
+          bedsSingle: true,
+          bedsDouble: true,
+          bedsTriple: true,
+          occupiedBeds: true,
+        },
+      },
+    },
+  });
+ 
+  if (!residence) return null;
+ 
+  const p = residence.property;
+  const totalBeds = (p.bedsSingle ?? 0) + (p.bedsDouble ?? 0) + (p.bedsTriple ?? 0);
+ 
+  return {
+    propertyId: p.id,
+    propertyTitle: p.title,
+    location: p.location,
+    occupiedBeds: p.occupiedBeds,
+    totalBeds,
+    availableBeds: Math.max(0, totalBeds - p.occupiedBeds),
+  };
+}
+
+export async function getPropertyRating(propertyId: string) {
+  const agg = await prisma.review.aggregate({
+    where: { propertyId },
+    _avg: {
+      cleanliness: true,
+      food: true,
+      security: true,
+      management: true,
+      location: true,
+    },
+    _count: { id: true },
+  });
+ 
+  const avg = agg._avg;
+  const fields = [avg.cleanliness, avg.food, avg.security, avg.management, avg.location];
+  const defined = fields.filter((v) => v !== null) as number[];
+  const overall = defined.length > 0 ? defined.reduce((a, b) => a + b, 0) / defined.length : null;
+ 
+  return {
+    overall: overall ? Math.round(overall * 10) / 10 : null,
+    cleanliness: avg.cleanliness ? Math.round(avg.cleanliness * 10) / 10 : null,
+    food: avg.food ? Math.round(avg.food * 10) / 10 : null,
+    security: avg.security ? Math.round(avg.security * 10) / 10 : null,
+    management: avg.management ? Math.round(avg.management * 10) / 10 : null,
+    location: avg.location ? Math.round(avg.location * 10) / 10 : null,
+    count: agg._count.id,
+  };
+}
+
+export async function getPropertyReviews(propertyId: string) {
+  return prisma.review.findMany({
+    where: { propertyId },
+    include: {
+      student: { select: { id: true, name: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+}
+
 export async function togglePropertyStatus(id: string, ownerId: string, isActive: boolean) {
   const property = await prisma.property.findUnique({ where: { id } });
   if (!property) throw new AppError("Property not found", 404);

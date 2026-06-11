@@ -116,4 +116,24 @@ export const togglePropertyStatusSchema = z.object({
   body: z.object({
     isActive: z.boolean()
   })
+}); 
+
+export const createReviewSchema = z.object({
+  params: z.object({
+    id: z.string().min(1)
+  }),
+  body: z.object({
+    cleanliness: z.number().min(1).max(5),
+    food: z.number().min(1).max(5),
+    security: z.number().min(1).max(5),
+    management: z.number().min(1).max(5),
+    location: z.number().min(1).max(5),
+    comment: z.string().optional()
+  })
+});
+
+export const markResidenceSchema = z.object({
+  params: z.object({
+    id: z.string().min(1)
+  })
 });

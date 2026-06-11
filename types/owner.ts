@@ -3,6 +3,10 @@ import type { GenderPreference, RoomType } from "@/types/property";
 export type OwnerListingStatus = "active" | "inactive" | "pending" | "rejected";
 
 export type OwnerProperty = {
+  occupiedBeds?: number;
+  availableBeds?: number;
+  rating?: number;
+  reviewCount?: number;
   id: string;
   title: string;
   description: string;
