@@ -1,8 +1,11 @@
 "use client";
 
+// components/PropertyCard.tsx  (FULL REPLACEMENT)
+// Adds: available beds badge
+
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, MapPin } from "lucide-react";
+import { Heart, MapPin, BedDouble } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { Button } from "@/components/Button";
@@ -27,6 +30,11 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
     void onSave(property.id);
   }
 
+  // ── NEW: bed availability ────────────────────────────────────────────────
+  const totalBeds = (property.bedsSingle ?? 0) + (property.bedsDouble ?? 0) + (property.bedsTriple ?? 0);
+  const availableBeds = Math.max(0, totalBeds - (property.occupiedBeds ?? 0));
+  const showAvailability = totalBeds > 0;
+
   return (
     <article className="group overflow-hidden rounded-3xl bg-white shadow-2xl transition hover:-translate-y-3 hover:scale-[1.04] hover:shadow-lift">
       <Link href={`/properties/${property.id}`} className="block">
@@ -38,6 +46,15 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
             className="object-cover transition duration-500 group-hover:scale-105"
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           />
+          {/* Availability badge over image */}
+          {showAvailability && (
+            <span className={`absolute top-3 right-3 rounded-full px-3 py-1 text-xs font-bold flex items-center gap-1.5 ${
+              availableBeds === 0 ? "bg-red-500 text-white" : "bg-white/95 text-green-700"
+            }`}>
+              <BedDouble className="h-3 w-3" />
+              {availableBeds === 0 ? "Full" : `${availableBeds} left`}
+            </span>
+          )}
         </div>
       </Link>
       <div className="space-y-4 p-5">

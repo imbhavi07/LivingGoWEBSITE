@@ -8,6 +8,7 @@ import { wishlistRouter } from "./wishlist.routes";
 import { userRouter } from "./user.routes";
 import kycRouter from "./kyc.routes";
 import webhookRouter from "./webhook.routes";
+import { tokenPaymentRouter } from "./token-payment.routes";
 
 export const apiRouter = Router();
 
@@ -19,8 +20,9 @@ apiRouter.use("/auth", authRouter);
 apiRouter.use("/properties", propertyRouter);
 apiRouter.use("/wishlist", wishlistRouter);
 apiRouter.use("/user", userRouter);
-apiRouter.use("/owner/kyc", kycRouter);        // ← BEFORE ownerRouter
+apiRouter.use("/owner/kyc", kycRouter);
 apiRouter.use("/owner", ownerRouter);
 apiRouter.use("/webhooks/clerk", webhookRouter);
 apiRouter.use("/admin", adminRouter);
 apiRouter.use("/uploads", uploadRouter);
+apiRouter.use("/payments", tokenPaymentRouter);

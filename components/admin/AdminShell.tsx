@@ -13,7 +13,8 @@ const adminLinks = [
   { href: "/admin/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/admin/listings", label: "Moderation", icon: ClipboardCheck },
   { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/admin/approvals", label: "Approvals", icon: Shield }
+  { href: "/admin/approvals", label: "Approvals", icon: Shield },
+  { href: "/admin/payments", label: "Payments", icon: ShieldCheck }
 ];
 
 export function AdminShell({ children }: { children: ReactNode }) {

@@ -28,7 +28,11 @@ export type Property = {
   reviews?: Review[];
   reviewCount?: number;
   occupiedBeds?: number;
-  availableBeds?: number
+  availableBeds?: number;
+  // ← NEW: bed counts per room type (used for "Lock Property" availability)
+  bedsSingle?: number | null;
+  bedsDouble?: number | null;
+  bedsTriple?: number | null;
   id: string;
   title: string;
   price: number;

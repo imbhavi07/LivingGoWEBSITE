@@ -11,6 +11,7 @@ import {
 import { StudentShell } from "@/components/student/StudentShell";
 import { Button } from "@/components/Button";
 import { StarRating } from "@/components/StarRating";
+import { MyBookings } from "@/components/student/MyBookings";
 import {
   getStudentResidence,
   getApprovedPropertyList,
@@ -34,11 +35,19 @@ export default function StudentDashboardPage() {
   // Load current residence
   useEffect(() => {
     (async () => {
-      const token = await getToken();
-      if (!token) return;
-      const res = await getStudentResidence(token);
-      setResidence(res);
-      setResidenceLoading(false);
+      try {
+        const token = await getToken();
+        if (!token) {
+          setResidenceLoading(false);
+          return;
+        }
+        const res = await getStudentResidence(token);
+        setResidence(res);
+      } catch {
+        // ignore — dashboard still works without residence data
+      } finally {
+        setResidenceLoading(false);
+      }
     })();
   }, [getToken]);
 
@@ -98,7 +107,7 @@ export default function StudentDashboardPage() {
                 className="flex items-center gap-2 rounded-xl border border-black/10 bg-linen px-4 py-2 text-sm font-semibold text-ink hover:bg-black/5 transition-colors"
               >
                 <Home className="h-4 w-4" />
-                I am an existing tenant
+                I'm an existing tenant
                 <ChevronDown className={`h-4 w-4 transition-transform ${showDropdown ? "rotate-180" : ""}`} />
               </button>
 
@@ -167,7 +176,7 @@ export default function StudentDashboardPage() {
             <>
               <div className="mb-3 flex items-center gap-2">
                 <Check className="h-4 w-4 text-green-600" />
-                <span className="text-sm font-semibold text-green-700">You are re registered as a tenant</span>
+                <span className="text-sm font-semibold text-green-700">You're registered as a tenant</span>
               </div>
               <div className="grid gap-4 md:grid-cols-3">
                 <div>
@@ -204,6 +213,9 @@ export default function StudentDashboardPage() {
             </div>
           )}
         </section>
+
+        {/* ── My Bookings (token payments) ─────────────────────────────── */}
+        <MyBookings />
 
         {/* ── LivingGo Wallet ───────────────────────────────────────────── */}
         <section className="bg-white rounded-3xl shadow-soft p-6">
