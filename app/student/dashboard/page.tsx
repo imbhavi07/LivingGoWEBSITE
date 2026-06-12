@@ -100,14 +100,13 @@ export default function StudentDashboardPage() {
               Current Residence
             </h2>
 
-            {/* "I'm an existing tenant" button */}
             <div className="relative">
               <button
                 onClick={() => { setShowDropdown((v) => !v); setMarkError(null); }}
                 className="flex items-center gap-2 rounded-xl border border-black/10 bg-linen px-4 py-2 text-sm font-semibold text-ink hover:bg-black/5 transition-colors"
               >
                 <Home className="h-4 w-4" />
-                I'm an existing tenant
+                I am an existing tenant
                 <ChevronDown className={`h-4 w-4 transition-transform ${showDropdown ? "rotate-180" : ""}`} />
               </button>
 
@@ -176,7 +175,7 @@ export default function StudentDashboardPage() {
             <>
               <div className="mb-3 flex items-center gap-2">
                 <Check className="h-4 w-4 text-green-600" />
-                <span className="text-sm font-semibold text-green-700">You're registered as a tenant</span>
+                <span className="text-sm font-semibold text-green-700">You are registered as a tenant</span>
               </div>
               <div className="grid gap-4 md:grid-cols-3">
                 <div>

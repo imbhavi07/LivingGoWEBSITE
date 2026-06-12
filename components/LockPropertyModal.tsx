@@ -158,7 +158,7 @@ export function LockPropertyModal({ propertyId, propertyTitle, monthlyRent, onCl
                 onClick={() => setStep("utr")}
                 className="w-full rounded-2xl bg-ink py-3 text-sm font-bold text-white hover:bg-ink/90 transition-colors"
               >
-                I've paid — Enter UTR Number →
+                I have paid — Enter UTR Number →
               </button>
 
               <button onClick={() => setStep("info")} className="w-full text-center text-sm text-muted hover:text-ink">
@@ -221,7 +221,7 @@ export function LockPropertyModal({ propertyId, propertyTitle, monthlyRent, onCl
               <div>
                 <h3 className="text-xl font-black text-ink">Payment Submitted!</h3>
                 <p className="mt-2 text-sm text-muted">
-                  Your token payment is under admin review. You'll see the full address and owner details once approved.
+                  Your token payment is under admin review. You will see the full address and owner details once approved.
                 </p>
               </div>
               <div className="rounded-2xl bg-linen p-4 text-left space-y-2">

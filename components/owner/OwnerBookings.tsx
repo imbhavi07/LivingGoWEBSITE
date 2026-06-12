@@ -43,7 +43,7 @@ export function OwnerBookings() {
           <Users className="h-5 w-5" />
           Student Bookings
         </h2>
-        <p className="text-sm text-muted">No bookings yet. When a student locks one of your properties, it'll appear here.</p>
+        <p className="text-sm text-muted">No bookings yet. When a student locks one of your properties, it will appear here.</p>
       </section>
     );
   }
