@@ -7,6 +7,8 @@ exports.removeListing = removeListing;
 exports.getUsers = getUsers;
 exports.updateUserStatus = updateUserStatus;
 exports.deleteSpamUser = deleteSpamUser;
+exports.updateListingByAdmin = updateListingByAdmin;
+exports.getUserProperties = getUserProperties;
 const prisma_1 = require("../config/prisma");
 const app_error_1 = require("../utils/app-error");
 const pagination_1 = require("../utils/pagination");
@@ -40,7 +42,7 @@ async function getAdminStats() {
 async function getSubmittedProperties(query) {
     const { page, limit, skip } = (0, pagination_1.getPagination)(query);
     const search = query.search ? String(query.search) : undefined;
-    const status = query.status;
+    const status = query.status ?? "pending";
     const where = {
         status,
         OR: search
@@ -137,4 +139,57 @@ async function deleteSpamUser(id) {
     if (user.role === "admin")
         throw new app_error_1.AppError("Admin accounts cannot be deleted through this endpoint", 400);
     await prisma_1.prisma.user.delete({ where: { id } });
+}
+async function updateListingByAdmin(id, input) {
+    const property = await prisma_1.prisma.property.findUnique({ where: { id } });
+    if (!property)
+        throw new app_error_1.AppError("Property not found", 404);
+    return prisma_1.prisma.property.update({
+        where: { id },
+        data: {
+            ...(input.title !== undefined && { title: String(input.title) }),
+            ...(input.description !== undefined && { description: String(input.description) }),
+            ...(input.price !== undefined && { price: Number(input.price) }),
+            ...(input.priceSingle !== undefined && { priceSingle: Number(input.priceSingle) }),
+            ...(input.priceDouble !== undefined && { priceDouble: Number(input.priceDouble) }),
+            ...(input.priceTriple !== undefined && { priceTriple: Number(input.priceTriple) }),
+            ...(input.location !== undefined && { location: String(input.location) }),
+            ...(input.roomType !== undefined && { roomType: input.roomType }),
+            ...(input.preference !== undefined && { preference: input.preference }),
+            ...(input.mealPlan !== undefined && { mealPlan: String(input.mealPlan) }),
+            ...(input.mealTimes !== undefined && { mealTimes: input.mealTimes }),
+            ...(input.curfewTime !== undefined && { curfewTime: String(input.curfewTime) }),
+            ...(input.noticePeriod !== undefined && { noticePeriod: String(input.noticePeriod) }),
+            ...(input.rulesStrictness !== undefined && { rulesStrictness: String(input.rulesStrictness) }),
+            ...(input.facilities !== undefined && { facilities: input.facilities }),
+        },
+        include: {
+            owner: { select: { id: true, name: true, email: true, phone: true } },
+            images: { select: { id: true, url: true, publicId: true } },
+        },
+    });
+}
+async function getUserProperties(userId) {
+    const user = await prisma_1.prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            role: true,
+        },
+    });
+    if (!user) {
+        throw new app_error_1.AppError("User not found", 404);
+    }
+    const properties = await prisma_1.prisma.property.findMany({
+        where: { ownerId: userId },
+        include: adminPropertyInclude,
+        orderBy: { createdAt: "desc" },
+    });
+    return {
+        user,
+        properties,
+    };
 }

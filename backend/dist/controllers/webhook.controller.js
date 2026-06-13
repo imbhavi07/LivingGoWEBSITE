@@ -21,33 +21,45 @@ async function handleClerkWebhook(req, res) {
     catch {
         return res.status(400).json({ error: "Invalid webhook signature" });
     }
+    const clerkClient = (0, backend_1.createClerkClient)({
+        secretKey: process.env.CLERK_SECRET_KEY,
+    });
     if (event.type === "user.created") {
         const data = event.data;
         const email = data.email_addresses[0]?.email_address;
         const firstName = data.first_name ?? "";
         const lastName = data.last_name ?? "";
         const clerkId = data.id;
-        const metadata = data.unsafe_metadata ?? {};
-        const role = metadata.role === "owner" ? "owner" : "student";
+        const unsafeMetadata = data.unsafe_metadata ?? {};
+        const role = (unsafeMetadata.role === "owner" ? "owner" : "student");
         if (email) {
             await prisma_1.prisma.user.upsert({
                 where: { email },
-                update: {},
+                update: {
+                    clerkId, // sync clerkId if user record already exists (e.g. was manually seeded)
+                },
                 create: {
                     name: `${firstName} ${lastName}`.trim() || email,
                     email,
+                    clerkId, // ← THE FIX: was missing, causing all auth lookups to fail
                     phone: null,
                     passwordHash: clerkId,
                     role,
                     verificationStatus: "not_required",
                 },
             });
-            // ✅ Set publicMetadata in Clerk so middleware can read the role
-            const clerkClient = (0, backend_1.createClerkClient)({
-                secretKey: process.env.CLERK_SECRET_KEY,
-            });
+            // Sync role to Clerk publicMetadata so it can be read client-side if needed
             await clerkClient.users.updateUserMetadata(clerkId, {
                 publicMetadata: { role },
+            });
+        }
+    }
+    // Handle account deletion — clean up DB when user deletes their Clerk account
+    if (event.type === "user.deleted") {
+        const clerkId = event.data.id;
+        if (clerkId) {
+            await prisma_1.prisma.user.deleteMany({
+                where: { clerkId },
             });
         }
     }

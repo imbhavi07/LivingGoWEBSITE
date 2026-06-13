@@ -58,3 +58,5 @@ exports.adminRouter.get("/approvals", adminController.getOwnerApprovals);
 exports.adminRouter.get("/approvals/:id", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.getOwnerApprovalById);
 exports.adminRouter.patch("/approvals/:id/approve", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.approveOwner);
 exports.adminRouter.patch("/approvals/:id/reject", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.rejectOwner);
+exports.adminRouter.patch("/listings/:id", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.updateListing);
+exports.adminRouter.get("/users/:id/properties", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.getUserProperties);

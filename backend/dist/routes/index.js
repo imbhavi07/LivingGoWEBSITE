@@ -11,8 +11,10 @@ const owner_routes_1 = require("./owner.routes");
 const property_routes_1 = require("./property.routes");
 const upload_routes_1 = require("./upload.routes");
 const wishlist_routes_1 = require("./wishlist.routes");
+const user_routes_1 = require("./user.routes");
 const kyc_routes_1 = __importDefault(require("./kyc.routes"));
 const webhook_routes_1 = __importDefault(require("./webhook.routes"));
+const token_payment_routes_1 = require("./token-payment.routes");
 exports.apiRouter = (0, express_1.Router)();
 exports.apiRouter.get("/health", (_request, response) => {
     response.json({ status: "ok", service: "LivingGo-backend" });
@@ -20,8 +22,10 @@ exports.apiRouter.get("/health", (_request, response) => {
 exports.apiRouter.use("/auth", auth_routes_1.authRouter);
 exports.apiRouter.use("/properties", property_routes_1.propertyRouter);
 exports.apiRouter.use("/wishlist", wishlist_routes_1.wishlistRouter);
-exports.apiRouter.use("/owner/kyc", kyc_routes_1.default); // ← BEFORE ownerRouter
+exports.apiRouter.use("/user", user_routes_1.userRouter);
+exports.apiRouter.use("/owner/kyc", kyc_routes_1.default);
 exports.apiRouter.use("/owner", owner_routes_1.ownerRouter);
 exports.apiRouter.use("/webhooks/clerk", webhook_routes_1.default);
 exports.apiRouter.use("/admin", admin_routes_1.adminRouter);
 exports.apiRouter.use("/uploads", upload_routes_1.uploadRouter);
+exports.apiRouter.use("/payments", token_payment_routes_1.tokenPaymentRouter);

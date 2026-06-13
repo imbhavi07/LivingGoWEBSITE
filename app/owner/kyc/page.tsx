@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
-import { CheckCircle2, Clock, ShieldCheck, Upload, XCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { CheckCircle2, Clock, ShieldCheck, XCircle, Lock } from "lucide-react";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { OwnerShell } from "@/components/owner/OwnerShell";
 import { Button } from "@/components/Button";
@@ -48,54 +48,34 @@ export default function OwnerKYCPage() {
     void checkStatus();
   }, [user, isLoaded]);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-
-    const aadhaarNumber = (formData.get("aadhaarNumber") as string)?.trim();
-    if (aadhaarNumber.length !== 12 || !/^\d{12}$/.test(aadhaarNumber)) {
-      setError("Aadhaar number must be exactly 12 digits.");
-      return;
-    }
-
-    const aadhaarFront = formData.get("aadhaarFront");
-    const aadhaarBack = formData.get("aadhaarBack");
-
-    if (
-      !(aadhaarFront instanceof File) || aadhaarFront.size === 0 ||
-      !(aadhaarBack instanceof File) || aadhaarBack.size === 0
-    ) {
-      setError("Please upload both Aadhaar front and back images.");
-      return;
-    }
-
-    const maxSize = 5 * 1024 * 1024;
-    if (aadhaarFront.size > maxSize || aadhaarBack.size > maxSize) {
-      setError("Each image must be under 5MB.");
-      return;
-    }
-
+  async function initiateDigilocker() {
     setError(null);
     setStatus("submitting");
 
     try {
       const email = user?.primaryEmailAddress?.emailAddress;
       if (!email) throw new Error("No email found. Please sign in again.");
-      formData.append("clerkEmail", email);
 
       const token = await getClerkToken();
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/owner/kyc`, {
-        method: "POST",
-        body: formData,
-        headers: { Authorization: `Bearer ${token ?? ""}` },
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/owner/kyc/digilocker/init?email=${encodeURIComponent(email)}`,
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token ?? ""}` },
+        }
+      );
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.message ?? "Submission failed. Please try again.");
+        throw new Error(data.message ?? "Failed to initiate DigiLocker verification. Please try again.");
       }
 
-      setStatus("submitted");
+      const data = await res.json();
+      if (data.redirectUrl) {
+        window.location.href = data.redirectUrl;
+      } else {
+        throw new Error("No redirect URL received from server.");
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
       setStatus("form");
@@ -192,7 +172,7 @@ export default function OwnerKYCPage() {
         <p className="text-sm font-bold uppercase text-clay">Identity verification</p>
         <h1 className="mt-2 text-3xl font-black text-ink sm:text-5xl">Complete KYC</h1>
         <p className="mt-2 max-w-lg text-sm leading-6 text-muted">
-          Required before you can list properties. Your Aadhaar details are reviewed by our admin team and never shared publicly.
+          Required before you can list properties. Verify your identity securely via DigiLocker — no document uploads needed.
         </p>
       </div>
 
@@ -207,7 +187,7 @@ export default function OwnerKYCPage() {
         <span className="text-muted">List properties</span>
       </div>
 
-      <form onSubmit={handleSubmit} className="mx-auto max-w-xl rounded-3xl bg-white p-6 shadow-soft sm:p-8">
+      <form onSubmit={(e) => e.preventDefault()} className="mx-auto max-w-xl rounded-3xl bg-white p-6 shadow-soft sm:p-8">
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block space-y-2 sm:col-span-2">
             <span className="text-sm font-bold text-ink">Full name</span>
@@ -224,32 +204,10 @@ export default function OwnerKYCPage() {
               <option value="Flat Owner">Flat Owner</option>
             </select>
           </label>
-          <label className="block space-y-2 sm:col-span-2">
-            <span className="text-sm font-bold text-ink">Aadhaar number</span>
-            <input name="aadhaarNumber" className="input" inputMode="numeric" minLength={12} maxLength={12} placeholder="12-digit Aadhaar number" required />
-          </label>
-          <label className="block space-y-2">
-            <span className="text-sm font-bold text-ink">Aadhaar front</span>
-            <div className="relative">
-              <input name="aadhaarFront" type="file" accept="image/*"
-                className="input py-1 pr-12 file:mr-3 file:rounded-full file:border-0 file:bg-ink file:px-3 file:py-2 file:text-white" required />
-              <Upload className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" aria-hidden />
-            </div>
-            <p className="text-xs text-muted">JPG/PNG, max 5MB</p>
-          </label>
-          <label className="block space-y-2">
-            <span className="text-sm font-bold text-ink">Aadhaar back</span>
-            <div className="relative">
-              <input name="aadhaarBack" type="file" accept="image/*"
-                className="input py-1 pr-12 file:mr-3 file:rounded-full file:border-0 file:bg-ink file:px-3 file:py-2 file:text-white" required />
-              <Upload className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" aria-hidden />
-            </div>
-            <p className="text-xs text-muted">JPG/PNG, max 5MB</p>
-          </label>
-          <label className="flex items-start gap-3 rounded-3xl bg-linen p-4 text-sm leading-6 text-ink sm:col-span-2">
+                    <label className="flex items-start gap-3 rounded-3xl bg-linen p-4 text-sm leading-6 text-ink sm:col-span-2">
             <input name="legalAccepted" type="checkbox" className="mt-1 h-4 w-4 shrink-0 accent-ink" required />
             <span>
-              I confirm these Aadhaar details are valid and I agree to the{" "}
+              I agree to the{" "}
               <Link href="/legal/retainer-agreement" target="_blank" className="font-bold underline">Exclusive Inventory Agreement</Link>,{" "}
               <Link href="/legal/standard-commission-agreement" target="_blank" className="font-bold underline">Platform Listing Agreement</Link>, and{" "}
               <Link href="/legal/privacy-policy" target="_blank" className="font-bold underline">Privacy Policy</Link>.
@@ -257,10 +215,15 @@ export default function OwnerKYCPage() {
           </label>
         </div>
 
+        <p className="mt-4 flex items-center gap-2 text-sm text-muted">
+          <Lock className="h-4 w-4" />
+          You will be securely redirected to DigiLocker for verification.
+        </p>
+
         <div className="mt-4 flex items-start gap-3 rounded-2xl bg-linen p-3">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-clay" aria-hidden />
           <p className="text-xs leading-5 text-muted">
-            Your Aadhaar details are encrypted and only visible to LivingGo admins for verification. They are never shared publicly.
+            Your identity data is encrypted and only visible to LivingGo admins for verification. It is never shared publicly.
           </p>
         </div>
 
@@ -268,8 +231,8 @@ export default function OwnerKYCPage() {
           <p className="mt-4 rounded-2xl bg-linen p-3 text-sm font-semibold text-clay">{error}</p>
         )}
 
-        <Button className="mt-6 w-full" disabled={status === "submitting"}>
-          {status === "submitting" ? "Submitting..." : "Submit for approval"}
+        <Button className="mt-6 w-full" disabled={status === "submitting"} onClick={initiateDigilocker}>
+          {status === "submitting" ? "Redirecting to DigiLocker..." : "Verify via DigiLocker"}
         </Button>
       </form>
     </OwnerShell>
