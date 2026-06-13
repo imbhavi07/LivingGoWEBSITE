@@ -1,4 +1,4 @@
-import type { GenderPreference, RoomType } from "@/types/property";
+  import type { GenderPreference, RoomType } from "@/types/property";
 
 export type AdminListingStatus = "pending" | "approved" | "rejected";
 export type AdminUserStatus = "active" | "suspended";

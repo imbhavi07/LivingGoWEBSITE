@@ -17,8 +17,11 @@ export type PropertyEditPayload = {
   description: string;
   price: number;
   priceSingle?: number;
+  bedsSingle?: number;
   priceDouble?: number;
+  bedsDouble?: number;
   priceTriple?: number;
+  bedsTriple?: number;
   location: string;
   roomType: string;
   preference: string;
@@ -136,6 +139,18 @@ export function PropertyEditForm({ initialData, onSave, onCancel, isSaving }: Pr
             />
           </div>
           <div>
+            <label htmlFor="bedsSingle" className="mb-1 block text-sm font-bold text-ink">Single Room — Total Beds</label>
+            <input
+              id="bedsSingle"
+              type="number"
+              min={0}
+              value={form.bedsSingle ?? ""}
+              onChange={(e) => set("bedsSingle", e.target.value ? Number(e.target.value) : undefined)}
+              placeholder="e.g. 15"
+              className="w-full rounded-2xl border border-clay/20 bg-linen px-4 py-3 text-sm font-semibold text-ink focus:outline-none focus:ring-2 focus:ring-ink"
+            />
+          </div>
+          <div>
             <label htmlFor="priceDouble" className="mb-1 block text-sm font-bold text-ink">Double Sharing (₹/mo)</label>
             <input
               id="priceDouble"
@@ -146,12 +161,36 @@ export function PropertyEditForm({ initialData, onSave, onCancel, isSaving }: Pr
             />
           </div>
           <div>
+            <label htmlFor="bedsDouble" className="mb-1 block text-sm font-bold text-ink">Double Sharing — Total Beds</label>
+            <input
+              id="bedsDouble"
+              type="number"
+              min={0}
+              value={form.bedsDouble ?? ""}
+              onChange={(e) => set("bedsDouble", e.target.value ? Number(e.target.value) : undefined)}
+              placeholder="e.g. 15"
+              className="w-full rounded-2xl border border-clay/20 bg-linen px-4 py-3 text-sm font-semibold text-ink focus:outline-none focus:ring-2 focus:ring-ink"
+            />
+          </div>
+          <div>
             <label htmlFor="priceTriple" className="mb-1 block text-sm font-bold text-ink">Triple Sharing (₹/mo)</label>
             <input
               id="priceTriple"
               type="number"
               value={form.priceTriple ?? ""}
               onChange={(e) => set("priceTriple", e.target.value ? Number(e.target.value) : undefined)}
+              className="w-full rounded-2xl border border-clay/20 bg-linen px-4 py-3 text-sm font-semibold text-ink focus:outline-none focus:ring-2 focus:ring-ink"
+            />
+          </div>
+          <div>
+            <label htmlFor="bedsTriple" className="mb-1 block text-sm font-bold text-ink">Triple Sharing — Total Beds</label>
+            <input
+              id="bedsTriple"
+              type="number"
+              min={0}
+              value={form.bedsTriple ?? ""}
+              onChange={(e) => set("bedsTriple", e.target.value ? Number(e.target.value) : undefined)}
+              placeholder="e.g. 15"
               className="w-full rounded-2xl border border-clay/20 bg-linen px-4 py-3 text-sm font-semibold text-ink focus:outline-none focus:ring-2 focus:ring-ink"
             />
           </div>
