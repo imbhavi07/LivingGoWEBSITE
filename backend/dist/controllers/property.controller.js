@@ -33,35 +33,33 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.togglePropertyStatus = exports.deleteProperty = exports.updateProperty = exports.getOwnerStats = exports.getOwnerProperties = exports.getPropertyById = exports.getProperties = exports.createProperty = void 0;
+exports.markResidence = exports.createReview = exports.togglePropertyStatus = exports.deleteProperty = exports.updateProperty = exports.getOwnerStats = exports.getOwnerProperties = exports.getStudentResidence = exports.getApprovedPropertyList = exports.getPropertyById = exports.getProperties = exports.createProperty = void 0;
 const async_handler_1 = require("../utils/async-handler");
 const app_error_1 = require("../utils/app-error");
 const cloudinary_service_1 = require("../services/cloudinary.service");
 const propertyService = __importStar(require("../services/property.service"));
-const prisma_1 = require("../config/prisma");
 function requireUser(request) {
     if (!request.user)
         throw new app_error_1.AppError("Authentication required", 401);
     return request.user;
 }
 exports.createProperty = (0, async_handler_1.asyncHandler)(async (request, response) => {
-    let userId;
-    if (request.user) {
-        userId = request.user.id;
-    }
-    else {
-        // Clerk user — find by email
-        const clerkEmail = request.body.clerkEmail;
-        if (!clerkEmail)
-            throw new app_error_1.AppError("Authentication required", 401);
-        const owner = await prisma_1.prisma.user.findUnique({ where: { email: clerkEmail } });
-        if (!owner)
-            throw new app_error_1.AppError("Owner not found. Please sign up first.", 404);
-        userId = owner.id;
+    const user = requireUser(request);
+    // Only approved owners can list properties
+    // admins bypass this check
+    if (user.role === "owner" && user.verificationStatus !== "approved") {
+        const statusMessages = {
+            not_required: "Please complete your KYC verification before listing properties.",
+            pending_email_verification: "Please verify your email before listing properties.",
+            pending_approval: "Your KYC is under review. You can list properties once approved.",
+            rejected: "Your KYC verification was rejected. Please contact support.",
+        };
+        const message = statusMessages[user.verificationStatus] ?? "KYC verification required.";
+        throw new app_error_1.AppError(message, 403);
     }
     const files = request.files ?? [];
     const uploads = await (0, cloudinary_service_1.uploadMany)(files);
-    const property = await propertyService.createProperty(userId, request.body, uploads.map((upload) => ({ url: upload.secure_url, publicId: upload.public_id })));
+    const property = await propertyService.createProperty(user.id, request.body, uploads.map((upload) => ({ url: upload.secure_url, publicId: upload.public_id })));
     response.status(201).json(property);
 });
 exports.getProperties = (0, async_handler_1.asyncHandler)(async (request, response) => {
@@ -70,7 +68,20 @@ exports.getProperties = (0, async_handler_1.asyncHandler)(async (request, respon
 });
 exports.getPropertyById = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const property = await propertyService.getPropertyById(String(request.params.id), request.user?.role);
-    response.json(property);
+    const [rating, reviews] = await Promise.all([
+        propertyService.getPropertyRating(String(request.params.id)),
+        propertyService.getPropertyReviews(String(request.params.id)),
+    ]);
+    response.json({ ...property, rating, reviews });
+});
+exports.getApprovedPropertyList = (0, async_handler_1.asyncHandler)(async (_request, response) => {
+    const properties = await propertyService.getApprovedPropertyList();
+    response.json(properties);
+});
+exports.getStudentResidence = (0, async_handler_1.asyncHandler)(async (request, response) => {
+    const user = requireUser(request);
+    const residence = await propertyService.getStudentResidence(user.id);
+    response.json(residence ?? null);
 });
 exports.getOwnerProperties = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);
@@ -95,4 +106,16 @@ exports.togglePropertyStatus = (0, async_handler_1.asyncHandler)(async (request,
     const user = requireUser(request);
     const property = await propertyService.togglePropertyStatus(String(request.params.id), user.id, Boolean(request.body.isActive));
     response.json(property);
+});
+exports.createReview = (0, async_handler_1.asyncHandler)(async (request, response) => {
+    const user = requireUser(request);
+    const propertyId = String(request.params.id);
+    const review = await propertyService.createReview(user.id, propertyId, request.body);
+    response.status(201).json(review);
+});
+exports.markResidence = (0, async_handler_1.asyncHandler)(async (request, response) => {
+    const user = requireUser(request);
+    const propertyId = String(request.params.id);
+    const result = await propertyService.markResidence(user.id, propertyId);
+    response.json({ success: true, ...result });
 });

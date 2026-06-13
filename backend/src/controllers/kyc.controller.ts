@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import axios from "axios";
 import { asyncHandler } from "../utils/async-handler";
 import { AppError } from "../utils/app-error";
 import { prisma } from "../config/prisma";
@@ -92,4 +93,93 @@ export const getKycStatus = asyncHandler(async (req: Request, res: Response) => 
       reviewedAt: owner.reviewedAt,
     },
   });
+});
+
+export const initiateDigilockerSession = asyncHandler(async (req: Request, res: Response) => {
+  const email = req.query.email as string;
+  if (!email) throw new AppError("Email is required", 400);
+
+  const owner = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true, email: true, clerkId: true, verificationStatus: true },
+  });
+
+  if (!owner) throw new AppError("Owner not found", 404);
+
+  if (owner.verificationStatus === "approved") {
+    throw new AppError("Your KYC is already approved.", 400);
+  }
+
+  if (!owner.clerkId) {
+    throw new AppError("Clerk ID not found for this user.", 400);
+  }
+
+  const sandboxApiKey = process.env.SANDBOX_API_KEY;
+  const sandboxApiSecret = process.env.SANDBOX_API_SECRET;
+
+  if (!sandboxApiKey || !sandboxApiSecret) {
+    throw new AppError("DigiLocker integration not configured", 500);
+  }
+
+  try {
+    const callbackUrl = process.env.CORS_ORIGIN || "http://localhost:3000/owner/kyc";
+
+    // Step 1: Authenticate with Sandbox to generate access token
+    const authResponse = await axios.post(
+      "https://api.sandbox.co.in/authenticate",
+      {},
+      {
+        headers: {
+          "x-api-key": sandboxApiKey,
+          "x-api-secret": sandboxApiSecret,
+          "x-api-version": "1.0",
+        },
+      }
+    );
+
+    const accessToken = authResponse.data?.data?.access_token;
+    
+    if (!accessToken) {
+      throw new AppError("Failed to generate Sandbox access token", 500);
+    }
+
+    // Step 2: Initiate DigiLocker Session with the token
+    const response = await axios.post(
+      "https://api.sandbox.co.in/v1/kyc/digilocker/initiate",
+      {
+        reference_id: owner.clerkId,
+        callback_url: callbackUrl,
+        metadata: {
+          user_id: owner.id,
+          email: owner.email,
+        },
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": accessToken, 
+          "x-api-key": sandboxApiKey,
+          "x-api-version": "1.0",
+        },
+      }
+    );
+
+    const authorizationUrl = response.data?.authorization_url || response.data?.redirect_url;
+
+    if (!authorizationUrl) {
+      throw new AppError("Failed to get authorization URL from Sandbox", 500);
+    }
+
+    res.status(200).json({
+      success: true,
+      redirectUrl: authorizationUrl,
+    });
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      console.error("Sandbox API error:", error.response?.data || error.message);
+    } else {
+      console.error("DigiLocker initiation error:", error);
+    }
+    throw new AppError("Failed to initiate KYC session", 500);
+  }
 });

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.togglePropertyStatusSchema = exports.updatePropertySchema = exports.createPropertySchema = exports.listPropertiesSchema = exports.propertyIdSchema = void 0;
+exports.markResidenceSchema = exports.createReviewSchema = exports.togglePropertyStatusSchema = exports.updatePropertySchema = exports.createPropertySchema = exports.listPropertiesSchema = exports.propertyIdSchema = void 0;
 const zod_1 = require("zod");
 exports.propertyIdSchema = zod_1.z.object({
     params: zod_1.z.object({
@@ -30,6 +30,8 @@ exports.createPropertySchema = zod_1.z.object({
         bedsTriple: zod_1.z.coerce.number().int().positive().optional(),
         securityDepositMonths: zod_1.z.string().optional(),
         location: zod_1.z.string().min(2).max(120),
+        lat: zod_1.z.coerce.number().optional(),
+        lng: zod_1.z.coerce.number().optional(),
         roomType: zod_1.z.enum(["Single", "Shared"]),
         sharedType: zod_1.z.enum(["Double", "Triple", ""]).optional(),
         preference: zod_1.z.enum(["Boys", "Girls", "Any"]),
@@ -79,6 +81,8 @@ exports.updatePropertySchema = zod_1.z.object({
         bedsTriple: zod_1.z.coerce.number().int().positive().optional(),
         securityDepositMonths: zod_1.z.string().optional(),
         location: zod_1.z.string().min(2).max(120).optional(),
+        lat: zod_1.z.coerce.number().optional(),
+        lng: zod_1.z.coerce.number().optional(),
         roomType: zod_1.z.enum(["Single", "Shared"]).optional(),
         sharedType: zod_1.z.enum(["Double", "Triple", ""]).optional(),
         preference: zod_1.z.enum(["Boys", "Girls", "Any"]).optional(),
@@ -119,5 +123,23 @@ exports.togglePropertyStatusSchema = zod_1.z.object({
     }),
     body: zod_1.z.object({
         isActive: zod_1.z.boolean()
+    })
+});
+exports.createReviewSchema = zod_1.z.object({
+    params: zod_1.z.object({
+        id: zod_1.z.string().min(1)
+    }),
+    body: zod_1.z.object({
+        cleanliness: zod_1.z.number().min(1).max(5),
+        food: zod_1.z.number().min(1).max(5),
+        security: zod_1.z.number().min(1).max(5),
+        management: zod_1.z.number().min(1).max(5),
+        location: zod_1.z.number().min(1).max(5),
+        comment: zod_1.z.string().optional()
+    })
+});
+exports.markResidenceSchema = zod_1.z.object({
+    params: zod_1.z.object({
+        id: zod_1.z.string().min(1)
     })
 });

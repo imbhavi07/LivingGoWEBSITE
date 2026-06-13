@@ -1,4 +1,5 @@
 "use strict";
+// backend/src/routes/property.routes.ts  (FULL REPLACEMENT)
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -41,8 +42,15 @@ const upload_middleware_1 = require("../middleware/upload.middleware");
 const validate_middleware_1 = require("../middleware/validate.middleware");
 const property_validation_1 = require("../validations/property.validation");
 exports.propertyRouter = (0, express_1.Router)();
+// Public routes
 exports.propertyRouter.get("/", (0, validate_middleware_1.validate)(property_validation_1.listPropertiesSchema), propertyController.getProperties);
+// ← NEW: dropdown list for "existing tenant" selector (no auth needed)
+exports.propertyRouter.get("/list", propertyController.getApprovedPropertyList);
 exports.propertyRouter.get("/:id", (0, validate_middleware_1.validate)(property_validation_1.propertyIdSchema), propertyController.getPropertyById);
+// Owner / admin routes
 exports.propertyRouter.post("/", auth_middleware_1.clerkAuthenticate, (0, auth_middleware_1.authorize)("owner", "admin"), upload_middleware_1.uploadImages, (0, validate_middleware_1.validate)(property_validation_1.createPropertySchema), propertyController.createProperty);
 exports.propertyRouter.put("/:id", auth_middleware_1.clerkAuthenticate, (0, auth_middleware_1.authorize)("owner", "admin"), (0, validate_middleware_1.validate)(property_validation_1.updatePropertySchema), propertyController.updateProperty);
 exports.propertyRouter.delete("/:id", auth_middleware_1.clerkAuthenticate, (0, auth_middleware_1.authorize)("owner", "admin"), (0, validate_middleware_1.validate)(property_validation_1.propertyIdSchema), propertyController.deleteProperty);
+// Student routes
+exports.propertyRouter.post("/:id/review", auth_middleware_1.clerkAuthenticate, (0, auth_middleware_1.authorize)("student"), (0, validate_middleware_1.validate)(property_validation_1.createReviewSchema), propertyController.createReview);
+exports.propertyRouter.post("/:id/residence", auth_middleware_1.clerkAuthenticate, (0, auth_middleware_1.authorize)("student"), (0, validate_middleware_1.validate)(property_validation_1.markResidenceSchema), propertyController.markResidence);

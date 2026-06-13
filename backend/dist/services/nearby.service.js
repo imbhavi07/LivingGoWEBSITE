@@ -65,7 +65,7 @@ function formatDistance(meters) {
     return `${(meters / 1000).toFixed(1)} km`;
 }
 async function findNearbyPlaces(lat, lng, preference, location) {
-    const radius = 5000; // 5km radius
+    const radius = 30000; // 30km radius
     // Build Overpass query for colleges
     const collegeQuery = `
     [out:json][timeout:25];
@@ -91,9 +91,12 @@ async function findNearbyPlaces(lat, lng, preference, location) {
         queryOverpass(collegeQuery),
         hasCityMetro(location) ? queryOverpass(metroQuery) : Promise.resolve({ elements: [] }),
     ]);
+    console.log("College query result:", collegeData.status);
+    console.log("Metro query result:", metroData.status);
     // Process colleges
     const colleges = [];
     if (collegeData.status === "fulfilled") {
+        console.log("Overpass colleges found:", collegeData.value.elements.length);
         for (const el of collegeData.value.elements) {
             const name = el.tags?.name ?? el.tags?.["name:en"];
             if (!name)
@@ -108,8 +111,17 @@ async function findNearbyPlaces(lat, lng, preference, location) {
                 nameLower.includes("lady") ||
                 nameLower.includes("ladies") ||
                 el.tags?.["gender"] === "female";
-            colleges.push({ name, lat: elLat, lng: elLng, isGirls });
+            colleges.push({
+                name,
+                lat: elLat,
+                lng: elLng,
+                isGirls,
+            });
         }
+        console.log("Processed colleges:", colleges.length);
+    }
+    else {
+        console.error("College query failed:", collegeData.reason);
     }
     // Filter based on preference
     let selectedColleges = [];
@@ -121,6 +133,10 @@ async function findNearbyPlaces(lat, lng, preference, location) {
     else {
         // Boys or Any — just co-ed
         selectedColleges = colleges.filter((c) => !c.isGirls).slice(0, 3);
+    }
+    console.log("Selected colleges:", selectedColleges.length);
+    if (selectedColleges.length > 0) {
+        console.log("First college:", selectedColleges[0]);
     }
     // Process metro stations
     const metros = [];
@@ -176,6 +192,10 @@ async function findNearbyPlaces(lat, lng, preference, location) {
             };
         }
     }
+    console.log("Nearby places result:", JSON.stringify({
+        colleges: collegeResults,
+        metro: metroResult,
+    }));
     return {
         colleges: collegeResults,
         metro: metroResult,

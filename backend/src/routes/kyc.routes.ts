@@ -1,11 +1,14 @@
 import { Router } from "express";
 import multer from "multer";
-import { submitKyc, getKycStatus } from "../controllers/kyc.controller";
+import { submitKyc, getKycStatus, initiateDigilockerSession } from "../controllers/kyc.controller";
 
 const upload = multer({ storage: multer.memoryStorage() });
 const router = Router();
 
 router.get("/status", getKycStatus);
+
+// DigiLocker initiation route - protected by Clerk auth
+router.get("/digilocker/init", initiateDigilockerSession);
 
 router.post(
   "/",
