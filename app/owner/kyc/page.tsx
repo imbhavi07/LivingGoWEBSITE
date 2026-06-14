@@ -36,8 +36,10 @@ function KYCContent() {
       if (!email) { setStatus("form"); return; }
       try {
         const token = await getClerkToken();
+        // Clean the base URL to avoid double /api if it already ends with /api
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/api$/, '');
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/owner/kyc/status?email=${encodeURIComponent(email)}`,
+          `${baseUrl}/api/owner/kyc/status?email=${encodeURIComponent(email)}`,
           { headers: { Authorization: `Bearer ${token ?? ""}` } }
         );
         if (!res.ok) { setStatus("form"); return; }
@@ -67,7 +69,9 @@ function KYCContent() {
 
       setIsLoading(true);
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/owner/kyc/digilocker/complete`, {
+        // Clean the base URL to avoid double /api if it already ends with /api
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/api$/, '');
+        const res = await fetch(`${baseUrl}/api/owner/kyc/digilocker/complete`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
