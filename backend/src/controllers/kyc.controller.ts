@@ -97,7 +97,7 @@ export const getKycStatus = asyncHandler(async (req: Request, res: Response) => 
 
 export const initiateDigilockerSession = asyncHandler(async (req: Request, res: Response) => {
   const email = req.query.email as string;
-  
+
   if (!email) {
     throw new AppError("Email is required to map the KYC session", 400);
   }
@@ -112,13 +112,13 @@ export const initiateDigilockerSession = asyncHandler(async (req: Request, res: 
   try {
     // 1. Authenticate with Sandbox to get the Access Token
     const authResponse = await axios.post("https://api.sandbox.co.in/authenticate", {}, {
-      headers: { 
-        "x-api-key": sandboxApiKey, 
-        "x-api-secret": sandboxApiSecret, 
-        "x-api-version": "1.0" 
+      headers: {
+        "x-api-key": sandboxApiKey,
+        "x-api-secret": sandboxApiSecret,
+        "x-api-version": "1.0"
       }
     });
-    
+
     const accessToken = authResponse.data?.access_token || authResponse.data?.data?.access_token;
 
     // 2. Request the DigiLocker Portal Redirect URL
@@ -128,23 +128,23 @@ export const initiateDigilockerSession = asyncHandler(async (req: Request, res: 
       "redirect_url": "https://livinggo.in/owner/kyc",
       "doc_types": ["aadhaar"]
     }, {
-      headers: { 
-        "Content-Type": "application/json", 
-        "Authorization": accessToken, 
-        "x-api-key": sandboxApiKey, 
-        "x-api-version": "1.0" 
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": accessToken,
+        "x-api-key": sandboxApiKey,
+        "x-api-version": "1.0"
       }
     });
 
     // 3. Extract URL and send to frontend
     const authorizationUrl = response.data?.data?.authorization_url;
-    
+
     if (!authorizationUrl) {
       throw new AppError("Failed to get DigiLocker URL from Sandbox", 500);
     }
 
     res.status(200).json({ success: true, redirectUrl: authorizationUrl });
-    
+
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       console.error("DigiLocker Init Error:", error.response?.data || error.message);
@@ -157,7 +157,7 @@ export const initiateDigilockerSession = asyncHandler(async (req: Request, res: 
 
 export const handleSandboxWebhook = asyncHandler(async (req: Request, res: Response) => {
   const webhookSecret = req.headers['x-webhook-secret'] || req.headers['authorization'];
-  
+
   if (webhookSecret !== process.env.SANDBOX_WEBHOOK_SECRET) {
     console.error("🚨 Unauthorized Webhook Attempt:", req.ip);
     throw new AppError("Unauthorized webhook", 401);
@@ -182,43 +182,55 @@ export const handleSandboxWebhook = asyncHandler(async (req: Request, res: Respo
 
 export const completeDigilockerSession = asyncHandler(async (req: Request, res: Response) => {
   const { email, sessionId } = req.body;
-  
+
   if (!email || !sessionId) throw new AppError("Missing details", 400);
 
   try {
     // 1. Get Token
     const auth = await axios.post("https://api.sandbox.co.in/authenticate", {}, {
-      headers: { 
-        "x-api-key": process.env.SANDBOX_API_KEY, 
-        "x-api-secret": process.env.SANDBOX_API_SECRET, 
-        "x-api-version": "1.0" 
+      headers: {
+        "x-api-key": process.env.SANDBOX_API_KEY,
+        "x-api-secret": process.env.SANDBOX_API_SECRET,
+        "x-api-version": "1.0"
       }
     });
 
-    // 2. Fetch Session Data
-    const sessionDetails = await axios.get(`https://api.sandbox.co.in/kyc/digilocker/sessions/${sessionId}`, {
-      headers: { 
-        "Authorization": auth.data.access_token, 
-        "x-api-key": process.env.SANDBOX_API_KEY, 
-        "x-api-version": "1.0" 
+    const accessToken = auth.data.access_token;
+
+    // 2. Fetch User Profile data
+    const userProfileResponse = await axios.get(`https://api.sandbox.co.in/kyc/digilocker/sessions/${sessionId}/user/profile`, {
+      headers: {
+        "Authorization": accessToken,
+        "x-api-key": process.env.SANDBOX_API_KEY,
+        "x-api-version": "1.0"
       }
     });
 
-    const data = sessionDetails.data.data;
-    
-    // 3. Sync to DB
+    // 3. Fetch Document data
+    const documentResponse = await axios.get(`https://api.sandbox.co.in/kyc/digilocker/sessions/${sessionId}/documents/aadhaar`, {
+      headers: {
+        "Authorization": accessToken,
+        "x-api-key": process.env.SANDBOX_API_KEY,
+        "x-api-version": "1.0"
+      }
+    });
+
+    const userProfileData = userProfileResponse.data;
+    const documentData = documentResponse.data;
+
+    // 4. Sync to DB with verified data
     await prisma.user.update({
       where: { email },
-      data: { 
-        name: data.documents?.[0]?.parsed_data?.name || "Verified User",
-        aadhaarNumber: data.documents?.[0]?.parsed_data?.aadhaar_number || null,
+      data: {
+        name: userProfileData.data.name,
+        aadhaarFrontUrl: documentData.data.files[0].url,
+        aadhaarNumber: null,
         verificationStatus: "pending_approval"
       }
     });
 
     res.status(200).json({ success: true });
   } catch (error: any) {
-    // THIS LOG IS CRITICAL
     console.error("SANDBOX API ERROR:", error.response?.data || error.message);
     res.status(500).json({ error: "Failed to fetch data from Sandbox", details: error.response?.data });
   }
