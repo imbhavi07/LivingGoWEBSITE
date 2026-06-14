@@ -59,7 +59,7 @@ export default function OwnerKYCPage() {
     if (!email) throw new Error("User email not found. Please sign in again.");
 
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/owner/kyc/digilocker/init?email=${encodeURIComponent(email)}`
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/owner/kyc/digilocker/init?email=${encodeURIComponent(email)}`
     );
     const data = await res.json();
 
