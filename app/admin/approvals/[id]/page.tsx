@@ -41,9 +41,8 @@ export default function AdminApprovalDetailsPage() {
               <Info label="Legal accepted" value={formatIST(approval.legalAcceptedAt)} />
               <Info label="Submitted" value={formatIST(approval.createdAt)} />
             </div>
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
+            <div className="mt-6 grid gap-4">
               <DocumentCard title="Aadhaar front" image={approval.aadhaarFrontUrl} />
-              <DocumentCard title="Aadhaar back" image={approval.aadhaarBackUrl} />
             </div>
           </section>
           <aside className="h-fit rounded-3xl bg-white p-6 shadow-soft ring-1 ring-black/5">

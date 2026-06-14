@@ -97,7 +97,6 @@ export type ApiOwnerApproval = {
   ownerType: string;
   aadhaarNumber: string;
   aadhaarFrontUrl: string;
-  aadhaarBackUrl: string;
   legalAcceptedAt: string;
   verificationStatus: OwnerApproval["verificationStatus"];
   createdAt: string;
@@ -224,7 +223,6 @@ export function toOwnerApproval(approval: ApiOwnerApproval): OwnerApproval {
     ownerType: approval.ownerType,
     aadhaarNumber: approval.aadhaarNumber,
     aadhaarFrontUrl: approval.aadhaarFrontUrl,
-    aadhaarBackUrl: approval.aadhaarBackUrl,
     legalAcceptedAt: approval.legalAcceptedAt,
     verificationStatus: approval.verificationStatus,
     createdAt: approval.createdAt
