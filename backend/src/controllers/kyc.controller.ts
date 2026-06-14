@@ -218,23 +218,32 @@ export const completeDigilockerSession = asyncHandler(async (req: Request, res: 
     const userProfileData = userProfileResponse.data;
     const documentData = documentResponse.data;
 
+    // Debug log after fetching document data
+    console.log("Digilocker document data:", JSON.stringify(documentData, null, 2));
+
     // 4. Sync to DB with verified data
     await prisma.user.update({
       where: { email },
       data: {
         name: userProfileData.data.name,
-        phone: userProfileData.data?.phone || "Fetched securely",
+        phone: userProfileData.data?.phone || userProfileData.data?.mobile || "Not provided by DigiLocker",
         ownerType: "PG Owner",
-        aadhaarNumber: documentData.data?.parsed_data?.uid || documentData.data?.parsed_data?.aadhaar_number || "Verified via DigiLocker",
-        aadhaarFrontUrl: documentData.data?.parsed_data?.photo ? `data:image/jpeg;base64,${documentData.data.parsed_data.photo}` : (documentData.data?.files?.[0]?.url || null),
+        aadhaarNumber: documentData.data?.parsed_data?.uid || documentData.data?.parsed_data?.id_number || "Not provided by DigiLocker",
+        aadhaarFrontUrl: documentData.data?.files?.[0]?.url || documentData.data?.url || null,
+        aadhaarBackUrl: null,
         verificationStatus: "pending_approval",
         legalAcceptedAt: new Date()
       }
     });
 
     res.status(200).json({ success: true });
-  } catch (error: any) {
-    console.error("SANDBOX API ERROR:", error.response?.data || error.message);
-    res.status(500).json({ error: "Failed to fetch data from Sandbox", details: error.response?.data });
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      console.error("SANDBOX API ERROR:", error.response?.data || error.message);
+      res.status(500).json({ error: "Failed to fetch data from Sandbox", details: error.response?.data });
+    } else {
+      console.error("SANDBOX API ERROR:", error);
+      res.status(500).json({ error: "Failed to fetch data from Sandbox" });
+    }
   }
 });
