@@ -204,7 +204,10 @@ function KYCContent() {
       const email = user?.primaryEmailAddress?.emailAddress;
       if (!email) throw new Error("User email not found. Please sign in again.");
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/owner/kyc/digilocker/init?email=${encodeURIComponent(email)}`);
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/api$/, ''); // Removes /api if it exists at the end
+      const res = await fetch(
+      `${baseUrl}/api/owner/kyc/digilocker/init?email=${encodeURIComponent(email)}`
+      );
       const data = await res.json();
 
       if (data.redirectUrl) {
