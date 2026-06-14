@@ -143,16 +143,15 @@ export const initiateDigilockerSession = asyncHandler(async (req: Request, res: 
       throw new AppError("Failed to generate Sandbox access token", 500);
     }
 
-    // Step 2: Initiate DigiLocker Session with the token
+
+// Step 2: Initiate DigiLocker Session with the token
     const response = await axios.post(
-      "https://api.sandbox.co.in/v1/kyc/digilocker/initiate",
+      "https://api.sandbox.co.in/kyc/digilocker/sessions/init",
       {
-        reference_id: owner.clerkId,
-        callback_url: callbackUrl,
-        metadata: {
-          user_id: owner.id,
-          email: owner.email,
-        },
+        "@entity": "in.co.sandbox.kyc.digilocker.session.request",
+        "flow": "signin",
+        "redirect_url": callbackUrl,
+        "doc_types": ["aadhaar"]
       },
       {
         headers: {
@@ -164,7 +163,8 @@ export const initiateDigilockerSession = asyncHandler(async (req: Request, res: 
       }
     );
 
-    const authorizationUrl = response.data?.authorization_url || response.data?.redirect_url;
+    // Sandbox nests the URL inside data.data
+    const authorizationUrl = response.data?.data?.authorization_url;
 
     if (!authorizationUrl) {
       throw new AppError("Failed to get authorization URL from Sandbox", 500);
