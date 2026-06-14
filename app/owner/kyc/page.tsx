@@ -20,10 +20,7 @@ export default function OwnerKYCPage() {
   const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
   const [status, setStatus] = useState<KYCStatus>("checking");
-  const [aadhaarNumber, setAadhaarNumber] = useState('');
-  const [otp, setOtp] = useState('');
-  const [referenceId, setReferenceId] = useState('');
-  const [kycStep, setKycStep] = useState<number>(1);
+  const [kycStep] = useState<number>(1);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -53,71 +50,31 @@ export default function OwnerKYCPage() {
     void checkStatus();
   }, [user, isLoaded]);
 
-  const handleSendOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!/^\d{12}$/.test(aadhaarNumber)) {
-      setErrorMessage('Please enter a valid 12-digit Aadhaar number.');
-      return;
-    }
-    setIsLoading(true);
-    setErrorMessage('');
-    try {
-      const token = await getClerkToken();
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/owner/kyc/aadhaar/generate-otp`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token ?? ''}`
-          },
-          body: JSON.stringify({ aadhaarNumber })
-        }
-      );
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message ?? 'Failed to send OTP');
-      }
-      const data = await res.json();
-      setReferenceId(data.referenceId);
-      setKycStep(2);
-    } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : 'Something went wrong');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const handleDigilockerRedirect = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsLoading(true);
+  setErrorMessage("");
 
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setErrorMessage('');
-    try {
-      const token = await getClerkToken();
-      const email = user?.primaryEmailAddress?.emailAddress;
-      if (!email) throw new Error('No email found. Please sign in again.');
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/owner/kyc/aadhaar/verify-otp`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token ?? ''}`
-          },
-          body: JSON.stringify({ referenceId, otp, email })
-        }
-      );
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message ?? 'Failed to verify OTP');
-      }
-      setKycStep(3);
-    } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : 'Something went wrong');
-    } finally {
-      setIsLoading(false);
+  try {
+    const email = user?.primaryEmailAddress?.emailAddress;
+    if (!email) throw new Error("User email not found. Please sign in again.");
+
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/owner/kyc/digilocker/init?email=${encodeURIComponent(email)}`
+    );
+    const data = await res.json();
+
+    if (data.redirectUrl) {
+      // Hands the user over to the official DigiLocker mobile-login screen
+      window.location.href = data.redirectUrl;
+    } else {
+      throw new Error(data.message || "Failed to initiate secure redirect");
     }
-  };
+  } catch (error) {
+    setErrorMessage(error instanceof Error ? error.message : "Something went wrong.");
+    setIsLoading(false);
+  }
+};
 
   if (status === "checking") return null;
 
@@ -263,72 +220,35 @@ export default function OwnerKYCPage() {
           <p className="mt-4 rounded-2xl bg-linen p-3 text-sm font-semibold text-clay">{errorMessage}</p>
         )}
 
-        {kycStep === 1 && (
-          <>
-            <label className="block space-y-2">
-              <span className="text-sm font-bold text-ink">Aadhaar Number</span>
-              <input
-                type="text"
-                value={aadhaarNumber}
-                onChange={(e) => setAadhaarNumber(e.target.value)}
-                className="input"
-                maxLength={12}
-                placeholder="Enter 12-digit Aadhaar number"
-                required
-              />
-            </label>
-            <Button className="mt-6 w-full" disabled={isLoading} onClick={handleSendOtp}>
-              {isLoading ? 'Sending OTP...' : 'Send OTP'}
-            </Button>
-          </>
-        )}
-
-        {kycStep === 2 && (
-          <>
-            <label className="block space-y-2">
-              <span className="text-sm font-bold text-ink">OTP</span>
-              <input
-                type="text"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                className="input"
-                maxLength={6}
-                placeholder="Enter 6-digit OTP"
-                required
-              />
-            </label>
-            <div className="mt-4 flex items-center gap-3">
-              <Button className="mt-6 w-full" disabled={isLoading} onClick={handleVerifyOtp}>
-                {isLoading ? 'Verifying OTP...' : 'Verify OTP'}
-              </Button>
-              <Button
-                variant="outline"
-                className="mt-6 w-full"
-                onClick={() => {
-                  setKycStep(1);
-                  setAadhaarNumber('');
-                  setOtp('');
-                  setReferenceId('');
-                  setErrorMessage('');
-                }}
-              >
-                Change Aadhaar Number
-              </Button>
-            </div>
-          </>
-        )}
-
-        {kycStep === 3 && (
-          <div className="mt-6 text-center">
-            <p className="text-green-600 font-semibold">✅ Identity Verified Successfully</p>
-            <Button className="mt-4 w-full" onClick={() => {
-                setStatus('submitted');
-              }}
-            >
-              Go to Dashboard
-            </Button>
+        {/* Error message slot */}
+        {errorMessage && (
+          <div className="mt-4 rounded-md bg-red-50 p-3 text-red-700 text-sm">
+            {errorMessage}
           </div>
         )}
+
+        {/* DigiLocker Call to Action */}
+        <div className="mt-8 flex flex-col items-center">
+          <button
+            onClick={handleDigilockerRedirect}
+            disabled={isLoading}
+            className="w-full px-6 py-3 bg-[#4A3B2C] text-white rounded-xl font-medium hover:bg-[#3A2A1D] transition-all disabled:opacity-50 shadow-md flex items-center justify-center gap-2"
+          >
+            {isLoading ? (
+              <>
+                <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                Connecting securely...
+              </>
+            ) : (
+              "Verify via DigiLocker"
+            )}
+          </button>
+          
+          <p className="text-xs text-gray-400 mt-4 text-center max-w-xs leading-relaxed">
+            You will be redirected securely to the official portal. 
+            Login seamlessly using your registered mobile number.
+          </p>
+        </div>
       </form>
     </OwnerShell>
   );

@@ -1,15 +1,17 @@
 import { Router } from "express";
 import multer from "multer";
-import { submitKyc, getKycStatus, generateAadhaarOtp, verifyAadhaarOtp } from "../controllers/kyc.controller";
+import { submitKyc, getKycStatus, initiateDigilockerSession, handleSandboxWebhook } from "../controllers/kyc.controller";
 
 const upload = multer({ storage: multer.memoryStorage() });
 const router = Router();
 
 router.get("/status", getKycStatus);
 
-// New Aadhaar OTP Routes
-router.post("/aadhaar/generate-otp", generateAadhaarOtp);
-router.post("/aadhaar/verify-otp", verifyAadhaarOtp);
+// The Secure DigiLocker Redirect Route
+router.get("/digilocker/init", initiateDigilockerSession);
+
+// The Webhook to catch the approved KYC data later
+router.post("/webhook", handleSandboxWebhook);
 
 router.post(
   "/",

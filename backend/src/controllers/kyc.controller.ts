@@ -95,11 +95,11 @@ export const getKycStatus = asyncHandler(async (req: Request, res: Response) => 
   });
 });
 
-export const generateAadhaarOtp = asyncHandler(async (req: Request, res: Response) => {
-  const { aadhaarNumber } = req.body;
+export const initiateDigilockerSession = asyncHandler(async (req: Request, res: Response) => {
+  const email = req.query.email as string;
   
-  if (!aadhaarNumber || !/^\d{12}$/.test(aadhaarNumber)) {
-    throw new AppError("A valid 12-digit Aadhaar number is required", 400);
+  if (!email) {
+    throw new AppError("Email is required to map the KYC session", 400);
   }
 
   const sandboxApiKey = process.env.SANDBOX_API_KEY;
@@ -110,79 +110,72 @@ export const generateAadhaarOtp = asyncHandler(async (req: Request, res: Respons
   }
 
   try {
-    // 1. Authenticate with Sandbox
+    // 1. Authenticate with Sandbox to get the Access Token
     const authResponse = await axios.post("https://api.sandbox.co.in/authenticate", {}, {
-      headers: { "x-api-key": sandboxApiKey, "x-api-secret": sandboxApiSecret, "x-api-version": "1.0" }
+      headers: { 
+        "x-api-key": sandboxApiKey, 
+        "x-api-secret": sandboxApiSecret, 
+        "x-api-version": "1.0" 
+      }
     });
-    const accessToken = authResponse.data?.data?.access_token || authResponse.data?.access_token;
-
-    // 2. Request OTP
-    const otpResponse = await axios.post("https://api.sandbox.co.in/kyc/aadhaar/okyc/otp", {
-      "@entity": "in.co.sandbox.kyc.aadhaar.okyc.otp.request",
-      "aadhaar_number": aadhaarNumber,
-      "consent": "y",
-      "reason": "LivingGo Owner KYC Verification"
-    }, {
-      headers: { "Authorization": accessToken, "x-api-key": sandboxApiKey, "x-api-version": "1.0" }
-    });
-
-    const referenceId = otpResponse.data?.data?.reference_id;
     
-    if (!referenceId) throw new AppError("Failed to get reference ID from Sandbox", 500);
+    const accessToken = authResponse.data?.access_token || authResponse.data?.data?.access_token;
 
-    res.status(200).json({ success: true, referenceId, message: "OTP sent to registered mobile number" });
+    // 2. Request the DigiLocker Portal Redirect URL
+    const response = await axios.post("https://api.sandbox.co.in/kyc/digilocker/sessions/init", {
+      "@entity": "in.co.sandbox.kyc.digilocker.session.request",
+      "flow": "signin",
+      "redirect_url": "https://livinggo.in/owner/kyc",
+      "doc_types": ["aadhaar"]
+    }, {
+      headers: { 
+        "Content-Type": "application/json", 
+        "Authorization": accessToken, 
+        "x-api-key": sandboxApiKey, 
+        "x-api-version": "1.0" 
+      }
+    });
+
+    // 3. Extract URL and send to frontend
+    const authorizationUrl = response.data?.data?.authorization_url;
+    
+    if (!authorizationUrl) {
+      throw new AppError("Failed to get DigiLocker URL from Sandbox", 500);
+    }
+
+    res.status(200).json({ success: true, redirectUrl: authorizationUrl });
+    
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      console.error("Sandbox OTP Generation Error:", error.response?.data || error.message);
-      throw new AppError(error.response?.data?.message || "Failed to generate OTP", 400);
+      console.error("DigiLocker Init Error:", error.response?.data || error.message);
+    } else {
+      console.error("DigiLocker Init Error:", String(error));
     }
-    throw new AppError("Internal server error during OTP generation", 500);
+    throw new AppError("Failed to initiate secure DigiLocker session", 500);
   }
 });
 
-export const verifyAadhaarOtp = asyncHandler(async (req: Request, res: Response) => {
-  const { referenceId, otp, email } = req.body;
+export const handleSandboxWebhook = asyncHandler(async (req: Request, res: Response) => {
+  const webhookSecret = req.headers['x-webhook-secret'] || req.headers['authorization'];
   
-  if (!referenceId || !otp || !email) {
-    throw new AppError("Missing required fields for verification", 400);
+  if (webhookSecret !== process.env.SANDBOX_WEBHOOK_SECRET) {
+    console.error("🚨 Unauthorized Webhook Attempt:", req.ip);
+    throw new AppError("Unauthorized webhook", 401);
   }
 
-  const sandboxApiKey = process.env.SANDBOX_API_KEY;
-  const sandboxApiSecret = process.env.SANDBOX_API_SECRET;
+  const payload = req.body;
+  console.log("✅ Sandbox Webhook Received!", JSON.stringify(payload, null, 2));
 
-  try {
-    // 1. Authenticate with Sandbox
-    const authResponse = await axios.post("https://api.sandbox.co.in/authenticate", {}, {
-      headers: { "x-api-key": sandboxApiKey as string, "x-api-secret": sandboxApiSecret as string, "x-api-version": "1.0" }
-    });
-    const accessToken = authResponse.data?.data?.access_token || authResponse.data?.access_token;
-
-    // 2. Verify the OTP
-    const verifyResponse = await axios.post("https://api.sandbox.co.in/kyc/aadhaar/okyc/otp/verify", {
-      "@entity": "in.co.sandbox.kyc.aadhaar.okyc.request",
-      "reference_id": referenceId,
-      "otp": otp
-    }, {
-      headers: { "Authorization": accessToken, "x-api-key": sandboxApiKey as string, "x-api-version": "1.0" }
-    });
-
-    // 3. Approve User in Database if successful
-    const responseData = verifyResponse.data;
-    if (responseData?.code === 200 || responseData?.data?.status === "VALID") {
-      const updatedUser = await prisma.user.update({
+  // If Sandbox sends a verification success status, mark user approved in DB
+  if (payload?.data?.status === "VALID" || payload?.code === 200) {
+    const email = payload?.data?.email; // Adjust key based on Sandbox's incoming body
+    if (email) {
+      await prisma.user.update({
         where: { email },
         data: { verificationStatus: "approved" }
       });
-      
-      res.status(200).json({ success: true, message: "Identity verified successfully", data: updatedUser });
-    } else {
-      throw new AppError("Invalid OTP provided", 400);
     }
-  } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      console.error("Sandbox OTP Verification Error:", error.response?.data || error.message);
-      throw new AppError("Invalid or expired OTP", 400);
-    }
-    throw new AppError("Internal server error during verification", 500);
   }
+
+  res.status(200).json({ success: true, message: "Webhook processed successfully" });
 });
