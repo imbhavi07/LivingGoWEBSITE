@@ -20,7 +20,6 @@ export default function OwnerKYCPage() {
   const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
   const [status, setStatus] = useState<KYCStatus>("checking");
-  const [kycStep] = useState<number>(1);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -229,7 +228,7 @@ export default function OwnerKYCPage() {
 
         {/* DigiLocker Call to Action */}
         <div className="mt-8 flex flex-col items-center">
-          <button
+          <Button
             onClick={handleDigilockerRedirect}
             disabled={isLoading}
             className="w-full px-6 py-3 bg-[#4A3B2C] text-white rounded-xl font-medium hover:bg-[#3A2A1D] transition-all disabled:opacity-50 shadow-md flex items-center justify-center gap-2"
@@ -242,8 +241,9 @@ export default function OwnerKYCPage() {
             ) : (
               "Verify via DigiLocker"
             )}
-          </button>
+          </Button>
           
+          {/* shayad error aaye to yeh message dikhana hai */}
           <p className="text-xs text-gray-400 mt-4 text-center max-w-xs leading-relaxed">
             You will be redirected securely to the official portal. 
             Login seamlessly using your registered mobile number.
