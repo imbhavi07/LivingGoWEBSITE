@@ -42,7 +42,7 @@ export default function AdminApprovalDetailsPage() {
               <Info label="Submitted" value={formatIST(approval.createdAt)} />
             </div>
             <div className="mt-6 grid gap-4">
-              <DocumentViewer title="Aadhaar front" src={approval.aadhaarFrontUrl} />
+              <DocumentViewer title="Official DigiLocker Document" src={approval.aadhaarFrontUrl} />
             </div>
           </section>
           <aside className="h-fit rounded-3xl bg-white p-6 shadow-soft ring-1 ring-black/5">
@@ -68,10 +68,11 @@ function Info({ label, value }: { label: string; value: string }) {
   );
 }
 
-{/* I don't think abhi yeh hua hai kaafi baar check karna padega */}
+{/* I think abhi yeh kaam karna chalu kar lega */}
 
 function DocumentViewer({ title, src }: { title: string; src: string }) {
-  const isPdf = src.toLowerCase().endsWith('.pdf');
+  const isPdf = src.toLowerCase().includes('.pdf');
+  const isXml = src.toLowerCase().includes('.xml');
 
   return (
     <div className="overflow-hidden rounded-3xl bg-linen p-3">
@@ -84,6 +85,19 @@ function DocumentViewer({ title, src }: { title: string; src: string }) {
           <p className="mt-2 text-sm text-center">
             <a href={src} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">
               View PDF
+            </a>
+          </p>
+        </>
+      ) : isXml ? (
+        <>
+          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-linen border-2 border-dashed border-primary-200 flex h-full items-center justify-center">
+            <p className="text-sm text-center text-primary-600">
+              XML Data Document
+            </p>
+          </div>
+          <p className="mt-2 text-sm text-center">
+            <a href={src} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">
+              View XML
             </a>
           </p>
         </>
