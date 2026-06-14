@@ -42,7 +42,7 @@ export default function AdminApprovalDetailsPage() {
               <Info label="Submitted" value={formatIST(approval.createdAt)} />
             </div>
             <div className="mt-3 grid gap-4">
-              <DocumentViewer title="Official DigiLocker Document" src={approval.aadhaarFrontUrl} />
+              <DigitalIdentityBadge approval={approval} />
             </div>
           </section>
           <aside className="h-fit rounded-3xl bg-white p-6 shadow-soft ring-1 ring-black/5">
@@ -68,44 +68,47 @@ function Info({ label, value }: { label: string; value: string }) {
   );
 }
 
-{/* I think abhi yeh kaam karna chalu kar lega */}
+interface OwnerApproval {
+  name: string;
+  email: string;
+  phone: string;
+  ownerType: string;
+  aadhaarNumber: string;
+  legalAcceptedAt: string;
+  createdAt: string;
+  aadhaarFrontUrl: string;
+}
 
-function DocumentViewer({ title, src }: { title: string; src: string }) {
-  const isPdf = src.toLowerCase().includes('.pdf');
-  const isXml = src.toLowerCase().includes('.xml');
+function DigitalIdentityBadge({ approval }: { approval: OwnerApproval }) {
+  const redactedAadhar = approval.aadhaarNumber
+    ? approval.aadhaarNumber.replace(/^\d{4}(\d{4})\d{4}$/, 'XXXX-XXXX-$1')
+    : 'Not provided';
 
   return (
-    <div className="overflow-hidden rounded-3xl bg-linen p-3">
-      <p className="mb-3 text-sm font-black text-ink">{title}</p>
-      {isPdf ? (
-        <>
-          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-white">
-            <embed src={src} type="application/pdf" className="w-full h-full" />
-          </div>
-          <p className="mt-2 text-sm text-center">
-            <a href={src} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">
-              View PDF
-            </a>
-          </p>
-        </>
-      ) : isXml ? (
-        <>
-          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-linen border-2 border-dashed border-primary-200 flex h-full items-center justify-center">
-            <p className="text-sm text-center text-primary-600">
-              XML Data Document
-            </p>
-          </div>
-          <p className="mt-2 text-sm text-center">
-            <a href={src} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">
-              View XML
-            </a>
-          </p>
-        </>
-      ) : (
-        <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-white">
-          <Image src={src} alt={title} fill className="object-cover" sizes="50vw" />
+    <div className="w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+      <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] text-green-700">
+        Verified by DigiLocker
+      </span>
+      <div className="flex mt-4">
+        <Image
+          src={approval.aadhaarFrontUrl}
+          alt="Aadhaar Front"
+          className="w-24 h-32 rounded-lg object-cover"
+        />
+        <div className="ml-4 space-y-2">
+          <p className="text-sm font-medium text-ink">{approval.name}</p>
+          <p className="text-sm text-muted">{approval.phone}</p>
+          <p className="text-sm font-mono text-ink">{redactedAadhar}</p>
         </div>
-      )}
+      </div>
+      <a
+        href="https://eaadhaar.uidai.gov.in/genaadhaar"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-4 block w-full rounded-lg bg-blue-600 py-2 text-center text-white text-sm"
+      >
+        Verify via Official QR Portal
+      </a>
     </div>
   );
 }
