@@ -20,6 +20,7 @@
     "@clerk/backend": "^3.5.0",
     "@prisma/client": "^6.19.3",
     "@prisma/config": "^7.8.0",
+    "axios": "^1.17.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.5.1",
     "compression": "^1.7.5",
