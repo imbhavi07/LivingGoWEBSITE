@@ -175,11 +175,11 @@ export const initiateDigilockerSession = asyncHandler(async (req: Request, res: 
       redirectUrl: authorizationUrl,
     });
   } catch (error: unknown) {
-    if (axios.isAxiosError(error)) {
-      console.error("Sandbox API error:", error.response?.data || error.message);
-    } else {
-      console.error("DigiLocker initiation error:", error);
-    }
-    throw new AppError("Failed to initiate KYC session", 500);
-  }
+     if (axios.isAxiosError(error)) {
+       console.error("Sandbox API error:", error.response?.data || error.message);
+     } else {
+       console.error("DigiLocker initiation error:", error instanceof Error ? error.message : String(error));
+     }
+     throw new AppError("Failed to initiate KYC session", 500);
+   }
 });
