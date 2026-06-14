@@ -219,7 +219,7 @@ export const completeDigilockerSession = asyncHandler(async (req: Request, res: 
     const documentData = documentResponse.data;
 
     // Debug log after fetching document data
-    console.log("Digilocker document data:", JSON.stringify(documentData, null, 2));
+    console.log("SANDBOX DOCUMENT PAYLOAD:", JSON.stringify(documentData.data, null, 2));
 
     // 4. Sync to DB with verified data
     await prisma.user.update({
