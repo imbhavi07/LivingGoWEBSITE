@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { CheckCircle2, Clock, ShieldCheck, XCircle, Lock } from "lucide-react";
+import { CheckCircle2, Clock, ShieldCheck, XCircle } from "lucide-react";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { OwnerShell } from "@/components/owner/OwnerShell";
 import { Button } from "@/components/Button";
@@ -132,7 +132,7 @@ export default function OwnerKYCPage() {
             <h1 className="text-2xl font-black text-ink">Application under review</h1>
             <p className="mt-3 text-sm leading-6 text-muted">
               Your KYC details have been submitted and are pending admin review.
-              You will be able to list properties once approved — usually within 1–2 business days.
+              You will be able to list properties once approved — usually within 12-24 business hours.
             </p>
             <div className="mt-6 rounded-2xl bg-linen p-4 text-left text-xs text-muted space-y-1">
               <p className="font-bold text-ink text-sm mb-2">What happens next?</p>
@@ -272,7 +272,7 @@ export default function OwnerKYCPage() {
                 value={aadhaarNumber}
                 onChange={(e) => setAadhaarNumber(e.target.value)}
                 className="input"
-                maxLength="12"
+                maxLength={12}
                 placeholder="Enter 12-digit Aadhaar number"
                 required
               />
@@ -292,7 +292,7 @@ export default function OwnerKYCPage() {
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
                 className="input"
-                maxLength="6"
+                maxLength={6}
                 placeholder="Enter 6-digit OTP"
                 required
               />
