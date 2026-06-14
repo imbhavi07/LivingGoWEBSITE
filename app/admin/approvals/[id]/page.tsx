@@ -41,7 +41,7 @@ export default function AdminApprovalDetailsPage() {
               <Info label="Legal accepted" value={formatIST(approval.legalAcceptedAt)} />
               <Info label="Submitted" value={formatIST(approval.createdAt)} />
             </div>
-            <div className="mt-6 grid gap-4">
+            <div className="mt-3 grid gap-4">
               <DocumentViewer title="Official DigiLocker Document" src={approval.aadhaarFrontUrl} />
             </div>
           </section>
