@@ -32,6 +32,9 @@ function KYCContent() {
 
   // 1. Existing Status Check - wrapped in useCallback to prevent stale closures
   const checkStatus = useCallback(async () => {
+      // Early return to prevent background polling from overwriting successful status
+      if (status === "already_pending" || status === "approved") return;
+
       const email = user?.primaryEmailAddress?.emailAddress;
       if (!email) { setStatus("form"); return; }
       try {
@@ -42,16 +45,21 @@ function KYCContent() {
           `${baseUrl}/api/owner/kyc/status?email=${encodeURIComponent(email)}`,
           { headers: { Authorization: `Bearer ${token ?? ""}` } }
         );
-        if (!res.ok) { setStatus("form"); return; }
+        if (!res.ok) {
+          // Only reset to form if we were checking, not if we were already in a final state
+          if (status === "checking") setStatus("form");
+          return;
+        }
         const data = await res.json();
         const vs = data.data?.verificationStatus;
         if (vs === "approved") setStatus("approved");
         else if (vs === "rejected") setStatus("rejected")
         else setStatus("form");
-      } catch {
-        setStatus("form");
+      } catch (error) {
+        // Only reset to form if we were checking, not if we were already in a final state
+        if (status === "checking") setStatus("form");
       }
-    }, [user]); // Only depend on user since getClerkToken doesn't change
+    }, [user, status]); // Depend on user and status since we use status in the function
 
   // 1. Existing Status Check
   useEffect(() => {

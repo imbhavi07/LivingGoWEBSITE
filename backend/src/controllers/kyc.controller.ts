@@ -223,9 +223,12 @@ export const completeDigilockerSession = asyncHandler(async (req: Request, res: 
       where: { email },
       data: {
         name: userProfileData.data.name,
-        aadhaarFrontUrl: documentData.data.files[0].url,
-        aadhaarNumber: null,
-        verificationStatus: "pending_approval"
+        phone: userProfileData.data?.phone || "Fetched securely",
+        ownerType: "PG Owner",
+        aadhaarNumber: documentData.data?.parsed_data?.uid || documentData.data?.parsed_data?.aadhaar_number || "Verified via DigiLocker",
+        aadhaarFrontUrl: documentData.data?.parsed_data?.photo ? `data:image/jpeg;base64,${documentData.data.parsed_data.photo}` : (documentData.data?.files?.[0]?.url || null),
+        verificationStatus: "pending_approval",
+        legalAcceptedAt: new Date()
       }
     });
 
