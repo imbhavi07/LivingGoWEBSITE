@@ -18,7 +18,7 @@ async function getClerkToken() {
   return clerk?.session?.getToken() ?? null;
 }
 
-  function KYCContent() {
+function KYCContent() {
   const { user, isLoaded } = useUser();
   const searchParams = useSearchParams();
   const { signOut } = useClerk();
@@ -43,7 +43,7 @@ async function getClerkToken() {
   useEffect(() => {
     const completeSession = async () => {
       if (!sessionId || !user?.primaryEmailAddress?.emailAddress) return;
-      
+
       setIsLoading(true);
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/owner/kyc/digilocker/complete`, {
@@ -100,12 +100,12 @@ async function getClerkToken() {
 
   const handleDigilockerRedirect = async (e: React.FormEvent) => {
   e.preventDefault(); // Stops the page from refreshing
-  
+
   if (!isAgreed) {
     setErrorMessage("You must agree to the agreements before verifying.");
     return;
   }
-  
+
   setIsLoading(true);
   setErrorMessage("");
 
@@ -164,7 +164,6 @@ async function getClerkToken() {
   }
 
   if (status === "approved") {
-
     return (
       <OwnerShell>
         <div className="mx-auto max-w-lg">
@@ -234,53 +233,53 @@ async function getClerkToken() {
       </div>
 
       <form onSubmit={handleDigilockerRedirect} className="mx-auto max-w-xl rounded-3xl bg-white p-6 shadow-soft sm:p-8 space-y-6">
-  
-  {/* Checkbox Section */}
-  <label className="flex items-start gap-3 rounded-3xl bg-linen p-4 text-sm leading-6 text-ink">
-    <input 
-      type="checkbox" 
-      checked={isAgreed}
-      onChange={(e) => setIsAgreed(e.target.checked)}
-      className="mt-1 h-4 w-4 shrink-0 accent-ink cursor-pointer" 
-    />
-    <span>
-      I agree to the <Link href="/legal/retainer-agreement" target="_blank" className="font-bold underline">Exclusive Inventory Agreement</Link>, <Link href="/legal/standard-commission-agreement" target="_blank" className="font-bold underline">Platform Listing Agreement</Link>, and <Link href="/legal/privacy-policy" target="_blank" className="font-bold underline">Privacy Policy</Link>.
-    </span>
-  </label>
 
-  {/* Security Badge */}
-  <div className="flex items-start gap-3 rounded-2xl bg-linen p-3">
-    <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-clay" aria-hidden />
-    <p className="text-xs leading-5 text-muted">
-      Your identity data is encrypted and only visible to LivingGo admins for verification. It is never shared publicly.
-    </p>
-  </div>
+        {/* Checkbox Section */}
+        <label className="flex items-start gap-3 rounded-3xl bg-linen p-4 text-sm leading-6 text-ink">
+          <input
+            type="checkbox"
+            checked={isAgreed}
+            onChange={(e) => setIsAgreed(e.target.checked)}
+            className="mt-1 h-4 w-4 shrink-0 accent-ink cursor-pointer"
+          />
+          <span>
+            I agree to the <Link href="/legal/retainer-agreement" target="_blank" className="font-bold underline">Exclusive Inventory Agreement</Link>, <Link href="/legal/standard-commission-agreement" target="_blank" className="font-bold underline">Platform Listing Agreement</Link>, and <Link href="/legal/privacy-policy" target="_blank" className="font-bold underline">Privacy Policy</Link>.
+          </span>
+        </label>
 
-  {/* Error Message */}
-  {errorMessage && (
-    <div className="rounded-md bg-red-50 p-3 text-red-700 text-sm">
-      {errorMessage}
-    </div>
-  )}
+        {/* Security Badge */}
+        <div className="flex items-start gap-3 rounded-2xl bg-linen p-3">
+          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-clay" aria-hidden />
+          <p className="text-xs leading-5 text-muted">
+            Your identity data is encrypted and only visible to LivingGo admins for verification. It is never shared publicly.
+          </p>
+        </div>
 
-  {/* Submit Button */}
-  <div className="flex flex-col items-center">
-    <Button
-      type="submit"
-      disabled={isLoading || !isAgreed}
-      className="w-full px-6 py-3 bg-[#4A3B2C] text-white rounded-xl font-medium hover:bg-[#3A2A1D] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex items-center justify-center h-12"
-    >
-      {isLoading ? (
-        <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
-      ) : (
-        "Verify via DigiLocker"
-      )}
-    </Button>
-    <p className="text-xs text-gray-400 mt-4 text-center max-w-xs leading-relaxed">
-      You will be redirected securely to the official portal. Login seamlessly using your registered mobile number.
-    </p>
-  </div>
-</form>
+        {/* Error Message */}
+        {errorMessage && (
+          <div className="rounded-md bg-red-50 p-3 text-red-700 text-sm">
+            {errorMessage}
+          </div>
+        )}
+
+        {/* Submit Button */}
+        <div className="flex flex-col items-center">
+          <Button
+            type="submit"
+            disabled={isLoading || !isAgreed}
+            className="w-full px-6 py-3 bg-[#4A3B2C] text-white rounded-xl font-medium hover:bg-[#3A2A1D] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex items-center justify-center h-12"
+          >
+            {isLoading ? (
+              <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
+            ) : (
+              "Verify via DigiLocker"
+            )}
+          </Button>
+          <p className="text-xs text-gray-400 mt-4 text-center max-w-xs leading-relaxed">
+            You will be redirected securely to the official portal. Login seamlessly using your registered mobile number.
+          </p>
+        </div>
+      </form>
     </OwnerShell>
   );
 }
