@@ -182,64 +182,44 @@ export const handleSandboxWebhook = asyncHandler(async (req: Request, res: Respo
 
 export const completeDigilockerSession = asyncHandler(async (req: Request, res: Response) => {
   const { email, sessionId } = req.body;
-
-  if (!email || !sessionId) {
-    throw new AppError("Email and Session ID are required", 400);
-  }
-
-  const sandboxApiKey = process.env.SANDBOX_API_KEY;
-  const sandboxApiSecret = process.env.SANDBOX_API_SECRET;
+  
+  if (!email || !sessionId) throw new AppError("Missing details", 400);
 
   try {
-    // 1. Authenticate with Sandbox
-    console.log("Authenticating with Sandbox API...");
-    const authResponse = await axios.post("https://api.sandbox.co.in/authenticate", {}, {
-      headers: { "x-api-key": sandboxApiKey as string, "x-api-secret": sandboxApiSecret as string, "x-api-version": "1.0" }
+    // 1. Get Token
+    const auth = await axios.post("https://api.sandbox.co.in/authenticate", {}, {
+      headers: { 
+        "x-api-key": process.env.SANDBOX_API_KEY, 
+        "x-api-secret": process.env.SANDBOX_API_SECRET, 
+        "x-api-version": "1.0" 
+      }
     });
-    const accessToken = authResponse.data?.access_token || authResponse.data?.data?.access_token;
-    console.log("Authenticated successfully, got access token");
 
-    // 2. Fetch the verified session data
-    console.log(`Fetching session details for sessionId: ${sessionId}`);
+    // 2. Fetch Session Data
     const sessionDetails = await axios.get(`https://api.sandbox.co.in/kyc/digilocker/sessions/${sessionId}`, {
-      headers: { "Authorization": accessToken, "x-api-key": sandboxApiKey as string, "x-api-version": "1.0" }
+      headers: { 
+        "Authorization": auth.data.access_token, 
+        "x-api-key": process.env.SANDBOX_API_KEY, 
+        "x-api-version": "1.0" 
+      }
     });
 
-    console.log("Session details response:", sessionDetails.data);
-    const sessionData = sessionDetails.data?.data;
-    if (!sessionData || sessionData.status !== "VALID") {
-        console.error("Session not valid:", sessionData);
-        throw new AppError("DigiLocker session not valid", 400);
-    }
-
-    // 3. Extract data (Sandbox returns parsed_data for these documents)
-    const aadhaarDocument = sessionData.documents?.find((doc: unknown) => (doc as { type?: string; doctype?: string }).type === "aadhaar" || (doc as { type?: string; doctype?: string }).doctype === "AADHAAR");
-    const parsedData = aadhaarDocument?.parsed_data || {};
-    console.log("Parsed Aadhaar data:", parsedData);
-
-    // 4. Seal it in the Neon database
-    const updatedUser = await prisma.user.update({
+    const data = sessionDetails.data.data;
+    
+    // 3. Sync to DB
+    await prisma.user.update({
       where: { email },
-      data: {
-        name: parsedData.name || "Verified Owner",
-        aadhaarNumber: parsedData.uid || parsedData.aadhaar_number || null,
+      data: { 
+        name: data.documents?.[0]?.parsed_data?.name || "Verified User",
+        aadhaarNumber: data.documents?.[0]?.parsed_data?.aadhaar_number || null,
         verificationStatus: "pending_approval"
       }
     });
 
-    console.log("User updated successfully:", updatedUser);
-    res.status(200).json({ success: true, data: updatedUser });
-  } catch (error: unknown) {
-    console.error("KYC Sync Error:", error);
-    // If it's an Axios error, log the response details
-    if (axios.isAxiosError(error)) {
-      console.error("Axios error details:", {
-        message: error.message,
-        status: error.response?.status,
-        data: error.response?.data,
-        headers: error.response?.headers
-      });
-    }
-    throw new AppError("Failed to sync verified data", 500);
+    res.status(200).json({ success: true });
+  } catch (error: any) {
+    // THIS LOG IS CRITICAL
+    console.error("SANDBOX API ERROR:", error.response?.data || error.message);
+    res.status(500).json({ error: "Failed to fetch data from Sandbox", details: error.response?.data });
   }
 });
