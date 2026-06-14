@@ -1,14 +1,15 @@
 import { Router } from "express";
 import multer from "multer";
-import { submitKyc, getKycStatus, initiateDigilockerSession } from "../controllers/kyc.controller";
+import { submitKyc, getKycStatus, generateAadhaarOtp, verifyAadhaarOtp } from "../controllers/kyc.controller";
 
 const upload = multer({ storage: multer.memoryStorage() });
 const router = Router();
 
 router.get("/status", getKycStatus);
 
-// DigiLocker initiation route - protected by Clerk auth
-router.get("/digilocker/init", initiateDigilockerSession);
+// New Aadhaar OTP Routes
+router.post("/aadhaar/generate-otp", generateAadhaarOtp);
+router.post("/aadhaar/verify-otp", verifyAadhaarOtp);
 
 router.post(
   "/",
