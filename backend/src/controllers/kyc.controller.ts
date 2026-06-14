@@ -179,3 +179,51 @@ export const handleSandboxWebhook = asyncHandler(async (req: Request, res: Respo
 
   res.status(200).json({ success: true, message: "Webhook processed successfully" });
 });
+
+export const completeDigilockerSession = asyncHandler(async (req: Request, res: Response) => {
+  const { email, sessionId } = req.body;
+  
+  if (!email || !sessionId) {
+    throw new AppError("Email and Session ID are required", 400);
+  }
+
+  const sandboxApiKey = process.env.SANDBOX_API_KEY;
+  const sandboxApiSecret = process.env.SANDBOX_API_SECRET;
+
+  try {
+    // 1. Authenticate with Sandbox
+    const authResponse = await axios.post("https://api.sandbox.co.in/authenticate", {}, {
+      headers: { "x-api-key": sandboxApiKey as string, "x-api-secret": sandboxApiSecret as string, "x-api-version": "1.0" }
+    });
+    const accessToken = authResponse.data?.access_token || authResponse.data?.data?.access_token;
+
+    // 2. Fetch the verified session data
+    const sessionDetails = await axios.get(`https://api.sandbox.co.in/kyc/digilocker/sessions/${sessionId}`, {
+      headers: { "Authorization": accessToken, "x-api-key": sandboxApiKey as string, "x-api-version": "1.0" }
+    });
+
+    const sessionData = sessionDetails.data?.data;
+    if (!sessionData || sessionData.status !== "VALID") {
+        throw new AppError("DigiLocker session not valid", 400);
+    }
+
+    // 3. Extract data (Sandbox returns parsed_data for these documents)
+    const aadhaarDocument = sessionData.documents?.find((doc: unknown) => (doc as { type?: string; doctype?: string }).type === "aadhaar" || (doc as { type?: string; doctype?: string }).doctype === "AADHAAR");
+    const parsedData = aadhaarDocument?.parsed_data || {};
+
+    // 4. Seal it in the Neon database
+    const updatedUser = await prisma.user.update({
+      where: { email },
+      data: { 
+        name: parsedData.name || "Verified Owner",
+        aadhaarNumber: parsedData.uid || parsedData.aadhaar_number || null,
+        verificationStatus: "pending_approval"
+      }
+    });
+
+    res.status(200).json({ success: true, data: updatedUser });
+  } catch (error: unknown) {
+    console.error("KYC Sync Error:", error);
+    throw new AppError("Failed to sync verified data", 500);
+  }
+});

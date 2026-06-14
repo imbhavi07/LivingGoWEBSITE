@@ -6,6 +6,7 @@ import { CheckCircle2, Clock, ShieldCheck, XCircle } from "lucide-react";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { OwnerShell } from "@/components/owner/OwnerShell";
 import { Button } from "@/components/Button";
+import { useSearchParams } from "next/navigation";
 
 type KYCStatus = "checking" | "form" | "submitting" | "submitted" | "already_pending" | "approved" | "rejected";
 
@@ -18,21 +19,69 @@ async function getClerkToken() {
 
 export default function OwnerKYCPage() {
   const { user, isLoaded } = useUser();
+  const searchParams = useSearchParams();
   const { signOut } = useClerk();
+  const sessionId = searchParams.get("session_id");
+
+  // Removed fullName and phoneNumber states entirely!
+  const [isAgreed, setIsAgreed] = useState(false);
   const [status, setStatus] = useState<KYCStatus>("checking");
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
 
+  // 1. Existing Status Check
   useEffect(() => {
     if (!isLoaded) return;
     const email = user?.primaryEmailAddress?.emailAddress;
     if (!email) { setStatus("form"); return; }
+    // ... keep your existing checkStatus() logic here ...
+    checkStatus();
+  }, [user, isLoaded]);
 
-    async function checkStatus() {
+  // 2. NEW: The Session Catcher
+  useEffect(() => {
+    const completeSession = async () => {
+      if (!sessionId || !user?.primaryEmailAddress?.emailAddress) return;
+      
+      setIsLoading(true);
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/owner/kyc/digilocker/complete`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: user.primaryEmailAddress.emailAddress,
+            sessionId: sessionId
+          }),
+        });
+
+        if (res.ok) {
+          // Clear the session_id from the URL so it doesn't loop
+          window.history.replaceState(null, "", "/owner/kyc");
+          // Update local state to show your "Application under review" UI
+          setStatus("already_pending");
+        } else {
+          setErrorMessage("Failed to process verified data.");
+        }
+      } catch (error) {
+        setErrorMessage("Something went wrong verifying the session.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    // Only run this if we have a session ID and haven't verified yet
+    if (sessionId && status === "form") {
+      completeSession();
+    }
+  }, [sessionId, user, status]);
+
+  const checkStatus = async () => {
+      const email = user?.primaryEmailAddress?.emailAddress;
+      if (!email) { setStatus("form"); return; }
       try {
         const token = await getClerkToken();
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/owner/kyc/status?email=${encodeURIComponent(email!)}`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/owner/kyc/status?email=${encodeURIComponent(email)}`,
           { headers: { Authorization: `Bearer ${token ?? ""}` } }
         );
         if (!res.ok) { setStatus("form"); return; }
@@ -47,10 +96,15 @@ export default function OwnerKYCPage() {
       }
     }
     void checkStatus();
-  }, [user, isLoaded]);
 
   const handleDigilockerRedirect = async (e: React.FormEvent) => {
-  e.preventDefault();
+  e.preventDefault(); // Stops the page from refreshing
+  
+  if (!isAgreed) {
+    setErrorMessage("You must agree to the agreements before verifying.");
+    return;
+  }
+  
   setIsLoading(true);
   setErrorMessage("");
 
@@ -58,14 +112,12 @@ export default function OwnerKYCPage() {
     const email = user?.primaryEmailAddress?.emailAddress;
     if (!email) throw new Error("User email not found. Please sign in again.");
 
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_BASE_URL}/owner/kyc/digilocker/init?email=${encodeURIComponent(email)}`
-    );
+    // IMPORTANT: Make sure this path doesn't have the duplicate /api/api error we fixed earlier!
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/owner/kyc/digilocker/init?email=${encodeURIComponent(email)}`);
     const data = await res.json();
 
     if (data.redirectUrl) {
-      // Hands the user over to the official DigiLocker mobile-login screen
-      window.location.href = data.redirectUrl;
+      window.location.href = data.redirectUrl; 
     } else {
       throw new Error(data.message || "Failed to initiate secure redirect");
     }
@@ -112,6 +164,7 @@ export default function OwnerKYCPage() {
   }
 
   if (status === "approved") {
+
     return (
       <OwnerShell>
         <div className="mx-auto max-w-lg">
@@ -180,76 +233,54 @@ export default function OwnerKYCPage() {
         <span className="text-muted">List properties</span>
       </div>
 
-      <form onSubmit={(e) => e.preventDefault()} className="mx-auto max-w-xl rounded-3xl bg-white p-6 shadow-soft sm:p-8">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="block space-y-2 sm:col-span-2">
-            <span className="text-sm font-bold text-ink">Full name</span>
-            <input name="name" className="input" defaultValue={user?.fullName ?? ""} required />
-          </label>
-          <label className="block space-y-2">
-            <span className="text-sm font-bold text-ink">Phone number</span>
-            <input name="phone" className="input" inputMode="numeric" placeholder="10-digit mobile number" required />
-          </label>
-          <label className="block space-y-2">
-            <span className="text-sm font-bold text-ink">Owner type</span>
-            <select name="ownerType" className="input" defaultValue="PG Owner">
-              <option value="PG Owner">PG Owner</option>
-              <option value="Flat Owner">Flat Owner</option>
-            </select>
-          </label>
-                    <label className="flex items-start gap-3 rounded-3xl bg-linen p-4 text-sm leading-6 text-ink sm:col-span-2">
-            <input name="legalAccepted" type="checkbox" className="mt-1 h-4 w-4 shrink-0 accent-ink" required />
-            <span>
-              I agree to the{" "}
-              <Link href="/legal/retainer-agreement" target="_blank" className="font-bold underline">Exclusive Inventory Agreement</Link>,{" "}
-              <Link href="/legal/standard-commission-agreement" target="_blank" className="font-bold underline">Platform Listing Agreement</Link>, and{" "}
-              <Link href="/legal/privacy-policy" target="_blank" className="font-bold underline">Privacy Policy</Link>.
-            </span>
-          </label>
-        </div>
+      <form onSubmit={handleDigilockerRedirect} className="mx-auto max-w-xl rounded-3xl bg-white p-6 shadow-soft sm:p-8 space-y-6">
+  
+  {/* Checkbox Section */}
+  <label className="flex items-start gap-3 rounded-3xl bg-linen p-4 text-sm leading-6 text-ink">
+    <input 
+      type="checkbox" 
+      checked={isAgreed}
+      onChange={(e) => setIsAgreed(e.target.checked)}
+      className="mt-1 h-4 w-4 shrink-0 accent-ink cursor-pointer" 
+    />
+    <span>
+      I agree to the <Link href="/legal/retainer-agreement" target="_blank" className="font-bold underline">Exclusive Inventory Agreement</Link>, <Link href="/legal/standard-commission-agreement" target="_blank" className="font-bold underline">Platform Listing Agreement</Link>, and <Link href="/legal/privacy-policy" target="_blank" className="font-bold underline">Privacy Policy</Link>.
+    </span>
+  </label>
 
-        <div className="mt-4 flex items-start gap-3 rounded-2xl bg-linen p-3">
-          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-clay" aria-hidden />
-          <p className="text-xs leading-5 text-muted">
-            Your identity data is encrypted and only visible to LivingGo admins for verification. It is never shared publicly.
-          </p>
-        </div>
+  {/* Security Badge */}
+  <div className="flex items-start gap-3 rounded-2xl bg-linen p-3">
+    <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-clay" aria-hidden />
+    <p className="text-xs leading-5 text-muted">
+      Your identity data is encrypted and only visible to LivingGo admins for verification. It is never shared publicly.
+    </p>
+  </div>
 
-        {errorMessage && (
-          <p className="mt-4 rounded-2xl bg-linen p-3 text-sm font-semibold text-clay">{errorMessage}</p>
-        )}
+  {/* Error Message */}
+  {errorMessage && (
+    <div className="rounded-md bg-red-50 p-3 text-red-700 text-sm">
+      {errorMessage}
+    </div>
+  )}
 
-        {/* Error message slot */}
-        {errorMessage && (
-          <div className="mt-4 rounded-md bg-red-50 p-3 text-red-700 text-sm">
-            {errorMessage}
-          </div>
-        )}
-
-        {/* DigiLocker Call to Action */}
-        <div className="mt-8 flex flex-col items-center">
-          <Button
-            onClick={handleDigilockerRedirect}
-            disabled={isLoading}
-            className="w-full px-6 py-3 bg-[#4A3B2C] text-white rounded-xl font-medium hover:bg-[#3A2A1D] transition-all disabled:opacity-50 shadow-md flex items-center justify-center gap-2"
-          >
-            {isLoading ? (
-              <>
-                <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-                Connecting securely...
-              </>
-            ) : (
-              "Verify via DigiLocker"
-            )}
-          </Button>
-          
-          {/* shayad error aaye to yeh message dikhana hai */}
-          <p className="text-xs text-gray-400 mt-4 text-center max-w-xs leading-relaxed">
-            You will be redirected securely to the official portal. 
-            Login seamlessly using your registered mobile number.
-          </p>
-        </div>
-      </form>
+  {/* Submit Button */}
+  <div className="flex flex-col items-center">
+    <Button
+      type="submit"
+      disabled={isLoading || !isAgreed}
+      className="w-full px-6 py-3 bg-[#4A3B2C] text-white rounded-xl font-medium hover:bg-[#3A2A1D] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex items-center justify-center h-12"
+    >
+      {isLoading ? (
+        <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
+      ) : (
+        "Verify via DigiLocker"
+      )}
+    </Button>
+    <p className="text-xs text-gray-400 mt-4 text-center max-w-xs leading-relaxed">
+      You will be redirected securely to the official portal. Login seamlessly using your registered mobile number.
+    </p>
+  </div>
+</form>
     </OwnerShell>
   );
 }
