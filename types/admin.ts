@@ -46,7 +46,6 @@ export type OwnerApproval = {
   ownerType: string;
   aadhaarNumber: string;
   aadhaarFrontUrl: string;
-  aadhaarBackUrl: string;
   legalAcceptedAt: string;
   verificationStatus: OwnerApprovalStatus;
   createdAt: string;

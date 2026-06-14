@@ -29,7 +29,7 @@ export default function AdminApprovalDetailsPage() {
       {isLoading ? <div className="h-[620px] animate-pulse rounded-3xl bg-white shadow-soft" /> : null}
       {!isLoading && !approval ? <EmptyState title="Owner application not found" message="This application may already have been processed." /> : null}
       {approval ? (
-        <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
+        <div className="grid gap-6">
           <section className="rounded-3xl bg-white p-6 shadow-soft ring-1 ring-black/5">
             <p className="text-sm font-black uppercase text-clay">Owner verification packet</p>
             <h1 className="mt-2 text-3xl font-black text-ink">{approval.name}</h1>
@@ -41,9 +41,8 @@ export default function AdminApprovalDetailsPage() {
               <Info label="Legal accepted" value={formatIST(approval.legalAcceptedAt)} />
               <Info label="Submitted" value={formatIST(approval.createdAt)} />
             </div>
-            <div className="mt-6 grid gap-4 md:grid-cols-2">
-              <DocumentCard title="Aadhaar front" image={approval.aadhaarFrontUrl} />
-              <DocumentCard title="Aadhaar back" image={approval.aadhaarBackUrl} />
+            <div className="mt-6 grid gap-4">
+              <DocumentViewer title="Aadhaar front" src={approval.aadhaarFrontUrl} />
             </div>
           </section>
           <aside className="h-fit rounded-3xl bg-white p-6 shadow-soft ring-1 ring-black/5">
@@ -69,13 +68,30 @@ function Info({ label, value }: { label: string; value: string }) {
   );
 }
 
-function DocumentCard({ title, image }: { title: string; image: string }) {
+{/* I don't think abhi yeh hua hai kaafi baar check karna padega */}
+
+function DocumentViewer({ title, src }: { title: string; src: string }) {
+  const isPdf = src.toLowerCase().endsWith('.pdf');
+
   return (
     <div className="overflow-hidden rounded-3xl bg-linen p-3">
       <p className="mb-3 text-sm font-black text-ink">{title}</p>
-      <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-white">
-        <Image src={image} alt={title} fill className="object-cover" sizes="50vw" />
-      </div>
+      {isPdf ? (
+        <>
+          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-white">
+            <embed src={src} type="application/pdf" className="w-full h-full" />
+          </div>
+          <p className="mt-2 text-sm text-center">
+            <a href={src} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:underline">
+              View PDF
+            </a>
+          </p>
+        </>
+      ) : (
+        <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-white">
+          <Image src={src} alt={title} fill className="object-cover" sizes="50vw" />
+        </div>
+      )}
     </div>
   );
 }
