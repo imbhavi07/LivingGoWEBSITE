@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CheckCircle2, Clock, ShieldCheck, XCircle } from "lucide-react";
 import { useUser, useClerk } from "@clerk/nextjs";
+import { Suspense } from "react";
 import { OwnerShell } from "@/components/owner/OwnerShell";
 import { Button } from "@/components/Button";
 import { useSearchParams } from "next/navigation";
@@ -17,7 +18,7 @@ async function getClerkToken() {
   return clerk?.session?.getToken() ?? null;
 }
 
-export default function OwnerKYCPage() {
+  function KYCContent() {
   const { user, isLoaded } = useUser();
   const searchParams = useSearchParams();
   const { signOut } = useClerk();
@@ -282,5 +283,14 @@ export default function OwnerKYCPage() {
   </div>
 </form>
     </OwnerShell>
+  );
+}
+
+// 2. Export the page with Suspense
+export default function OwnerKYCPage() {
+  return (
+    <Suspense fallback={<div>Loading verification...</div>}>
+      <KYCContent />
+    </Suspense>
   );
 }
