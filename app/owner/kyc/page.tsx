@@ -113,12 +113,11 @@ async function getClerkToken() {
     const email = user?.primaryEmailAddress?.emailAddress;
     if (!email) throw new Error("User email not found. Please sign in again.");
 
-    // IMPORTANT: Make sure this path doesn't have the duplicate /api/api error we fixed earlier!
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/owner/kyc/digilocker/init?email=${encodeURIComponent(email)}`);
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/owner/kyc/digilocker/init?email=${encodeURIComponent(email)}`);
     const data = await res.json();
 
     if (data.redirectUrl) {
-      window.location.href = data.redirectUrl; 
+      window.location.href = data.redirectUrl;
     } else {
       throw new Error(data.message || "Failed to initiate secure redirect");
     }
