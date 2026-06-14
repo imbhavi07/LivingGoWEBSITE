@@ -68,6 +68,8 @@ function Info({ label, value }: { label: string; value: string }) {
   );
 }
 
+{/* I don't think abhi yeh hua hai kaafi baar check karna padega */}
+
 function DocumentViewer({ title, src }: { title: string; src: string }) {
   const isPdf = src.toLowerCase().endsWith('.pdf');
 
