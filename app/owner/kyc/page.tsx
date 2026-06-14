@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { CheckCircle2, Clock, ShieldCheck, XCircle } from "lucide-react";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { Suspense } from "react";
@@ -30,6 +30,27 @@ function KYCContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
+  // 1. Existing Status Check - wrapped in useCallback to prevent stale closures
+  const checkStatus = useCallback(async () => {
+      const email = user?.primaryEmailAddress?.emailAddress;
+      if (!email) { setStatus("form"); return; }
+      try {
+        const token = await getClerkToken();
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/owner/kyc/status?email=${encodeURIComponent(email)}`,
+          { headers: { Authorization: `Bearer ${token ?? ""}` } }
+        );
+        if (!res.ok) { setStatus("form"); return; }
+        const data = await res.json();
+        const vs = data.data?.verificationStatus;
+        if (vs === "approved") setStatus("approved");
+        else if (vs === "rejected") setStatus("rejected")
+        else setStatus("form");
+      } catch {
+        setStatus("form");
+      }
+    }, [user]); // Only depend on user since getClerkToken doesn't change
+
   // 1. Existing Status Check
   useEffect(() => {
     if (!isLoaded) return;
@@ -37,7 +58,7 @@ function KYCContent() {
     if (!email) { setStatus("form"); return; }
     // ... keep your existing checkStatus() logic here ...
     checkStatus();
-  }, [user, isLoaded]);
+  }, [user, isLoaded, checkStatus]);
 
   // 2. NEW: The Session Catcher
   useEffect(() => {
@@ -46,7 +67,7 @@ function KYCContent() {
 
       setIsLoading(true);
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/owner/kyc/digilocker/complete`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/owner/kyc/digilocker/complete`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -63,7 +84,7 @@ function KYCContent() {
         } else {
           setErrorMessage("Failed to process verified data.");
         }
-      } catch (error) {
+      } catch {
         setErrorMessage("Something went wrong verifying the session.");
       } finally {
         setIsLoading(false);
@@ -76,56 +97,12 @@ function KYCContent() {
     }
   }, [sessionId, user, status]);
 
-  const checkStatus = async () => {
-      const email = user?.primaryEmailAddress?.emailAddress;
-      if (!email) { setStatus("form"); return; }
-      try {
-        const token = await getClerkToken();
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/owner/kyc/status?email=${encodeURIComponent(email)}`,
-          { headers: { Authorization: `Bearer ${token ?? ""}` } }
-        );
-        if (!res.ok) { setStatus("form"); return; }
-        const data = await res.json();
-        const vs = data.data?.verificationStatus;
-        if (vs === "approved") setStatus("approved");
-        else if (vs === "pending_approval") setStatus("already_pending");
-        else if (vs === "rejected") setStatus("rejected");
-        else setStatus("form");
-      } catch {
-        setStatus("form");
-      }
+  // Call checkStatus after defining it - but only if we have user data
+  useEffect(() => {
+    if (user && isLoaded) {
+      checkStatus();
     }
-    void checkStatus();
-
-  const handleDigilockerRedirect = async (e: React.FormEvent) => {
-  e.preventDefault(); // Stops the page from refreshing
-
-  if (!isAgreed) {
-    setErrorMessage("You must agree to the agreements before verifying.");
-    return;
-  }
-
-  setIsLoading(true);
-  setErrorMessage("");
-
-  try {
-    const email = user?.primaryEmailAddress?.emailAddress;
-    if (!email) throw new Error("User email not found. Please sign in again.");
-
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/owner/kyc/digilocker/init?email=${encodeURIComponent(email)}`);
-    const data = await res.json();
-
-    if (data.redirectUrl) {
-      window.location.href = data.redirectUrl;
-    } else {
-      throw new Error(data.message || "Failed to initiate secure redirect");
-    }
-  } catch (error) {
-    setErrorMessage(error instanceof Error ? error.message : "Something went wrong.");
-    setIsLoading(false);
-  }
-};
+  }, [user, isLoaded, checkStatus]);
 
   if (status === "checking") return null;
 
@@ -211,6 +188,36 @@ function KYCContent() {
     );
   }
 
+  // Fixed FormEvent deprecation by using React.FormEvent instead
+  const handleDigilockerRedirect = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); // Stops the page from refreshing
+
+    if (!isAgreed) {
+      setErrorMessage("You must agree to the agreements before verifying.");
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMessage("");
+
+    try {
+      const email = user?.primaryEmailAddress?.emailAddress;
+      if (!email) throw new Error("User email not found. Please sign in again.");
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/owner/kyc/digilocker/init?email=${encodeURIComponent(email)}`);
+      const data = await res.json();
+
+      if (data.redirectUrl) {
+        window.location.href = data.redirectUrl;
+      } else {
+        throw new Error(data.message || "Failed to initiate secure redirect");
+      }
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Something went wrong.");
+      setIsLoading(false);
+    }
+  };
+
   return (
     <OwnerShell>
       <div className="mb-6">
@@ -287,7 +294,7 @@ function KYCContent() {
 // 2. Export the page with Suspense
 export default function OwnerKYCPage() {
   return (
-    <Suspense fallback={<div>Loading verification...</div>}>
+    <Suspense fallback={<div className="flex justify-center p-10">Loading verification...</div>}>
       <KYCContent />
     </Suspense>
   );
