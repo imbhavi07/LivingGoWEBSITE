@@ -95,93 +95,94 @@ export const getKycStatus = asyncHandler(async (req: Request, res: Response) => 
   });
 });
 
-export const initiateDigilockerSession = asyncHandler(async (req: Request, res: Response) => {
-  const email = req.query.email as string;
-  if (!email) throw new AppError("Email is required", 400);
-
-  const owner = await prisma.user.findUnique({
-    where: { email },
-    select: { id: true, email: true, clerkId: true, verificationStatus: true },
-  });
-
-  if (!owner) throw new AppError("Owner not found", 404);
-
-  if (owner.verificationStatus === "approved") {
-    throw new AppError("Your KYC is already approved.", 400);
-  }
-
-  if (!owner.clerkId) {
-    throw new AppError("Clerk ID not found for this user.", 400);
+export const generateAadhaarOtp = asyncHandler(async (req: Request, res: Response) => {
+  const { aadhaarNumber } = req.body;
+  
+  if (!aadhaarNumber || !/^\d{12}$/.test(aadhaarNumber)) {
+    throw new AppError("A valid 12-digit Aadhaar number is required", 400);
   }
 
   const sandboxApiKey = process.env.SANDBOX_API_KEY;
   const sandboxApiSecret = process.env.SANDBOX_API_SECRET;
 
   if (!sandboxApiKey || !sandboxApiSecret) {
-    throw new AppError("DigiLocker integration not configured", 500);
+    throw new AppError("Sandbox API credentials missing", 500);
   }
 
   try {
-    const callbackUrl = process.env.CORS_ORIGIN || "http://localhost:3000/owner/kyc";
-
-    // Step 1: Authenticate with Sandbox to generate access token
-    const authResponse = await axios.post(
-      "https://api.sandbox.co.in/authenticate",
-      {},
-      {
-        headers: {
-          "x-api-key": sandboxApiKey,
-          "x-api-secret": sandboxApiSecret,
-          "x-api-version": "1.0",
-        },
-      }
-    );
-
-    const accessToken = authResponse.data?.data?.access_token;
-    
-    if (!accessToken) {
-      throw new AppError("Failed to generate Sandbox access token", 500);
-    }
-
-
-// Step 2: Initiate DigiLocker Session with the token
-    const response = await axios.post(
-      "https://api.sandbox.co.in/kyc/digilocker/sessions/init",
-      {
-        "@entity": "in.co.sandbox.kyc.digilocker.session.request",
-        "flow": "signin",
-        "redirect_url": callbackUrl,
-        "doc_types": ["aadhaar"]
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": accessToken, 
-          "x-api-key": sandboxApiKey,
-          "x-api-version": "1.0",
-        },
-      }
-    );
-
-    // Sandbox nests the URL inside data.data
-    const authorizationUrl = response.data?.data?.authorization_url;
-
-    if (!authorizationUrl) {
-      throw new AppError("Failed to get authorization URL from Sandbox", 500);
-    }
-
-    res.status(200).json({
-      success: true,
-      redirectUrl: authorizationUrl,
+    // 1. Authenticate with Sandbox
+    const authResponse = await axios.post("https://api.sandbox.co.in/authenticate", {}, {
+      headers: { "x-api-key": sandboxApiKey, "x-api-secret": sandboxApiSecret, "x-api-version": "1.0" }
     });
+    const accessToken = authResponse.data?.data?.access_token || authResponse.data?.access_token;
+
+    // 2. Request OTP
+    const otpResponse = await axios.post("https://api.sandbox.co.in/kyc/aadhaar/okyc/otp", {
+      "@entity": "in.co.sandbox.kyc.aadhaar.okyc.otp.request",
+      "aadhaar_number": aadhaarNumber,
+      "consent": "y",
+      "reason": "LivingGo Owner KYC Verification"
+    }, {
+      headers: { "Authorization": accessToken, "x-api-key": sandboxApiKey, "x-api-version": "1.0" }
+    });
+
+    const referenceId = otpResponse.data?.data?.reference_id;
+    
+    if (!referenceId) throw new AppError("Failed to get reference ID from Sandbox", 500);
+
+    res.status(200).json({ success: true, referenceId, message: "OTP sent to registered mobile number" });
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      console.error("Sandbox API error:", error.response?.data || error.message);
-    } else if (error instanceof Error) {
-      console.error("DigiLocker initiation error:", error.message);
-    } else {
-      console.error("DigiLocker initiation error:", String(error));
+      console.error("Sandbox OTP Generation Error:", error.response?.data || error.message);
+      throw new AppError(error.response?.data?.message || "Failed to generate OTP", 400);
     }
-    throw new AppError("Failed to initiate KYC session", 500);
+    throw new AppError("Internal server error during OTP generation", 500);
+  }
+});
+
+export const verifyAadhaarOtp = asyncHandler(async (req: Request, res: Response) => {
+  const { referenceId, otp, email } = req.body;
+  
+  if (!referenceId || !otp || !email) {
+    throw new AppError("Missing required fields for verification", 400);
+  }
+
+  const sandboxApiKey = process.env.SANDBOX_API_KEY;
+  const sandboxApiSecret = process.env.SANDBOX_API_SECRET;
+
+  try {
+    // 1. Authenticate with Sandbox
+    const authResponse = await axios.post("https://api.sandbox.co.in/authenticate", {}, {
+      headers: { "x-api-key": sandboxApiKey as string, "x-api-secret": sandboxApiSecret as string, "x-api-version": "1.0" }
+    });
+    const accessToken = authResponse.data?.data?.access_token || authResponse.data?.access_token;
+
+    // 2. Verify the OTP
+    const verifyResponse = await axios.post("https://api.sandbox.co.in/kyc/aadhaar/okyc/otp/verify", {
+      "@entity": "in.co.sandbox.kyc.aadhaar.okyc.request",
+      "reference_id": referenceId,
+      "otp": otp
+    }, {
+      headers: { "Authorization": accessToken, "x-api-key": sandboxApiKey as string, "x-api-version": "1.0" }
+    });
+
+    // 3. Approve User in Database if successful
+    const responseData = verifyResponse.data;
+    if (responseData?.code === 200 || responseData?.data?.status === "VALID") {
+      const updatedUser = await prisma.user.update({
+        where: { email },
+        data: { verificationStatus: "approved" }
+      });
+      
+      res.status(200).json({ success: true, message: "Identity verified successfully", data: updatedUser });
+    } else {
+      throw new AppError("Invalid OTP provided", 400);
+    }
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      console.error("Sandbox OTP Verification Error:", error.response?.data || error.message);
+      throw new AppError("Invalid or expired OTP", 400);
+    }
+    throw new AppError("Internal server error during verification", 500);
   }
 });

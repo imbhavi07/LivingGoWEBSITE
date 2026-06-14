@@ -20,7 +20,12 @@ export default function OwnerKYCPage() {
   const { user, isLoaded } = useUser();
   const { signOut } = useClerk();
   const [status, setStatus] = useState<KYCStatus>("checking");
-  const [error, setError] = useState<string | null>(null);
+  const [aadhaarNumber, setAadhaarNumber] = useState('');
+  const [otp, setOtp] = useState('');
+  const [referenceId, setReferenceId] = useState('');
+  const [kycStep, setKycStep] = useState<number>(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -48,39 +53,71 @@ export default function OwnerKYCPage() {
     void checkStatus();
   }, [user, isLoaded]);
 
-  async function initiateDigilocker() {
-    setError(null);
-    setStatus("submitting");
-
+  const handleSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!/^\d{12}$/.test(aadhaarNumber)) {
+      setErrorMessage('Please enter a valid 12-digit Aadhaar number.');
+      return;
+    }
+    setIsLoading(true);
+    setErrorMessage('');
     try {
-      const email = user?.primaryEmailAddress?.emailAddress;
-      if (!email) throw new Error("No email found. Please sign in again.");
-
       const token = await getClerkToken();
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_BASE_URL}/owner/kyc/digilocker/init?email=${encodeURIComponent(email)}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/owner/kyc/aadhaar/generate-otp`,
         {
-          method: "GET",
-          headers: { Authorization: `Bearer ${token ?? ""}` },
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token ?? ''}`
+          },
+          body: JSON.stringify({ aadhaarNumber })
         }
       );
-
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.message ?? "Failed to initiate DigiLocker verification. Please try again.");
+        const data = await res.json();
+        throw new Error(data.message ?? 'Failed to send OTP');
       }
-
       const data = await res.json();
-      if (data.redirectUrl) {
-        window.location.href = data.redirectUrl;
-      } else {
-        throw new Error("No redirect URL received from server.");
-      }
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
-      setStatus("form");
+      setReferenceId(data.referenceId);
+      setKycStep(2);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Something went wrong');
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setErrorMessage('');
+    try {
+      const token = await getClerkToken();
+      const email = user?.primaryEmailAddress?.emailAddress;
+      if (!email) throw new Error('No email found. Please sign in again.');
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/owner/kyc/aadhaar/verify-otp`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token ?? ''}`
+          },
+          body: JSON.stringify({ referenceId, otp, email })
+        }
+      );
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message ?? 'Failed to verify OTP');
+      }
+      setKycStep(3);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Something went wrong');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (status === "checking") return null;
 
@@ -172,7 +209,7 @@ export default function OwnerKYCPage() {
         <p className="text-sm font-bold uppercase text-clay">Identity verification</p>
         <h1 className="mt-2 text-3xl font-black text-ink sm:text-5xl">Complete KYC</h1>
         <p className="mt-2 max-w-lg text-sm leading-6 text-muted">
-          Required before you can list properties. Verify your identity securely via DigiLocker — no document uploads needed.
+          Required before you can list properties. Verify your identity securely via Aadhaar OTP.
         </p>
       </div>
 
@@ -215,11 +252,6 @@ export default function OwnerKYCPage() {
           </label>
         </div>
 
-        <p className="mt-4 flex items-center gap-2 text-sm text-muted">
-          <Lock className="h-4 w-4" />
-          You will be securely redirected to DigiLocker for verification.
-        </p>
-
         <div className="mt-4 flex items-start gap-3 rounded-2xl bg-linen p-3">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-clay" aria-hidden />
           <p className="text-xs leading-5 text-muted">
@@ -227,13 +259,76 @@ export default function OwnerKYCPage() {
           </p>
         </div>
 
-        {error && (
-          <p className="mt-4 rounded-2xl bg-linen p-3 text-sm font-semibold text-clay">{error}</p>
+        {errorMessage && (
+          <p className="mt-4 rounded-2xl bg-linen p-3 text-sm font-semibold text-clay">{errorMessage}</p>
         )}
 
-        <Button className="mt-6 w-full" disabled={status === "submitting"} onClick={initiateDigilocker}>
-          {status === "submitting" ? "Redirecting to DigiLocker..." : "Verify via DigiLocker"}
-        </Button>
+        {kycStep === 1 && (
+          <>
+            <label className="block space-y-2">
+              <span className="text-sm font-bold text-ink">Aadhaar Number</span>
+              <input
+                type="text"
+                value={aadhaarNumber}
+                onChange={(e) => setAadhaarNumber(e.target.value)}
+                className="input"
+                maxLength="12"
+                placeholder="Enter 12-digit Aadhaar number"
+                required
+              />
+            </label>
+            <Button className="mt-6 w-full" disabled={isLoading} onClick={handleSendOtp}>
+              {isLoading ? 'Sending OTP...' : 'Send OTP'}
+            </Button>
+          </>
+        )}
+
+        {kycStep === 2 && (
+          <>
+            <label className="block space-y-2">
+              <span className="text-sm font-bold text-ink">OTP</span>
+              <input
+                type="text"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                className="input"
+                maxLength="6"
+                placeholder="Enter 6-digit OTP"
+                required
+              />
+            </label>
+            <div className="mt-4 flex items-center gap-3">
+              <Button className="mt-6 w-full" disabled={isLoading} onClick={handleVerifyOtp}>
+                {isLoading ? 'Verifying OTP...' : 'Verify OTP'}
+              </Button>
+              <Button
+                variant="outline"
+                className="mt-6 w-full"
+                onClick={() => {
+                  setKycStep(1);
+                  setAadhaarNumber('');
+                  setOtp('');
+                  setReferenceId('');
+                  setErrorMessage('');
+                }}
+              >
+                Change Aadhaar Number
+              </Button>
+            </div>
+          </>
+        )}
+
+        {kycStep === 3 && (
+          <div className="mt-6 text-center">
+            <p className="text-green-600 font-semibold">✅ Identity Verified Successfully</p>
+            <Button className="mt-4 w-full" onClick={() => {
+                setStatus('submitted');
+              }}
+            >
+              Go to Dashboard
+            </Button>
+          </div>
+        )}
       </form>
     </OwnerShell>
   );
