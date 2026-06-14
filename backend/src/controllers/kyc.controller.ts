@@ -221,6 +221,23 @@ export const completeDigilockerSession = asyncHandler(async (req: Request, res: 
     // Debug log after fetching document data
     console.log("SANDBOX DOCUMENT PAYLOAD:", JSON.stringify(documentData.data, null, 2));
 
+    // Extract file URL and check if XML
+    const fileUrl = documentData.data?.files?.[0]?.url;
+    const isXml = documentData.data?.files?.[0]?.metadata?.ContentType === "application/xml" || fileUrl?.includes('.xml');
+
+    let extractedId = null;
+    if (isXml && fileUrl) {
+      try {
+        const xmlResponse = await axios.get(fileUrl);
+        const xmlText = xmlResponse.data;
+        const uidMatch = xmlText.match(/uid="([^"]+)"/i);
+        const numberMatch = xmlText.match(/number="([^"]+)"/i);
+        extractedId = uidMatch ? uidMatch[1] : (numberMatch ? numberMatch[1] : null);
+      } catch (err) {
+        console.error("Failed to parse XML", err);
+      }
+    }
+
     // 4. Sync to DB with verified data
     await prisma.user.update({
       where: { email },
@@ -228,7 +245,7 @@ export const completeDigilockerSession = asyncHandler(async (req: Request, res: 
         name: userProfileData.data.name,
         phone: userProfileData.data?.phone || userProfileData.data?.mobile || "Not provided by DigiLocker",
         ownerType: "PG Owner",
-        aadhaarNumber: documentData.data?.parsed_data?.uid || documentData.data?.parsed_data?.id_number || "Not provided by DigiLocker",
+        aadhaarNumber: extractedId || documentData.data?.parsed_data?.uid || documentData.data?.parsed_data?.id_number || "Verified via XML Document",
         aadhaarFrontUrl: documentData.data?.files?.[0]?.url || documentData.data?.url || null,
         aadhaarBackUrl: null,
         verificationStatus: "pending_approval",
