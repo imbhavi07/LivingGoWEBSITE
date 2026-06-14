@@ -172,7 +172,7 @@ export const handleSandboxWebhook = asyncHandler(async (req: Request, res: Respo
     if (email) {
       await prisma.user.update({
         where: { email },
-        data: { verificationStatus: "approved" }
+        data: { verificationStatus: "pending_approval" }
       });
     }
   }

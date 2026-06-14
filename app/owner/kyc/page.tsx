@@ -53,7 +53,8 @@ function KYCContent() {
         const data = await res.json();
         const vs = data.data?.verificationStatus;
         if (vs === "approved") setStatus("approved");
-        else if (vs === "rejected") setStatus("rejected")
+        else if (vs === "rejected") setStatus("rejected");
+        else if (vs === "pending_approval") setStatus("already_pending");
         else setStatus("form");
       } catch (error) {
         // Only reset to form if we were checking, not if we were already in a final state
