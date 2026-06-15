@@ -1,6 +1,6 @@
 // lib/api/residence.ts  (NEW FILE)
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
+const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000/api";
 
 export type ResidenceInfo = {
   propertyId: string;
