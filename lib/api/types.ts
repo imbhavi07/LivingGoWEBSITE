@@ -115,8 +115,12 @@ export function toProperty(property: ApiProperty, index?: number): Property {
     description: property.description,
     price: property.price,
     priceSingle: property.priceSingle,
+    bedsSingle: property.bedsSingle,      // ← FIX: was missing
     priceDouble: property.priceDouble,
+    bedsDouble: property.bedsDouble,      // ← FIX: was missing
     priceTriple: property.priceTriple,
+    bedsTriple: property.bedsTriple,      // ← FIX: was missing
+    occupiedBeds: property.occupiedBeds,  // ← FIX: was missing
     location: "Location shared after enquiry",
     address: "Address shared after enquiry",
     roomType: property.roomType,

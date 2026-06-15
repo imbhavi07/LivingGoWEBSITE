@@ -361,11 +361,11 @@ export default function PropertyDetailsPage() {
             <div className="mt-5 grid gap-3">
               <button
                 onClick={handleLockClick}
-                disabled={availableBeds === 0}
+                disabled={totalBeds > 0 && availableBeds === 0}
                 className={buttonClasses("primary", undefined, "w-full")}
-                style={availableBeds === 0 ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
+                style={totalBeds > 0 && availableBeds === 0 ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
               >
-                {availableBeds === 0 ? "Property Full" : "Lock Property"}
+                {totalBeds > 0 && availableBeds === 0 ? "Property Full" : "Lock Property"}
               </button>
               <Button variant="secondary" className="w-full" onClick={() => wishlist.toggle(property.id)}>
                 <Heart className={saved ? "h-4 w-4 fill-clay text-clay" : "h-4 w-4"} aria-hidden />
