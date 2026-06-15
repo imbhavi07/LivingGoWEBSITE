@@ -11,6 +11,7 @@ const ALLOWED_EMAILS = [
   "rctaccommodations@gmail.com",
   "semwalb3@gmail.com",
   "falitnautiyal7@gmail.com",
+  "shaannothere@gmail.com",
 ];
 
 export default function AdminLoginPage() {
