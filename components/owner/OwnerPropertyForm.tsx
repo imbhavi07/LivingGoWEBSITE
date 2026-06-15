@@ -136,8 +136,11 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
       description: formData.get("description"),
       price,
       priceSingle: formData.get("priceSingle") || undefined,
+      bedsSingle: formData.get("bedsSingle") || undefined,      // ← FIX: was missing
       priceDouble: formData.get("priceDouble") || undefined,
+      bedsDouble: formData.get("bedsDouble") || undefined,      // ← FIX: was missing
       priceTriple: formData.get("priceTriple") || undefined,
+      bedsTriple: formData.get("bedsTriple") || undefined,      // ← FIX: was missing
       location: pickedLocation.address,
       roomType,
       sharedType: hasDouble ? "Double" : hasTriple ? "Triple" : undefined,

@@ -22,8 +22,11 @@ export const ownerPropertySchema = z.object({
   description: z.string().min(20, "Description must be at least 20 characters"),
   price: z.coerce.number().min(1000, "Enter a realistic monthly price"),
   priceSingle: z.coerce.number().min(0).optional(),
+  bedsSingle: z.coerce.number().int().min(0).optional(),    // ← FIX: was missing
   priceDouble: z.coerce.number().min(0).optional(),
+  bedsDouble: z.coerce.number().int().min(0).optional(),    // ← FIX: was missing
   priceTriple: z.coerce.number().min(0).optional(),
+  bedsTriple: z.coerce.number().int().min(0).optional(),    // ← FIX: was missing
   location: z.string().min(3, "Enter a valid location"),
   roomType: z.enum(["Single", "Shared"]),
   sharedType: z.enum(["Double", "Triple", ""]).optional(),
