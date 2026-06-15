@@ -26,12 +26,21 @@ export const createProperty = asyncHandler(async (request: Request, response: Re
     throw new AppError(message, 403);
   }
 
+  // Process image uploads through middleware
   const files = (request.files as Express.Multer.File[]) ?? [];
   const uploads = await uploadMany(files);
+
+  // Extract room-type mappings from request body
+  // Expect format: roomTypeMappings=[{"index":0,"roomType":"Bedroom 1"},{"index":1,"roomType":"Bedroom 2"},...]
+  const roomTypeMappings = request.body.roomTypeMappings
+    ? JSON.parse(request.body.roomTypeMappings as string)
+    : [];
+
   const property = await propertyService.createProperty(
     user.id,
     request.body,
-    uploads.map((upload) => ({ url: upload.secure_url, publicId: upload.public_id }))
+    uploads.map((upload) => ({ url: upload.secure_url, publicId: upload.public_id })),
+    roomTypeMappings  // Pass room-type mappings to service
   );
 
   response.status(201).json(property);
@@ -63,7 +72,6 @@ export const getStudentResidence = asyncHandler(async (request: Request, respons
 });
 
 
-
 export const getOwnerProperties = asyncHandler(async (request: Request, response: Response) => {
   const user = requireUser(request);
   const result = await propertyService.getOwnerProperties(user.id, request.query);
@@ -77,8 +85,40 @@ export const getOwnerStats = asyncHandler(async (request: Request, response: Res
 
 export const updateProperty = asyncHandler(async (request: Request, response: Response) => {
   const user = requireUser(request);
-  const property = await propertyService.updateProperty(String(request.params.id), user.id, user.role, request.body);
-  response.json(property);
+  const property = await propertyService.getPropertyById(String(request.params.id), request.user?.role);
+
+  if (!property) throw new AppError("Property not found", 404);
+  if (user.role !== "admin" && property.ownerId !== user.id) throw new AppError("Forbidden", 403);
+
+  // Process image uploads if any new files were provided
+  let uploads: { url: string; publicId: string }[] = [];
+  let roomTypeMappings: { index: number; roomType: string }[] = [];
+
+  if ((request.files as Express.Multer.File[])?.length) {
+    const files = (request.files as Express.Multer.File[]) ?? [];
+    uploads = await uploadMany(files);
+
+    // Extract room-type mappings from request body
+    roomTypeMappings = request.body.roomTypeMappings
+      ? JSON.parse(request.body.roomTypeMappings as string)
+      : [];
+  }
+
+  const updatedProperty = await propertyService.updateProperty(
+    String(request.params.id),
+    user.id,
+    user.role,
+    {
+      ...request.body,
+      // Include uploads and mappings if new files were provided
+      ...(uploads.length > 0 ? {
+        images: uploads.map(upload => ({ url: upload.secure_url, publicId: upload.public_id })),
+        roomTypeMappings: roomTypeMappings
+      } : {})
+    }
+  );
+
+  response.json(updatedProperty);
 });
 
 export const deleteProperty = asyncHandler(async (request: Request, response: Response) => {
@@ -89,8 +129,11 @@ export const deleteProperty = asyncHandler(async (request: Request, response: Re
 
 export const togglePropertyStatus = asyncHandler(async (request: Request, response: Response) => {
   const user = requireUser(request);
-  const property = await propertyService.togglePropertyStatus(String(request.params.id), user.id, Boolean(request.body.isActive));
-  response.json(property);
+  const property = await propertyService.getPropertyById(String(request.params.id), user.id);
+  if (!property) throw new AppError("Property not found", 404);
+  if (property.ownerId !== user.id) throw new AppError("Forbidden", 403);
+
+  return propertyService.togglePropertyStatus(String(request.params.id), user.id, Boolean(request.body.isActive));
 });
 
 export const createReview = asyncHandler(async (request: Request, response: Response) => {
@@ -106,4 +149,3 @@ export const markResidence = asyncHandler(async (request: Request, response: Res
   const result = await propertyService.markResidence(user.id, propertyId);
   response.json({ success: true, ...result });
 });
-

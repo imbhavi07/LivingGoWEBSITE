@@ -1,74 +1,3 @@
-import { apiClient } from "@/lib/api/client";
-import { toOwnerProperty, unwrapItems, type ApiProperty, type PaginatedResponse } from "@/lib/api/types";
-import type { OwnerPropertyPayload, OwnerStats } from "@/types/owner";
-
-export async function getOwnerStats() {
-  const { data } = await apiClient.get<OwnerStats>("/owner/dashboard/stats");
-  return data;
-}
-
-export async function getOwnerProperties() {
-  const { data } = await apiClient.get<PaginatedResponse<ApiProperty> | ApiProperty[]>("/owner/properties");
-  return unwrapItems(data).map(toOwnerProperty);
-}
-
-export async function getOwnerProperty(id: string) {
-  const { data } = await apiClient.get<PaginatedResponse<ApiProperty> | ApiProperty[]>("/owner/properties");
-  return unwrapItems(data).map(toOwnerProperty).find((property) => property.id === id) ?? null;
-}
-
-export async function createOwnerProperty(payload: OwnerPropertyPayload, token: string) {
-  const formData = toPropertyFormData(payload);
-  const { data } = await apiClient.post<ApiProperty>("/owner/properties", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-      "Authorization": `Bearer ${token}`
-    }
-  });
-  return toOwnerProperty(data);
-}
-
-export async function updateOwnerProperty(id: string, payload: OwnerPropertyPayload, token: string) {
-  const { data } = await apiClient.put<ApiProperty>(`/owner/properties/${id}`, {
-    title: payload.title,
-    description: payload.description,
-    price: payload.price,
-    priceSingle: payload.priceSingle,
-    bedsSingle: payload.bedsSingle,
-    priceDouble: payload.priceDouble,
-    bedsDouble: payload.bedsDouble,
-    priceTriple: payload.priceTriple,
-    bedsTriple: payload.bedsTriple,
-    securityDepositMonths: payload.securityDepositMonths ? String(payload.securityDepositMonths) : undefined,
-    location: payload.location,
-    lat: payload.lat,
-    lng: payload.lng,
-    roomType: payload.roomType,
-    sharedType: payload.sharedType,
-    preference: payload.preference,
-    mealPlan: payload.mealPlan,
-    mealTimes: payload.mealTimes,
-    curfewTime: payload.curfewTime,
-    noticePeriod: payload.noticePeriod,
-    rulesStrictness: payload.rulesStrictness,
-    facilities: payload.facilities
-  }, {
-    headers: { "Authorization": `Bearer ${token}` }
-  });
-  return toOwnerProperty(data);
-}
-
-export async function deleteOwnerProperty(id: string) {
-  await apiClient.delete(`/owner/properties/${id}`);
-}
-
-export async function toggleOwnerPropertyStatus(id: string, isActive: boolean) {
-  const { data } = await apiClient.patch<ApiProperty>(`/owner/properties/${id}/status`, {
-    isActive
-  });
-  return toOwnerProperty(data);
-}
-
 function toPropertyFormData(payload: OwnerPropertyPayload) {
   const formData = new FormData();
   formData.append("title", payload.title);
@@ -93,6 +22,11 @@ function toPropertyFormData(payload: OwnerPropertyPayload) {
   if (payload.noticePeriod !== undefined) formData.append("noticePeriod", payload.noticePeriod);
   if (payload.rulesStrictness !== undefined) formData.append("rulesStrictness", payload.rulesStrictness);
   formData.append("facilities", JSON.stringify(payload.facilities));
+
+  // NEW: Handle room-type mappings
+  if (payload.roomTypeMappings) {
+    formData.append("roomTypeMappings", JSON.stringify(payload.roomTypeMappings));
+  }
 
   payload.imageFiles?.forEach((file) => {
     formData.append("images", file);

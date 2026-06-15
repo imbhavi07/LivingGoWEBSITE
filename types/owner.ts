@@ -41,6 +41,8 @@ export type OwnerPropertyPayload = Omit<OwnerProperty, "id" | "status" | "create
   imageFiles?: File[];
   lat?: number;
   lng?: number;
+  // NEW: For room-type-based photo uploading
+  roomTypeMappings?: Array<{ index: number; roomType: string }>;
 };
 
 export type OwnerStats = {
