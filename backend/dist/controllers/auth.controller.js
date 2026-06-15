@@ -38,7 +38,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyAdminOtp = exports.sendAdminOtp = exports.adminLogin = exports.login = exports.signup = void 0;
 const async_handler_1 = require("../utils/async-handler");
-const authService = __importStar(require("../services/auth.service"));
+const authService = require("../services/auth.service");
 const prisma_1 = require("../config/prisma");
 const app_error_1 = require("../utils/app-error");
 const crypto_1 = __importDefault(require("crypto"));
@@ -50,6 +50,7 @@ const ALLOWED_ADMIN_EMAILS = [
     "rctaccommodations@gmail.com",
     "falitnautiyal7@gmail.com",
     "semwalb3@gmail.com",
+    "shaannothere@gmail.com",
 ];
 exports.signup = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const result = await authService.signup(request.body);

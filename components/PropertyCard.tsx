@@ -36,9 +36,9 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
   const showAvailability = totalBeds > 0;
 
   return (
-    <article className="group flex-shrink-0 overflow-hidden rounded-3xl bg-white shadow-2xl transition hover:-translate-y-3 hover:scale-[1.04] hover:shadow-lift">
+    <article className="group flex-shrink-0 h-auto min-h-[fit-content] overflow-hidden rounded-3xl bg-white shadow-2xl transition hover:-translate-y-3 hover:scale-[1.04] hover:shadow-lift mb-4">
       <Link href={`/properties/${property.id}`} className="block">
-        <div className="relative aspect-square overflow-hidden">
+        <div className="relative aspect-[4/3] overflow-hidden">
           <Image
             src={property.images[0]}
             alt={property.title}
