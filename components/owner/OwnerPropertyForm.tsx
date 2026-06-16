@@ -47,6 +47,8 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
   const [hasTriple, setHasTriple] = useState(!!property?.priceTriple);
   const [hasDeposit, setHasDeposit] = useState(!!property?.securityDepositMonths);
   const [mealPlan, setMealPlan] = useState<string>(property?.mealPlan ?? "Not Included");
+  const [managerContact, setManagerContact] = useState(property?.managerContact ?? "");
+  const [securityContact, setSecurityContact] = useState(property?.securityContact ?? "");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -158,7 +160,9 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
         rulesStrictness: formData.get("rulesStrictness"),
         securityDepositMonths: formData.get("securityDepositMonths") || undefined,
         facilities: selectedFacilities,
-        images: allImageUrls // <-- Claude's new variable
+        images: allImageUrls,
+        managerContact: formData.get("managerContact") || undefined,
+        securityContact: formData.get("securityContact") || undefined
       });
 
     if (!parsed.success) {
@@ -228,6 +232,30 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
                 className="input min-h-36 py-4"
                 placeholder="Describe rooms, building, rules, meals, commute, and nearby colleges."
                 required
+              />
+            </label>
+
+            <label className="block space-y-2 mt-4">
+              <span className="text-sm font-bold text-ink">Manager's Contact Number <span className="text-xs font-normal text-muted">(Optional)</span></span>
+              <input
+                name="managerContact"
+                type="tel"
+                value={managerContact}
+                onChange={(e) => setManagerContact(e.target.value)}
+                className="input"
+                placeholder="+91 9876543210"
+              />
+            </label>
+
+            <label className="block space-y-2 mt-4">
+              <span className="text-sm font-bold text-ink">Security Guard Contact Number <span className="text-xs font-normal text-muted">(Optional)</span></span>
+              <input
+                name="securityContact"
+                type="tel"
+                value={securityContact}
+                onChange={(e) => setSecurityContact(e.target.value)}
+                className="input"
+                placeholder="+91 9876543210"
               />
             </label>
 
