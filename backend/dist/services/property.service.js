@@ -73,6 +73,8 @@ async function createProperty(ownerId, input, images) {
             noticePeriod: input.noticePeriod,
             rulesStrictness: input.rulesStrictness,
             facilities: input.facilities,
+            managerContact: input.managerContact,
+            securityContact: input.securityContact,
             status: "pending",
             images: {
                 create: images.map((image) => ({ url: image.url, publicId: image.publicId }))
@@ -135,7 +137,9 @@ async function updateProperty(id, actorId, actorRole, input) {
         data: {
             ...input,
             ...(nearbyPlaces ? { nearbyPlaces } : {}),
-            status: actorRole === "admin" ? property.status : "pending"
+            status: actorRole === "admin" ? property.status : "pending",
+            managerContact: input.managerContact,
+            securityContact: input.securityContact
         },
         include: propertyInclude
     });

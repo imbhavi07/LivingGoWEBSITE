@@ -236,7 +236,7 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
             </label>
 
             <label className="block space-y-2 mt-4">
-              <span className="text-sm font-bold text-ink">Manager's Contact Number <span className="text-xs font-normal text-muted">(Optional)</span></span>
+              <span className="text-sm font-bold text-ink">Manager&apos;s Contact Number <span className="text-xs font-normal text-muted">(Optional)</span></span>
               <input
                 name="managerContact"
                 type="tel"
