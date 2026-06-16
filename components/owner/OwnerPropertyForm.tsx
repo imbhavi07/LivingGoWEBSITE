@@ -137,13 +137,29 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
         : Number(formData.get("priceTriple") ?? 0);
 
     // Create form data object and override images with flattened URLs
-    const formDataObject = Object.fromEntries(formData);
-    const formDataWithImages = {
-      ...formDataObject,
-      images: allImageUrls,
-    };
-
-    const parsed = ownerPropertySchema.safeParse(formDataWithImages);
+    const parsed = ownerPropertySchema.safeParse({
+        title: formData.get("title"),
+        description: formData.get("description"),
+        price,
+        priceSingle: formData.get("priceSingle") || undefined,
+        bedsSingle: formData.get("bedsSingle") || undefined,
+        priceDouble: formData.get("priceDouble") || undefined,
+        bedsDouble: formData.get("bedsDouble") || undefined,
+        priceTriple: formData.get("priceTriple") || undefined,
+        bedsTriple: formData.get("bedsTriple") || undefined,
+        location: pickedLocation.address,
+        roomType,
+        sharedType: hasDouble ? "Double" : hasTriple ? "Triple" : undefined,
+        preference: formData.get("preference"),
+        mealPlan: formData.get("mealPlan"),
+        mealTimes: selectedMealTimes,
+        curfewTime: formData.get("curfewTime"),
+        noticePeriod: formData.get("noticePeriod"),
+        rulesStrictness: formData.get("rulesStrictness"),
+        securityDepositMonths: formData.get("securityDepositMonths") || undefined,
+        facilities: selectedFacilities,
+        images: allImageUrls // <-- Claude's new variable
+      });
 
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? "Check property details.");
