@@ -57,8 +57,14 @@ exports.createProperty = (0, async_handler_1.asyncHandler)(async (request, respo
         const message = statusMessages[user.verificationStatus] ?? "KYC verification required.";
         throw new app_error_1.AppError(message, 403);
     }
+    // Process image uploads through middleware
     const files = request.files ?? [];
     const uploads = await (0, cloudinary_service_1.uploadMany)(files);
+    // Extract room-type mappings from request body
+    // Expect format: roomTypeMappings=[{"index":0,"roomType":"Bedroom 1"},{"index":1,"roomType":"Bedroom 2"},...]
+    const roomTypeMappings = request.body.roomTypeMappings
+        ? JSON.parse(request.body.roomTypeMappings)
+        : [];
     const property = await propertyService.createProperty(user.id, request.body, uploads.map((upload) => ({ url: upload.secure_url, publicId: upload.public_id })));
     response.status(201).json(property);
 });
@@ -94,8 +100,31 @@ exports.getOwnerStats = (0, async_handler_1.asyncHandler)(async (request, respon
 });
 exports.updateProperty = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);
-    const property = await propertyService.updateProperty(String(request.params.id), user.id, user.role, request.body);
-    response.json(property);
+    const property = await propertyService.getPropertyById(String(request.params.id), request.user?.role);
+    if (!property)
+        throw new app_error_1.AppError("Property not found", 404);
+    if (user.role !== "admin" && property.ownerId !== user.id)
+        throw new app_error_1.AppError("Forbidden", 403);
+    // Process image uploads if any new files were provided
+    let roomTypeMappings = [];
+    if (request.files?.length) {
+        const files = request.files ?? [];
+        const rawUploads = await (0, cloudinary_service_1.uploadMany)(files);
+        const uploads = rawUploads.map(upload => ({ url: upload.secure_url, publicId: upload.public_id }));
+        // Extract room-type mappings from request body
+        roomTypeMappings = request.body.roomTypeMappings
+            ? JSON.parse(request.body.roomTypeMappings)
+            : [];
+    }
+    const updatedProperty = await propertyService.updateProperty(String(request.params.id), user.id, user.role, {
+        ...request.body,
+        // Include uploads and mappings if new files were provided
+        ...(uploads.length > 0 ? {
+            images: uploads,
+            roomTypeMappings: roomTypeMappings
+        } : {})
+    });
+    response.json(updatedProperty);
 });
 exports.deleteProperty = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);
@@ -104,8 +133,12 @@ exports.deleteProperty = (0, async_handler_1.asyncHandler)(async (request, respo
 });
 exports.togglePropertyStatus = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);
-    const property = await propertyService.togglePropertyStatus(String(request.params.id), user.id, Boolean(request.body.isActive));
-    response.json(property);
+    const property = await propertyService.getPropertyById(String(request.params.id), user.role);
+    if (!property)
+        throw new app_error_1.AppError("Property not found", 404);
+    if (property.ownerId !== user.id)
+        throw new app_error_1.AppError("Forbidden", 403);
+    return propertyService.togglePropertyStatus(String(request.params.id), user.id, Boolean(request.body.isActive));
 });
 exports.createReview = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);

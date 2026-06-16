@@ -9,8 +9,11 @@ const kyc_controller_1 = require("../controllers/kyc.controller");
 const upload = (0, multer_1.default)({ storage: multer_1.default.memoryStorage() });
 const router = (0, express_1.Router)();
 router.get("/status", kyc_controller_1.getKycStatus);
-// DigiLocker initiation route - protected by Clerk auth
+// The Secure DigiLocker Redirect Route
 router.get("/digilocker/init", kyc_controller_1.initiateDigilockerSession);
+// The Webhook to catch the approved KYC data later
+router.post("/webhook", kyc_controller_1.handleSandboxWebhook);
+router.post("/digilocker/complete", kyc_controller_1.completeDigilockerSession);
 router.post("/", upload.fields([
     { name: "aadhaarFront", maxCount: 1 },
     { name: "aadhaarBack", maxCount: 1 },
