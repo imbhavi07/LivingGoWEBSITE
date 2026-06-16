@@ -1,10 +1,6 @@
 "use client";
 
-// app/admin/payments/page.tsx  (NEW FILE)
-// New tab in admin dashboard for reviewing token payments
-
 import { useEffect, useState } from "react";
-import { useAuth } from "@clerk/nextjs";
 import { Check, X, Clock, ExternalLink, Loader2 } from "lucide-react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { adminGetTokenPayments, adminModeratePayment, type AdminTokenPayment } from "@/lib/api/token-payment";
@@ -16,7 +12,6 @@ const TABS = [
 ] as const;
 
 export default function AdminPaymentsPage() {
-  const { getToken } = useAuth();
   const [activeTab, setActiveTab] = useState<"pending" | "approved" | "rejected">("pending");
   const [payments, setPayments] = useState<AdminTokenPayment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,10 +21,10 @@ export default function AdminPaymentsPage() {
   async function load() {
     setLoading(true);
     try {
-      const token = await getToken();
-      if (!token) return;
-      const data = await adminGetTokenPayments(token, activeTab);
+      const data = await adminGetTokenPayments(activeTab);
       setPayments(data);
+    } catch {
+      setPayments([]);
     } finally {
       setLoading(false);
     }
@@ -44,9 +39,7 @@ export default function AdminPaymentsPage() {
     setActioningId(id);
     setError(null);
     try {
-      const token = await getToken();
-      if (!token) throw new Error("Not authenticated");
-      await adminModeratePayment(token, id, action);
+      await adminModeratePayment(id, action);
       // Remove from current list (it's moved to a different tab now)
       setPayments((prev) => prev.filter((p) => p.id !== id));
     } catch (err: unknown) {
@@ -119,8 +112,6 @@ export default function AdminPaymentsPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-muted hover:text-ink"
-                        title={`Open ${payment.property.title} in admin`}
-                        aria-label={`Open ${payment.property.title} in admin`}
                       >
                         <ExternalLink className="h-3.5 w-3.5" />
                       </a>

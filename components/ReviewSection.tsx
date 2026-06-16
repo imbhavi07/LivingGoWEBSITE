@@ -37,7 +37,7 @@ const CATEGORIES = [
 ];
 
 export function ReviewSection({ propertyId, rating, reviews: initialReviews, userRole }: ReviewSectionProps) {
-  const { isSignedIn, getToken } = useAuth();
+  const { isSignedIn } = useAuth();
 
   const [reviews, setReviews] = useState<Review[]>(initialReviews);
   const [currentRating, setCurrentRating] = useState(rating);
@@ -57,9 +57,7 @@ export function ReviewSection({ propertyId, rating, reviews: initialReviews, use
     setSubmitting(true);
     setError(null);
     try {
-      const token = await getToken();
-      if (!token) throw new Error("Not authenticated");
-      const newReview = await submitReview(token, propertyId, { ...scores, comment: comment || undefined });
+      const newReview = await submitReview(propertyId, { ...scores, comment: comment || undefined });
       setReviews((prev) => [newReview, ...prev.filter((r) => r.student.id !== newReview.student.id)]);
 
       // Recalculate rating locally

@@ -1,6 +1,4 @@
-// lib/api/token-payment.ts  (NEW FILE)
-
-const API = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:4000/api";
+import { apiClient } from "@/lib/api/client";
 
 export type TokenPaymentStatus = "pending" | "approved" | "rejected";
 
@@ -27,58 +25,35 @@ export type AdminTokenPayment = TokenPayment & {
   };
 };
 
-export async function submitTokenPayment(token: string, propertyId: string, utrNumber: string) {
-  const res = await fetch(`${API}/payments/properties/${propertyId}/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ utrNumber }),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error((err as { message?: string }).message ?? "Failed to submit payment");
-  }
-  return res.json() as Promise<TokenPayment>;
+// ─── Student ──────────────────────────────────────────────────────────────
+export async function submitTokenPayment(propertyId: string, utrNumber: string) {
+  const { data } = await apiClient.post<TokenPayment>(`/payments/properties/${propertyId}/token`, { utrNumber });
+  return data;
 }
 
-export async function getMyTokenPayments(token: string): Promise<TokenPayment[]> {
-  const res = await fetch(`${API}/payments/my-payments`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) return [];
-  return res.json();
+export async function getMyTokenPayments(): Promise<TokenPayment[]> {
+  const { data } = await apiClient.get<TokenPayment[]>("/payments/my-payments");
+  return data;
 }
 
-export async function getOwnerTokenPayments(token: string): Promise<AdminTokenPayment[]> {
-  const res = await fetch(`${API}/payments/owner-payments`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  if (!res.ok) return [];
-  return res.json();
+// ─── Owner ────────────────────────────────────────────────────────────────
+export async function getOwnerTokenPayments(): Promise<AdminTokenPayment[]> {
+  const { data } = await apiClient.get<AdminTokenPayment[]>("/payments/owner-payments");
+  return data;
 }
 
-// Admin
-export async function adminGetTokenPayments(token: string, status?: string): Promise<AdminTokenPayment[]> {
-  const url = status
-    ? `${API}/payments/admin/token-payments?status=${status}`
-    : `${API}/payments/admin/token-payments`;
-  const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-  if (!res.ok) return [];
-  return res.json();
+// ─── Admin ────────────────────────────────────────────────────────────────
+export async function adminGetTokenPayments(status?: string): Promise<AdminTokenPayment[]> {
+  const { data } = await apiClient.get<AdminTokenPayment[]>("/payments/admin/token-payments", {
+    params: status ? { status } : undefined,
+  });
+  return data;
 }
 
 export async function adminModeratePayment(
-  token: string,
   paymentId: string,
   action: "approved" | "rejected"
 ): Promise<AdminTokenPayment> {
-  const res = await fetch(`${API}/payments/admin/token-payments/${paymentId}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ action }),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error((err as { message?: string }).message ?? "Failed to update payment");
-  }
-  return res.json();
+  const { data } = await apiClient.patch<AdminTokenPayment>(`/payments/admin/token-payments/${paymentId}`, { action });
+  return data;
 }

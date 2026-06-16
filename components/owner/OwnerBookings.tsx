@@ -4,7 +4,6 @@
 // Shows on owner dashboard — students who have token-locked their properties
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@clerk/nextjs";
 import { Clock, CheckCircle, XCircle, Phone, Mail, Users } from "lucide-react";
 import { getOwnerTokenPayments, type AdminTokenPayment } from "@/lib/api/token-payment";
 
@@ -15,22 +14,21 @@ const STATUS_CONFIG = {
 } as const;
 
 export function OwnerBookings() {
-  const { getToken } = useAuth();
   const [payments, setPayments] = useState<AdminTokenPayment[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       try {
-        const token = await getToken();
-        if (!token) { setLoading(false); return; }
-        const data = await getOwnerTokenPayments(token);
+        const data = await getOwnerTokenPayments();
         setPayments(data);
+      } catch {
+        // ignore
       } finally {
         setLoading(false);
       }
     })();
-  }, [getToken]);
+  }, []);
 
   if (loading) {
     return <div className="h-40 animate-pulse rounded-3xl bg-white shadow-soft" />;

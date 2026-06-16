@@ -3,7 +3,6 @@
 // components/LockPropertyModal.tsx  (NEW FILE)
 
 import { useState } from "react";
-import { useAuth } from "@clerk/nextjs";
 import { X, QrCode, CheckCircle, Loader2, AlertCircle, Copy } from "lucide-react";
 import { submitTokenPayment } from "@/lib/api/token-payment";
 
@@ -21,7 +20,6 @@ type Step = "info" | "qr" | "utr" | "success" | "error";
 const UPI_ID = process.env.NEXT_PUBLIC_UPI_ID ?? "livinggo@upi";
 
 export function LockPropertyModal({ propertyId, propertyTitle, monthlyRent, onClose }: LockPropertyModalProps) {
-  const { getToken } = useAuth();
   const tokenAmount = Math.ceil(monthlyRent / 2);
 
   const [step, setStep] = useState<Step>("info");
@@ -53,9 +51,7 @@ export function LockPropertyModal({ propertyId, propertyTitle, monthlyRent, onCl
     setUtrError(null);
     setSubmitting(true);
     try {
-      const token = await getToken();
-      if (!token) throw new Error("Not logged in");
-      await submitTokenPayment(token, propertyId, utrNumber.trim());
+      await submitTokenPayment(propertyId, utrNumber.trim());
       setStep("success");
     } catch (err: unknown) {
       setUtrError(err instanceof Error ? err.message : "Failed to submit. Please try again.");
@@ -158,7 +154,7 @@ export function LockPropertyModal({ propertyId, propertyTitle, monthlyRent, onCl
                 onClick={() => setStep("utr")}
                 className="w-full rounded-2xl bg-ink py-3 text-sm font-bold text-white hover:bg-ink/90 transition-colors"
               >
-                I have paid — Enter UTR Number →
+                Already paid — Enter UTR Number →
               </button>
 
               <button onClick={() => setStep("info")} className="w-full text-center text-sm text-muted hover:text-ink">

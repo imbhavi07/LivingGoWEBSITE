@@ -4,7 +4,6 @@
 // Drop into student dashboard — shows token payment status + revealed address after approval
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@clerk/nextjs";
 import { Clock, CheckCircle, XCircle, MapPin, Phone, Building2 } from "lucide-react";
 import { getMyTokenPayments, type TokenPayment } from "@/lib/api/token-payment";
 
@@ -15,16 +14,13 @@ const STATUS_CONFIG = {
 } as const;
 
 export function MyBookings() {
-  const { getToken } = useAuth();
   const [payments, setPayments] = useState<TokenPayment[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       try {
-        const token = await getToken();
-        if (!token) { setLoading(false); return; }
-        const data = await getMyTokenPayments(token);
+        const data = await getMyTokenPayments();
         setPayments(data);
       } catch {
         // ignore
@@ -32,7 +28,7 @@ export function MyBookings() {
         setLoading(false);
       }
     })();
-  }, [getToken]);
+  }, []);
 
   if (loading) {
     return <div className="h-40 animate-pulse rounded-3xl bg-white shadow-soft" />;

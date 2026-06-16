@@ -3,7 +3,6 @@
 // app/student/dashboard/page.tsx  (FULL REPLACEMENT)
 
 import { useEffect, useState } from "react";
-import { useAuth } from "@clerk/nextjs";
 import {
   CreditCard, Activity, MapPin, TrendingUp, Timer,
   Check, Loader2, Banknote, Home, ChevronDown, X
@@ -21,7 +20,6 @@ import {
 } from "@/lib/api/residence";
 
 export default function StudentDashboardPage() {
-  const { getToken } = useAuth();
 
   const [residence, setResidence] = useState<ResidenceInfo>(null);
   const [residenceLoading, setResidenceLoading] = useState(true);
@@ -36,12 +34,7 @@ export default function StudentDashboardPage() {
   useEffect(() => {
     (async () => {
       try {
-        const token = await getToken();
-        if (!token) {
-          setResidenceLoading(false);
-          return;
-        }
-        const res = await getStudentResidence(token);
+        const res = await getStudentResidence();
         setResidence(res);
       } catch {
         // ignore — dashboard still works without residence data
@@ -49,7 +42,7 @@ export default function StudentDashboardPage() {
         setResidenceLoading(false);
       }
     })();
-  }, [getToken]);
+  }, []);
 
   // Load PG list when dropdown opens
   useEffect(() => {
@@ -68,9 +61,7 @@ export default function StudentDashboardPage() {
     setMarkingId(pg.id);
     setMarkError(null);
     try {
-      const token = await getToken();
-      if (!token) throw new Error("Not logged in");
-      const result = await markResidence(token, pg.id);
+      const result = await markResidence(pg.id);
       setResidence({
         propertyId: pg.id,
         propertyTitle: pg.title,
@@ -100,6 +91,7 @@ export default function StudentDashboardPage() {
               Current Residence
             </h2>
 
+            {/* "I'm an existing tenant" button */}
             <div className="relative">
               <button
                 onClick={() => { setShowDropdown((v) => !v); setMarkError(null); }}
