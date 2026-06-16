@@ -13,40 +13,62 @@ import { useToast } from "@/contexts/ToastContext";
 import type { OwnerProperty, OwnerStats } from "@/types/owner";
 
 export function useOwnerDashboard() {
-  const { isLoaded, isSignedIn } = useAuth();
+  const { isLoaded, isSignedIn, getToken } = useAuth();
   const [stats, setStats] = useState<OwnerStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
-    getOwnerStats()
-      .then(setStats)
-      .finally(() => setIsLoading(false));
-  }, [isLoaded, isSignedIn]);
+    const fetchStats = async () => {
+      const token = await getToken();
+      if (!token) return;
+      try {
+        const data = await getOwnerStats(token);
+        setStats(data);
+      } catch (err) {
+        console.error("Failed to fetch stats", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchStats();
+  }, [isLoaded, isSignedIn, getToken]);
 
   return { stats, isLoading };
 }
 
 export function useOwnerProperties() {
-  const { isLoaded, isSignedIn } = useAuth();
+  const { isLoaded, isSignedIn, getToken } = useAuth();
   const { showToast } = useToast();
   const [properties, setProperties] = useState<OwnerProperty[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const refresh = useCallback(() => {
+  const refresh = useCallback(async () => {
+    if (!isLoaded || !isSignedIn) {
+      setIsLoading(false);
+      return;
+    }
+    const token = await getToken();
+    if (!token) {
+      setIsLoading(false);
+      setError("No auth token available");
+      showToast("Authentication required.", "error");
+      return;
+    }
     setIsLoading(true);
-    getOwnerProperties()
-      .then((data) => {
-        setProperties(data);
-        setError(null);
-      })
-      .catch(() => {
-        setError("Could not load your properties.");
-        showToast("Could not load owner properties.", "error");
-      })
-      .finally(() => setIsLoading(false));
-  }, [showToast]);
+    try {
+      const data = await getOwnerProperties(token);
+      setProperties(data);
+      setError(null);
+    } catch (err) {
+      setError("Could not load your properties.");
+      showToast("Could not load owner properties.", "error");
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isLoaded, isSignedIn, getToken, showToast]);
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
@@ -54,13 +76,25 @@ export function useOwnerProperties() {
   }, [isLoaded, isSignedIn, refresh]);
 
   async function remove(id: string) {
-    await deleteOwnerProperty(id);
+    if (!isLoaded || !isSignedIn) return;
+    const token = await getToken();
+    if (!token) {
+      showToast("Authentication required.", "error");
+      return;
+    }
+    await deleteOwnerProperty(id, token);
     setProperties((current) => current.filter((property) => property.id !== id));
     showToast("Property deleted.", "success");
   }
 
   async function toggleStatus(id: string, isActive: boolean) {
-    const updated = await toggleOwnerPropertyStatus(id, isActive);
+    if (!isLoaded || !isSignedIn) return;
+    const token = await getToken();
+    if (!token) {
+      showToast("Authentication required.", "error");
+      return;
+    }
+    const updated = await toggleOwnerPropertyStatus(id, isActive, token);
     setProperties((current) =>
       current.map((property) => (property.id === id ? updated : property))
     );
@@ -71,17 +105,27 @@ export function useOwnerProperties() {
 }
 
 export function useOwnerProperty(id: string) {
-  const { isLoaded, isSignedIn } = useAuth();
+  const { isLoaded, isSignedIn, getToken } = useAuth();
   const [property, setProperty] = useState<OwnerProperty | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const mutate = useCallback(() => {
+  const mutate = useCallback(async () => {
     if (!isLoaded || !isSignedIn) return;
+    const token = await getToken();
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
-    getOwnerProperty(id)
-      .then(setProperty)
-      .finally(() => setIsLoading(false));
-  }, [id, isLoaded, isSignedIn]);
+    try {
+      const data = await getOwnerProperty(id, token);
+      setProperty(data);
+    } catch (err) {
+      console.error("Failed to fetch property", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [id, isLoaded, isSignedIn, getToken]);
 
   useEffect(() => {
     mutate();
