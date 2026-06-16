@@ -37,7 +37,9 @@ export const ownerPropertySchema = z.object({
   noticePeriod: z.enum(["15 Days", "1 Month", "2 Months"]),
   rulesStrictness: z.enum(["Strict", "Lenient"]),
   facilities: z.array(z.string()).min(1, "Select at least one facility"),
-  images: z.array(z.string().min(1)).min(1, "Upload at least one image")
+  images: z.array(z.string().min(1)).min(1, "Upload at least one image"),
+  managerContact: z.string().optional(),
+  securityContact: z.string().optional()
 });
 
 export const filtersSchema = z.object({

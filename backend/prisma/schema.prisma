@@ -134,6 +134,8 @@ model Property {
   createdAt             DateTime          @default(now())
   updatedAt             DateTime          @updatedAt
   tokenPayments         TokenPayment[]
+  managerContact        String?           @db.VarChar(255)
+  securityContact       String?           @db.VarChar(255)
 
   @@index([ownerId])
   @@index([status])
