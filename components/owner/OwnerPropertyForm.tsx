@@ -34,6 +34,7 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
   const router = useRouter();
   const { showToast } = useToast();
   const { getToken, isLoaded, isSignedIn } = useAuth();
+  
   const [preference, setPreference] = useState<"Girls" | "Boys" | "Any">(
     (property?.preference as "Girls" | "Boys" | "Any") ?? "Any"
   );
@@ -44,6 +45,8 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
   const [hasSingle, setHasSingle] = useState(!!property?.priceSingle);
   const [hasDouble, setHasDouble] = useState(!!property?.priceDouble);
   const [hasTriple, setHasTriple] = useState(!!property?.priceTriple);
+  const [hasDeposit, setHasDeposit] = useState(!!property?.securityDepositMonths);
+  const [mealPlan, setMealPlan] = useState<string>(property?.mealPlan ?? "Not Included");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -134,11 +137,11 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
       description: formData.get("description"),
       price,
       priceSingle: formData.get("priceSingle") || undefined,
-      bedsSingle: formData.get("bedsSingle") || undefined,      // ← FIX: was missing
+      bedsSingle: formData.get("bedsSingle") || undefined,
       priceDouble: formData.get("priceDouble") || undefined,
-      bedsDouble: formData.get("bedsDouble") || undefined,      // ← FIX: was missing
+      bedsDouble: formData.get("bedsDouble") || undefined,
       priceTriple: formData.get("priceTriple") || undefined,
-      bedsTriple: formData.get("bedsTriple") || undefined,      // ← FIX: was missing
+      bedsTriple: formData.get("bedsTriple") || undefined,
       location: pickedLocation.address,
       roomType,
       sharedType: hasDouble ? "Double" : hasTriple ? "Triple" : undefined,
@@ -148,6 +151,7 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
       curfewTime: formData.get("curfewTime"),
       noticePeriod: formData.get("noticePeriod"),
       rulesStrictness: formData.get("rulesStrictness"),
+      securityDepositMonths: formData.get("securityDepositMonths") || undefined,
       facilities: selectedFacilities,
       images
     });
@@ -337,7 +341,7 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
                   </label>
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-ink">Total Beds Available</span>
-                    <input name="bedsDouble" type="number" min={1} defaultValue={property?.bedsDouble} className="input" placeholder="4" />
+                    <input name="bedsDouble" type="number" min={1} defaultValue={property?.bedsDouble} className="input" placeholder="12" />
                   </label>
                 </div>
               )}
@@ -352,138 +356,147 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
                 <div className="grid gap-4 sm:grid-cols-2 animate-in fade-in slide-in-from-top-2 duration-300">
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-ink">Monthly Rent (₹)</span>
-                    <input name="priceTriple" type="number" min={1000} defaultValue={property?.priceTriple} className="input" placeholder="10000" />
+                    <input name="priceTriple" type="number" min={1000} defaultValue={property?.priceTriple} className="input" placeholder="9000" />
                   </label>
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-ink">Total Beds Available</span>
-                    <input name="bedsTriple" type="number" min={1} defaultValue={property?.bedsTriple} className="input" placeholder="4" />
+                    <input name="bedsTriple" type="number" min={1} defaultValue={property?.bedsTriple} className="input" placeholder="15" />
+                  </label>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-4 rounded-3xl border border-black/5 bg-linen p-4">
+              <label className="flex cursor-pointer items-center gap-3">
+                <input type="checkbox" checked={hasDeposit} onChange={(e) => setHasDeposit(e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-ink accent-ink" />
+                <span className="font-bold text-ink">Require Security Deposit?</span>
+              </label>
+              {hasDeposit && (
+                <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                  <label className="block space-y-2">
+                    <span className="text-sm font-semibold text-ink">How many months?</span>
+                    <select name="securityDepositMonths" defaultValue={property?.securityDepositMonths ?? "1"} className="input">
+                      <option value="0.5">0.5 Months (Half)</option>
+                      <option value="1">1 Month</option>
+                      <option value="2">2 Months</option>
+                    </select>
                   </label>
                 </div>
               )}
             </div>
           </section>
 
-          {/* Amenities */}
+          {/* Meals */}
           <section className="space-y-5 rounded-3xl bg-white p-5 shadow-soft sm:p-6">
-            <p className="text-xs font-black uppercase text-clay">Amenities</p>
-            <div className="space-y-3">
+            <p className="text-xs font-black uppercase text-clay">Meals</p>
+            <label className="block space-y-2">
+              <span className="text-sm font-bold text-ink">Meal plan</span>
+              <select name="mealPlan" value={mealPlan} onChange={(e) => setMealPlan(e.target.value)} className="input">
+                <option value="Not Included">Meals Not Included</option>
+                <option value="Veg Only">Veg Only</option>
+                <option value="Veg + Non-Veg">Veg + Non-Veg</option>
+                <option value="Snacks Only">Snacks Only</option>
+              </select>
+            </label>
+            {mealPlan !== "Not Included" && mealPlan !== "Snacks Only" && (
+              <div>
+                <p className="text-sm font-bold text-ink">Meal times included</p>
+                <div className="mt-3 flex flex-wrap gap-3">
+                  {mealTimeOptions.map((time) => (
+                    <label key={time} className="flex cursor-pointer items-center gap-2 rounded-2xl bg-linen px-4 py-2 text-sm font-semibold text-ink">
+                      <input type="checkbox" checked={selectedMealTimes.includes(time)} onChange={() => toggleMealTime(time)} className="h-4 w-4 accent-ink" />
+                      {time}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/* Facilities */}
+          <section className="space-y-5 rounded-3xl bg-white p-5 shadow-soft sm:p-6">
+            <p className="text-xs font-black uppercase text-clay">Facilities & Amenities</p>
+            <div className="grid gap-3 sm:grid-cols-2">
               {facilities.map((facility) => (
-                <label key={facility} className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    checked={selectedFacilities.includes(facility)}
-                    onChange={() => toggleFacility(facility)}
-                    className="h-4 w-4 rounded border-gray-300 text-ink accent-ink"
-                  />
-                  <span className="text-sm text-ink">{facility}</span>
+                <label key={facility} className="flex cursor-pointer items-center gap-3 rounded-2xl bg-linen p-3 text-sm font-semibold text-ink">
+                  <input type="checkbox" checked={selectedFacilities.includes(facility)} onChange={() => toggleFacility(facility)} className="h-4 w-4 accent-ink" />
+                  {facility}
                 </label>
               ))}
             </div>
           </section>
 
-          {/* Meal Plans */}
+          {/* Rules */}
           <section className="space-y-5 rounded-3xl bg-white p-5 shadow-soft sm:p-6">
-            <p className="text-xs font-black uppercase text-clay">Meal Plans</p>
-            <label className="block space-y-2">
-              <span className="text-sm font-bold text-ink">Meal Plan</span>
-              <select
-                name="mealPlan"
-                defaultValue={property?.mealPlan ?? "Not Included"}
-                className="select w-full"
-              >
-                <option value="Not Included">Not Included</option>
-                <option value="Breakfast Only">Breakfast Only</option>
-                <option value="Breakfast & Dinner">Breakfast & Dinner</option>
-                <option value="Breakfast, Lunch & Dinner">Breakfast, Lunch & Dinner</option>
-              </select>
-            </label>
-            <div className="space-y-2">
-              <span className="text-sm font-bold text-ink">Meal Times</span>
-              <div className="flex flex-wrap gap-2">
-                {mealTimeOptions.map((time) => (
-                  <label key={time} className={`relative flex cursor-pointer items-center justify-center gap-2 rounded-xl py-2 px-3 text-sm font-bold transition ${selectedMealTimes.includes(time) ? "bg-white shadow-soft text-ink" : "text-muted hover:text-ink"}`}>
-                    <input
-                      type="checkbox"
-                      checked={selectedMealTimes.includes(time)}
-                      onChange={() => toggleMealTime(time)}
-                      className="sr-only"
-                    />
-                    <span>{time}</span>
-                  </label>
-                ))}
-              </div>
+            <p className="text-xs font-black uppercase text-clay">Rules & Policies</p>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <label className="block space-y-2">
+                <span className="text-sm font-bold text-ink">Curfew time</span>
+                <select name="curfewTime" defaultValue={property?.curfewTime ?? "No Curfew"} className="input">
+                  <option value="No Curfew">No Curfew</option>
+                  <option value="9 PM">9 PM</option>
+                  <option value="10 PM">10 PM</option>
+                  <option value="11 PM">11 PM</option>
+                  <option value="12 AM">12 AM</option>
+                </select>
+              </label>
+              <label className="block space-y-2">
+                <span className="text-sm font-bold text-ink">Notice period</span>
+                <select name="noticePeriod" defaultValue={property?.noticePeriod ?? "1 Month"} className="input">
+                  <option value="15 Days">15 Days</option>
+                  <option value="1 Month">1 Month</option>
+                  <option value="2 Months">2 Months</option>
+                </select>
+              </label>
+              <label className="block space-y-2">
+                <span className="text-sm font-bold text-ink">House rules</span>
+                <select name="rulesStrictness" defaultValue={property?.rulesStrictness ?? "Lenient"} className="input">
+                  <option value="Lenient">Lenient</option>
+                  <option value="Strict">Strict</option>
+                </select>
+              </label>
             </div>
           </section>
-
-          {/* House Rules */}
-          <section className="space-y-5 rounded-3xl bg-white p-5 shadow-soft sm:p-6">
-            <p className="text-xs font-black uppercase text-clay">House Rules</p>
-            <label className="block space-y-2">
-              <span className="text-sm font-bold text-ink">Curfew Time</span>
-              <input
-                name="curfewTime"
-                type="time"
-                defaultValue={property?.curfewTime ?? "20:00"}
-                className="input"
-              />
-            </label>
-            <label className="block space-y-2">
-              <span className="text-sm font-bold text-ink">Notice Period</span>
-              <select
-                name="noticePeriod"
-                defaultValue={property?.noticePeriod ?? "1 month"}
-                className="select w-full"
-              >
-                <option value="15 days">15 days</option>
-                <option value="1 month">1 month</option>
-                <option value="2 months">2 months</option>
-                <option value="3 months">3 months</option>
-              </select>
-            </label>
-            <label className="block space-y-2">
-              <span className="text-sm font-bold text-ink">Rules Strictness</span>
-              <select
-                name="rulesStrictness"
-                defaultValue={property?.rulesStrictness ?? "Moderate"}
-                className="select w-full"
-              >
-                <option value="Strict">Strict</option>
-                <option value="Moderate">Moderate</option>
-                <option value="Lenient">Lenient</option>
-              </select>
-            </label>
-          </section>
-
-          {/* Images */}
-          <section className="space-y-5 rounded-3xl bg-white p-5 shadow-soft sm:p-6">
-            <p className="text-xs font-black uppercase text-clay">Images</p>
-            <ImageUploader
-              images={images}
-              onChange={setImages}
-              onFilesChange={setImageFiles}
-            />
-          </section>
-
-          <div className="pt-4">
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex w-items-center justify-center gap-2 rounded-2xl bg-black/90 px-6 py-3 text-sm font-bold text-white hover:bg-black/95 transition disabled:opacity-50"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Saving...</span>
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4" aria-hidden />
-                  <span>Save Property</span>
-                </>
-              )}
-            </button>
-          </div>
         </div>
+
+        {/* Sidebar */}
+        <aside className="space-y-5">
+          <div className="rounded-3xl border border-amber-200 bg-amber-50 p-4">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" aria-hidden />
+              <div>
+                <p className="text-sm font-black text-amber-800">Privacy & Lead Protection</p>
+                <p className="mt-1 text-xs leading-5 text-amber-700">
+                  Upload <strong>INTERIOR PHOTOS ONLY</strong>. Exterior building photos will be rejected by our moderation team.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-3xl bg-white p-5 shadow-soft sm:p-6 space-y-5">
+            <p className="text-sm font-bold text-ink">Property Images</p>
+            <ImageUploader images={images} onChange={setImages} onFilesChange={setImageFiles} />
+
+            <div className="space-y-3 rounded-3xl border border-black/10 bg-linen p-4">
+              <p className="text-xs font-black uppercase text-clay">Legal Agreement</p>
+              <label className="flex cursor-pointer items-start gap-3">
+                <input type="checkbox" required className="mt-1 h-4 w-4 shrink-0 accent-ink" />
+                <span className="text-sm leading-6 text-ink">
+                  I have read and agree to the{" "}
+                  <a href="/legal/retainer-agreement" target="_blank" className="font-bold underline hover:text-clay">Exclusive Inventory Agreement</a>,{" "}
+                  <a href="/legal/standard-commission-agreement" target="_blank" className="font-bold underline hover:text-clay">Platform Listing Agreement</a>, and{" "}
+                  <a href="/legal/privacy-policy" target="_blank" className="font-bold underline hover:text-clay">Privacy Policy</a>.
+                </span>
+              </label>
+            </div>
+
+            {error ? <p className="rounded-2xl bg-linen p-3 text-sm font-semibold text-clay">{error}</p> : null}
+            <Button className="w-full" disabled={isSubmitting}>
+              <Save className="h-4 w-4" aria-hidden />
+              {isSubmitting ? "Saving..." : property ? "Update property" : "Create property"}
+            </Button>
+          </div>
+        </aside>
       </form>
     </>
   );
