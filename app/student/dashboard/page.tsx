@@ -142,7 +142,6 @@ export default function StudentDashboardPage() {
                           )}
                           <div>
                             <p className="text-sm font-semibold text-ink">{pg.title}</p>
-                            <p className="text-xs text-muted">{pg.location}</p>
                           </div>
                         </button>
                       </li>
