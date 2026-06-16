@@ -83,12 +83,20 @@ export async function getOwnerStats(token?: string) {
 }
 
 export async function getOwnerProperties(token?: string) {
-  const { data } = await apiClient.get<ApiProperty[]>(`/owner/properties`, {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://livinggo.onrender.com/api';
+  const res = await fetch(`${apiUrl}/owner/properties`, {
     headers: {
       "Authorization": `Bearer ${token}`
-    },
+    }
   });
-  return data.map(toOwnerProperty);
+
+  if (!res.ok) throw new Error("Failed to fetch properties");
+
+  const json = await res.json();
+  // Safely handle both { data: [...] } and raw [...] array responses
+  const propertiesArray = Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : []);
+
+  return propertiesArray.map(toOwnerProperty);
 }
 
 export async function deleteOwnerProperty(id: string, token?: string) {
