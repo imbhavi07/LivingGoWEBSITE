@@ -44,8 +44,6 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
   const [hasSingle, setHasSingle] = useState(!!property?.priceSingle);
   const [hasDouble, setHasDouble] = useState(!!property?.priceDouble);
   const [hasTriple, setHasTriple] = useState(!!property?.priceTriple);
-  const [hasDeposit, setHasDeposit] = useState(!!property?.securityDepositMonths);
-  const [mealPlan, setMealPlan] = useState<string>(property?.mealPlan ?? "Not Included");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -390,7 +388,7 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
               <span className="text-sm font-bold text-ink">Meal Plan</span>
               <select
                 name="mealPlan"
-                defaultValue={mealPlan}
+                defaultValue={property?.mealPlan ?? "Not Included"}
                 className="select w-full"
               >
                 <option value="Not Included">Not Included</option>
@@ -403,11 +401,7 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
               <span className="text-sm font-bold text-ink">Meal Times</span>
               <div className="flex flex-wrap gap-2">
                 {mealTimeOptions.map((time) => (
-                  <label key={time} className="relative flex cursor-pointer items-center justify-center gap-2 rounded-xl py-2 px-3 text-sm font-bold transition ${
-                    selectedMealTimes.includes(time)
-                      ? "bg-white shadow-soft text-ink"
-                      : "text-muted hover:text-ink"
-                  }">
+                  <label key={time} className={`relative flex cursor-pointer items-center justify-center gap-2 rounded-xl py-2 px-3 text-sm font-bold transition ${selectedMealTimes.includes(time) ? "bg-white shadow-soft text-ink" : "text-muted hover:text-ink"}`}>
                     <input
                       type="checkbox"
                       checked={selectedMealTimes.includes(time)}
@@ -465,9 +459,8 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
             <p className="text-xs font-black uppercase text-clay">Images</p>
             <ImageUploader
               images={images}
-              setImages={setImages}
-              imageFiles={imageFiles}
-              setImageFiles={setImageFiles}
+              onChange={setImages}
+              onFilesChange={setImageFiles}
             />
           </section>
 

@@ -91,11 +91,12 @@ export const updateProperty = asyncHandler(async (request: Request, response: Re
 
   // Process image uploads if any new files were provided
   let roomTypeMappings: { index: number; roomType: string }[] = [];
+  let images: { url: string; publicId: string }[] = [];
 
   if ((request.files as Express.Multer.File[])?.length) {
     const files = (request.files as Express.Multer.File[]) ?? [];
     const rawUploads = await uploadMany(files);
-    const uploads = rawUploads.map(upload => ({ url: upload.secure_url, publicId: upload.public_id }));
+    images = rawUploads.map(upload => ({ url: upload.secure_url, publicId: upload.public_id }));
 
     // Extract room-type mappings from request body
     roomTypeMappings = request.body.roomTypeMappings
@@ -110,8 +111,8 @@ export const updateProperty = asyncHandler(async (request: Request, response: Re
     {
       ...request.body,
       // Include uploads and mappings if new files were provided
-      ...(uploads.length > 0 ? {
-        images: uploads,
+      ...(images.length > 0 ? {
+        images: { create: images },
         roomTypeMappings: roomTypeMappings
       } : {})
     }

@@ -107,10 +107,11 @@ exports.updateProperty = (0, async_handler_1.asyncHandler)(async (request, respo
         throw new app_error_1.AppError("Forbidden", 403);
     // Process image uploads if any new files were provided
     let roomTypeMappings = [];
+    let images = [];
     if (request.files?.length) {
         const files = request.files ?? [];
         const rawUploads = await (0, cloudinary_service_1.uploadMany)(files);
-        const uploads = rawUploads.map(upload => ({ url: upload.secure_url, publicId: upload.public_id }));
+        images = rawUploads.map(upload => ({ url: upload.secure_url, publicId: upload.public_id }));
         // Extract room-type mappings from request body
         roomTypeMappings = request.body.roomTypeMappings
             ? JSON.parse(request.body.roomTypeMappings)
@@ -119,8 +120,8 @@ exports.updateProperty = (0, async_handler_1.asyncHandler)(async (request, respo
     const updatedProperty = await propertyService.updateProperty(String(request.params.id), user.id, user.role, {
         ...request.body,
         // Include uploads and mappings if new files were provided
-        ...(uploads.length > 0 ? {
-            images: uploads,
+        ...(images.length > 0 ? {
+            images: { create: images },
             roomTypeMappings: roomTypeMappings
         } : {})
     });
