@@ -43,7 +43,6 @@ export async function updateOwnerProperty(id: string, payload: OwnerPropertyPayl
   const formData = toPropertyFormData(payload);
   const { data } = await apiClient.put<ApiProperty>(`/owner/properties/${id}`, formData, {
     headers: {
-      "Content-Type": "multipart/form-data",
       "Authorization": `Bearer ${token}`
     },
   });
@@ -54,7 +53,6 @@ export async function createOwnerProperty(payload: OwnerPropertyPayload, token?:
   const formData = toPropertyFormData(payload);
   const { data } = await apiClient.post<ApiProperty>(`/owner/properties`, formData, {
     headers: {
-      "Content-Type": "multipart/form-data",
       "Authorization": `Bearer ${token}`
     },
   });
