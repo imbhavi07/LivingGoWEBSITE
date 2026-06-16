@@ -38,8 +38,8 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
   const [preference, setPreference] = useState<"Girls" | "Boys" | "Any">(
     (property?.preference as "Girls" | "Boys" | "Any") ?? "Any"
   );
-  const [images, setImages] = useState<string[]>(property?.images ?? []);
-  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [categorizedImages, setCategorizedImages] = useState<Record<string, string[]>>({ Common: property?.images ?? [] });
+  const [categorizedFiles, setCategorizedFiles] = useState<Record<string, File[]>>({});
   const [selectedFacilities, setSelectedFacilities] = useState<string[]>(property?.facilities ?? []);
   const [selectedMealTimes, setSelectedMealTimes] = useState<string[]>(property?.mealTimes ?? []);
   const [hasSingle, setHasSingle] = useState(!!property?.priceSingle);
@@ -125,6 +125,10 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
       return;
     }
 
+    // Flatten categorized images and files for form submission
+    const allImageUrls = Object.values(categorizedImages).flat();
+    const allFiles = Object.values(categorizedFiles).flat();
+
     const roomType = hasSingle ? "Single" : "Shared";
     const price = hasSingle
       ? Number(formData.get("priceSingle") ?? 0)
@@ -132,29 +136,14 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
         ? Number(formData.get("priceDouble") ?? 0)
         : Number(formData.get("priceTriple") ?? 0);
 
-    const parsed = ownerPropertySchema.safeParse({
-      title: formData.get("title"),
-      description: formData.get("description"),
-      price,
-      priceSingle: formData.get("priceSingle") || undefined,
-      bedsSingle: formData.get("bedsSingle") || undefined,
-      priceDouble: formData.get("priceDouble") || undefined,
-      bedsDouble: formData.get("bedsDouble") || undefined,
-      priceTriple: formData.get("priceTriple") || undefined,
-      bedsTriple: formData.get("bedsTriple") || undefined,
-      location: pickedLocation.address,
-      roomType,
-      sharedType: hasDouble ? "Double" : hasTriple ? "Triple" : undefined,
-      preference: formData.get("preference"),
-      mealPlan: formData.get("mealPlan"),
-      mealTimes: selectedMealTimes,
-      curfewTime: formData.get("curfewTime"),
-      noticePeriod: formData.get("noticePeriod"),
-      rulesStrictness: formData.get("rulesStrictness"),
-      securityDepositMonths: formData.get("securityDepositMonths") || undefined,
-      facilities: selectedFacilities,
-      images
-    });
+    // Create form data object and override images with flattened URLs
+    const formDataObject = Object.fromEntries(formData);
+    const formDataWithImages = {
+      ...formDataObject,
+      images: allImageUrls,
+    };
+
+    const parsed = ownerPropertySchema.safeParse(formDataWithImages);
 
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? "Check property details.");
@@ -166,7 +155,7 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
 
     const payload: OwnerPropertyPayload = {
       ...parsed.data,
-      imageFiles,
+      imageFiles: allFiles,
       lat: pickedLocation.lat,
       lng: pickedLocation.lng,
     };
@@ -475,7 +464,46 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
 
           <div className="rounded-3xl bg-white p-5 shadow-soft sm:p-6 space-y-5">
             <p className="text-sm font-bold text-ink">Property Images</p>
-            <ImageUploader images={images} onChange={setImages} onFilesChange={setImageFiles} />
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <span className="text-sm font-bold text-ink">Common Areas (Kitchen, Washroom, etc.)</span>
+                <ImageUploader
+                  images={categorizedImages['Common'] || []}
+                  onChange={(imgs) => setCategorizedImages(prev => ({...prev, Common: imgs}))}
+                  onFilesChange={(files) => setCategorizedFiles(prev => ({...prev, Common: files}))}
+                />
+              </div>
+              {hasSingle && (
+                <div className="space-y-2">
+                  <span className="text-sm font-bold text-ink">Single Room Photos</span>
+                  <ImageUploader
+                    images={categorizedImages['Single'] || []}
+                    onChange={(imgs) => setCategorizedImages(prev => ({...prev, Single: imgs}))}
+                    onFilesChange={(files) => setCategorizedFiles(prev => ({...prev, Single: files}))}
+                  />
+                </div>
+              )}
+              {hasDouble && (
+                <div className="space-y-2">
+                  <span className="text-sm font-bold text-ink">Double Room Photos</span>
+                  <ImageUploader
+                    images={categorizedImages['Double'] || []}
+                    onChange={(imgs) => setCategorizedImages(prev => ({...prev, Double: imgs}))}
+                    onFilesChange={(files) => setCategorizedFiles(prev => ({...prev, Double: files}))}
+                  />
+                </div>
+              )}
+              {hasTriple && (
+                <div className="space-y-2">
+                  <span className="text-sm font-bold text-ink">Triple Room Photos</span>
+                  <ImageUploader
+                    images={categorizedImages['Triple'] || []}
+                    onChange={(imgs) => setCategorizedImages(prev => ({...prev, Triple: imgs}))}
+                    onFilesChange={(files) => setCategorizedFiles(prev => ({...prev, Triple: files}))}
+                  />
+                </div>
+              )}
+            </div>
 
             <div className="space-y-3 rounded-3xl border border-black/10 bg-linen p-4">
               <p className="text-xs font-black uppercase text-clay">Legal Agreement</p>
