@@ -56,7 +56,7 @@ function KYCContent() {
         else if (vs === "rejected") setStatus("rejected");
         else if (vs === "pending_approval") setStatus("already_pending");
         else setStatus("form");
-      } catch (error) {
+      } catch {
         // Only reset to form if we were checking, not if we were already in a final state
         if (status === "checking") setStatus("form");
       }

@@ -44,8 +44,6 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
   const [hasSingle, setHasSingle] = useState(!!property?.priceSingle);
   const [hasDouble, setHasDouble] = useState(!!property?.priceDouble);
   const [hasTriple, setHasTriple] = useState(!!property?.priceTriple);
-  const [hasDeposit, setHasDeposit] = useState(!!property?.securityDepositMonths);
-  const [mealPlan, setMealPlan] = useState<string>(property?.mealPlan ?? "Not Included");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -338,4 +336,155 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
                     <input name="priceDouble" type="number" min={1000} defaultValue={property?.priceDouble} className="input" placeholder="12000" />
                   </label>
                   <label className="block space-y-2">
-                    <span className="text-sm font-semibold text-ink">Total Beds Available</span
+                    <span className="text-sm font-semibold text-ink">Total Beds Available</span>
+                    <input name="bedsDouble" type="number" min={1} defaultValue={property?.bedsDouble} className="input" placeholder="4" />
+                  </label>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-4 rounded-3xl border border-black/5 bg-linen p-4">
+              <label className="flex cursor-pointer items-center gap-3">
+                <input type="checkbox" checked={hasTriple} onChange={(e) => setHasTriple(e.target.checked)} className="h-5 w-5 rounded border-gray-300 text-ink accent-ink" />
+                <span className="font-bold text-ink">Triple Sharing</span>
+              </label>
+              {hasTriple && (
+                <div className="grid gap-4 sm:grid-cols-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <label className="block space-y-2">
+                    <span className="text-sm font-semibold text-ink">Monthly Rent (₹)</span>
+                    <input name="priceTriple" type="number" min={1000} defaultValue={property?.priceTriple} className="input" placeholder="10000" />
+                  </label>
+                  <label className="block space-y-2">
+                    <span className="text-sm font-semibold text-ink">Total Beds Available</span>
+                    <input name="bedsTriple" type="number" min={1} defaultValue={property?.bedsTriple} className="input" placeholder="4" />
+                  </label>
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* Amenities */}
+          <section className="space-y-5 rounded-3xl bg-white p-5 shadow-soft sm:p-6">
+            <p className="text-xs font-black uppercase text-clay">Amenities</p>
+            <div className="space-y-3">
+              {facilities.map((facility) => (
+                <label key={facility} className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={selectedFacilities.includes(facility)}
+                    onChange={() => toggleFacility(facility)}
+                    className="h-4 w-4 rounded border-gray-300 text-ink accent-ink"
+                  />
+                  <span className="text-sm text-ink">{facility}</span>
+                </label>
+              ))}
+            </div>
+          </section>
+
+          {/* Meal Plans */}
+          <section className="space-y-5 rounded-3xl bg-white p-5 shadow-soft sm:p-6">
+            <p className="text-xs font-black uppercase text-clay">Meal Plans</p>
+            <label className="block space-y-2">
+              <span className="text-sm font-bold text-ink">Meal Plan</span>
+              <select
+                name="mealPlan"
+                defaultValue={property?.mealPlan ?? "Not Included"}
+                className="select w-full"
+              >
+                <option value="Not Included">Not Included</option>
+                <option value="Breakfast Only">Breakfast Only</option>
+                <option value="Breakfast & Dinner">Breakfast & Dinner</option>
+                <option value="Breakfast, Lunch & Dinner">Breakfast, Lunch & Dinner</option>
+              </select>
+            </label>
+            <div className="space-y-2">
+              <span className="text-sm font-bold text-ink">Meal Times</span>
+              <div className="flex flex-wrap gap-2">
+                {mealTimeOptions.map((time) => (
+                  <label key={time} className={`relative flex cursor-pointer items-center justify-center gap-2 rounded-xl py-2 px-3 text-sm font-bold transition ${selectedMealTimes.includes(time) ? "bg-white shadow-soft text-ink" : "text-muted hover:text-ink"}`}>
+                    <input
+                      type="checkbox"
+                      checked={selectedMealTimes.includes(time)}
+                      onChange={() => toggleMealTime(time)}
+                      className="sr-only"
+                    />
+                    <span>{time}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* House Rules */}
+          <section className="space-y-5 rounded-3xl bg-white p-5 shadow-soft sm:p-6">
+            <p className="text-xs font-black uppercase text-clay">House Rules</p>
+            <label className="block space-y-2">
+              <span className="text-sm font-bold text-ink">Curfew Time</span>
+              <input
+                name="curfewTime"
+                type="time"
+                defaultValue={property?.curfewTime ?? "20:00"}
+                className="input"
+              />
+            </label>
+            <label className="block space-y-2">
+              <span className="text-sm font-bold text-ink">Notice Period</span>
+              <select
+                name="noticePeriod"
+                defaultValue={property?.noticePeriod ?? "1 month"}
+                className="select w-full"
+              >
+                <option value="15 days">15 days</option>
+                <option value="1 month">1 month</option>
+                <option value="2 months">2 months</option>
+                <option value="3 months">3 months</option>
+              </select>
+            </label>
+            <label className="block space-y-2">
+              <span className="text-sm font-bold text-ink">Rules Strictness</span>
+              <select
+                name="rulesStrictness"
+                defaultValue={property?.rulesStrictness ?? "Moderate"}
+                className="select w-full"
+              >
+                <option value="Strict">Strict</option>
+                <option value="Moderate">Moderate</option>
+                <option value="Lenient">Lenient</option>
+              </select>
+            </label>
+          </section>
+
+          {/* Images */}
+          <section className="space-y-5 rounded-3xl bg-white p-5 shadow-soft sm:p-6">
+            <p className="text-xs font-black uppercase text-clay">Images</p>
+            <ImageUploader
+              images={images}
+              onChange={setImages}
+              onFilesChange={setImageFiles}
+            />
+          </section>
+
+          <div className="pt-4">
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex w-items-center justify-center gap-2 rounded-2xl bg-black/90 px-6 py-3 text-sm font-bold text-white hover:bg-black/95 transition disabled:opacity-50"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" aria-hidden />
+                  <span>Save Property</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </form>
+    </>
+  );
+}

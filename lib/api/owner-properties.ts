@@ -1,4 +1,8 @@
-function toPropertyFormData(payload: OwnerPropertyPayload) {
+import type { OwnerPropertyPayload, OwnerStats } from "@/types/owner";
+import { apiClient } from "@/lib/api/client";
+import { toOwnerProperty, toProperty, type ApiProperty } from "@/lib/api/types";
+
+export async function toPropertyFormData(payload: OwnerPropertyPayload) {
   const formData = new FormData();
   formData.append("title", payload.title);
   formData.append("description", payload.description);
@@ -33,4 +37,71 @@ function toPropertyFormData(payload: OwnerPropertyPayload) {
   });
 
   return formData;
+}
+
+export async function updateOwnerProperty(id: string, payload: OwnerPropertyPayload, token?: string) {
+  const formData = toPropertyFormData(payload);
+  const { data } = await apiClient.put<ApiProperty>(`/owner/properties/${id}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+      "Authorization": `Bearer ${token}`
+    },
+  });
+  return toProperty(data);
+}
+
+export async function createOwnerProperty(payload: OwnerPropertyPayload, token?: string) {
+  const formData = toPropertyFormData(payload);
+  const { data } = await apiClient.post<ApiProperty>(`/owner/properties`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+      "Authorization": `Bearer ${token}`
+    },
+  });
+  return toProperty(data);
+}
+
+export async function getOwnerStats(token?: string) {
+  const { data } = await apiClient.get<OwnerStats>(`/owner/dashboard/stats`, {
+    headers: {
+      "Authorization": `Bearer ${token}`
+    },
+  });
+  return data;
+}
+
+export async function getOwnerProperties(token?: string) {
+  const { data } = await apiClient.get<ApiProperty[]>(`/owner/properties`, {
+    headers: {
+      "Authorization": `Bearer ${token}`
+    },
+  });
+  return data.map(toOwnerProperty);
+}
+
+export async function deleteOwnerProperty(id: string, token?: string) {
+  await apiClient.delete(`/owner/properties/${id}`, {
+    headers: {
+      "Authorization": `Bearer ${token}`
+    },
+  });
+}
+
+export async function toggleOwnerPropertyStatus(id: string, isActive: boolean, token?: string) {
+  const { data } = await apiClient.patch<ApiProperty>(`/owner/properties/${id}/status`, { isActive }, {
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+  });
+  return toOwnerProperty(data);
+}
+
+export async function getOwnerProperty(id: string, token?: string) {
+  const { data } = await apiClient.get<ApiProperty>(`/owner/properties/${id}`, {
+    headers: {
+      "Authorization": `Bearer ${token}`
+    },
+  });
+  return toOwnerProperty(data);
 }

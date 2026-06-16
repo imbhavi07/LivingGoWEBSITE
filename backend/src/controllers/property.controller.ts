@@ -39,8 +39,7 @@ export const createProperty = asyncHandler(async (request: Request, response: Re
   const property = await propertyService.createProperty(
     user.id,
     request.body,
-    uploads.map((upload) => ({ url: upload.secure_url, publicId: upload.public_id })),
-    roomTypeMappings  // Pass room-type mappings to service
+    uploads.map((upload) => ({ url: upload.secure_url, publicId: upload.public_id }))
   );
 
   response.status(201).json(property);
@@ -91,12 +90,13 @@ export const updateProperty = asyncHandler(async (request: Request, response: Re
   if (user.role !== "admin" && property.ownerId !== user.id) throw new AppError("Forbidden", 403);
 
   // Process image uploads if any new files were provided
-  let uploads: { url: string; publicId: string }[] = [];
   let roomTypeMappings: { index: number; roomType: string }[] = [];
+  let images: { url: string; publicId: string }[] = [];
 
   if ((request.files as Express.Multer.File[])?.length) {
     const files = (request.files as Express.Multer.File[]) ?? [];
-    uploads = await uploadMany(files);
+    const rawUploads = await uploadMany(files);
+    images = rawUploads.map(upload => ({ url: upload.secure_url, publicId: upload.public_id }));
 
     // Extract room-type mappings from request body
     roomTypeMappings = request.body.roomTypeMappings
@@ -111,8 +111,8 @@ export const updateProperty = asyncHandler(async (request: Request, response: Re
     {
       ...request.body,
       // Include uploads and mappings if new files were provided
-      ...(uploads.length > 0 ? {
-        images: uploads.map(upload => ({ url: upload.secure_url, publicId: upload.public_id })),
+      ...(images.length > 0 ? {
+        images: { create: images },
         roomTypeMappings: roomTypeMappings
       } : {})
     }
@@ -129,7 +129,7 @@ export const deleteProperty = asyncHandler(async (request: Request, response: Re
 
 export const togglePropertyStatus = asyncHandler(async (request: Request, response: Response) => {
   const user = requireUser(request);
-  const property = await propertyService.getPropertyById(String(request.params.id), user.id);
+  const property = await propertyService.getPropertyById(String(request.params.id), user.role);
   if (!property) throw new AppError("Property not found", 404);
   if (property.ownerId !== user.id) throw new AppError("Forbidden", 403);
 
