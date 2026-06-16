@@ -93,8 +93,15 @@ export async function getOwnerProperties(token?: string) {
   if (!res.ok) throw new Error("Failed to fetch properties");
 
   const json = await res.json();
-  // Safely handle both { data: [...] } and raw [...] array responses
-  const propertiesArray = Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : []);
+  let propertiesArray: ApiProperty[] = [];
+
+  if (Array.isArray(json)) {
+    propertiesArray = json;
+  } else if (json && typeof json === 'object') {
+    // Dynamically find the first value that is an array
+    const foundArray = Object.values(json).find(val => Array.isArray(val));
+    propertiesArray = Array.isArray(foundArray) ? foundArray : [];
+  }
 
   return propertiesArray.map(toOwnerProperty);
 }
