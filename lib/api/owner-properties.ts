@@ -2,7 +2,7 @@ import type { OwnerPropertyPayload, OwnerStats } from "@/types/owner";
 import { apiClient } from "@/lib/api/client";
 import { toOwnerProperty, toProperty, type ApiProperty } from "@/lib/api/types";
 
-export async function toPropertyFormData(payload: OwnerPropertyPayload) {
+export function toPropertyFormData(payload: OwnerPropertyPayload) {
   const formData = new FormData();
   formData.append("title", payload.title);
   formData.append("description", payload.description);
@@ -41,21 +41,35 @@ export async function toPropertyFormData(payload: OwnerPropertyPayload) {
 
 export async function updateOwnerProperty(id: string, payload: OwnerPropertyPayload, token?: string) {
   const formData = toPropertyFormData(payload);
-  const { data } = await apiClient.put<ApiProperty>(`/owner/properties/${id}`, formData, {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://livinggo.onrender.com/api';
+  const res = await fetch(`${apiUrl}/owner/properties/${id}`, {
+    method: 'PUT',
     headers: {
       "Authorization": `Bearer ${token}`
     },
+    body: formData
   });
+  if (!res.ok) {
+    throw new Error(`Failed to update property: ${res.statusText}`);
+  }
+  const data = await res.json();
   return toProperty(data);
 }
 
 export async function createOwnerProperty(payload: OwnerPropertyPayload, token?: string) {
   const formData = toPropertyFormData(payload);
-  const { data } = await apiClient.post<ApiProperty>(`/owner/properties`, formData, {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://livinggo.onrender.com/api';
+  const res = await fetch(`${apiUrl}/owner/properties`, {
+    method: 'POST',
     headers: {
       "Authorization": `Bearer ${token}`
     },
+    body: formData
   });
+  if (!res.ok) {
+    throw new Error(`Failed to create property: ${res.statusText}`);
+  }
+  const data = await res.json();
   return toProperty(data);
 }
 
