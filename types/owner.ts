@@ -33,6 +33,8 @@ export type OwnerProperty = {
   images: string[];
   status: OwnerListingStatus;
   createdAt: string;
+  managerContact?: string;
+  securityContact?: string;
 };
 
 export type OwnerPropertyPayload = Omit<OwnerProperty, "id" | "status" | "createdAt" | "images"> & {
@@ -43,6 +45,8 @@ export type OwnerPropertyPayload = Omit<OwnerProperty, "id" | "status" | "create
   lng?: number;
   // NEW: For room-type-based photo uploading
   roomTypeMappings?: Array<{ index: number; roomType: string }>;
+  managerContact?: string;
+  securityContact?: string;
 };
 
 export type OwnerStats = {
