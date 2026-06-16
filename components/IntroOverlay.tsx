@@ -39,6 +39,8 @@ export default function IntroOverlay() {
         autoPlay
         muted
         playsInline
+        preload="auto"
+        poster="/intro-poster.jpg"
         onEnded={handleVideoEnd}
         className="w-full max-w-6xl px-4"
       />
