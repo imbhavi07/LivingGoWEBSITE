@@ -35,9 +35,9 @@ export default function IntroOverlay() {
         introState === 'fading' ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
     >
-      <div className={`${styles.aspectVideo} w-full max-w-md mx-auto`}>
+      <div className="relative aspect-video w-full max-w-md mx-auto">
         <Image
-          src="/bootup-animation.gif"
+          src="/bootup-animation.webp"
           alt="LivingGo Intro Animation"
           fill
           priority
