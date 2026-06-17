@@ -23,6 +23,15 @@ export default function IntroOverlay() {
     }, 500);
   };
 
+  useEffect(() => {
+    const autoQuitTimer = setTimeout(() => {
+      handleSkip();
+    }, 5000); 
+
+    return () => clearTimeout(autoQuitTimer);
+  }, []);
+
+
   if (introState === 'done') {
     return null;
   }
@@ -31,11 +40,11 @@ export default function IntroOverlay() {
     <div
       // THE CSS VARIABLE HERE LISTENS TO THE HEAD SCRIPT TO INSTANTLY HIDE ITSELF
       // Note: Swap 'bg-white' with the exact beige hex code of your video if needed!
-      className={`${styles.overlay} fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#f7ebdc] transition-opacity duration-500 ease-in-out ${
+      className={`${styles.overlay} fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#f9e7d3] transition-opacity duration-500 ease-in-out ${
         introState === 'fading' ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
     >
-      <div className="relative aspect-video w-full max-w-md mx-auto">
+      <div className="relative aspect-video w-full max-w-3xl mx-auto">
         <Image
           src="/bootup-animation.webp"
           alt="LivingGo Intro Animation"
