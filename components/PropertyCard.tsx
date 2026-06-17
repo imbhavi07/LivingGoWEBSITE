@@ -1,8 +1,5 @@
 "use client";
 
-// components/PropertyCard.tsx  (FULL REPLACEMENT)
-// Adds: available beds badge
-
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, MapPin, BedDouble } from "lucide-react";
@@ -30,22 +27,21 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
     void onSave(property.id);
   }
 
-  // ── NEW: bed availability ────────────────────────────────────────────────
   const totalBeds = (property.bedsSingle ?? 0) + (property.bedsDouble ?? 0) + (property.bedsTriple ?? 0);
   const availableBeds = Math.max(0, totalBeds - (property.occupiedBeds ?? 0));
   const showAvailability = totalBeds > 0;
 
   return (
-    <article className="w-full bg-white rounded-xl overflow-hidden shadow-soft flex flex-col">
+    <article className="group flex-shrink-0 h-auto min-h-[fit-content] overflow-hidden rounded-3xl bg-white shadow-2xl transition-all duration-300 hover:-translate-y-3 hover:shadow-lift mb-4">
       <Link href={`/properties/${property.id}`} className="block">
-        <div className="relative w-full aspect-[4/3] overflow-hidden bg-gray-100">
+        <div className="relative aspect-[4/3] overflow-hidden">
           <Image
             src={property.images[0]}
             alt={property.title}
             fill
-            className="object-cover"
+            className="object-cover transition duration-500 group-hover:scale-105"
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           />
-          {/* Availability badge over image */}
           {showAvailability && (
             <span className={`absolute top-3 right-3 rounded-full px-3 py-1 text-xs font-bold flex items-center gap-1.5 ${
               availableBeds === 0 ? "bg-red-500 text-white" : "bg-white/95 text-green-700"
@@ -56,11 +52,11 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
           )}
         </div>
       </Link>
-      <div className="p-3 flex flex-col gap-2">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
+      <div className="space-y-4 p-5">
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-lg font-black text-ink">{formatPrice(property.price)}<span className="text-sm font-semibold text-muted">/mo</span></p>
-            <h2 className="mt-1 line-clamp-1 text-base font-bold text-ink">{property.title}</h2>
+            <p className="text-xl font-black text-ink">{formatPrice(property.price)}<span className="text-sm font-semibold text-muted">/mo</span></p>
+            <h2 className="mt-1 line-clamp-1 text-lg font-bold text-ink">{property.title}</h2>
           </div>
           <button
             onClick={handleSave}
@@ -71,11 +67,11 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
             <Heart className={saved ? "h-5 w-5 fill-clay text-clay" : "h-5 w-5"} aria-hidden />
           </button>
         </div>
-        <p className="flex items-center gap-2 text-xs text-muted">
+        <p className="flex items-center gap-2 text-sm text-muted">
           <MapPin className="h-4 w-4" aria-hidden />
           {property.location}
         </p>
-        <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
+        <div className="flex flex-wrap gap-2">
           <span className="rounded-full bg-linen px-3 py-1 text-xs font-bold text-ink">{property.roomType}</span>
           <span className="rounded-full bg-linen px-3 py-1 text-xs font-bold text-ink">{property.preference}</span>
           {property.facilities.slice(0, 2).map((facility) => (
@@ -84,7 +80,7 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
             </span>
           ))}
         </div>
-        <Button variant="secondary" className="w-full mt-auto py-2" onClick={() => window.location.assign(`/properties/${property.id}`)}>
+        <Button variant="secondary" className="w-full" onClick={() => window.location.assign(`/properties/${property.id}`)}>
           View details
         </Button>
       </div>
