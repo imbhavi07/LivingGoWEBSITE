@@ -27,7 +27,9 @@ export function FeaturedPropertyCard({ property, saved, onSave }: FeaturedProper
     }
     void onSave(property.id);
   }
+  
 
+  // Note: This component is very similar to PropertyCard but with a more luxurious design and an auto-cycling slideshow of images. The logic is mostly the same, but with some extra flair and polish to make it stand out as a "featured" property.
   // ── SLIDESHOW LOGIC ──────────────────────────────────────────────────────
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
