@@ -36,15 +36,14 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
   const showAvailability = totalBeds > 0;
 
   return (
-    <article className="group flex-shrink-0 h-auto min-h-[fit-content] overflow-hidden rounded-3xl bg-white shadow-2xl transition hover:-translate-y-3 hover:scale-[1.04] hover:shadow-lift mb-4">
+    <article className="w-full max-w-[360px] mx-auto bg-white rounded-2xl overflow-hidden shadow-soft flex flex-col">
       <Link href={`/properties/${property.id}`} className="block">
-        <div className="relative aspect-[4/3] overflow-hidden">
+        <div className="relative w-full aspect-[4/3] overflow-hidden bg-gray-100">
           <Image
             src={property.images[0]}
             alt={property.title}
             fill
-            className="object-cover transition duration-500 group-hover:scale-105"
-            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            className="object-cover"
           />
           {/* Availability badge over image */}
           {showAvailability && (
@@ -57,8 +56,8 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
           )}
         </div>
       </Link>
-      <div className="space-y-4 p-5">
-        <div className="flex items-start justify-between gap-3">
+      <div className="p-4 flex flex-col gap-3">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
           <div>
             <p className="text-xl font-black text-ink">{formatPrice(property.price)}<span className="text-sm font-semibold text-muted">/mo</span></p>
             <h2 className="mt-1 line-clamp-1 text-lg font-bold text-ink">{property.title}</h2>
@@ -72,11 +71,11 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
             <Heart className={saved ? "h-5 w-5 fill-clay text-clay" : "h-5 w-5"} aria-hidden />
           </button>
         </div>
-        <p className="flex items-center gap-2 text-sm text-muted">
+        <p className="flex items-center gap-2 text-xs text-muted">
           <MapPin className="h-4 w-4" aria-hidden />
           {property.location}
         </p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
           <span className="rounded-full bg-linen px-3 py-1 text-xs font-bold text-ink">{property.roomType}</span>
           <span className="rounded-full bg-linen px-3 py-1 text-xs font-bold text-ink">{property.preference}</span>
           {property.facilities.slice(0, 2).map((facility) => (
@@ -85,7 +84,7 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
             </span>
           ))}
         </div>
-        <Button variant="secondary" className="w-full" onClick={() => window.location.assign(`/properties/${property.id}`)}>
+        <Button variant="secondary" className="w-full mt-auto" onClick={() => window.location.assign(`/properties/${property.id}`)}>
           View details
         </Button>
       </div>

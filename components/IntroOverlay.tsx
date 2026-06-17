@@ -1,17 +1,26 @@
 "use client";
 
 import { ArrowRight } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styles from './IntroOverlay.module.css';
 
 export default function IntroOverlay() {
   const [introState, setIntroState] = useState<'playing' | 'fading' | 'done'>('playing');
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     if (sessionStorage.getItem('hasSeenIntro')) {
       setIntroState('done');
     } else {
       sessionStorage.setItem('hasSeenIntro', 'true');
+    }
+  }, []);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.play().catch(error => {
+        console.warn("Autoplay prevented by browser:", error);
+      });
     }
   }, []);
 
@@ -35,9 +44,11 @@ export default function IntroOverlay() {
       }`}
     >
       <video
+        ref={videoRef}
         src="/bootup-animation.mp4"
         autoPlay
         muted
+        loop
         playsInline
         preload="auto"
         poster="/intro-poster.jpg"
