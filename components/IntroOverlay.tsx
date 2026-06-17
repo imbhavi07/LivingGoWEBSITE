@@ -1,12 +1,12 @@
 "use client";
 
+import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './IntroOverlay.module.css';
 
 export default function IntroOverlay() {
   const [introState, setIntroState] = useState<'playing' | 'fading' | 'done'>('playing');
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     if (sessionStorage.getItem('hasSeenIntro')) {
@@ -16,25 +16,17 @@ export default function IntroOverlay() {
     }
   }, []);
 
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.play().catch(error => {
-        console.warn("Autoplay prevented by browser:", error);
-      });
-    }
-  }, []);
-
-  const handleVideoEnd = () => {
+  const handleSkip = () => {
     setIntroState('fading');
     setTimeout(() => {
       setIntroState('done');
-    }, 500); 
+    }, 500);
   };
 
   if (introState === 'done') {
     return null;
   }
-// bootup kardiya fix
+  // bootup kardiya fix
   return (
     <div
       // THE CSS VARIABLE HERE LISTENS TO THE HEAD SCRIPT TO INSTANTLY HIDE ITSELF
@@ -43,21 +35,19 @@ export default function IntroOverlay() {
         introState === 'fading' ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
     >
-      <video
-        ref={videoRef}
-        src="/bootup-animation.mp4"
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
-        poster="/intro-poster.jpg"
-        onEnded={handleVideoEnd}
-        className="w-full max-w-6xl px-4"
-      />
-      
+      <div className={`${styles.aspectVideo} w-full max-w-md mx-auto`}>
+        <Image
+          src="/bootup-animation.gif"
+          alt="LivingGo Intro Animation"
+          fill
+          priority
+          unoptimized
+          className="object-contain"
+        />
+      </div>
+
       <button
-        onClick={handleVideoEnd}
+        onClick={handleSkip}
         className="mt-8 px-4 py-2 text-xl font-semibold text-ink transition-colors hover:text-gray-700 flex items-center gap-2"
       >
         Skip Intro <ArrowRight className="h-6 w-6" aria-hidden />

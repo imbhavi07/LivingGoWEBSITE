@@ -1,3 +1,17 @@
 .overlay {
   display: var(--intro-display, flex);
 }
+
+.aspect-video {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 */
+}
+
+.aspect-video > * {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
