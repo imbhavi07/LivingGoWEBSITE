@@ -61,7 +61,7 @@ export default function HomePage() {
               <ShieldCheck className="h-4 w-4 text-ink" aria-hidden />
               Featured this week
             </div>
-            <div className="w-full flex-1 origin-top scale-[0.75] sm:scale-[0.80] lg:scale-[0.85]">
+            <div className="w-[85%] max-w-[280px] mx-auto mt-2">
               <PropertyPreview />
             </div>
           </div>

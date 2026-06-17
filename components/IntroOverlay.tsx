@@ -44,7 +44,7 @@ export default function IntroOverlay() {
         introState === 'fading' ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
     >
-      <div className="relative aspect-video w-full max-w-3xl mx-auto">
+      <div className="relative aspect-video w-full max-w-4xl mx-auto">
         <Image
           src="/bootup-animation.webp"
           alt="LivingGo Intro Animation"
