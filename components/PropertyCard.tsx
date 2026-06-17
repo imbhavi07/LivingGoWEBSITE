@@ -36,7 +36,7 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
   const showAvailability = totalBeds > 0;
 
   return (
-    <article className="w-full max-w-[360px] mx-auto bg-white rounded-2xl overflow-hidden shadow-soft flex flex-col">
+    <article className="w-full bg-white rounded-xl overflow-hidden shadow-soft flex flex-col">
       <Link href={`/properties/${property.id}`} className="block">
         <div className="relative w-full aspect-[4/3] overflow-hidden bg-gray-100">
           <Image
@@ -56,11 +56,11 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
           )}
         </div>
       </Link>
-      <div className="p-4 flex flex-col gap-3">
+      <div className="p-3 flex flex-col gap-2">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <div>
-            <p className="text-xl font-black text-ink">{formatPrice(property.price)}<span className="text-sm font-semibold text-muted">/mo</span></p>
-            <h2 className="mt-1 line-clamp-1 text-lg font-bold text-ink">{property.title}</h2>
+            <p className="text-lg font-black text-ink">{formatPrice(property.price)}<span className="text-sm font-semibold text-muted">/mo</span></p>
+            <h2 className="mt-1 line-clamp-1 text-base font-bold text-ink">{property.title}</h2>
           </div>
           <button
             onClick={handleSave}
@@ -75,7 +75,7 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
           <MapPin className="h-4 w-4" aria-hidden />
           {property.location}
         </p>
-        <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
+        <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
           <span className="rounded-full bg-linen px-3 py-1 text-xs font-bold text-ink">{property.roomType}</span>
           <span className="rounded-full bg-linen px-3 py-1 text-xs font-bold text-ink">{property.preference}</span>
           {property.facilities.slice(0, 2).map((facility) => (
@@ -84,7 +84,7 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
             </span>
           ))}
         </div>
-        <Button variant="secondary" className="w-full mt-auto" onClick={() => window.location.assign(`/properties/${property.id}`)}>
+        <Button variant="secondary" className="w-full mt-auto py-2" onClick={() => window.location.assign(`/properties/${property.id}`)}>
           View details
         </Button>
       </div>
