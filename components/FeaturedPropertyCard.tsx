@@ -84,7 +84,7 @@ export function FeaturedPropertyCard({ property, saved, onSave }: FeaturedProper
         </div>
       </Link>
       
-      <div className="p-3 flex flex-col gap-1.5">
+      <div className="p-3 pb-2 flex flex-col gap-1.5">
         {/* ROW 1: Eyebrow Badge & Heart Button */}
         <div className="flex items-start justify-between">
           <span className="w-fit rounded-full bg-green-100 px-2.5 py-1 text-[11px] font-bold text-green-700 flex items-center gap-1.5">
@@ -117,7 +117,7 @@ export function FeaturedPropertyCard({ property, saved, onSave }: FeaturedProper
         </div>
 
         {/* ROW 4: Button */}
-        <Button variant="secondary" className="w-full mt-1.5 py-1.5 text-xs" onClick={() => window.location.assign(`/properties/${property.id}`)}>
+        <Button variant="secondary" className="w-full mt-1 py-1 text-xs" onClick={() => window.location.assign(`/properties/${property.id}`)}>
           View details
         </Button>
       </div>
