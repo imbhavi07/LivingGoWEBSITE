@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { buttonClasses } from "@/components/Button";
-import { PropertyCard } from "@/components/PropertyCard";
+import { FeaturedPropertyCard } from "@/components/FeaturedPropertyCard";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useProperties } from "@/hooks/useProperties";
 import Image from "next/image";
@@ -92,7 +92,7 @@ function PropertyPreview() {
 
   return (
     <div className="[&>article]:shadow-none">
-      <PropertyCard property={property} saved={wishlist.isSaved(property.id)} onSave={wishlist.toggle} />
+      <FeaturedPropertyCard property={property} saved={wishlist.isSaved(property.id)} onSave={wishlist.toggle} />
     </div>
   );
 }
