@@ -1,6 +1,7 @@
 import express from "express";
 import morgan from "morgan";
 import { apiRouter } from "./routes";
+import { panoramaRouter } from "./routes/panorama.routes";
 import {
   apiLimiter,
   compressionMiddleware,
@@ -17,6 +18,7 @@ app.use(corsMiddleware);
 app.use(compressionMiddleware);
 app.use(apiLimiter);
 app.use(express.json({ limit: "100mb" }));
+app.use("/panoramas", panoramaRouter);
 app.use(express.urlencoded({ extended: true, limit: "100mb" }));
 
 if (process.env.NODE_ENV !== "test") {

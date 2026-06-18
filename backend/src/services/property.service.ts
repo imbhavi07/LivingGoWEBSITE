@@ -51,8 +51,19 @@ const propertyInclude = {
       url: true,
       publicId: true
     }
+  },
+  panoramas: {
+    select: {
+      id: true,
+      title: true,
+      imageUrl: true,
+      sortOrder: true
+    },
+    orderBy: {
+      sortOrder: "asc" as const
+    }
   }
-};
+} satisfies Prisma.PropertyInclude;
 
 export async function createProperty(ownerId: string, input: PropertyInput, images: ImageInput[]) {
   // Calculate nearby places if coordinates provided
