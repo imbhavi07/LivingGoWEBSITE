@@ -18,7 +18,7 @@ app.use(corsMiddleware);
 app.use(compressionMiddleware);
 app.use(apiLimiter);
 app.use(express.json({ limit: "100mb" }));
-app.use("/panoramas", panoramaRouter);
+app.use("/api/panoramas", panoramaRouter);
 app.use(express.urlencoded({ extended: true, limit: "100mb" }));
 
 if (process.env.NODE_ENV !== "test") {
