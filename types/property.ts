@@ -54,6 +54,13 @@ export type Property = {
   description: string;
   owner: Owner;
   listingIndex?: number;
+  panoramas?: {
+  id: string;
+  title: string;
+  imageUrl: string;
+  sortOrder: number;
+  }[];
+
   nearbyPlaces?: {
   colleges: {
     name: string;
@@ -61,6 +68,7 @@ export type Property = {
     distanceMeters: number;
     type: "girls_college" | "coed_college";
   }[];
+  
   metro: {
     name: string;
     distance: string;

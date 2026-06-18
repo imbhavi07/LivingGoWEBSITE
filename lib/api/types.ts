@@ -55,6 +55,14 @@ export type ApiProperty = {
   status?: string;
   images: ApiImage[];
   owner?: ApiOwner;
+
+  panoramas?: {
+  id: string;
+  title: string;
+  imageUrl: string;
+  sortOrder: number;
+  }[];
+
   nearbyPlaces?: {
     colleges: {
       name: string;
@@ -69,6 +77,7 @@ export type ApiProperty = {
       type: "metro";
     } | null;
   } | null;
+
   ownerName?: string;
   createdAt?: string;
   submittedAt?: string;
@@ -140,7 +149,8 @@ export function toProperty(property: ApiProperty, index?: number): Property {
       verified: true,
       responseTime: "Usually replies within a day"
     },
-    nearbyPlaces: property.nearbyPlaces ?? null,  // ADD THIS LINE
+    nearbyPlaces: property.nearbyPlaces ?? null,
+    panoramas: property.panoramas ?? [],
     listingIndex: stableNumber
   };
 }
@@ -191,19 +201,34 @@ function deriveStablePropertyNumber(propertyId: string, fallback: number) {
 
 export function toAdminListing(property: ApiProperty): AdminListing {
   return {
-    id: property.id,
-    title: property.title,
-    description: property.description,
-    price: property.price,
-    location: property.location,
-    roomType: property.roomType,
-    preference: property.preference,
-    facilities: property.facilities,
-    images: property.images.map((image) => image.url),
-    ownerName: property.owner?.name ?? property.ownerName ?? "Unknown owner",
-    status: property.status === "approved" || property.status === "rejected" ? property.status : "pending",
-    submittedAt: property.submittedAt ?? property.createdAt ?? new Date().toISOString()
-  };
+  id: property.id,
+  title: property.title,
+  description: property.description,
+  price: property.price,
+  location: property.location,
+  roomType: property.roomType,
+  preference: property.preference,
+  facilities: property.facilities,
+  images: property.images.map((image) => image.url),
+
+  panoramas: property.panoramas ?? [],
+
+  ownerName:
+    property.owner?.name ??
+    property.ownerName ??
+    "Unknown owner",
+
+  status:
+    property.status === "approved" ||
+    property.status === "rejected"
+      ? property.status
+      : "pending",
+
+  submittedAt:
+    property.submittedAt ??
+    property.createdAt ??
+    new Date().toISOString()
+};
 }
 
 export function toAdminUser(user: ApiUser): AdminUser {

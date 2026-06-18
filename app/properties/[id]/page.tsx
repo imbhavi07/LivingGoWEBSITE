@@ -17,6 +17,12 @@ import { formatPrice } from "@/lib/utils";
 import { StarRating, type RatingData } from "@/components/StarRating";
 import { ReviewSection } from "@/components/ReviewSection";
 import { LockPropertyModal } from "@/components/LockPropertyModal";
+import dynamic from "next/dynamic";
+
+const PanoramaViewer = dynamic(
+  () => import("@/components/PanoramaViewer"),
+  { ssr: false }
+);
 
 type Review = {
   id: string;
@@ -51,6 +57,8 @@ export default function PropertyDetailsPage() {
   const userRole = (user?.publicMetadata?.role as string) ?? null;
 
   const [showLockModal, setShowLockModal] = useState(false);
+  const [showPanorama, setShowPanorama] = useState(false);
+  const [activePanorama, setActivePanorama] = useState<string | null>(null);
 
   if (isLoading) return <DetailsSkeleton />;
 
@@ -91,6 +99,33 @@ export default function PropertyDetailsPage() {
     <>
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 md:py-10 lg:px-8">
         <Gallery images={property.images} title={property.title} />
+        {property.panoramas &&
+         property.panoramas.length > 0 && (
+          <div className="mt-6 rounded-3xl bg-white p-5 shadow-soft">
+            <h3 className="text-xl font-black text-ink">         
+              🌐 360° Virtual Tour
+            </h3>
+            <p className="mt-1 text-sm text-muted">
+              Explore different areas of this property
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {property.panoramas.map((panorama) => (
+                <Button
+                  key={panorama.id}
+                  variant="secondary"
+                  onClick={() => {
+                    setActivePanorama(
+                      panorama.imageUrl
+                    );
+                    setShowPanorama(true);
+                  }}
+                >
+                  {panorama.title}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
         <section className="mt-8 grid gap-8 lg:grid-cols-[1fr_380px]">
           <div className="space-y-8">
 
@@ -376,15 +411,52 @@ export default function PropertyDetailsPage() {
         </section>
       </main>
 
-      {/* Lock Property Modal */}
       {showLockModal && (
-        <LockPropertyModal
-          propertyId={property.id}
-          propertyTitle={property.title}
-          monthlyRent={property.price}
-          onClose={() => setShowLockModal(false)}
-        />
+  <LockPropertyModal
+    propertyId={property.id}
+    propertyTitle={property.title}
+    monthlyRent={property.price}
+    onClose={() => setShowLockModal(false)}
+  />
+)}
+
+{showPanorama && activePanorama && (
+  <div className="fixed inset-0 z-[100] bg-black">
+    <div className="absolute right-5 top-5 z-50">
+      <Button
+        variant="secondary"
+        onClick={() =>
+        setShowPanorama(false)
+        }
+      >
+  ✕ Close Tour
+</Button>
+    </div>
+
+    {property.panoramas &&
+      property.panoramas.length > 1 && (
+        <div className="absolute left-5 top-5 z-50 flex gap-2">
+          {property.panoramas.map((panorama) => (
+            <button
+              key={panorama.id}
+              onClick={() =>
+                setActivePanorama(
+                  panorama.imageUrl
+                )
+              }
+              className = " rounded-xl bg-white px-4 py-2 text-sm font-bold shadow-lg hover:bg-linen "
+            >
+              {panorama.title}
+            </button>
+          ))}
+        </div>
       )}
-    </>
-  );
+
+    <PanoramaViewer
+      imageUrl={activePanorama}
+    />
+  </div>
+)}
+</>
+);
 }

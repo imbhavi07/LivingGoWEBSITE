@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^7.4.1",
+    "@photo-sphere-viewer/core": "^5.14.1",
     "@prisma/client": "^7.8.0",
     "@prisma/config": "^7.8.0",
     "axios": "^1.7.9",
