@@ -17,3 +17,10 @@ export const uploadImages = multer({
     callback(null, true);
   }
 }).array("images", 8);
+
+export const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 50 * 1024 * 1024
+  }
+});

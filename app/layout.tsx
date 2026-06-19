@@ -16,8 +16,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "LivingGo | Student Housing",
-  description: "Find student housing, PGs, rooms, and residences with LivingGo."
+  title: "LivingGo Student Housing",
+  description: "Find verified student housing, PGs, rooms, flats, and residences near your college",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

@@ -19,6 +19,45 @@ export async function uploadImage(file: Express.Multer.File) {
   });
 }
 
+export async function uploadPanorama(file: Express.Multer.File) {
+  return new Promise<UploadApiResponse>((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: "LivingGo/panoramas",
+        resource_type: "image",
+
+        transformation: [
+          {
+            width: 6000,
+            height: 3000,
+            crop: "limit",
+            quality: "auto:good",
+            fetch_format: "webp"
+          }
+        ]
+      },
+      (error, result) => {
+        if (error || !result) return reject(error);
+        resolve(result);
+      }
+    );
+
+    Readable.from(file.buffer).pipe(stream);
+  });
+}
+
 export async function uploadMany(files: Express.Multer.File[] = []) {
   return Promise.all(files.map(uploadImage));
+}
+
+export async function uploadManyPanoramas(
+  files: Express.Multer.File[] = []
+) {
+  return Promise.all(files.map(uploadPanorama));
+}
+
+export async function deleteCloudinaryImage(
+  publicId: string
+) {
+  return cloudinary.uploader.destroy(publicId);
 }

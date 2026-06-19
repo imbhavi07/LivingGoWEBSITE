@@ -8,6 +8,194 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id                 String             @id @default(cuid())
+  name               String
+  email              String             @unique
+  phone              String?
+  passwordHash       String
+  role               Role               @default(student)
+  status             UserStatus         @default(active)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  ownerType          String?
+  aadhaarNumber      String?
+  aadhaarFrontUrl    String?
+  aadhaarBackUrl     String?
+  legalAcceptedAt    DateTime?
+  verificationStatus VerificationStatus @default(not_required)
+  reviewedAt         DateTime?
+  clerkId            String?            @unique
+  dob                DateTime?
+  mobileNumber       String?
+  instagramHandle    String?
+  xHandle            String?
+  university         String?
+  courseYear         String?
+  gender             String?
+  emergencyContact   String?
+  properties         Property[]         @relation("OwnerProperties")
+  reviews            Review[]
+  tenantResidence    TenantResidence?
+  tokenPayments      TokenPayment[]     @relation("StudentTokenPayments")
+  wishlist           Wishlist[]
+
+  @@index([clerkId])
+  @@index([role])
+  @@index([status])
+  @@index([verificationStatus])
+  @@index([createdAt])
+}
+
+model EmailOtp {
+  id         String    @id @default(cuid())
+  email      String
+  codeHash   String
+  purpose    String
+  expiresAt  DateTime
+  verifiedAt DateTime?
+  usedAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([email, purpose, createdAt])
+  @@index([expiresAt])
+}
+
+model Property {
+  id                    String            @id @default(cuid())
+  ownerId               String
+  title                 String
+  description           String
+  price                 Int
+  location              String
+  roomType              RoomType
+  preference            GenderPreference
+  facilities            String[]
+  status                PropertyStatus    @default(pending)
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  priceSingle           Int?
+  bedsSingle            Int?
+  priceDouble           Int?
+  bedsDouble            Int?
+  priceTriple           Int?
+  bedsTriple            Int?
+  securityDepositMonths String?
+  sharedType            String?
+  mealPlan              String?
+  mealTimes             String[]
+  curfewTime            String?
+  noticePeriod          String?
+  rulesStrictness       String?
+  lat                   Float?
+  lng                   Float?
+  nearbyPlaces          Json?
+  occupiedBeds          Int               @default(0)
+  managerContact        String?           @db.VarChar(255)
+  securityContact       String?           @db.VarChar(255)
+  owner                 User              @relation("OwnerProperties", fields: [ownerId], references: [id], onDelete: Cascade)
+  images                PropertyImage[]
+  panoramas             PropertyPanorama[]
+  reviews               Review[]
+  tenants               TenantResidence[]
+  tokenPayments         TokenPayment[]
+  wishlistedBy          Wishlist[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@index([location])
+  @@index([price])
+  @@index([createdAt])
+}
+
+model PropertyImage {
+  id         String   @id @default(cuid())
+  propertyId String
+  url        String
+  publicId   String?
+  createdAt  DateTime @default(now())
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+}
+
+model PropertyPanorama {
+  id         String   @id @default(cuid())
+  propertyId String
+
+  title      String
+  imageUrl   String
+  publicId   String?
+  sortOrder  Int      @default(0)
+
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime @default(now())
+
+  @@index([propertyId])
+}
+
+model Wishlist {
+  id         String   @id @default(cuid())
+  userId     String
+  propertyId String
+  createdAt  DateTime @default(now())
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, propertyId])
+  @@index([userId])
+  @@index([propertyId])
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  studentId   String
+  propertyId  String
+  cleanliness Int
+  food        Int
+  security    Int
+  management  Int
+  location    Int
+  comment     String?
+  createdAt   DateTime @default(now())
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, propertyId])
+  @@index([studentId])
+  @@index([propertyId])
+}
+
+model TenantResidence {
+  id         String   @id @default(cuid())
+  studentId  String   @unique
+  propertyId String
+  createdAt  DateTime @default(now())
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  student    User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+}
+
+model TokenPayment {
+  id         String             @id @default(cuid())
+  studentId  String
+  propertyId String
+  amount     Int
+  utrNumber  String
+  status     TokenPaymentStatus @default(pending)
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+  property   Property           @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  student    User               @relation("StudentTokenPayments", fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, propertyId])
+  @@index([studentId])
+  @@index([propertyId])
+  @@index([status])
+}
+
 enum Role {
   student
   owner
@@ -45,188 +233,8 @@ enum PropertyStatus {
   inactive
 }
 
-model User {
-  id                 String             @id @default(cuid())
-  clerkId            String?            @unique
-  name               String
-  email              String             @unique
-  phone              String?
-  passwordHash       String
-  role               Role               @default(student)
-  status             UserStatus         @default(active)
-  ownerType          String?
-  aadhaarNumber      String?
-  aadhaarFrontUrl    String?
-  aadhaarBackUrl     String?
-  legalAcceptedAt    DateTime?
-  verificationStatus VerificationStatus @default(not_required)
-  reviewedAt         DateTime?
-  dob                DateTime?
-  mobileNumber       String?
-  instagramHandle    String?
-  xHandle            String?
-  university         String?
-  courseYear         String?
-  gender             String?
-  emergencyContact   String?
-  properties         Property[]         @relation("OwnerProperties")
-  wishlist           Wishlist[]
-  reviews            Review[]
-  tenantResidence    TenantResidence?
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
-  tokenPayments      TokenPayment[]     @relation("StudentTokenPayments")
-
-  @@index([clerkId])
-  @@index([role])
-  @@index([status])
-  @@index([verificationStatus])
-  @@index([createdAt])
-}
-
-model EmailOtp {
-  id         String    @id @default(cuid())
-  email      String
-  codeHash   String
-  purpose    String
-  expiresAt  DateTime
-  verifiedAt DateTime?
-  usedAt     DateTime?
-  createdAt  DateTime  @default(now())
-
-  @@index([email, purpose, createdAt])
-  @@index([expiresAt])
-}
-
-model Property {
-  id                    String            @id @default(cuid())
-  ownerId               String
-  owner                 User              @relation("OwnerProperties", fields: [ownerId], references: [id], onDelete: Cascade)
-  title                 String
-  description           String
-  price                 Int
-  priceSingle           Int?
-  bedsSingle            Int?
-  priceDouble           Int?
-  bedsDouble            Int?
-  priceTriple           Int?
-  bedsTriple            Int?
-  occupiedBeds          Int               @default(0)
-  securityDepositMonths String?
-  location              String
-  lat                   Float?
-  lng                   Float?
-  nearbyPlaces          Json?
-  roomType              RoomType
-  sharedType            String?
-  preference            GenderPreference
-  mealPlan              String?
-  mealTimes             String[]
-  curfewTime            String?
-  noticePeriod          String?
-  rulesStrictness       String?
-  reviews               Review[]
-  tenants               TenantResidence[]
-  facilities            String[]
-  status                PropertyStatus    @default(pending)
-  images                PropertyImage[]
-  wishlistedBy          Wishlist[]
-  createdAt             DateTime          @default(now())
-  updatedAt             DateTime          @updatedAt
-  tokenPayments         TokenPayment[]
-  managerContact        String?           @db.VarChar(255)
-  securityContact       String?           @db.VarChar(255)
-
-  @@index([ownerId])
-  @@index([status])
-  @@index([location])
-  @@index([price])
-  @@index([createdAt])
-}
-
-model PropertyImage {
-  id         String   @id @default(cuid())
-  propertyId String
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  url        String
-  publicId   String?
-  createdAt  DateTime @default(now())
-
-  @@index([propertyId])
-}
-
-model Wishlist {
-  id         String   @id @default(cuid())
-  userId     String
-  propertyId String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
-
-  @@unique([userId, propertyId])
-  @@index([userId])
-  @@index([propertyId])
-}
-
-model Review {
-  id String @id @default(cuid())
-
-  studentId  String
-  propertyId String
-
-  cleanliness Int
-  food        Int
-  security    Int
-  management  Int
-  location    Int
-
-  comment String?
-
-  createdAt DateTime @default(now())
-
-  student  User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-
-  @@unique([studentId, propertyId])
-  @@index([studentId])
-  @@index([propertyId])
-}
-
-model TenantResidence {
-  id String @id @default(cuid())
-
-  studentId  String @unique
-  propertyId String
-
-  createdAt DateTime @default(now())
-
-  student  User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-
-  @@index([propertyId])
-}
-
 enum TokenPaymentStatus {
   pending
   approved
   rejected
-}
-
-model TokenPayment {
-  id         String             @id @default(cuid())
-  studentId  String
-  propertyId String
-  amount     Int
-  utrNumber  String
-  status     TokenPaymentStatus @default(pending)
-  createdAt  DateTime           @default(now())
-  updatedAt  DateTime           @updatedAt
-
-  student  User     @relation("StudentTokenPayments", fields: [studentId], references: [id], onDelete: Cascade)
-  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-
-  @@unique([studentId, propertyId])
-  @@index([studentId])
-  @@index([propertyId])
-  @@index([status])
 }

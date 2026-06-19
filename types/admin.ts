@@ -23,6 +23,12 @@ export type AdminListing = {
   preference: GenderPreference;
   facilities: string[];
   images: string[];
+  panoramas?: {
+    id: string;
+    title: string;
+    imageUrl: string;
+    sortOrder: number;
+  }[];
   description: string;
   status: AdminListingStatus;
   submittedAt: string;

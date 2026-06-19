@@ -1,7 +1,5 @@
 "use client";
 
-// components/LockPropertyModal.tsx  (NEW FILE)
-
 import { useState } from "react";
 import { X, QrCode, CheckCircle, Loader2, AlertCircle, Copy } from "lucide-react";
 import { submitTokenPayment } from "@/lib/api/token-payment";

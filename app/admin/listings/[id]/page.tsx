@@ -12,13 +12,18 @@ import { PropertyEditForm, type PropertyEditPayload } from "@/components/Propert
 import { approveListing, deleteListing, rejectListing, updateListing } from "@/lib/api/admin";
 import { useAdminListing } from "@/hooks/useAdmin";
 import { formatPrice } from "@/lib/utils";
+import { PanoramaUploadModal } from "@/components/admin/PanoramaUploadModal";
+import { updatePanorama, deletePanorama, replacePanoramaImage} from "@/lib/api/panoramas";
 
 export default function AdminListingDetailsPage() {
   const params = useParams<{ id: string }>();
   const { listing, isLoading, mutate } = useAdminListing(params.id);
   const [editing, setEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-
+  const [showPanoramaModal, setShowPanoramaModal] = useState(false);
+  const [editingPanoramaId, setEditingPanoramaId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState("");
+  const [editingSortOrder, setEditingSortOrder] = useState(0);
   async function handleSave(payload: PropertyEditPayload) {
     setIsSaving(true);
     try {
@@ -82,6 +87,183 @@ export default function AdminListingDetailsPage() {
                   <span key={facility} className="rounded-full bg-linen px-3 py-1 text-xs font-bold text-ink">{facility}</span>
                 ))}
               </div>
+              <div className="mt-8 border-t pt-6">
+                <h2 className="text-xl font-black text-ink">
+                  🌐 360° Virtual Tours
+                </h2>
+
+                <p className="mt-2 text-sm text-muted">
+                  Upload Insta360 panoramas for this property.
+                </p>
+
+                <Button
+                  className="mt-4"
+                  onClick={() => setShowPanoramaModal(true)}
+                >
+                  Add Panorama
+                </Button>
+                <div className="mt-4 space-y-3">
+  {listing.panoramas?.map((panorama) => (
+    <div
+      key={panorama.id}
+      className="flex items-center justify-between rounded-2xl border p-3"
+    >
+      <div className="flex items-center gap-4">
+        <div className="relative h-20 w-32 overflow-hidden rounded-lg">
+          <Image
+            src={panorama.imageUrl}
+            alt={panorama.title}
+            fill
+            className="object-cover"
+          />
+        </div>
+
+        {editingPanoramaId === panorama.id ? (
+          <div className="space-y-2">
+            <input
+              value={editingTitle}
+              placeholder="Panorama title"
+              onChange={(e) =>
+                setEditingTitle(e.target.value)
+              }
+              className="w-full rounded border p-2"
+            />
+
+            <input
+              type="number"
+              placeholder="Sort order"
+              value={editingSortOrder}
+              onChange={(e) =>
+                setEditingSortOrder(
+                  Number(e.target.value)
+                )
+              }
+              className="w-full rounded border p-2"
+            />
+            <input
+            placeholder= "Edit panaroma"
+            type="file"
+            accept=".jpg,.jpeg,.png,.webp"
+            className="w-full rounded border p-2"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+            
+              if (!file) return;
+            
+              try {
+                await replacePanoramaImage(
+                  panorama.id,
+                  file
+                );
+              
+                alert(
+                  "Panorama image updated successfully"
+                );
+              
+                await mutate();
+              } catch (error) {
+                console.error(error);
+              
+                alert(
+                  "Failed to replace panorama image"
+                );
+              }
+            }}
+          />
+            <div className="flex gap-2">
+              <Button
+                onClick={async () => {
+                  await updatePanorama(
+                    panorama.id,
+                    {
+                      title: editingTitle,
+                      sortOrder:
+                        editingSortOrder,
+                    }
+                  );
+
+                  setEditingPanoramaId(
+                    null
+                  );
+
+                  await mutate();
+                }}
+              >
+                Save
+              </Button>
+
+              <Button
+                variant="ghost"
+                onClick={() =>
+                  setEditingPanoramaId(
+                    null
+                  )
+                }
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <p className="font-bold">
+              {panorama.title}
+            </p>
+
+            <p className="text-sm text-muted">
+              Sort Order:
+              {panorama.sortOrder}
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div className="flex gap-2">
+        <Button
+          variant="secondary"
+          onClick={() => {
+            setEditingPanoramaId(
+              panorama.id
+            );
+
+            setEditingTitle(
+              panorama.title
+            );
+
+            setEditingSortOrder(
+              panorama.sortOrder
+            );
+          }}
+        >
+          Edit
+        </Button>
+
+        <Button
+          variant="ghost"
+          className="text-red-600"
+          onClick={async () => {
+            if (
+              !confirm(
+                "Delete this panorama?"
+              )
+            ) {
+              return;
+            }
+
+            await deletePanorama(
+              panorama.id
+            );
+
+            await mutate();
+          }}
+        >
+          Delete
+        </Button>
+      </div>
+    </div>
+  ))}
+</div>
+              </div>
             </section>
 
             <aside className="h-fit rounded-3xl bg-white p-5 shadow-soft ring-1 ring-black/5">
@@ -110,6 +292,15 @@ export default function AdminListingDetailsPage() {
           </div>
         )
       ) : null}
+      {showPanoramaModal && listing && (
+        <PanoramaUploadModal
+          propertyId={listing.id}
+          onClose={() => setShowPanoramaModal(false)}
+          onSuccess={async () => {
+            await mutate();
+          }}
+        />
+      )}
     </AdminShell>
   );
 }
