@@ -89,24 +89,24 @@ export function LockPropertyModal({ propertyId, propertyTitle, monthlyRent, onCl
         description: `Token deposit for ${propertyTitle}`,
         order_id: orderData.id,
         
-        // This configuration isolates the checkout UI strictly to 0% MDR UPI channels (QR + Apps)
-        // config: {
-        //   display: {
-        //     blocks: {
-        //       upi: {
-        //         name: "Pay Instantly via UPI (0% Fee)",
-        //         instruments: [
-        //           { method: "upi" }
-        //         ],
-        //       },
-        //     },
-        //     sequence: ["block.upi"],
-        //     preferences: { show_default_blocks: false },
-        //   },
-        // },
+        config: {
+          display: {
+            // This blacklists all the expensive payment methods
+            hide: [
+              { method: "card" },
+              { method: "netbanking" },
+              { method: "wallet" },
+              { method: "emi" },
+              { method: "paylater" }
+            ],
+            preferences: { 
+              show_default_blocks: true 
+            },
+          },
+        },
         
         prefill: {
-          method: "upi", // This will still open UPI by default
+          method: "upi",
         },
         
         theme: {

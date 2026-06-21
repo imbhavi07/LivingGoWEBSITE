@@ -61,6 +61,9 @@ export type Property = {
   sortOrder: number;
   }[];
 
+  lat?: number | null;
+  lng?: number | null;
+
   nearbyPlaces?: {
   colleges: {
     name: string;
