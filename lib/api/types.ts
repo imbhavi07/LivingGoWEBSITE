@@ -56,6 +56,9 @@ export type ApiProperty = {
   images: ApiImage[];
   owner?: ApiOwner;
 
+  lat?: number | null;
+  lng?: number | null;
+
   panoramas?: {
   id: string;
   title: string;
@@ -151,7 +154,9 @@ export function toProperty(property: ApiProperty, index?: number): Property {
     },
     nearbyPlaces: property.nearbyPlaces ?? null,
     panoramas: property.panoramas ?? [],
-    listingIndex: stableNumber
+    listingIndex: stableNumber,
+    lat: property.lat,
+    lng: property.lng,
   };
 }
 
