@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Heart, MapPin, BedDouble, Phone } from "lucide-react";
@@ -32,7 +33,6 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
   const availableBeds = Math.max(0, totalBeds - (property.occupiedBeds ?? 0));
   const showAvailability = totalBeds > 0;
 
-  // Dynamically determine available room types based on bed counts
   const availableRoomTypes = [];
   if ((property.bedsSingle ?? 0) > 0) availableRoomTypes.push("Single");
   if ((property.bedsDouble ?? 0) > 0) availableRoomTypes.push("Double");
@@ -42,23 +42,46 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
     ? availableRoomTypes.join(" • ") 
     : property.roomType;
 
-  // ── LOGIC HAPPENS HERE (Before the return statement) ────────────
-  let distanceUI = <span className="truncate">{property.location}</span>;
+  // ── DYNAMIC DISTANCE CALCULATION & ANIMATION ─────────────────────────
+  const nearestColleges = (property.lat && property.lng)
+    ? getTailoredColleges(property.lat, property.lng, property.preference)
+    : [];
 
-  if (property.lat && property.lng) {
-    const nearestColleges = getTailoredColleges(property.lat, property.lng, property.preference);
-    
-    // Creates a readable string like "1.2 km from SRCC • 1.5 km from Hindu"
+  const [collegeIndex, setCollegeIndex] = useState(0);
+  const [isFading, setIsFading] = useState(false);
+
+  useEffect(() => {
+    if (nearestColleges.length <= 1) return;
+
+    const cycleTimer = setInterval(() => {
+      setIsFading(true); 
+      
+      setTimeout(() => {
+        setCollegeIndex((prev) => (prev + 1) % nearestColleges.length);
+        setIsFading(false);
+      }, 500); 
+      
+    }, 3500); 
+
+    return () => clearInterval(cycleTimer);
+  }, [nearestColleges.length]);
+
+  // CHANGED: Flattened UI, removed the label, and set text-sm
+  let distanceUI = <span className="text-sm font-medium text-muted truncate flex-1 min-w-0">{property.location}</span>;
+
+  if (nearestColleges.length > 0) {
+    const currentCollege = nearestColleges[collegeIndex];
     distanceUI = (
-      <div className="flex flex-col gap-0.5">
-        <span className="text-xs font-bold text-ink">Nearest Colleges:</span>
-        <span className="text-xs text-muted truncate">
-          {nearestColleges.map(c => `${c.distance.toFixed(1)} km to ${c.name}`).join(" • ")}
-        </span>
-      </div>
+      <span
+        className={`text-sm font-medium text-muted truncate transition-opacity duration-500 ease-in-out flex-1 min-w-0 ${
+          isFading ? "opacity-0" : "opacity-100"
+        }`}
+      >
+        {currentCollege.distance.toFixed(1)} km to {currentCollege.name}
+      </span>
     );
   }
-  // ────────────────────────────────────────────────────────────────
+  // ───────────────────────────────────────────────────────────────────
 
   return (
     <article className="group flex-shrink-0 h-auto min-h-[fit-content] overflow-hidden rounded-3xl bg-white shadow-2xl transition-all duration-300 hover:-translate-y-3 hover:shadow-lift mb-4">
@@ -83,7 +106,6 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
       </Link>
       <div className="space-y-4 p-5">
         
-        {/* ROW 1: Price, Title, and Buttons */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
             <p className="text-xl font-black text-ink">{formatPrice(property.price)}<span className="text-sm font-semibold text-muted">/mo</span></p>
@@ -95,9 +117,7 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
             )}
           </div>
           
-          {/* Action Buttons Container */}
           <div className="flex items-center gap-2">
-            {/* NEW: Call Now Button */}
             <a
               href="tel:+919068902886"
               className="flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-2.5 text-sm font-bold text-green-700 transition hover:bg-green-200"
@@ -107,7 +127,6 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
               <span className="hidden sm:inline">Call</span> 
             </a>
 
-            {/* Existing Heart Button */}
             <button
               onClick={handleSave}
               className="rounded-full bg-linen p-2.5 text-ink transition hover:bg-oat"
@@ -119,13 +138,12 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
           </div>
         </div>
 
-        {/* ROW 2: Tailored Distance / Location */}
-        <div className="flex items-start gap-2 pt-1 pb-2">
-          <MapPin className="h-4 w-4 text-ink flex-shrink-0 mt-0.5" aria-hidden />
+        {/* CHANGED: Switched to items-center to align the pin and text perfectly */}
+        <div className="flex items-center gap-2 pt-1 pb-2">
+          <MapPin className="h-4 w-4 text-ink flex-shrink-0" aria-hidden />
           {distanceUI}
         </div>
 
-        {/* ROW 3: Facilities */}
         <div className="flex flex-wrap gap-2">
           <span className="rounded-full bg-linen px-3 py-1 text-xs font-bold text-ink">{property.preference}</span>
           {property.facilities.slice(0, 3).map((facility) => (
@@ -135,7 +153,6 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
           ))}
         </div>
 
-        {/* ROW 4: View Details */}
         <Button variant="secondary" className="w-full" onClick={() => window.location.assign(`/properties/${property.id}`)}>
           View details
         </Button>
