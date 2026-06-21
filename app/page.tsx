@@ -7,6 +7,7 @@ import { useWishlist } from "@/hooks/useWishlist";
 import { useProperties } from "@/hooks/useProperties";
 import Image from "next/image";
 import logo from "@/assets/logo.png";
+import { FeaturesSection } from "@/components/FeaturesSection";
 
 export default function HomePage() {
   return (
@@ -77,6 +78,7 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
+      <FeaturesSection />
     </main>
   );
 }
