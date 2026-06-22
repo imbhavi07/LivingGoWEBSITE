@@ -24,7 +24,10 @@ function LoginForm() {
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn || !user) return;
-    const role = (user.publicMetadata?.role as string | undefined) ?? "student";
+    const role = 
+      (user?.publicMetadata?.role as string) ?? 
+      (user?.unsafeMetadata?.role as string) ?? 
+      "student";
     if (role === "owner") {
       router.push("/owner/dashboard");
     } else {

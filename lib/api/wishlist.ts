@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/api/client";
 import { toProperty, type ApiProperty } from "@/lib/api/types";
+import { getApiErrorMessage } from "@/lib/api/client";
 import type { Property } from "@/types/property";
 
 type ApiWishlistItem = {
@@ -14,11 +15,19 @@ export async function getWishlistProperties() {
 }
 
 export async function addWishlistProperty(propertyId: string) {
-  await apiClient.post(`/wishlist/${propertyId}`);
+  try {
+    await apiClient.post(`/wishlist/${propertyId}`);
+  } catch (error) {
+    throw new Error(`Failed to add property to wishlist: ${getApiErrorMessage(error, "Unknown error")}`);
+  }
 }
 
 export async function removeWishlistProperty(propertyId: string) {
-  await apiClient.delete(`/wishlist/${propertyId}`);
+  try {
+    await apiClient.delete(`/wishlist/${propertyId}`);
+  } catch (error) {
+    throw new Error(`Failed to remove property from wishlist: ${getApiErrorMessage(error, "Unknown error")}`);
+  }
 }
 
 export function getWishlistIds(properties: Property[]) {

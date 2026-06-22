@@ -100,8 +100,13 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
       },
       (err) => {
         setIsGettingLocation(false);
-        if (err.code === 1) setError("Location permission denied. Please allow location access.");
-        else setError("Could not get your location. Try picking on map.");
+        if (err && typeof err === 'object' && 'code' in err) {
+          // @ts-ignore - we know it's GeolocationPositionError
+          if (err.code === 1) setError("Location permission denied. Please allow location access.");
+          else setError("Could not get your location. Try picking on map.");
+        } else {
+          setError("Could not get your location. Try picking on map.");
+        }
       },
       { timeout: 10000, enableHighAccuracy: true }
     );

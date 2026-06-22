@@ -22,7 +22,7 @@ export function MapPicker({ onConfirm, onClose, initialLat, initialLng }: MapPic
   const [address, setAddress] = useState<string>("Loading address...");
   const [pickedLat, setPickedLat] = useState<number>(initialLat ?? 28.6139);
   const [pickedLng, setPickedLng] = useState<number>(initialLng ?? 77.209);
-  const [isLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const mapInstanceRef = useRef<unknown>(null);
   const markerRef = useRef<unknown>(null);
 
@@ -35,7 +35,17 @@ export function MapPicker({ onConfirm, onClose, initialLat, initialLng }: MapPic
       const data = await res.json() as { display_name?: string };
       return data.display_name ?? `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
     } catch {
-      return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+      // Retry once
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
+          { headers: { "Accept-Language": "en" } }
+        );
+        const data = await res.json() as { display_name?: string };
+        return data.display_name ?? `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+      } catch {
+        return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+      }
     }
   }
 
@@ -45,7 +55,6 @@ export function MapPicker({ onConfirm, onClose, initialLat, initialLng }: MapPic
     // Dynamically import Leaflet to avoid SSR issues
     import("leaflet").then((L) => {
       // Fix default marker icons
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (L.Icon.Default.prototype as any)._getIconUrl;
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
@@ -64,7 +73,12 @@ export function MapPicker({ onConfirm, onClose, initialLat, initialLng }: MapPic
       const marker = L.marker([pickedLat, pickedLng], { draggable: true }).addTo(map);
 
       // Get initial address
-      void reverseGeocode(pickedLat, pickedLng).then(setAddress);
+      setAddress("Loading address...");
+      setIsLoading(true);
+      void reverseGeocode(pickedLat, pickedLng).then((addr) => {
+        setAddress(addr);
+        setIsLoading(false);
+      });
 
       // Click on map to move marker
       map.on("click", async (e: { latlng: { lat: number; lng: number } }) => {
@@ -73,8 +87,10 @@ export function MapPicker({ onConfirm, onClose, initialLat, initialLng }: MapPic
         setPickedLat(lat);
         setPickedLng(lng);
         setAddress("Loading address...");
+        setIsLoading(true);
         const addr = await reverseGeocode(lat, lng);
         setAddress(addr);
+        setIsLoading(false);
       });
 
       // Drag marker
@@ -83,8 +99,10 @@ export function MapPicker({ onConfirm, onClose, initialLat, initialLng }: MapPic
         setPickedLat(pos.lat);
         setPickedLng(pos.lng);
         setAddress("Loading address...");
+        setIsLoading(true);
         const addr = await reverseGeocode(pos.lat, pos.lng);
         setAddress(addr);
+        setIsLoading(false);
       });
 
       mapInstanceRef.current = map;
@@ -93,13 +111,11 @@ export function MapPicker({ onConfirm, onClose, initialLat, initialLng }: MapPic
 
     return () => {
       if (mapInstanceRef.current) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (mapInstanceRef.current as any).remove();
         mapInstanceRef.current = null;
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [pickedLat, pickedLng]);
 
   function handleConfirm() {
     onConfirm({ lat: pickedLat, lng: pickedLng, address });

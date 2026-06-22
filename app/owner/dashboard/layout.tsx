@@ -19,7 +19,10 @@ export default function OwnerDashboardLayout({ children }: { children: React.Rea
       return;
     }
 
-    const role = (user.publicMetadata as { role?: string })?.role;
+    const role =
+      (user.publicMetadata?.role as string) ??
+      (user.unsafeMetadata?.role as string) ??
+      "student";
     if (role !== "owner" && role !== "admin") {
       const loginUrl = new URL("/owner/login", window.location.origin);
       loginUrl.searchParams.set("next", pathname);
