@@ -1,17 +1,26 @@
 "use client";
 
 import type { ChangeEvent } from "react";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { SlidersHorizontal } from "lucide-react";
-import type { PropertyFilters } from "@/types/property";
 
-type FilterBarProps = {
-  filters: PropertyFilters;
-  onChange: (filters: PropertyFilters) => void;
-};
+export function FilterBar() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-export function FilterBar({ filters, onChange }: FilterBarProps) {
   function update(event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
-    onChange({ ...filters, [event.target.name]: event.target.value });
+    // Create a new URLSearchParams object based on the current URL
+    const params = new URLSearchParams(searchParams.toString());
+    
+    if (event.target.value) {
+      params.set(event.target.name, event.target.value);
+    } else {
+      params.delete(event.target.name); // Clean up empty filters
+    }
+    
+    // Update the URL without reloading the page, preserving scroll state
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
   return (
@@ -23,7 +32,7 @@ export function FilterBar({ filters, onChange }: FilterBarProps) {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <label className="space-y-2">
           <span className="text-xs font-semibold uppercase text-muted">Budget</span>
-          <select name="budget" value={filters.budget ?? ""} onChange={update} className="input">
+          <select name="budget" defaultValue={searchParams.get("budget") ?? ""} onChange={update} className="input">
             <option value="">Any budget</option>
             <option value="10000">Under ₹10,000</option>
             <option value="15000">Under ₹15,000</option>
@@ -34,7 +43,7 @@ export function FilterBar({ filters, onChange }: FilterBarProps) {
           <span className="text-xs font-semibold uppercase text-muted">Location</span>
           <input
             name="location"
-            value={filters.location ?? ""}
+            defaultValue={searchParams.get("location") ?? ""}
             onChange={update}
             placeholder="Search city or area"
             className="input"
@@ -42,7 +51,7 @@ export function FilterBar({ filters, onChange }: FilterBarProps) {
         </label>
         <label className="space-y-2">
           <span className="text-xs font-semibold uppercase text-muted">Room</span>
-          <select name="roomType" value={filters.roomType ?? ""} onChange={update} className="input">
+          <select name="roomType" defaultValue={searchParams.get("roomType") ?? ""} onChange={update} className="input">
             <option value="">Any room</option>
             <option value="Single">Single</option>
             <option value="Shared">Shared</option>
@@ -50,7 +59,7 @@ export function FilterBar({ filters, onChange }: FilterBarProps) {
         </label>
         <label className="space-y-2">
           <span className="text-xs font-semibold uppercase text-muted">Preference</span>
-          <select name="preference" value={filters.preference ?? ""} onChange={update} className="input">
+          <select name="preference" defaultValue={searchParams.get("preference") ?? ""} onChange={update} className="input">
             <option value="">Any preference</option>
             <option value="Boys">Boys</option>
             <option value="Girls">Girls</option>

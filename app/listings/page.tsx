@@ -1,31 +1,26 @@
-"use client";
-
-import { useState } from "react";
-import { EmptyState } from "@/components/EmptyState";
+// NO "use client" - This is now a blazing fast Server Component!
 import { FilterBar } from "@/components/FilterBar";
-import { PropertyCard } from "@/components/PropertyCard";
-import { PropertyCardSkeleton } from "@/components/loading/PropertyCardSkeleton";
-import { useProperties } from "@/hooks/useProperties";
-import { useWishlist } from "@/hooks/useWishlist";
-import { filtersSchema } from "@/lib/validation";
+import { ClientPropertyGrid } from "./ClientPropertyGrid";
+import { getProperties } from "@/lib/api/properties";
 import type { PropertyFilters } from "@/types/property";
 
-export default function ListingsPage() {
-  const [filters, setFilters] = useState<PropertyFilters>({});
-  const [filterError, setFilterError] = useState<string | null>(null);
-  const { properties, isLoading, error } = useProperties(filters);
-  const wishlist = useWishlist();
+// Next.js automatically passes URL parameters here
+export default async function ListingsPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | undefined };
+}) {
+  // Cast URL search parameters into your expected filter types
+  // Cast URL search parameters into your expected filter types
+  const filters: PropertyFilters = {
+    budget: searchParams.budget as string | undefined,
+    location: searchParams.location as string | undefined,
+    roomType: searchParams.roomType as PropertyFilters["roomType"],
+    preference: searchParams.preference as PropertyFilters["preference"],
+  };
 
-  function handleFilterChange(nextFilters: PropertyFilters) {
-    const parsed = filtersSchema.safeParse(nextFilters);
-    if (!parsed.success) {
-      setFilterError(parsed.error.issues[0]?.message ?? "Invalid filter value.");
-      return;
-    }
-
-    setFilterError(null);
-    setFilters(parsed.data);
-  }
+  // The server fetches this data BEFORE the user ever sees the screen!
+  const properties = await getProperties(filters);
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 md:py-10 lg:px-8">
@@ -33,26 +28,12 @@ export default function ListingsPage() {
         <p className="text-sm font-bold uppercase text-clay">Student housing</p>
         <h1 className="mt-2 text-3xl font-black text-ink sm:text-5xl">Find your next room</h1>
       </div>
-      <FilterBar filters={filters} onChange={handleFilterChange} />
-      {filterError ? <p className="mt-5 rounded-2xl bg-white p-4 text-sm font-semibold text-clay shadow-soft">{filterError}</p> : null}
-      {error ? <p className="mt-5 rounded-2xl bg-white p-4 text-sm font-semibold text-clay shadow-soft">{error}</p> : null}
-      <section className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {isLoading
-          ? Array.from({ length: 6 }).map((_, index) => <PropertyCardSkeleton key={index} />)
-          : properties.map((property) => (
-              <PropertyCard
-                key={property.id}
-                property={property}
-                saved={wishlist.isSaved(property.id)}
-                onSave={wishlist.toggle}
-              />
-            ))}
-      </section>
-      {!isLoading && properties.length === 0 ? (
-        <div className="mt-6">
-          <EmptyState title="No homes match those filters" message="Try widening your budget, room type, or location search." />
-        </div>
-      ) : null}
+      
+      {/* FilterBar automatically reads from the URL now */}
+      <FilterBar />
+      
+      {/* We pass the pre-fetched properties straight into our client grid */}
+      <ClientPropertyGrid properties={properties} />
     </main>
   );
 }
