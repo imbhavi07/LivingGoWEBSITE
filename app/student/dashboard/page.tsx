@@ -207,53 +207,6 @@ export default function StudentDashboardPage() {
         {/* ── My Bookings (token payments) ─────────────────────────────── */}
         <MyBookings />
 
-        {/* ── LivingGo Wallet ───────────────────────────────────────────── */}
-        <section className="bg-white rounded-3xl shadow-soft p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-ink flex items-center gap-2">
-              <CreditCard className="h-5 w-5" />
-              LivingGo Wallet
-            </h2>
-            <p className="text-sm text-muted">Last updated: Today</p>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-black/5">
-              <div className="flex items-center gap-3">
-                <div className="bg-linen p-3 rounded-xl">
-                  <Banknote className="h-6 w-6 text-amber-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted">Available Balance</p>
-                  <p className="text-2xl font-black text-ink">₹7,000</p>
-                </div>
-              </div>
-              <span className="px-3 py-1 bg-green-50 text-xs font-medium rounded-full text-green-800">
-                Live Credits
-              </span>
-            </div>
-
-            <div className="space-y-3">
-              <p className="text-sm font-medium text-ink mb-1">Recent Activity</p>
-              <div className="space-y-2">
-                {[
-                  { icon: Activity, label: "Token locked for Property #1042", time: "Today • 2:30 PM" },
-                  { icon: TrendingUp, label: "Account Funded", time: "Yesterday • 10:15 AM" },
-                  { icon: Loader2, label: "Pending verification", time: "In progress", spin: true },
-                ].map(({ icon: Icon, label, time, spin }) => (
-                  <div key={label} className="flex items-center gap-3">
-                    <Icon className={`h-4 w-4 text-muted ${spin ? "animate-spin" : ""}`} />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-ink">{label}</p>
-                      <p className="text-xs text-muted">{time}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* ── Application & Visit Tracker ───────────────────────────────── */}
         <section className="bg-white rounded-3xl shadow-soft p-6">
           <div className="flex items-center justify-between mb-4">

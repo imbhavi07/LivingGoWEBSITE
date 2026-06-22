@@ -179,16 +179,25 @@ model TenantResidence {
 }
 
 model TokenPayment {
-  id         String             @id @default(cuid())
-  studentId  String
-  propertyId String
-  amount     Int
-  utrNumber  String
-  status     TokenPaymentStatus @default(pending)
-  createdAt  DateTime           @default(now())
-  updatedAt  DateTime           @updatedAt
-  property   Property           @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  student    User               @relation("StudentTokenPayments", fields: [studentId], references: [id], onDelete: Cascade)
+  id              String             @id @default(cuid())
+  studentId       String
+  propertyId      String
+
+  amount          Int
+  utrNumber       String
+
+  status          TokenPaymentStatus @default(pending)
+
+  visitOtp        String?
+  visitVerified   Boolean            @default(false)
+
+  rentSettled     Boolean            @default(false)
+
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  property        Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  student         User @relation("StudentTokenPayments", fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, propertyId])
   @@index([studentId])

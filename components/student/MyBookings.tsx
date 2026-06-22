@@ -104,6 +104,63 @@ export function MyBookings() {
                 </div>
               )}
 
+              <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+  <h4 className="font-bold text-amber-800">
+    Application & Visit Tracker
+  </h4>
+
+  <div className="mt-3 space-y-3">
+
+    <div className="flex items-center gap-3">
+      <div className="h-6 w-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs">
+        ✓
+      </div>
+      <span>Token Payment Approved</span>
+    </div>
+
+    <div className="flex items-center gap-3">
+      <div
+        className={`h-6 w-6 rounded-full flex items-center justify-center text-xs ${
+          payment.visitVerified
+            ? "bg-green-500 text-white"
+            : "border-2 border-amber-500 text-amber-700"
+        }`}
+      >
+        {payment.visitVerified ? "✓" : "OTP"}
+      </div>
+
+      <div>
+        <p className="font-medium">
+          Visit Verification
+        </p>
+
+        {!payment.visitVerified && payment.visitOtp && (
+          <p className="text-sm text-amber-700">
+            Show OTP to owner: <b>{payment.visitOtp}</b>
+          </p>
+        )}
+      </div>
+    </div>
+
+    <div className="flex items-center gap-3">
+      <div
+        className={`h-6 w-6 rounded-full flex items-center justify-center text-xs ${
+          payment.rentSettled
+            ? "bg-green-500 text-white"
+            : "bg-gray-200"
+        }`}
+      >
+        {payment.rentSettled ? "✓" : "3"}
+      </div>
+
+      <span>
+        Rent Settled
+      </span>
+    </div>
+
+  </div>
+</div>
+
               {payment.status === "rejected" && (
                 <div className="mt-3 rounded-xl bg-red-50 p-3 text-xs text-red-700">
                   Your payment could not be verified. Please contact support or try locking the property again.
