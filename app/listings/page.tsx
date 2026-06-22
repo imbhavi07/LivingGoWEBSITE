@@ -5,13 +5,15 @@ import { getProperties } from "@/lib/api/properties";
 import type { PropertyFilters } from "@/types/property";
 
 // Next.js automatically passes URL parameters here
-export default async function ListingsPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | undefined };
+// 1. Update the type to be a Promise
+export default async function ListingsPage(props: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  // Cast URL search parameters into your expected filter types
-  // Cast URL search parameters into your expected filter types
+  
+  // 2. Await the searchParams promise before doing anything else
+  const searchParams = await props.searchParams;
+
+  // 3. Now you can use them exactly like before
   const filters: PropertyFilters = {
     budget: searchParams.budget as string | undefined,
     location: searchParams.location as string | undefined,
@@ -19,7 +21,6 @@ export default async function ListingsPage({
     preference: searchParams.preference as PropertyFilters["preference"],
   };
 
-  // The server fetches this data BEFORE the user ever sees the screen!
   const properties = await getProperties(filters);
 
   return (
@@ -29,10 +30,7 @@ export default async function ListingsPage({
         <h1 className="mt-2 text-3xl font-black text-ink sm:text-5xl">Find your next room</h1>
       </div>
       
-      {/* FilterBar automatically reads from the URL now */}
       <FilterBar />
-      
-      {/* We pass the pre-fetched properties straight into our client grid */}
       <ClientPropertyGrid properties={properties} />
     </main>
   );
