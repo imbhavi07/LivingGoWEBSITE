@@ -105,7 +105,15 @@ export async function moderateTokenPayment(id: string, action: "approved" | "rej
 
   return prisma.tokenPayment.update({
     where: { id },
-    data: { status: action },
+    data: { 
+      status: action,
+      ...(action === "approved"
+      ? {
+          visitOtp: otp,
+        }
+      : {}),
+     },
+    
     include: {
       student: { select: { id: true, name: true, email: true } },
       property: { select: { id: true, title: true, location: true } },
