@@ -55,7 +55,7 @@ export function MapPicker({ onConfirm, onClose, initialLat, initialLng }: MapPic
     // Dynamically import Leaflet to avoid SSR issues
     import("leaflet").then((L) => {
       // Fix default marker icons
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
+      delete (L.Icon.Default.prototype as { _getIconUrl?: () => string })._getIconUrl;
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
         iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -111,6 +111,7 @@ export function MapPicker({ onConfirm, onClose, initialLat, initialLng }: MapPic
 
     return () => {
       if (mapInstanceRef.current) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (mapInstanceRef.current as any).remove();
         mapInstanceRef.current = null;
       }
