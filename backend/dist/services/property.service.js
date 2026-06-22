@@ -33,6 +33,17 @@ const propertyInclude = {
             url: true,
             publicId: true
         }
+    },
+    panoramas: {
+        select: {
+            id: true,
+            title: true,
+            imageUrl: true,
+            sortOrder: true
+        },
+        orderBy: {
+            sortOrder: "asc"
+        }
     }
 };
 async function createProperty(ownerId, input, images) {

@@ -34,14 +34,14 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateListing = exports.rejectOwner = exports.approveOwner = exports.getUserProperties = exports.getOwnerApprovalById = exports.getOwnerApprovals = exports.deleteUser = exports.suspendUser = exports.getUsers = exports.removeListing = exports.rejectListing = exports.approveListing = exports.getListingDetails = exports.getListings = exports.getStats = void 0;
-import { asyncHandler } from "../utils/async-handler";
-import * as adminService from "../services/admin.service";
-import { getPropertyById } from "../services/property.service";
-import * as ownerVerificationService from "../services/owner-verification.service";
-import { createClerkClient } from "@clerk/backend";
-import { prisma } from "../config/prisma";
-import { AppError } from "../utils/app-error";
-import { getPropertyRating } from "../services/property.service";
+const async_handler_1 = require("../utils/async-handler");
+const adminService = __importStar(require("../services/admin.service"));
+const property_service_1 = require("../services/property.service");
+const ownerVerificationService = __importStar(require("../services/owner-verification.service"));
+const backend_1 = require("@clerk/backend");
+const prisma_1 = require("../config/prisma");
+const app_error_1 = require("../utils/app-error");
+const property_service_2 = require("../services/property.service");
 const clerkClient = (0, backend_1.createClerkClient)({
     secretKey: process.env.CLERK_SECRET_KEY,
 });
@@ -81,7 +81,7 @@ exports.getOwnerApprovalById = (0, async_handler_1.asyncHandler)(async (request,
     response.json(await ownerVerificationService.getPendingOwnerApprovalById(String(request.params.id)));
 });
 exports.getUserProperties = (0, async_handler_1.asyncHandler)(async (request, response) => {
-    const id = String(request.params);
+    const id = String(request.params.id);
     const user = await prisma_1.prisma.user.findUnique({
         where: { id },
         select: {

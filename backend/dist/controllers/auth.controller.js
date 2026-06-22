@@ -51,6 +51,7 @@ const ALLOWED_ADMIN_EMAILS = [
     "falitnautiyal7@gmail.com",
     "semwalb3@gmail.com",
     "shaannothere@gmail.com",
+    "techshaan@hotmail.com"
 ];
 exports.signup = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const result = await authService.signup(request.body);
