@@ -13,15 +13,30 @@ export function useProperties(filters?: PropertyFilters) {
     let isMounted = true;
     setIsLoading(true);
 
-    getProperties(filters)
+    // Helper function to retry API calls
+    const retryApiCall = async <T>(fn: () => Promise<T>, retries: number = 2, delayMs: number = 500): Promise<T> => {
+      try {
+        return await fn();
+      } catch (error) {
+        if (retries <= 0) throw error;
+        // Wait for delayMs * (3 - retries) to avoid hammering the server
+        await new Promise((resolve) => setTimeout(resolve, delayMs * (3 - retries)));
+        return retryApiCall(fn, retries - 1, delayMs);
+      }
+    };
+
+    retryApiCall(() => getProperties(filters), 2)
       .then((data) => {
         if (isMounted) {
           setProperties(data);
           setError(null);
         }
       })
-      .catch(() => {
-        if (isMounted) setError("We could not load listings right now.");
+      .catch((error) => {
+        if (isMounted) {
+          setError("We could not load listings right now. Please try again.");
+          console.error("Failed to load properties:", error);
+        }
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);
@@ -43,15 +58,30 @@ export function useProperty(id: string) {
   useEffect(() => {
     let isMounted = true;
 
-    getProperty(id)
+    // Helper function to retry API calls
+    const retryApiCall = async <T>(fn: () => Promise<T>, retries: number = 2, delayMs: number = 500): Promise<T> => {
+      try {
+        return await fn();
+      } catch (error) {
+        if (retries <= 0) throw error;
+        // Wait for delayMs * (3 - retries) to avoid hammering the server
+        await new Promise((resolve) => setTimeout(resolve, delayMs * (3 - retries)));
+        return retryApiCall(fn, retries - 1, delayMs);
+      }
+    };
+
+    retryApiCall(() => getProperty(id), 2)
       .then((data) => {
         if (isMounted) {
           setProperty(data);
           setError(data ? null : "Property not found.");
         }
       })
-      .catch(() => {
-        if (isMounted) setError("We could not load this property.");
+      .catch((error) => {
+        if (isMounted) {
+          setError("We could not load this property. Please try again.");
+          console.error("Failed to load property:", error);
+        }
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { X, CheckCircle, Loader2, AlertCircle, ShieldCheck } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 type LockPropertyModalProps = {
   propertyId: string;
@@ -47,6 +48,7 @@ declare global {
 
 export function LockPropertyModal({ propertyId, propertyTitle, monthlyRent, onClose }: LockPropertyModalProps) {
   const tokenAmount = Math.ceil(monthlyRent / 2);
+  const router = useRouter();
 
   const [step, setStep] = useState<Step>("info");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -263,7 +265,7 @@ export function LockPropertyModal({ propertyId, propertyTitle, monthlyRent, onCl
               <button
                 onClick={() => {
                   onClose();
-                  window.location.reload(); // Instantly pull updated database records
+                  router.refresh(); // Instantly pull updated database records
                 }}
                 className="w-full rounded-2xl bg-ink py-3 text-sm font-bold text-white hover:bg-ink/90 transition-colors"
               >

@@ -17,6 +17,18 @@ export function useWishlist() {
   const { showToast } = useToast();
   const { isSignedIn, isLoaded } = useUser();
 
+  // Helper function to retry API calls with exponential backoff
+  const retryApiCall = async <T>(fn: () => Promise<T>, retries: number = 2, delayMs: number = 500): Promise<T> => {
+    try {
+      return await fn();
+    } catch (error) {
+      if (retries <= 0) throw error;
+      // Wait for delayMs * (3 - retries) to avoid hammering the server
+      await new Promise((resolve) => setTimeout(resolve, delayMs * (3 - retries)));
+      return retryApiCall(fn, retries - 1, delayMs);
+    }
+  };
+
   useEffect(() => {
     // If Clerk hasn't loaded yet, we don't know the sign-in status.
     if (!isLoaded) {
@@ -36,12 +48,16 @@ export function useWishlist() {
 
     // Signed in: now check the role from our AuthContext.
     if (auth.user?.role === "student") {
-      getWishlistProperties()
+      // Try to load wishlist with retries
+      retryApiCall(getWishlistProperties, 2)
         .then((nextProperties) => {
           setProperties(nextProperties);
           setIds(getWishlistIds(nextProperties));
         })
-        .catch(() => showToast("Could not load wishlist.", "error"));
+        .catch((error) => {
+          console.error("Failed to load wishlist:", error);
+          showToast("Could not load wishlist.", "error");
+        });
     } else {
       // Signed in but not a student: use localStorage.
       try {
@@ -63,19 +79,22 @@ export function useWishlist() {
       try {
         const alreadySaved = ids.includes(id);
         if (alreadySaved) {
-          await removeWishlistProperty(id);
+          // Try to remove with retries
+          await retryApiCall(() => removeWishlistProperty(id), 2);
           setIds((current) => current.filter((savedId) => savedId !== id));
           setProperties((current) => current.filter((property) => property.id !== id));
           showToast("Removed from wishlist.", "info");
         } else {
-          await addWishlistProperty(id);
+          // Try to add with retries
+          await retryApiCall(() => addWishlistProperty(id), 2);
           const property = await getProperty(id);
           setIds((current) => [...current, id]);
           if (property) setProperties((current) => [...current, property]);
           showToast("Saved to wishlist.", "success");
         }
-      } catch {
-        showToast("Wishlist update failed.", "error");
+      } catch (error) {
+        console.error("Wishlist toggle error:", error);
+        showToast("Wishlist update failed. Please try again.", "error");
       }
       return;
     }

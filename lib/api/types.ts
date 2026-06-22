@@ -144,7 +144,7 @@ export function toProperty(property: ApiProperty, index?: number): Property {
     noticePeriod: property.noticePeriod,
     rulesStrictness: property.rulesStrictness,
     facilities: property.facilities,
-    images: property.images.map((image) => image.url),
+    images: property.images ? property.images.map((image) => image.url) : [],
     owner: {
       id: property.owner?.id ?? "owner",
       name: property.owner?.name ?? property.ownerName ?? "Property owner",
@@ -183,7 +183,7 @@ export function toOwnerProperty(property: ApiProperty): OwnerProperty {
     noticePeriod: property.noticePeriod as OwnerProperty["noticePeriod"],
     rulesStrictness: property.rulesStrictness as OwnerProperty["rulesStrictness"],
     facilities: property.facilities,
-    images: property.images.map((image) => image.url),
+    images: property.images ? property.images.map((image) => image.url) : [],
     status:
       property.status === "approved"
         ? "active"
@@ -214,7 +214,7 @@ export function toAdminListing(property: ApiProperty): AdminListing {
   roomType: property.roomType,
   preference: property.preference,
   facilities: property.facilities,
-  images: property.images.map((image) => image.url),
+  images: property.images ? property.images.map((image) => image.url) : [],
 
   panoramas: property.panoramas ?? [],
 
