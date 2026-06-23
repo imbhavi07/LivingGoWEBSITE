@@ -14,6 +14,11 @@ import { useAdminListing } from "@/hooks/useAdmin";
 import { formatPrice } from "@/lib/utils";
 import { PanoramaUploadModal } from "@/components/admin/PanoramaUploadModal";
 import { updatePanorama, deletePanorama, replacePanoramaImage} from "@/lib/api/panoramas";
+import {
+  addPropertyImages,
+  deletePropertyImage,
+  replacePropertyImage
+} from "@/lib/api/admin";
 
 export default function AdminListingDetailsPage() {
   const params = useParams<{ id: string }>();
@@ -69,12 +74,102 @@ export default function AdminListingDetailsPage() {
         ) : (
           <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
             <section className="rounded-3xl bg-white p-5 shadow-soft ring-1 ring-black/5">
-              <div className="grid gap-3 md:grid-cols-3">
-                {listing.images.slice(0, 3).map((image) => (
-                  <div key={image} className="relative h-56 overflow-hidden rounded-2xl bg-oat">
-                    <Image src={image} alt={listing.title} fill className="object-cover" sizes="33vw" />
+              <div className="mb-4">              
+                <label className="mb-2 block text-sm font-bold">
+                  Upload Property Images
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const files = Array.from(
+                      e.target.files || []
+                    );
+                  
+                    if (!files.length) return;
+                  
+                    try {
+                      await addPropertyImages(
+                        listing.id,
+                        files
+                      );
+                    
+                      await mutate();
+                    
+                      alert("Images added");
+                    } catch {
+                      alert("Upload failed");
+                    }
+                  }}
+                />
+              </div>
+                            <div className="grid gap-3 md:grid-cols-3">
+                              {listing.images.map((image) => (
+                <div
+                  key={image.id}
+                  className="relative overflow-hidden rounded-2xl"
+                >
+                  <div className="relative h-56">
+                    <Image
+                      src={image.url}
+                      alt={listing.title}
+                      fill
+                      className="object-cover"
+                    />
                   </div>
-                ))}
+                              
+                  <div className="flex gap-2 p-2">
+                    <label>Replace Image</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                      
+                        if (!file) return;
+                      
+                        try {
+                          await replacePropertyImage(
+                            listing.id,
+                            image.id,
+                            file
+                          );
+                        
+                          await mutate();
+                        
+                          alert("Image replaced");
+                        } catch {
+                          alert("Replace failed");
+                        }
+                      }}
+                    />
+
+                    <Button
+                      variant="ghost"
+                      className="text-red-600"
+                      onClick={async () => {
+                        if (
+                          !confirm(
+                            "Delete this image?"
+                          )
+                        ) {
+                          return;
+                        }
+                      
+                        await deletePropertyImage(
+                          listing.id,
+                          image.id
+                        );
+                      
+                        await mutate();
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              ))}
               </div>
               <div className="mt-6 flex flex-wrap items-center gap-3">
                 <AdminStatusBadge status={listing.status} />

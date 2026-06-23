@@ -22,7 +22,11 @@ export type AdminListing = {
   roomType: RoomType;
   preference: GenderPreference;
   facilities: string[];
-  images: string[];
+  images: {
+  id: string;
+  url: string;
+  publicId?: string | null;
+}[];
   panoramas?: {
     id: string;
     title: string;

@@ -214,7 +214,11 @@ export function toAdminListing(property: ApiProperty): AdminListing {
   roomType: property.roomType,
   preference: property.preference,
   facilities: property.facilities,
-  images: property.images ? property.images.map((image) => image.url) : [],
+  images: (property.images ?? []).map((image) => ({
+  id: image.id ?? "",
+  url: image.url ?? "",
+  publicId: image.publicId ?? null,
+  })),
 
   panoramas: property.panoramas ?? [],
 
