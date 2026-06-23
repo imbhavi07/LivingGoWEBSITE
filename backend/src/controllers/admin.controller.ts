@@ -7,6 +7,7 @@ import { createClerkClient } from "@clerk/backend";
 import { prisma } from "../config/prisma";
 import { AppError } from "../utils/app-error";
 import { getPropertyRating } from "../services/property.service";
+import { uploadMany } from "../services/cloudinary.service";
 
 const clerkClient = createClerkClient({
   secretKey: process.env.CLERK_SECRET_KEY!,
@@ -171,3 +172,73 @@ export const updateListing = asyncHandler(async (request: Request, response: Res
   const result = await adminService.updateListingByAdmin(id, request.body);
   response.json(result);
 });
+
+export const addPropertyImages = asyncHandler(
+  async (request: Request, response: Response) => {
+    const propertyId = String(request.params.id);
+
+    const files =
+      (request.files as Express.Multer.File[]) ?? [];
+
+    const uploads = await uploadMany(files);
+
+    const result =
+      await adminService.addImagesToProperty(
+        propertyId,
+        uploads.map((u) => ({
+          url: u.secure_url,
+          publicId: u.public_id,
+        }))
+      );
+    response.json(result);
+  }
+);
+
+export const deletePropertyImage = asyncHandler(
+  async (request: Request, response: Response) => {
+    const imageId = String(
+      request.params.imageId
+    );
+
+    await adminService.deletePropertyImage(
+      imageId
+    );
+
+    response.json({
+      success: true
+    });
+  }
+);
+
+export const replacePropertyImage = asyncHandler(
+  async (request: Request, response: Response) => {
+    const imageId = String(
+      request.params.imageId
+    );
+
+    const file =
+      (request.files as Express.Multer.File[])?.[0];
+
+    if (!file) {
+      throw new AppError(
+        "Image is required",
+        400
+      );
+    }
+
+    const uploads =
+      await uploadMany([file]);
+
+    const upload =
+      uploads[0];
+
+    const result =
+      await adminService.replacePropertyImage(
+        imageId,
+        upload.secure_url,
+        upload.public_id
+      );
+
+    response.json(result);
+  }
+);

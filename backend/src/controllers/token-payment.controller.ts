@@ -51,3 +51,20 @@ export const ownerGetTokenPayments = asyncHandler(async (req: Request, res: Resp
   const payments = await tokenService.getOwnerTokenPayments(user.id);
   res.json(payments);
 });
+
+export const verifyVisit = asyncHandler(async (req: Request, res: Response) => {
+  const paymentId = String(req.params.id);
+  const { otp } = req.body;
+
+  const result = await tokenService.verifyVisit(paymentId, otp);
+
+  res.json(result);
+});
+
+export const settleRent = asyncHandler(async (req: Request, res: Response) => {
+  const paymentId = String(req.params.id);
+
+  const result = await tokenService.settleRent(paymentId);
+
+  res.json(result);
+});

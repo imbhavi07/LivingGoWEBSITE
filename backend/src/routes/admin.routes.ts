@@ -6,6 +6,7 @@ import { authLimiter } from "../middleware/security.middleware";
 import { validate } from "../middleware/validate.middleware";
 import { adminIdSchema, adminListSchema, adminUserListSchema } from "../validations/admin.validation";
 import { loginSchema } from "../validations/auth.validation";
+import { uploadImages } from "../middleware/upload.middleware";
 
 export const adminRouter = Router();
 
@@ -27,3 +28,14 @@ adminRouter.patch("/approvals/:id/approve", validate(adminIdSchema), adminContro
 adminRouter.patch("/approvals/:id/reject", validate(adminIdSchema), adminController.rejectOwner);
 adminRouter.patch("/listings/:id", validate(adminIdSchema), adminController.updateListing);
 adminRouter.get("/users/:id/properties", validate(adminIdSchema), adminController.getUserProperties);
+adminRouter.post("/listings/:id/images", uploadImages, adminController.addPropertyImages);
+adminRouter.delete(
+  "/listings/:id/images/:imageId",
+  adminController.deletePropertyImage
+);
+
+adminRouter.put(
+  "/listings/:id/images/:imageId",
+  uploadImages,
+  adminController.replacePropertyImage
+);

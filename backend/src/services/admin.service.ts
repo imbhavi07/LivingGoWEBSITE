@@ -198,3 +198,49 @@ export async function getUserProperties(userId: string) {
   };
 }
 
+export async function addImagesToProperty(
+  propertyId: string,
+  images: { url: string; publicId?: string }[]
+) {
+  return prisma.property.update({
+    where: { id: propertyId },
+    data: {
+      images: {
+        create: images,
+      },
+    },
+    include: {
+      images: true,
+    },
+  });
+}
+
+export async function deletePropertyImage(
+  imageId: string
+) {
+  const image = await prisma.propertyImage.findUnique({
+    where: { id: imageId }
+  });
+
+  if (!image) {
+    throw new AppError("Image not found", 404);
+  }
+
+  return prisma.propertyImage.delete({
+    where: { id: imageId }
+  });
+}
+
+export async function replacePropertyImage(
+  imageId: string,
+  url: string,
+  publicId?: string
+) {
+  return prisma.propertyImage.update({
+    where: { id: imageId },
+    data: {
+      url,
+      publicId,
+    },
+  });
+}

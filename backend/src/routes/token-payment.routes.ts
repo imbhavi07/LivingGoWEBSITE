@@ -42,3 +42,15 @@ tokenPaymentRouter.patch(
   authorize("admin"),
   tokenController.adminModerateTokenPayment
 );
+tokenPaymentRouter.post(
+  "/verify-visit/:id",
+  clerkAuthenticate,
+  authorize("owner"),
+  tokenController.verifyVisit
+);
+tokenPaymentRouter.post(
+  "/settle-rent/:id",
+  clerkAuthenticate,
+  authorize("owner"),
+  tokenController.settleRent
+);

@@ -89,3 +89,51 @@ export async function updateListing(id: string, payload: Partial<{
   const { data } = await apiClient.patch<ApiProperty>(`/admin/listings/${id}`, payload);
   return toAdminListing(data);
 }
+
+export async function addPropertyImages(
+  propertyId: string,
+  files: File[]
+) {
+  const formData = new FormData();
+
+  files.forEach((file) => {
+    formData.append("images", file);
+  });
+
+  const { data } = await apiClient.post(
+    `/admin/listings/${propertyId}/images`,
+    formData
+  );
+
+  return data;
+}
+
+export async function deletePropertyImage(
+  propertyId: string,
+  imageId: string
+) {
+  await apiClient.delete(
+    `/admin/listings/${propertyId}/images/${imageId}`
+  );
+}
+
+export async function replacePropertyImage(
+  propertyId: string,
+  imageId: string,
+  file: File
+) {
+  const formData = new FormData();
+
+  formData.append(
+    "image",
+    file
+  );
+
+  const { data } =
+    await apiClient.put(
+      `/admin/listings/${propertyId}/images/${imageId}`,
+      formData
+    );
+
+  return data;
+}

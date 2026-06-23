@@ -40,19 +40,38 @@ export async function createTokenPayment(studentId: string, propertyId: string, 
 export async function getStudentTokenPayments(studentId: string) {
   return prisma.tokenPayment.findMany({
     where: { studentId },
-    include: {
+    select: {
+      id: true,
+      amount: true,
+      status: true,
+      visitOtp: true,
+      visitVerified: true,
+      rentSettled: true,
+      createdAt: true,
       property: {
         select: {
           id: true,
           title: true,
-          location: true,      // only revealed after approval
+          location: true,
           price: true,
-          images: { select: { url: true }, take: 1 },
-          owner: { select: { name: true, phone: true } }, // revealed after approval
+          images: {
+            select: {
+              url: true,
+            },
+            take: 1,
+          },
+          owner: {
+            select: {
+              name: true,
+              phone: true,
+            },
+          },
         },
       },
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: {
+      createdAt: "desc",
+    },
   });
 }
 
@@ -82,9 +101,19 @@ export async function moderateTokenPayment(id: string, action: "approved" | "rej
   if (!payment) throw new AppError("Payment not found", 404);
   if (payment.status !== "pending") throw new AppError("Payment has already been reviewed", 400);
 
+  const otp = Math.floor(1000 + Math.random() * 9000).toString();
+
   return prisma.tokenPayment.update({
     where: { id },
-    data: { status: action },
+    data: { 
+      status: action,
+      ...(action === "approved"
+      ? {
+          visitOtp: otp,
+        }
+      : {}),
+     },
+    
     include: {
       student: { select: { id: true, name: true, email: true } },
       property: { select: { id: true, title: true, location: true } },
@@ -102,4 +131,59 @@ export async function getOwnerTokenPayments(ownerId: string) {
     },
     orderBy: { createdAt: "desc" },
   });
+}
+
+export async function verifyVisit(
+  paymentId: string,
+  otp: string
+) {
+  const payment = await prisma.tokenPayment.findUnique({
+    where: { id: paymentId }
+  });
+
+  if (!payment)
+    throw new AppError("Payment not found", 404);
+
+  if (payment.visitOtp !== otp)
+    throw new AppError("Invalid OTP", 400);
+
+  return prisma.tokenPayment.update({
+    where: { id: paymentId },
+    data: {
+      visitVerified: true
+    }
+  });
+}
+
+export async function settleRent(
+  paymentId: string
+) {
+  const payment = await prisma.tokenPayment.findUnique({
+    where: { id: paymentId }
+  });
+
+  if (!payment)
+    throw new AppError("Payment not found", 404);
+
+  const updated = await prisma.tokenPayment.update({
+    where: { id: paymentId },
+    data: {
+      rentSettled: true
+    }
+  });
+
+  await prisma.tenantResidence.upsert({
+    where: {
+      studentId: payment.studentId
+    },
+    update: {
+      propertyId: payment.propertyId
+    },
+    create: {
+      studentId: payment.studentId,
+      propertyId: payment.propertyId
+    }
+  });
+
+  return updated;
 }

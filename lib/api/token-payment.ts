@@ -7,6 +7,9 @@ export type TokenPayment = {
   amount: number;
   utrNumber: string;
   status: TokenPaymentStatus;
+  visitOtp?: string | null;
+  visitVerified: boolean;
+  rentSettled: boolean;
   createdAt: string;
   property: {
     id: string;
