@@ -9,9 +9,11 @@ import { OwnerShell } from "@/components/owner/OwnerShell";
 import { OwnerStatCard } from "@/components/owner/OwnerStatCard";
 import { OwnerBookings } from "@/components/owner/OwnerBookings";
 import { useOwnerDashboard } from "@/hooks/useOwnerProperties";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 export default function OwnerDashboardPage() {
   const { stats, isLoading } = useOwnerDashboard();
+  const { user } = useAuthContext();
 
   return (
     <OwnerShell>
@@ -20,6 +22,14 @@ export default function OwnerDashboardPage() {
           <p className="text-sm font-bold uppercase text-clay">Owner dashboard</p>
           <h1 className="mt-2 text-3xl font-black text-ink sm:text-5xl">Manage your rentals</h1>
         </div>
+        {user?.verificationStatus !== "approved" && (
+          <Link
+            href="/owner/kyc"
+            className={buttonClasses("secondary")}
+          >
+            Complete KYC
+          </Link>
+        )}
         <Link href="/owner/properties/new" className={buttonClasses("primary")}>
           Add Property
         </Link>
