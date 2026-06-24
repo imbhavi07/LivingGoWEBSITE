@@ -28,7 +28,9 @@ export const createProperty = asyncHandler(async (request: Request, response: Re
 
   // Process image uploads through middleware
   const files = (request.files as Express.Multer.File[]) ?? [];
+  console.log("FILES RECEIVED:", files.length);
   const uploads = await uploadMany(files);
+  console.log("UPLOADS COMPLETED:", uploads.length);
 
   // Extract room-type mappings from request body
   // Expect format: roomTypeMappings=[{"index":0,"roomType":"Bedroom 1"},{"index":1,"roomType":"Bedroom 2"},...]
