@@ -46,18 +46,24 @@ export function useWishlist() {
       return;
     }
 
+      if (!auth.user) {
+       return;
+      } 
     // Signed in: now check the role from our AuthContext.
-    if (auth.user?.role === "student") {
-      // Try to load wishlist with retries
+    if (auth.isAuthenticated && auth.user?.role === "student") {
       retryApiCall(getWishlistProperties, 2)
         .then((nextProperties) => {
           setProperties(nextProperties);
           setIds(getWishlistIds(nextProperties));
         })
         .catch((error) => {
-          console.error("Failed to load wishlist:", error);
-          showToast("Could not load wishlist.", "error");
-        });
+            if (error?.response?.status === 401) {
+              return;
+            }
+
+            console.error("Failed to load wishlist:", error);
+            showToast("Could not load wishlist.", "error");
+          });
     } else {
       // Signed in but not a student: use localStorage.
       try {
