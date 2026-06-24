@@ -15,10 +15,9 @@ export function InstallPrompt() {
   useEffect(() => {
     // 1. Chrome fires this event when it detects a valid PWA
     window.addEventListener("beforeinstallprompt", (e) => {
-      // Prevent Chrome's default invisible behavior
-      e.preventDefault(); 
-      // Save the event so we can trigger it later
-      setDeferredPrompt(e as BeforeInstallPromptEvent); 
+      const promptEvent = e as BeforeInstallPromptEvent;
+      promptEvent.preventDefault(); 
+      setDeferredPrompt(promptEvent);
       
       // 2. Wait 5 seconds, then show OUR custom banner
       setTimeout(() => {
