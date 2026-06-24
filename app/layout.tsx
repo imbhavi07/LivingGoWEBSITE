@@ -20,6 +20,7 @@ export const metadata: Metadata = {
   title: "LivingGo Student Housing",
   description: "Find verified student housing, PGs, rooms, flats, and residences near your college",
   // Next.js 13+ Metadata standards
+  // ab shayad ho jana chahiye PWA ka scene fix
   manifest: '/manifest.json',
   icons: {
     icon: '/favicon.ico',
