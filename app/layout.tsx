@@ -8,6 +8,7 @@ import { ClerkSessionSync } from "@/components/ClerkSessionSync";
 import { ToastProvider } from "@/contexts/ToastContext";
 import "./globals.css";
 import IntroOverlay from "@/components/IntroOverlay";
+import ServiceWorkerRegistry from "@/components/ServiceWorkerRegistry"; // Add this import
 
 const inter = Inter({
   subsets: ["latin"],
@@ -18,8 +19,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "LivingGo Student Housing",
   description: "Find verified student housing, PGs, rooms, flats, and residences near your college",
+  // Next.js 13+ Metadata standards
+  manifest: '/manifest.json',
   icons: {
-    icon: "/favicon.ico",
+    icon: '/favicon.ico',
+    apple: '/assets/icon.jpg'
   },
 };
 
@@ -35,6 +39,8 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           <ToastProvider>
             <AuthProvider>
               <ClerkSessionSync />
+              {/* Add ServiceWorkerRegistry component */}
+              <ServiceWorkerRegistry />
               <AppChrome>{children}</AppChrome>
             </AuthProvider>
           </ToastProvider>

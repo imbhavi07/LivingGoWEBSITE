@@ -1,0 +1,17 @@
+{
+  "name": "LivingGo",
+  "short_name": "LivingGo",
+  "description": "Find verified student housing, PGs, rooms, flats, and residences near your college",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FCF8F3",
+  "theme_color": "#f9e7d3",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/assets/icon.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
