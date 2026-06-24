@@ -24,6 +24,7 @@ export async function getProperties(filters?: PropertyFilters) {
 export async function getProperty(id: string) {
   try {
     const { data } = await apiClient.get<ApiProperty>(`/properties/${id}`);
+    console.log("PROPERTY RESPONSE", data);
     return toProperty(data);
   } catch (error) {
     throw new Error(`Failed to load property: ${getApiErrorMessage(error, "Unknown error")}`);
