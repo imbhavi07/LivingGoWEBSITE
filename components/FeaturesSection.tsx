@@ -1,9 +1,7 @@
-"use client";
-
 import { 
-  CalendarCheck, ShieldCheck, BadgeIndianRupee, Lock, 
-  ReceiptText, FileDigit, View, Tags, PhoneCall, 
-  MapPin, Smartphone, Utensils, MessageSquareWarning 
+  CalendarCheck, BadgeIndianRupee, 
+  ReceiptText, FileDigit, View,   
+  MapPin,  Utensils, MessageSquareWarning 
 } from "lucide-react";
 
 const features = [
