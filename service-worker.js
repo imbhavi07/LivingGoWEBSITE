@@ -3,10 +3,7 @@ const CACHE_NAME = 'livinggo-cache-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/manifest.json',
-  '/assets/icons/icon-192x192.png',
-  '/assets/icons/icon-512x512.png',
-  '/assets/icons/icon-180x180.png',
-  // Add other essential assets as needed
+  '/assets/icon.jpg'
 ];
 
 // Install event - cache essential assets
