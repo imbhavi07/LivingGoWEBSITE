@@ -4,7 +4,8 @@ import { ArrowRight, ShieldCheck } from "lucide-react";
 import { buttonClasses } from "@/components/Button";
 import { FeaturedPropertyCard } from "@/components/FeaturedPropertyCard";
 import { useWishlist } from "@/hooks/useWishlist";
-import { useProperties } from "@/hooks/useProperties";
+import type { Property } from "@/types/property";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import logo from "@/assets/logo.png";
 import { FeaturesSection } from "@/components/FeaturesSection";
@@ -85,12 +86,34 @@ export default function HomePage() {
 
 function PropertyPreview() {
   const wishlist = useWishlist();
-  const { properties, isLoading } = useProperties();
+  const [property, setProperty] = useState<Property | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const property = [...(properties ?? [])]
-    .sort((a, b) => a.price - b.price)[0];
+  useEffect(() => {
+    async function fetchFeatured() {
+      try {
+        // Fetch directly from our new optimized endpoint
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/properties/featured`, {
+          cache: "no-store" // Bypasses Next.js caching so updates are instant
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          setProperty(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch featured property:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
 
-  if (isLoading || !property) return null;
+    fetchFeatured();
+  }, []);
+
+  // Show a clean skeleton loader while the fast query runs
+  if (isLoading) return <div className="h-[280px] w-full animate-pulse rounded-xl bg-gray-200/50"></div>;
+  if (!property) return null;
 
   return (
     <div className="[&>article]:shadow-none">
