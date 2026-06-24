@@ -20,6 +20,10 @@ export const propertyRouter = Router();
 propertyRouter.get("/", validate(listPropertiesSchema), propertyController.getProperties);
 // ← NEW: dropdown list for "existing tenant" selector (no auth needed)
 propertyRouter.get("/list", propertyController.getApprovedPropertyList);
+
+// 🔥 NEW: Featured route (Must be above /:id)
+propertyRouter.get("/featured", propertyController.getFeaturedProperty);
+
 propertyRouter.get("/:id", validate(propertyIdSchema), propertyController.getPropertyById);
 
 // Owner / admin routes

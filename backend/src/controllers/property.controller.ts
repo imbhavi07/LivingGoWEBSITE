@@ -163,3 +163,19 @@ export const markResidence = asyncHandler(async (request: Request, response: Res
   const result = await propertyService.markResidence(user.id, propertyId);
   response.json({ success: true, ...result });
 });
+
+export const getFeaturedProperty = asyncHandler(async (_request: Request, response: Response) => {
+  const property = await propertyService.getFeaturedProperty();
+  
+  if (!property) {
+    throw new AppError("No featured property found", 404);
+  }
+
+  // Fetch rating and reviews so the featured card can display them
+  const [rating, reviews] = await Promise.all([
+    propertyService.getPropertyRating(property.id),
+    propertyService.getPropertyReviews(property.id),
+  ]);
+  
+  response.json({ ...property, rating, reviews });
+});

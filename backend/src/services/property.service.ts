@@ -4,6 +4,7 @@ import { AppError } from "../utils/app-error";
 import { getPagination } from "../utils/pagination";
 import { findNearbyPlaces } from "./nearby.service";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let cachedProperties: any = null;
 let cacheTimestamp = 0;
 
@@ -449,3 +450,15 @@ export async function getApprovedPropertyList() {
     },
   });
 }
+
+export const getFeaturedProperty = async () => {
+  return await prisma.property.findFirst({
+    where: {
+      isFeatured: true,
+      status: "approved" // Safety check
+    },
+    include: {
+      images: true, // Keep the images so the frontend can display the cover photo
+    }
+  });
+};
