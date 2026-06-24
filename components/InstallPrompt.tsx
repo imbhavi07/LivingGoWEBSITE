@@ -50,14 +50,14 @@ export function InstallPrompt() {
   if (!showBanner) return null;
 
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] bg-white border border-gray-100 p-4 rounded-xl shadow-2xl z-50 flex justify-between items-center animate-fade-in">
-      <div>
-        <p className="font-black text-ink text-sm">Add LivingGo to Home Screen</p>
-        <p className="text-[11px] font-medium text-muted-foreground">Access student PGs instantly like a native app.</p>
+    <div className="fixed bottom-20 sm:bottom-4 left-1/2 -translate-x-1/2 w-[92%] max-w-[400px] bg-white border border-gray-200 p-4 rounded-xl shadow-2xl z-[9999] flex justify-between items-center">
+      <div className="pr-2">
+        <p className="font-black text-ink text-sm leading-tight">Add LivingGo to Home Screen</p>
+        <p className="text-[11px] font-medium text-muted-foreground mt-0.5 leading-tight">Access student PGs instantly like a native app.</p>
       </div>
       <button 
         onClick={handleInstallClick}
-        className="bg-clay text-white px-3 py-2 rounded-lg font-bold text-xs shrink-0 transition active:scale-95"
+        className="bg-clay text-white px-4 py-2 rounded-lg font-bold text-xs shrink-0 transition active:scale-95 shadow-md"
       >
         Install
       </button>
