@@ -42,7 +42,7 @@ export function toPropertyFormData(payload: OwnerPropertyPayload) {
 export async function updateOwnerProperty(id: string, payload: OwnerPropertyPayload, token?: string) {
   const formData = toPropertyFormData(payload);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://livinggo.onrender.com/api';
-  const res = await fetch(`${apiUrl}/owner/properties/${id}`, {
+  const res = await fetch(`${apiUrl}/properties/${id}`, {
     method: 'PUT',
     headers: {
       "Authorization": `Bearer ${token}`
@@ -59,7 +59,7 @@ export async function updateOwnerProperty(id: string, payload: OwnerPropertyPayl
 export async function createOwnerProperty(payload: OwnerPropertyPayload, token?: string) {
   const formData = toPropertyFormData(payload);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://livinggo.onrender.com/api';
-  const res = await fetch(`${apiUrl}/owner/properties`, {
+  const res = await fetch(`${apiUrl}/properties`, {
     method: 'POST',
     headers: {
       "Authorization": `Bearer ${token}`
@@ -107,7 +107,7 @@ export async function getOwnerProperties(token?: string) {
 }
 
 export async function deleteOwnerProperty(id: string, token?: string) {
-  await apiClient.delete(`/owner/properties/${id}`, {
+  await apiClient.delete(`/properties/${id}`, {
     headers: {
       "Authorization": `Bearer ${token}`
     },
@@ -115,7 +115,7 @@ export async function deleteOwnerProperty(id: string, token?: string) {
 }
 
 export async function toggleOwnerPropertyStatus(id: string, isActive: boolean, token?: string) {
-  const { data } = await apiClient.patch<ApiProperty>(`/owner/properties/${id}/status`, { isActive }, {
+  const { data } = await apiClient.patch<ApiProperty>(`/properties/${id}/status`, { isActive }, {
     headers: {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${token}`
@@ -125,7 +125,7 @@ export async function toggleOwnerPropertyStatus(id: string, isActive: boolean, t
 }
 
 export async function getOwnerProperty(id: string, token?: string) {
-  const { data } = await apiClient.get<ApiProperty>(`/owner/properties/${id}`, {
+  const { data } = await apiClient.get<ApiProperty>(`/properties/${id}`, {
     headers: {
       "Authorization": `Bearer ${token}`
     },
