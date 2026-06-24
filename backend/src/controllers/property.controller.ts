@@ -32,9 +32,21 @@ export const createProperty = asyncHandler(async (request: Request, response: Re
 
   // Extract room-type mappings from request body
   // Expect format: roomTypeMappings=[{"index":0,"roomType":"Bedroom 1"},{"index":1,"roomType":"Bedroom 2"},...]
-  const roomTypeMappings = request.body.roomTypeMappings
+  let roomTypeMappings = [];
+
+try {
+  roomTypeMappings = request.body.roomTypeMappings
     ? JSON.parse(request.body.roomTypeMappings as string)
     : [];
+} catch (err) {
+  console.error("roomTypeMappings parse failed", err);
+  roomTypeMappings = [];
+}
+
+
+console.log("BODY", request.body);
+console.log("FILES", files.length);
+console.log("USER", user.id);
 
   const property = await propertyService.createProperty(
     user.id,
