@@ -1,7 +1,5 @@
 "use client";
 
-// app/properties/[id]/page.tsx  (FULL REPLACEMENT)
-
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
@@ -21,7 +19,7 @@ import dynamic from "next/dynamic";
 
 const PanoramaViewer = dynamic(
   () => import("@/components/PanoramaViewer"),
-  { ssr: false }
+  { ssr: false, loading: () => <div className="h-96 w-full bg-linen rounded-lg flex items-center justify-center text-muted">Loading panorama…</div> }
 );
 
 type Review = {
@@ -101,31 +99,31 @@ export default function PropertyDetailsPage() {
         <Gallery images={property.images} title={property.title} />
         {property.panoramas &&
          property.panoramas.length > 0 && (
-          <div className="mt-6 rounded-3xl bg-white p-5 shadow-soft">
-            <h3 className="text-xl font-black text-ink">         
-              🌐 360° Virtual Tour
-            </h3>
-            <p className="mt-1 text-sm text-muted">
-              Explore different areas of this property
-            </p>
-            <div className="mt-4 flex flex-wrap gap-3">
-              {property.panoramas.map((panorama) => (
-                <Button
-                  key={panorama.id}
-                  variant="secondary"
-                  onClick={() => {
-                    setActivePanorama(
-                      panorama.imageUrl
-                    );
-                    setShowPanorama(true);
-                  }}
-                >
-                  {panorama.title}
-                </Button>
-              ))}
-            </div>
-          </div>
-        )}
+           <div className="mt-6 rounded-3xl bg-white p-5 shadow-soft">
+             <h3 className="text-xl font-black text-ink">
+               🌐 360° Virtual Tour
+             </h3>
+             <p className="mt-1 text-sm text-muted">
+               Explore different areas of this property
+             </p>
+             <div className="mt-4 flex flex-wrap gap-3">
+               {property.panoramas.map((panorama) => (
+                 <Button
+                   key={panorama.id}
+                   variant="secondary"
+                   onClick={() => {
+                     setActivePanorama(
+                       panorama.imageUrl
+                     );
+                     setShowPanorama(true);
+                   }}
+                 >
+                   {panorama.title}
+                 </Button>
+               ))}
+             </div>
+           </div>
+         )}
         <section className="mt-8 grid gap-8 lg:grid-cols-[1fr_380px]">
           <div className="space-y-8">
 
@@ -137,7 +135,7 @@ export default function PropertyDetailsPage() {
                   {property.preference === "Any" ? "Boys & Girls" : property.preference + " Only"}
                 </span>
                 {property.rulesStrictness && (
-                  <span className={`rounded-full px-3 py-1 text-xs font-bold ${property.rulesStrictness === "Strict" ? "bg-red-50 text-red-700" : "bg-green-50 text-moss"}`}>
+                  <span className={`rounded-full px-3 py-1 text-xs font-bold ${property.rulesStrictness === "Strict" ? "bg-red-50 text-red-700" : "bg-green-50 text-moss`}}>
                     {property.rulesStrictness} Rules
                   </span>
                 )}
@@ -204,13 +202,13 @@ export default function PropertyDetailsPage() {
                 <div className="mt-3 rounded-2xl bg-white p-4 shadow-soft">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-bold text-ink">Overall Availability</span>
-                    <span className={`text-sm font-black ${availableBeds === 0 ? "text-red-600" : "text-green-700"}`}>
+                    <span className={`text-sm font-black ${availableBeds === 0 ? "text-red-600" : "text-green-700`}">
                       {availableBeds === 0 ? "Full" : `${availableBeds} of ${totalBeds} beds available`}
                     </span>
                   </div>
                   <div className="h-2 w-full bg-linen rounded-full overflow-hidden">
                     <div
-                      className={`h-full rounded-full transition-all ${availableBeds === 0 ? "bg-red-400" : "bg-green-500"}`}
+                      className={`h-full rounded-full transition-all ${availableBeds === 0 ? "bg-red-400" : "bg-green-500`}`}
                       style={{ width: `${(availableBeds / totalBeds) * 100}%` }}
                     />
                   </div>
@@ -226,7 +224,7 @@ export default function PropertyDetailsPage() {
                 <div className="mt-4 space-y-3">
                   {nearbyPlaces.colleges?.map((place) => (
                     <div key={place.name} className="flex items-center gap-4 rounded-2xl bg-white p-4 shadow-soft">
-                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${place.type === "girls_college" ? "bg-pink-50 text-pink-600" : "bg-blue-50 text-blue-600"}`}>
+                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${place.type === "girls_college" ? "bg-pink-50 text-pink-600" : "bg-blue-50 text-blue-600`}">
                         <GraduationCap className="h-5 w-5" aria-hidden />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -254,12 +252,11 @@ export default function PropertyDetailsPage() {
                       </div>
                     </div>
                   )}
-                </div>
-                <div className="mt-3 flex items-center gap-2 rounded-2xl bg-linen p-3">
-                  <ShieldCheck className="h-4 w-4 shrink-0 text-muted" aria-hidden />
-                  <p className="text-xs text-muted">Exact location is shared only after enquiry to protect owner privacy.</p>
-                </div>
-              </section>
+                  <div className="mt-3 flex items-center gap-2 rounded-2xl bg-linen p-3">
+                    <ShieldCheck className="h-4 w-4 shrink-0 text-muted" aria-hidden />
+                    <p className="text-xs text-muted">Exact location is shared only after enquiry to protect owner privacy.</p>
+                  </div>
+                </section>
             )}
 
             {/* Pricing */}
@@ -348,7 +345,7 @@ export default function PropertyDetailsPage() {
                   {property.rulesStrictness && (
                     <div className="rounded-2xl bg-white p-4 shadow-soft">
                       <p className="text-xs font-bold uppercase text-muted">House Rules</p>
-                      <p className="mt-1 font-black text-ink">{property.rulesStrictness}</p>
+                      <p className="mt-1 font-bold text-ink">{property.rulesStrictness}</p>
                     </div>
                   )}
                 </div>
@@ -376,8 +373,8 @@ export default function PropertyDetailsPage() {
 
             {/* Availability pill in sidebar */}
             {totalBeds > 0 && (
-              <div className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${availableBeds === 0 ? "bg-red-50 text-red-700" : "bg-green-50 text-green-700"}`}>
-                <span className={`h-1.5 w-1.5 rounded-full ${availableBeds === 0 ? "bg-red-500" : "bg-green-500"}`} />
+              <div className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${availableBeds === 0 ? "bg-red-50 text-red-700" : "bg-green-50 text-green-700`}">
+                <span className={`h-1.5 w-1.5 rounded-full ${availableBeds === 0 ? "bg-red-500" : "bg-green-500`}" />
                 {availableBeds === 0 ? "No beds available" : `${availableBeds} beds available`}
               </div>
             )}
@@ -412,51 +409,51 @@ export default function PropertyDetailsPage() {
       </main>
 
       {showLockModal && (
-  <LockPropertyModal
-    propertyId={property.id}
-    propertyTitle={property.title}
-    monthlyRent={property.price}
-    onClose={() => setShowLockModal(false)}
-  />
-)}
-
-{showPanorama && activePanorama && (
-  <div className="fixed inset-0 z-[100] bg-black">
-    <div className="absolute right-5 top-5 z-50">
-      <Button
-        variant="secondary"
-        onClick={() =>
-        setShowPanorama(false)
-        }
-      >
-  ✕ Close Tour
-</Button>
-    </div>
-
-    {property.panoramas &&
-      property.panoramas.length > 1 && (
-        <div className="absolute left-5 top-5 z-50 flex gap-2">
-          {property.panoramas.map((panorama) => (
-            <button
-              key={panorama.id}
-              onClick={() =>
-                setActivePanorama(
-                  panorama.imageUrl
-                )
-              }
-              className = " rounded-xl bg-white px-4 py-2 text-sm font-bold shadow-lg hover:bg-linen "
-            >
-              {panorama.title}
-            </button>
-          ))}
-        </div>
+        <LockPropertyModal
+          propertyId={property.id}
+          propertyTitle={property.title}
+          monthlyRent={property.price}
+          onClose={() => setShowLockModal(false)}
+        />
       )}
 
-    <PanoramaViewer
-      imageUrl={activePanorama}
-    />
-  </div>
-)}
-</>
-);
+      {showPanorama && activePanorama && (
+        <div className="fixed inset-0 z-[100] bg-black">
+          <div className="absolute right-5 top-5 z-50">
+            <Button
+              variant="secondary"
+              onClick={() =>
+                setShowPanorama(false)
+              }
+            >
+              ✕ Close Tour
+            </Button>
+          </div>
+
+          {property.panoramas &&
+            property.panoramas.length > 1 && (
+              <div className="absolute left-5 top-5 z-50 flex gap-2">
+                {property.panoramas.map((panorama) => (
+                  <button
+                    key={panorama.id}
+                    onClick={() =>
+                      setActivePanorama(
+                        panorama.imageUrl
+                      )
+                    }
+                    className = " rounded-xl bg-white px-4 py-2 text-sm font-bold shadow-lg hover:bg-linen "
+                  >
+                    {panorama.title}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <PanoramaViewer
+              imageUrl={activePanorama}
+            />
+          </div>
+        )}
+    </>
+  );
 }
