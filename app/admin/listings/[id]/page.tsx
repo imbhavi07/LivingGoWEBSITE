@@ -104,15 +104,18 @@ export default function AdminListingDetailsPage() {
                   }}
                 />
               </div>
-                            <div className="grid gap-3 md:grid-cols-3">
-                              {listing.images.map((image) => (
+                <div className="grid gap-3 md:grid-cols-3">
+                  {listing.images.map((image) => (
                 <div
                   key={image.id}
                   className="relative overflow-hidden rounded-2xl"
                 >
                   <div className="relative h-56">
                     <Image
-                      src={image.url}
+                      src={image.url.replace(
+                        "/upload/",
+                        "/upload/f_auto,q_auto,w_800/"
+                      )}
                       alt={listing.title}
                       fill
                       className="object-cover"

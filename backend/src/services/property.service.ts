@@ -4,6 +4,9 @@ import { AppError } from "../utils/app-error";
 import { getPagination } from "../utils/pagination";
 import { findNearbyPlaces } from "./nearby.service";
 
+let cachedProperties: any = null;
+let cacheTimestamp = 0;
+
 type PropertyInput = {
   title: string;
   description: string;
@@ -119,6 +122,15 @@ export async function createProperty(ownerId: string, input: PropertyInput, imag
   });
 }
 
+const propertyCardInclude = {
+  images: {
+    select: {
+      url: true
+    },
+    take: 1
+  }
+} satisfies Prisma.PropertyInclude;
+
 export async function getProperties(query: Record<string, unknown>, viewerRole?: Role) {
   const { page, limit, skip } = getPagination(query);
   const status = query.status as PropertyStatus | undefined;
@@ -129,18 +141,41 @@ export async function getProperties(query: Record<string, unknown>, viewerRole?:
     preference: query.preference as GenderPreference | undefined
   };
 
-  const [items, total] = await prisma.$transaction([
-    prisma.property.findMany({
-      where,
-      include: propertyInclude,
-      orderBy: { createdAt: "desc" },
-      skip,
-      take: limit
-    }),
-    prisma.property.count({ where })
-  ]);
+  if (
+    !viewerRole &&
+    cachedProperties &&
+    Date.now() - cacheTimestamp < 60000
+  ) {
+    return cachedProperties;
+  }
 
-  return { items, meta: { total, page, limit, pages: Math.ceil(total / limit) } };
+  const [items, total] = await prisma.$transaction([
+  prisma.property.findMany({
+    where,
+    include: propertyCardInclude,
+    orderBy: { createdAt: "desc" },
+    skip,
+    take: limit
+  }),
+  prisma.property.count({ where })
+]);
+
+const result = {
+  items,
+  meta: {
+    total,
+    page,
+    limit,
+    pages: Math.ceil(total / limit)
+  }
+};
+
+if (!viewerRole) {
+  cachedProperties = result;
+  cacheTimestamp = Date.now();
+}
+
+return result;
 }
 
 export async function getPropertyById(id: string, viewerRole?: Role) {
