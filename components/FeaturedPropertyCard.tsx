@@ -53,10 +53,11 @@ export function FeaturedPropertyCard({ property, saved, onSave }: FeaturedProper
       <Link href={`/properties/${property.id}`} className="block">
         <div className="relative w-full aspect-[16/10] sm:aspect-[4/3] md:aspect-[5/4] overflow-hidden bg-gray-100">
           
-          {slideshowImages.map((src, index) => (
+          {slideshowImages.map((image, index) => (
             <Image
               key={`${property.id}-image-${index}`}
-              src={src}
+              // THE FIX IS HERE: add .url to extract the actual image link
+              src={typeof image === 'string' ? image : (image as { url: string }).url}
               alt={`Beautiful, verified student rooms in ${property.location}`}
               fill
               className={`object-cover transition-all duration-1000 group-hover:scale-105 ${

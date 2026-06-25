@@ -81,6 +81,7 @@ model Property {
   priceTriple           Int?
   bedsTriple            Int?
   securityDepositMonths String?
+  isFeatured            Boolean           @default(false)
   sharedType            String?
   mealPlan              String?
   mealTimes             String[]

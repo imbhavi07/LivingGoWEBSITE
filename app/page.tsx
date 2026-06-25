@@ -4,10 +4,12 @@ import { ArrowRight, ShieldCheck } from "lucide-react";
 import { buttonClasses } from "@/components/Button";
 import { FeaturedPropertyCard } from "@/components/FeaturedPropertyCard";
 import { useWishlist } from "@/hooks/useWishlist";
-import { useProperties } from "@/hooks/useProperties";
+import type { Property } from "@/types/property";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import logo from "@/assets/logo.png";
 import { FeaturesSection } from "@/components/FeaturesSection";
+import { toProperty } from "@/lib/api/types";
 
 export default function HomePage() {
   return (
@@ -85,12 +87,35 @@ export default function HomePage() {
 
 function PropertyPreview() {
   const wishlist = useWishlist();
-  const { properties, isLoading } = useProperties();
+  const [property, setProperty] = useState<Property | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const property = [...(properties ?? [])]
-    .sort((a, b) => a.price - b.price)[0];
+  useEffect(() => {
+    async function fetchFeatured() {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/properties/featured`, {
+          cache: "no-store" 
+        });
+        
+        if (res.ok) {
+          const rawData = await res.json();
+          // THE FIX: Transform the raw data using your app's native masking logic
+          const transformedProperty = toProperty(rawData);
+          setProperty(transformedProperty);
+        }
+      } catch (error) {
+        console.error("Failed to fetch featured property:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
 
-  if (isLoading || !property) return null;
+    fetchFeatured();
+  }, []);
+
+  // Show a clean skeleton loader while the fast query runs
+  if (isLoading) return <div className="h-[280px] w-full animate-pulse rounded-xl bg-gray-200/50"></div>;
+  if (!property) return null;
 
   return (
     <div className="[&>article]:shadow-none">
