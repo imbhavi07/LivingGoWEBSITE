@@ -16,7 +16,7 @@ type RoleFilter = "all" | "student" | "owner";
 export default function AdminUsersPage() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
-  const { users, isLoading, suspend, remove } = useAdminUsers(search);
+  const { users, isLoading, suspend, remove, page, setPage, meta, } = useAdminUsers(search);
 
   const filtered = roleFilter === "all" ? users : users.filter((user) => user.role === roleFilter);
 
@@ -93,6 +93,29 @@ export default function AdminUsersPage() {
           ))}
         </section>
       ) : null}
+      <div className="mt-8 flex items-center justify-between">
+
+  <button
+    disabled={page === 1}
+    onClick={() => setPage(page - 1)}
+    className="rounded-xl border px-4 py-2 disabled:opacity-50"
+  >
+    Previous
+  </button>
+
+  <span>
+    Page {meta?.page ?? 1} of {meta?.pages ?? 1}
+  </span>
+
+  <button
+    disabled={page === meta?.pages}
+    onClick={() => setPage(page + 1)}
+    className="rounded-xl border px-4 py-2 disabled:opacity-50"
+  >
+    Next
+  </button>
+
+</div>
     </AdminShell>
   );
 }
