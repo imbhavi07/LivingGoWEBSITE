@@ -9,6 +9,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import logo from "@/assets/logo.png";
 import { FeaturesSection } from "@/components/FeaturesSection";
+import { toProperty } from "@/lib/api/types";
 
 export default function HomePage() {
   return (
@@ -92,14 +93,15 @@ function PropertyPreview() {
   useEffect(() => {
     async function fetchFeatured() {
       try {
-        // Fetch directly from our new optimized endpoint
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/properties/featured`, {
-          cache: "no-store" // Bypasses Next.js caching so updates are instant
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/properties/featured`, {
+          cache: "no-store" 
         });
         
         if (res.ok) {
-          const data = await res.json();
-          setProperty(data);
+          const rawData = await res.json();
+          // THE FIX: Transform the raw data using your app's native masking logic
+          const transformedProperty = toProperty(rawData);
+          setProperty(transformedProperty);
         }
       } catch (error) {
         console.error("Failed to fetch featured property:", error);
