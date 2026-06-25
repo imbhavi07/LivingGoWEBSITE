@@ -41,7 +41,7 @@ export function toPropertyFormData(payload: OwnerPropertyPayload) {
 
 export async function updateOwnerProperty(id: string, payload: OwnerPropertyPayload, token?: string) {
   const formData = toPropertyFormData(payload);
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://livinggo-website.onrender.com/api';
+  const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://livinggo-website.onrender.com/api';
   const res = await fetch(`${apiUrl}/properties/${id}`, {
     method: 'PUT',
     headers: {
@@ -58,7 +58,7 @@ export async function updateOwnerProperty(id: string, payload: OwnerPropertyPayl
 
 export async function createOwnerProperty(payload: OwnerPropertyPayload, token?: string) {
   const formData = toPropertyFormData(payload);
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://livinggo-website.onrender.com/api';
+  const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://livinggo-website.onrender.com/api';
   const res = await fetch(`${apiUrl}/properties`, {
     method: 'POST',
     headers: {
@@ -83,7 +83,7 @@ export async function getOwnerStats(token?: string) {
 }
 
 export async function getOwnerProperties(token?: string) {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://livinggo-website.onrender.com/api';
+  const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://livinggo-website.onrender.com/api';
   const res = await fetch(`${apiUrl}/owner/properties`, {
     headers: {
       "Authorization": `Bearer ${token}`

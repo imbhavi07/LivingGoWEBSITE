@@ -93,7 +93,7 @@ function PropertyPreview() {
     async function fetchFeatured() {
       try {
         // Fetch directly from our new optimized endpoint
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/properties/featured`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/properties/featured`, {
           cache: "no-store" // Bypasses Next.js caching so updates are instant
         });
         
