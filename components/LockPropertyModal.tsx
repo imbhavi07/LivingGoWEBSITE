@@ -94,13 +94,13 @@ export function LockPropertyModal({ propertyId, propertyTitle, monthlyRent, onCl
         config: {
           display: {
             // This blacklists all the expensive payment methods
-            hide: [
+            /* hide: [
               { method: "card" },
               { method: "netbanking" },
               { method: "wallet" },
               { method: "emi" },
               { method: "paylater" }
-            ],
+            ], */
             preferences: { 
               show_default_blocks: true 
             },
@@ -120,6 +120,7 @@ export function LockPropertyModal({ propertyId, propertyTitle, monthlyRent, onCl
           setStep("loading");
           try {
             // Confirm transaction state safely on your backend servers via cryptographic check
+            console.log("ROUTE HIT: /api/payments/verify reached!");
             const verifyRes = await fetch("/api/payments/verify", {
               method: "POST",
               headers: { "Content-Type": "application/json" },

@@ -25,4 +25,4 @@ apiRouter.use("/owner", ownerRouter);
 apiRouter.use("/webhooks/clerk", webhookRouter);
 apiRouter.use("/admin", adminRouter);
 apiRouter.use("/uploads", uploadRouter);
-apiRouter.use("/payments", tokenPaymentRouter);
+apiRouter.use("/token-payments", tokenPaymentRouter);

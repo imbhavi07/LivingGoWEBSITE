@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.markResidence = exports.createReview = exports.togglePropertyStatus = exports.deleteProperty = exports.updateProperty = exports.getOwnerStats = exports.getOwnerProperties = exports.getStudentResidence = exports.getApprovedPropertyList = exports.getPropertyById = exports.getProperties = exports.createProperty = void 0;
+exports.getFeaturedProperty = exports.markResidence = exports.createReview = exports.togglePropertyStatus = exports.deleteProperty = exports.updateProperty = exports.getOwnerStats = exports.getOwnerProperties = exports.getStudentResidence = exports.getApprovedPropertyList = exports.getPropertyById = exports.getProperties = exports.createProperty = void 0;
 const async_handler_1 = require("../utils/async-handler");
 const app_error_1 = require("../utils/app-error");
 const cloudinary_service_1 = require("../services/cloudinary.service");
@@ -59,12 +59,24 @@ exports.createProperty = (0, async_handler_1.asyncHandler)(async (request, respo
     }
     // Process image uploads through middleware
     const files = request.files ?? [];
+    console.log("FILES RECEIVED:", files.length);
     const uploads = await (0, cloudinary_service_1.uploadMany)(files);
+    console.log("UPLOADS COMPLETED:", uploads.length);
     // Extract room-type mappings from request body
     // Expect format: roomTypeMappings=[{"index":0,"roomType":"Bedroom 1"},{"index":1,"roomType":"Bedroom 2"},...]
-    const roomTypeMappings = request.body.roomTypeMappings
-        ? JSON.parse(request.body.roomTypeMappings)
-        : [];
+    let roomTypeMappings = [];
+    try {
+        roomTypeMappings = request.body.roomTypeMappings
+            ? JSON.parse(request.body.roomTypeMappings)
+            : [];
+    }
+    catch (err) {
+        console.error("roomTypeMappings parse failed", err);
+        roomTypeMappings = [];
+    }
+    console.log("BODY", request.body);
+    console.log("FILES", files.length);
+    console.log("USER", user.id);
     const property = await propertyService.createProperty(user.id, request.body, uploads.map((upload) => ({ url: upload.secure_url, publicId: upload.public_id })));
     response.status(201).json(property);
 });
@@ -152,4 +164,16 @@ exports.markResidence = (0, async_handler_1.asyncHandler)(async (request, respon
     const propertyId = String(request.params.id);
     const result = await propertyService.markResidence(user.id, propertyId);
     response.json({ success: true, ...result });
+});
+exports.getFeaturedProperty = (0, async_handler_1.asyncHandler)(async (_request, response) => {
+    const property = await propertyService.getFeaturedProperty();
+    if (!property) {
+        throw new app_error_1.AppError("No featured property found", 404);
+    }
+    // Fetch rating and reviews so the featured card can display them
+    const [rating, reviews] = await Promise.all([
+        propertyService.getPropertyRating(property.id),
+        propertyService.getPropertyReviews(property.id),
+    ]);
+    response.json({ ...property, rating, reviews });
 });

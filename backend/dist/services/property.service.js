@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.getFeaturedProperty = void 0;
 exports.createProperty = createProperty;
 exports.getProperties = getProperties;
 exports.getPropertyById = getPropertyById;
@@ -18,6 +19,9 @@ const prisma_1 = require("../config/prisma");
 const app_error_1 = require("../utils/app-error");
 const pagination_1 = require("../utils/pagination");
 const nearby_service_1 = require("./nearby.service");
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let cachedProperties = null;
+let cacheTimestamp = 0;
 const propertyInclude = {
     owner: {
         select: {
@@ -94,6 +98,14 @@ async function createProperty(ownerId, input, images) {
         include: propertyInclude
     });
 }
+const propertyCardInclude = {
+    images: {
+        select: {
+            url: true
+        },
+        take: 1
+    }
+};
 async function getProperties(query, viewerRole) {
     const { page, limit, skip } = (0, pagination_1.getPagination)(query);
     const status = query.status;
@@ -103,17 +115,35 @@ async function getProperties(query, viewerRole) {
         roomType: query.roomType,
         preference: query.preference
     };
+    if (!viewerRole &&
+        cachedProperties &&
+        Date.now() - cacheTimestamp < 60000) {
+        return cachedProperties;
+    }
     const [items, total] = await prisma_1.prisma.$transaction([
         prisma_1.prisma.property.findMany({
             where,
-            include: propertyInclude,
+            include: propertyCardInclude,
             orderBy: { createdAt: "desc" },
             skip,
             take: limit
         }),
         prisma_1.prisma.property.count({ where })
     ]);
-    return { items, meta: { total, page, limit, pages: Math.ceil(total / limit) } };
+    const result = {
+        items,
+        meta: {
+            total,
+            page,
+            limit,
+            pages: Math.ceil(total / limit)
+        }
+    };
+    if (!viewerRole) {
+        cachedProperties = result;
+        cacheTimestamp = Date.now();
+    }
+    return result;
 }
 async function getPropertyById(id, viewerRole) {
     const property = await prisma_1.prisma.property.findFirst({
@@ -348,3 +378,15 @@ async function getApprovedPropertyList() {
         },
     });
 }
+const getFeaturedProperty = async () => {
+    return await prisma_1.prisma.property.findFirst({
+        where: {
+            isFeatured: true,
+            status: "approved" // Safety check
+        },
+        include: {
+            images: true, // Keep the images so the frontend can display the cover photo
+        }
+    });
+};
+exports.getFeaturedProperty = getFeaturedProperty;
