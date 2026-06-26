@@ -50,7 +50,7 @@ export type Property = {
   noticePeriod?: string;
   rulesStrictness?: string;
   facilities: string[];
-  images: string[];
+  images:{ url: string; roomCategory?: string; }[];
   description: string;
   owner: Owner;
   listingIndex?: number;

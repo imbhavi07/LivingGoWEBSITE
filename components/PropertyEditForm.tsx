@@ -118,17 +118,6 @@ export function PropertyEditForm({ initialData, onSave, onCancel, isSaving }: Pr
         <h2 className="mb-4 text-lg font-black text-ink">Pricing</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="price" className="mb-1 block text-sm font-bold text-ink">Base Price (₹/mo)</label>
-            <input
-              id="price"
-              type="number"
-              value={form.price}
-              onChange={(e) => set("price", Number(e.target.value))}
-              className="w-full rounded-2xl border border-clay/20 bg-linen px-4 py-3 text-sm font-semibold text-ink focus:outline-none focus:ring-2 focus:ring-ink"
-              required
-            />
-          </div>
-          <div>
             <label htmlFor="priceSingle" className="mb-1 block text-sm font-bold text-ink">Single Room (₹/mo)</label>
             <input
               id="priceSingle"

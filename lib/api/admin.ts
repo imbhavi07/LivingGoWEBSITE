@@ -31,9 +31,25 @@ export async function deleteListing(id: string) {
   await apiClient.delete(`/admin/listings/${id}`);
 }
 
-export async function getAdminUsers(search?: string) {
-  const { data } = await apiClient.get<PaginatedResponse<ApiUser> | ApiUser[]>("/admin/users", { params: { search } });
-  return unwrapItems(data).map(toAdminUser);
+export async function getAdminUsers(
+  search = "",
+  page = 1
+) {
+  const { data } =
+    await apiClient.get<
+      PaginatedResponse<ApiUser>
+    >("/admin/users", {
+      params: {
+        search,
+        page,
+        limit: 12,
+      },
+    });
+
+  return {
+    users: data.items.map(toAdminUser),
+    meta: data.meta,
+  };
 }
 
 export async function suspendUser(id: string) {

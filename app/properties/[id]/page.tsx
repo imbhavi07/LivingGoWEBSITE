@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
@@ -58,6 +58,51 @@ export default function PropertyDetailsPage() {
   const [showPanorama, setShowPanorama] = useState(false);
   const [activePanorama, setActivePanorama] = useState<string | null>(null);
 
+  const roomOptions = [
+  property?.priceSingle
+    ? {
+        key: "single",
+        price: property.priceSingle,
+        images: property.images.filter(
+          (img) => img.roomCategory === "single" || img.roomCategory === "common"
+        ),
+      }
+    : null,
+
+  property?.priceDouble
+    ? {
+        key: "double",
+        price: property.priceDouble,
+        images: property.images.filter(
+          (img) => img.roomCategory === "double" || img.roomCategory === "common"
+        ),
+      }
+    : null,
+
+  property?.priceTriple
+    ? {
+        key: "triple",
+        price: property.priceTriple,
+        images: property.images.filter(
+          (img) => img.roomCategory === "triple" || img.roomCategory === "common"
+        ),
+      }
+    : null,
+].filter(Boolean);
+
+const cheapestRoom =
+  roomOptions.length > 0
+    ? [...roomOptions].sort((a, b) => a!.price - b!.price)[0]
+    : null;
+
+const [selectedRoom, setSelectedRoom] = useState("common");
+
+useEffect(() => {
+  if (selectedRoom === "common" && cheapestRoom) {
+    setSelectedRoom(cheapestRoom.key);
+  }
+}, [selectedRoom, cheapestRoom]);
+
   if (isLoading) return <DetailsSkeleton />;
 
   if (error || !property) {
@@ -93,10 +138,18 @@ export default function PropertyDetailsPage() {
     setShowLockModal(true);
   }
 
+  const displayedImages =
+  roomOptions.find((r) => r?.key === selectedRoom)?.images ??
+  property.images;
+
+const displayedPrice =
+  roomOptions.find((r) => r?.key === selectedRoom)?.price ??
+  property.price;
+
   return (
     <>
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 md:py-10 lg:px-8">
-        <Gallery images={property.images} title={property.title} />
+        <Gallery images={displayedImages} title={property.title}/>
         {property.panoramas && property.panoramas.length > 0 && (
            <div className="mt-6 rounded-3xl bg-white p-5 shadow-soft">
              <h3 className="text-xl font-black text-ink">
@@ -154,7 +207,16 @@ export default function PropertyDetailsPage() {
                 <h2 className="text-2xl font-black text-ink">Room Availability</h2>
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
                   {(property.bedsSingle ?? 0) > 0 && (
-                    <div className="rounded-2xl bg-white p-4 shadow-soft">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedRoom("single")}
+                      className={`rounded-2xl p-4 text-left transform transition-all duration-300 ease-out
+                      ${
+                        selectedRoom === "single"
+                          ? "bg-amber-50 ring-2 ring-amber-500 scale-105 -translate-y-1 shadow-2xl"
+                          : "bg-white shadow-soft hover:scale-[1.02] hover:-translate-y-1 hover:shadow-xl"
+                      }`}
+                    >
                       <div className="flex items-center gap-2 mb-2">
                         <BedDouble className="h-4 w-4 text-muted" />
                         <p className="text-xs font-bold uppercase text-muted">Single Room</p>
@@ -164,10 +226,19 @@ export default function PropertyDetailsPage() {
                       {property.priceSingle && (
                         <p className="mt-2 text-sm font-bold text-ink">{formatPrice(property.priceSingle)}/mo</p>
                       )}
-                    </div>
+                    </button>
                   )}
                   {(property.bedsDouble ?? 0) > 0 && (
-                    <div className="rounded-2xl bg-white p-4 shadow-soft">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedRoom("double")}
+                      className={`rounded-2xl p-4 text-left transform transition-all duration-300 ease-out
+                      ${
+                        selectedRoom === "double"
+                          ? "bg-amber-50 ring-2 ring-amber-500 scale-105 -translate-y-1 shadow-2xl"
+                          : "bg-white shadow-soft hover:scale-[1.02] hover:-translate-y-1 hover:shadow-xl"
+                      }`}
+                    >
                       <div className="flex items-center gap-2 mb-2">
                         <BedDouble className="h-4 w-4 text-muted" />
                         <p className="text-xs font-bold uppercase text-muted">Double Sharing</p>
@@ -177,10 +248,19 @@ export default function PropertyDetailsPage() {
                       {property.priceDouble && (
                         <p className="mt-2 text-sm font-bold text-ink">{formatPrice(property.priceDouble)}/mo</p>
                       )}
-                    </div>
+                    </button>
                   )}
                   {(property.bedsTriple ?? 0) > 0 && (
-                    <div className="rounded-2xl bg-white p-4 shadow-soft">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedRoom("triple")}
+                      className={`rounded-2xl p-4 text-left transform transition-all duration-300 ease-out
+                      ${
+                        selectedRoom === "triple"
+                          ? "bg-amber-50 ring-2 ring-amber-500 scale-105 -translate-y-1 shadow-2xl"
+                          : "bg-white shadow-soft hover:scale-[1.02] hover:-translate-y-1 hover:shadow-xl"
+                      }`}
+                    >
                       <div className="flex items-center gap-2 mb-2">
                         <BedDouble className="h-4 w-4 text-muted" />
                         <p className="text-xs font-bold uppercase text-muted">Triple Sharing</p>
@@ -190,9 +270,10 @@ export default function PropertyDetailsPage() {
                       {property.priceTriple && (
                         <p className="mt-2 text-sm font-bold text-ink">{formatPrice(property.priceTriple)}/mo</p>
                       )}
-                    </div>
+                    </button>
                   )}
                 </div>
+
                 {/* Overall availability bar */}
                 <div className="mt-3 rounded-2xl bg-white p-4 shadow-soft">
                   <div className="flex items-center justify-between mb-2">
@@ -359,7 +440,11 @@ export default function PropertyDetailsPage() {
           {/* Sidebar */}
           <aside className="h-fit rounded-3xl bg-white p-6 shadow-soft">
             <p className="text-sm font-bold uppercase text-muted">Starting from</p>
-            <p className="mt-2 text-4xl font-black text-ink">{formatPrice(property.price)}<span className="text-sm font-semibold text-muted">/mo</span></p>
+            <p
+              key={displayedPrice}
+              className="mt-2 text-4xl font-black text-ink transition-all duration-300 animate-in fade-in zoom-in-95"
+            >
+              {formatPrice(displayedPrice)}<span className="text-sm font-semibold text-muted">/mo</span></p>
 
             {rating.overall !== null && (
               <div className="mt-3">
@@ -408,7 +493,7 @@ export default function PropertyDetailsPage() {
         <LockPropertyModal
           propertyId={property.id}
           propertyTitle={property.title}
-          monthlyRent={property.price}
+          monthlyRent={displayedPrice}
           onClose={() => setShowLockModal(false)}
         />
       )}

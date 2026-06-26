@@ -13,8 +13,6 @@ function requireUser(request: Request) {
 export const createProperty = asyncHandler(async (request: Request, response: Response) => {
   const user = requireUser(request);
 
-  // Only approved owners can list properties
-  // admins bypass this check
   if (user.role === "owner" && user.verificationStatus !== "approved") {
     const statusMessages: Record<string, string> = {
       not_required:             "Please complete your KYC verification before listing properties.",
@@ -34,7 +32,7 @@ export const createProperty = asyncHandler(async (request: Request, response: Re
 
   // Extract room-type mappings from request body
   // Expect format: roomTypeMappings=[{"index":0,"roomType":"Bedroom 1"},{"index":1,"roomType":"Bedroom 2"},...]
-  let roomTypeMappings = [];
+  let roomTypeMappings: { roomCategory: string; }[] = [];
 
 try {
   roomTypeMappings = request.body.roomTypeMappings
@@ -53,7 +51,12 @@ console.log("USER", user.id);
   const property = await propertyService.createProperty(
     user.id,
     request.body,
-    uploads.map((upload) => ({ url: upload.secure_url, publicId: upload.public_id }))
+    uploads.map((upload, index) => ({
+      url: upload.secure_url,
+      publicId: upload.public_id,
+      roomCategory:
+        roomTypeMappings[index]?.roomCategory ?? "common",
+    }))
   );
 
   response.status(201).json(property);
@@ -104,13 +107,23 @@ export const updateProperty = asyncHandler(async (request: Request, response: Re
   if (user.role !== "admin" && property.ownerId !== user.id) throw new AppError("Forbidden", 403);
 
   // Process image uploads if any new files were provided
-  let roomTypeMappings: { index: number; roomType: string }[] = [];
-  let images: { url: string; publicId: string }[] = [];
+  let roomTypeMappings: { roomCategory: string; }[] = [];
+  let images: {
+    url: string;
+    publicId: string;
+    roomCategory: string;
+  }[] = [];
 
   if ((request.files as Express.Multer.File[])?.length) {
     const files = (request.files as Express.Multer.File[]) ?? [];
+
     const rawUploads = await uploadMany(files);
-    images = rawUploads.map(upload => ({ url: upload.secure_url, publicId: upload.public_id }));
+    images = rawUploads.map((upload, index) => ({
+      url: upload.secure_url,
+      publicId: upload.public_id,
+      roomCategory:
+      roomTypeMappings[index]?.roomCategory ?? "common",
+    }));
 
     // Extract room-type mappings from request body
     roomTypeMappings = request.body.roomTypeMappings

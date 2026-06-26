@@ -131,16 +131,24 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
       return;
     }
 
-    // Flatten categorized images and files for form submission
+    const roomTypeMappings = Object.entries(categorizedFiles).flatMap(
+      ([category, files]) =>
+        files.map(() => ({
+          roomCategory: category.toLowerCase(),
+        }))
+    );
+    
     const allImageUrls = Object.values(categorizedImages).flat();
     const allFiles = Object.values(categorizedFiles).flat();
 
     const roomType = hasSingle ? "Single" : "Shared";
-    const price = hasSingle
-      ? Number(formData.get("priceSingle") ?? 0)
-      : hasDouble
-        ? Number(formData.get("priceDouble") ?? 0)
-        : Number(formData.get("priceTriple") ?? 0);
+    const prices = [
+      hasSingle ? Number(formData.get("priceSingle")) : undefined,
+      hasDouble ? Number(formData.get("priceDouble")) : undefined,
+      hasTriple ? Number(formData.get("priceTriple")) : undefined,
+    ].filter((value): value is number => value !== undefined && value > 0);
+
+const price = Math.min(...prices);
 
     // Create form data object and override images with flattened URLs
     const parsed = ownerPropertySchema.safeParse({
@@ -180,6 +188,7 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
     const payload: OwnerPropertyPayload = {
       ...parsed.data,
       imageFiles: allFiles,
+      roomTypeMappings,
       lat: pickedLocation.lat,
       lng: pickedLocation.lng,
     };

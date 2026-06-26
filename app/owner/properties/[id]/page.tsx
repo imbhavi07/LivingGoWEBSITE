@@ -117,10 +117,6 @@ export default function PropertyDashboardPage() {
                       <p className="mt-1 font-black text-ink">{property.roomType}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-bold uppercase text-muted">Base Price</p>
-                      <p className="mt-1 font-black text-ink">₹{property.price}/mo</p>
-                    </div>
-                    <div>
                       <p className="text-xs font-bold uppercase text-muted">Preference</p>
                       <p className="mt-1 font-black text-ink">{property.preference}</p>
                     </div>

@@ -90,15 +90,31 @@ export function useAdminListing(id: string) {
 
 export function useAdminUsers(search = "") {
   const { showToast } = useToast();
+
   const [users, setUsers] = useState<AdminUser[]>([]);
+  const [page, setPage] = useState(1);
+
+  const [meta, setMeta] = useState<{
+    page: number;
+    pages: number;
+    total: number;
+    limit: number;
+  } | null>(null);
+
   const [isLoading, setIsLoading] = useState(true);
 
   const refresh = useCallback(() => {
     setIsLoading(true);
-    getAdminUsers(search)
-      .then(setUsers)
-      .finally(() => setIsLoading(false));
-  }, [search]);
+
+    getAdminUsers(search, page)
+      .then((result) => {
+        setUsers(result.users);
+        setMeta(result.meta);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  }, [search, page]);
 
   useEffect(() => {
     const timeout = window.setTimeout(refresh, 250);
@@ -107,17 +123,40 @@ export function useAdminUsers(search = "") {
 
   async function suspend(id: string) {
     await suspendUser(id);
-    setUsers((current) => current.map((user) => (user.id === id ? { ...user, status: "suspended" } : user)));
+
+    setUsers((current) =>
+      current.map((user) =>
+        user.id === id
+          ? { ...user, status: "suspended" }
+          : user
+      )
+    );
+
     showToast("User suspended.", "success");
   }
 
   async function remove(id: string) {
     await deleteUser(id);
-    setUsers((current) => current.filter((user) => user.id !== id));
+
+    setUsers((current) =>
+      current.filter((user) => user.id !== id)
+    );
+
     showToast("Spam account deleted.", "success");
+
+    refresh();
   }
 
-  return { users, isLoading, suspend, remove };
+  return {
+    users,
+    meta,
+    page,
+    setPage,
+    isLoading,
+    suspend,
+    remove,
+    refresh,
+  };
 }
 
 export function useOwnerApprovals() {

@@ -115,6 +115,7 @@ model PropertyImage {
   url        String
   publicId   String?
   createdAt  DateTime @default(now())
+  roomCategory String?
   property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@index([propertyId])
@@ -130,7 +131,7 @@ model PropertyPanorama {
   sortOrder  Int      @default(0)
 
   property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-
+  roomCategory String?
   createdAt  DateTime @default(now())
 
   @@index([propertyId])
