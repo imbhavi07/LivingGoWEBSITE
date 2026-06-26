@@ -54,8 +54,7 @@ const propertyInclude = {
     select: {
       id: true,
       url: true,
-      publicId: true,
-      roomCategory: true
+      publicId: true
     }
   },
   panoramas: {
@@ -136,8 +135,7 @@ export async function createProperty(ownerId: string, input: PropertyInput, imag
 const propertyCardInclude = {
   images: {
     select: {
-      url: true,
-      roomCategory: true
+      url: true
     },
     take: 1
   }
