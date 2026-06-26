@@ -131,7 +131,13 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
       return;
     }
 
-    // Flatten categorized images and files for form submission
+    const roomTypeMappings = Object.entries(categorizedFiles).flatMap(
+      ([category, files]) =>
+        files.map(() => ({
+          roomCategory: category.toLowerCase(),
+        }))
+    );
+    
     const allImageUrls = Object.values(categorizedImages).flat();
     const allFiles = Object.values(categorizedFiles).flat();
 
@@ -182,6 +188,7 @@ const price = Math.min(...prices);
     const payload: OwnerPropertyPayload = {
       ...parsed.data,
       imageFiles: allFiles,
+      roomTypeMappings,
       lat: pickedLocation.lat,
       lng: pickedLocation.lng,
     };

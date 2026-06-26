@@ -18,6 +18,7 @@ type ApiImage = {
   id?: string;
   url: string;
   publicId?: string | null;
+  roomCategory?: string | null;
 };
 
 type ApiOwner = {
@@ -144,7 +145,12 @@ export function toProperty(property: ApiProperty, index?: number): Property {
     noticePeriod: property.noticePeriod,
     rulesStrictness: property.rulesStrictness,
     facilities: property.facilities,
-    images: property.images ? property.images.map((image) => image.url) : [],
+    images: property.images
+    ? property.images.map((image) => ({
+        url: image.url,
+        roomCategory: image.roomCategory ?? "common",
+      }))
+    : [],
     owner: {
       id: property.owner?.id ?? "owner",
       name: property.owner?.name ?? property.ownerName ?? "Property owner",

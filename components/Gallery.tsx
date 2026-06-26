@@ -3,8 +3,13 @@
 import { useState } from "react";
 import Image from "next/image";
 
+type GalleryImage = {
+  url: string;
+  roomCategory?: string;
+};
+
 type GalleryProps = {
-  images: string[];
+  images: GalleryImage[];
   title: string;
 };
 
@@ -14,7 +19,7 @@ export function Gallery({
 }: GalleryProps) {
   const [showAll, setShowAll] = useState(false);
 
-  if (!images.length) return null;
+  if (images.length === 0) return null;
 
   const visibleImages = images.slice(0, 5);
 
@@ -24,7 +29,7 @@ export function Gallery({
         <div className="grid gap-2 md:grid-cols-[2fr_1fr] overflow-hidden rounded-3xl">
           <div className="relative min-h-[420px]">
             <Image
-              src={images[0]}
+              src={images[0].url}
               alt={title}
               fill
               priority
@@ -35,11 +40,11 @@ export function Gallery({
           <div className="grid grid-cols-2 gap-2">
             {visibleImages.slice(1, 5).map((image) => (
               <div
-                key={image}
+                key={image.url}
                 className="relative min-h-[205px]"
               >
                 <Image
-                  src={image}
+                  src={image.url}
                   alt={title}
                   fill
                   className="object-cover"
@@ -78,11 +83,11 @@ export function Gallery({
             <div className="grid gap-4 md:grid-cols-2">
               {images.map((image, index) => (
                 <div
-                  key={image}
+                  key={image.url}
                   className="relative h-[400px] overflow-hidden rounded-2xl"
                 >
                   <Image
-                    src={image}
+                    src={image.url}
                     alt={`${title} ${index + 1}`}
                     fill
                     className="object-cover"

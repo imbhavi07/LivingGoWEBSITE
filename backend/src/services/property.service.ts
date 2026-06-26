@@ -38,6 +38,7 @@ type PropertyInput = {
 type ImageInput = {
   url: string;
   publicId?: string;
+  roomCategory?: string;
 };
 
 const propertyInclude = {
@@ -53,7 +54,8 @@ const propertyInclude = {
     select: {
       id: true,
       url: true,
-      publicId: true
+      publicId: true,
+      roomCategory: true
     }
   },
   panoramas: {
@@ -124,7 +126,7 @@ export async function createProperty(ownerId: string, input: PropertyInput, imag
       securityContact: input.securityContact,
       status: "pending",
       images: {
-        create: images.map((image) => ({ url: image.url, publicId: image.publicId }))
+        create: images.map((image) => ({ url: image.url, publicId: image.publicId, roomCategory: image.roomCategory }))
       }
     },
     include: propertyInclude
@@ -134,7 +136,8 @@ export async function createProperty(ownerId: string, input: PropertyInput, imag
 const propertyCardInclude = {
   images: {
     select: {
-      url: true
+      url: true,
+      roomCategory: true
     },
     take: 1
   }
