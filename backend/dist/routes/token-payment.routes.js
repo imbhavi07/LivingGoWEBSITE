@@ -48,3 +48,7 @@ exports.tokenPaymentRouter.get("/owner-payments", auth_middleware_1.clerkAuthent
 // Admin routes (JWT auth)
 exports.tokenPaymentRouter.get("/admin/token-payments", auth_middleware_2.authenticate, (0, auth_middleware_1.authorize)("admin"), tokenController.adminGetTokenPayments);
 exports.tokenPaymentRouter.patch("/admin/token-payments/:id", auth_middleware_2.authenticate, (0, auth_middleware_1.authorize)("admin"), tokenController.adminModerateTokenPayment);
+exports.tokenPaymentRouter.post("/verify-visit/:id", auth_middleware_1.clerkAuthenticate, (0, auth_middleware_1.authorize)("owner"), tokenController.verifyVisit);
+exports.tokenPaymentRouter.post("/settle-rent/:id", auth_middleware_1.clerkAuthenticate, (0, auth_middleware_1.authorize)("owner"), tokenController.settleRent);
+exports.tokenPaymentRouter.post("/token-payments/confirm-razorpay", // Ensure the path matches the fetch in Next.js exactly
+auth_middleware_1.clerkAuthenticate, (0, auth_middleware_1.authorize)("student"), tokenController.confirmRazorpayPayment);

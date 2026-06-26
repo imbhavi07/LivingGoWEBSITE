@@ -9,6 +9,9 @@ exports.updateUserStatus = updateUserStatus;
 exports.deleteSpamUser = deleteSpamUser;
 exports.updateListingByAdmin = updateListingByAdmin;
 exports.getUserProperties = getUserProperties;
+exports.addImagesToProperty = addImagesToProperty;
+exports.deletePropertyImage = deletePropertyImage;
+exports.replacePropertyImage = replacePropertyImage;
 const prisma_1 = require("../config/prisma");
 const app_error_1 = require("../utils/app-error");
 const pagination_1 = require("../utils/pagination");
@@ -192,4 +195,37 @@ async function getUserProperties(userId) {
         user,
         properties,
     };
+}
+async function addImagesToProperty(propertyId, images) {
+    return prisma_1.prisma.property.update({
+        where: { id: propertyId },
+        data: {
+            images: {
+                create: images,
+            },
+        },
+        include: {
+            images: true,
+        },
+    });
+}
+async function deletePropertyImage(imageId) {
+    const image = await prisma_1.prisma.propertyImage.findUnique({
+        where: { id: imageId }
+    });
+    if (!image) {
+        throw new app_error_1.AppError("Image not found", 404);
+    }
+    return prisma_1.prisma.propertyImage.delete({
+        where: { id: imageId }
+    });
+}
+async function replacePropertyImage(imageId, url, publicId) {
+    return prisma_1.prisma.propertyImage.update({
+        where: { id: imageId },
+        data: {
+            url,
+            publicId,
+        },
+    });
 }

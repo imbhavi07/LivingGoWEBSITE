@@ -14,6 +14,7 @@ tokenPaymentRouter.post(
   authorize("student"),
   tokenController.submitTokenPayment
 );
+
 tokenPaymentRouter.get(
   "/my-payments",
   clerkAuthenticate,
@@ -53,4 +54,11 @@ tokenPaymentRouter.post(
   clerkAuthenticate,
   authorize("owner"),
   tokenController.settleRent
+);
+
+tokenPaymentRouter.post(
+  "/token-payments/confirm-razorpay", // Ensure the path matches the fetch in Next.js exactly
+  clerkAuthenticate,
+  authorize("student"),
+  tokenController.confirmRazorpayPayment
 );

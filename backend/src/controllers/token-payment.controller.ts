@@ -4,6 +4,7 @@ import type { Request, Response } from "express";
 import { asyncHandler } from "../utils/async-handler";
 import { AppError } from "../utils/app-error";
 import * as tokenService from "../services/token-payment.service";
+import { prisma } from "../config/prisma";
 
 function requireUser(req: Request) {
   if (!req.user) throw new AppError("Authentication required", 401);
@@ -67,4 +68,45 @@ export const settleRent = asyncHandler(async (req: Request, res: Response) => {
   const result = await tokenService.settleRent(paymentId);
 
   res.json(result);
+});
+
+export const confirmRazorpayPayment = asyncHandler(async (req: Request, res: Response) => {
+  const user = requireUser(req);
+  const { propertyId, razorpayPaymentId } = req.body;
+
+  // 1. Fetch property to calculate token amount
+  const property = await prisma.property.findUnique({ where: { id: propertyId } });
+  if (!property) throw new AppError("Property not found", 404);
+
+  const tokenAmount = Math.ceil(property.price / 2);
+  
+  // 2. Generate the Visit OTP instantly (Anti-Bypass System)
+  const otp = Math.floor(1000 + Math.random() * 9000).toString();
+
+  // 3. Upsert the token payment (Updates if they tried to pay before, creates if new)
+  const payment = await prisma.tokenPayment.upsert({
+    where: { studentId_propertyId: { studentId: user.id, propertyId } },
+    update: {
+      amount: tokenAmount,
+      utrNumber: razorpayPaymentId, // Save the Razorpay ID as the UTR
+      status: "approved", // INSTANT APPROVAL!
+      visitOtp: otp,
+    },
+    create: {
+      studentId: user.id,
+      propertyId,
+      amount: tokenAmount,
+      utrNumber: razorpayPaymentId,
+      status: "approved", 
+      visitOtp: otp,
+    }
+  });
+
+  // 4. Update dynamic inventory (Prevent double bookings)
+  await prisma.property.update({
+    where: { id: propertyId },
+    data: { occupiedBeds: { increment: 1 } } 
+  });
+
+  res.status(201).json(payment);
 });

@@ -42,6 +42,7 @@ const security_middleware_1 = require("../middleware/security.middleware");
 const validate_middleware_1 = require("../middleware/validate.middleware");
 const admin_validation_1 = require("../validations/admin.validation");
 const auth_validation_1 = require("../validations/auth.validation");
+const upload_middleware_1 = require("../middleware/upload.middleware");
 exports.adminRouter = (0, express_1.Router)();
 exports.adminRouter.post("/auth/login", security_middleware_1.authLimiter, (0, validate_middleware_1.validate)(auth_validation_1.loginSchema), authController.adminLogin);
 exports.adminRouter.use(auth_middleware_1.authenticate, (0, auth_middleware_1.authorize)("admin"));
@@ -60,3 +61,6 @@ exports.adminRouter.patch("/approvals/:id/approve", (0, validate_middleware_1.va
 exports.adminRouter.patch("/approvals/:id/reject", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.rejectOwner);
 exports.adminRouter.patch("/listings/:id", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.updateListing);
 exports.adminRouter.get("/users/:id/properties", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.getUserProperties);
+exports.adminRouter.post("/listings/:id/images", upload_middleware_1.uploadImages, adminController.addPropertyImages);
+exports.adminRouter.delete("/listings/:id/images/:imageId", adminController.deletePropertyImage);
+exports.adminRouter.put("/listings/:id/images/:imageId", upload_middleware_1.uploadImages, adminController.replacePropertyImage);

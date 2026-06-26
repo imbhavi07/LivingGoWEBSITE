@@ -10,7 +10,7 @@ const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp"];
 exports.uploadImages = (0, multer_1.default)({
     storage: multer_1.default.memoryStorage(),
     limits: {
-        fileSize: 5 * 1024 * 1024,
+        fileSize: 20 * 1024 * 1024,
         files: 8
     },
     fileFilter: (_request, file, callback) => {
