@@ -88,7 +88,7 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
       <Link href={`/properties/${property.id}`} className="block">
         <div className="relative aspect-[4/3] overflow-hidden">
           <Image
-            src={property.images[0]}
+            src={property.images[0]?.url ?? "/placeholder-property.jpg"}
             alt={property.title}
             fill
             className="object-cover transition duration-500 group-hover:scale-105"
