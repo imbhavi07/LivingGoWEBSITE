@@ -10,6 +10,7 @@ export type TokenPayment = {
   visitOtp?: string | null;
   visitVerified: boolean;
   rentSettled: boolean;
+  moveInRequested: boolean;
   createdAt: string;
   property: {
     id: string;
@@ -58,5 +59,13 @@ export async function adminModeratePayment(
   action: "approved" | "rejected"
 ): Promise<AdminTokenPayment> {
   const { data } = await apiClient.patch<AdminTokenPayment>(`/payments/admin/token-payments/${paymentId}`, { action });
+  return data;
+}
+
+export async function requestMoveIn(paymentId: string) {
+  const { data } = await apiClient.post(
+    `/payments/request-movein/${paymentId}`
+  );
+
   return data;
 }

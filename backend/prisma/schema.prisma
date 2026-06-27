@@ -193,9 +193,9 @@ model TokenPayment {
 
   visitOtp        String?
   visitVerified   Boolean            @default(false)
-
   rentSettled     Boolean            @default(false)
-
+  moveInRequested Boolean            @default(false)
+  
   createdAt       DateTime           @default(now())
   updatedAt       DateTime           @updatedAt
 

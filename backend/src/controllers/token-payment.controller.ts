@@ -110,3 +110,21 @@ export const confirmRazorpayPayment = asyncHandler(async (req: Request, res: Res
 
   res.status(201).json(payment);
 });
+
+export const requestMoveIn = asyncHandler(async (req, res) => {
+
+  const paymentId = String(req.params.id);
+
+  const result = await tokenService.requestMoveIn(paymentId);
+
+  res.json(result);
+
+});
+
+export const getOwnerPendingVisits = asyncHandler(async (req, res) => {
+  const ownerId = req.user.id;
+
+  const visits = await tokenService.getOwnerPendingVisits(ownerId);
+
+  res.json(visits);
+});

@@ -82,3 +82,17 @@ tokenPaymentRouter.patch(
   authorize("admin"),
   tokenController.adminModerateTokenPayment
 );
+
+tokenPaymentRouter.post(
+  "/request-movein/:id",
+  clerkAuthenticate,
+  authorize("student"),
+  tokenController.requestMoveIn
+);
+
+tokenPaymentRouter.get(
+  "/owner/pending-visits",
+  clerkAuthenticate,
+  authorize("owner"),
+  tokenController.getOwnerPendingVisits
+);

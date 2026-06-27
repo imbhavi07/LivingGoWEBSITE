@@ -47,6 +47,7 @@ export async function getStudentTokenPayments(studentId: string) {
       visitOtp: true,
       visitVerified: true,
       rentSettled: true,
+      moveInRequested: true,
       createdAt: true,
       property: {
         select: {
@@ -186,4 +187,43 @@ export async function settleRent(
   });
 
   return updated;
+}
+
+export async function requestMoveIn(
+  paymentId: string
+) {
+
+  return prisma.tokenPayment.update({
+
+    where: {
+      id: paymentId
+    },
+
+    data: {
+      moveInRequested: true
+    }
+
+  });
+
+}
+
+export async function getOwnerPendingVisits(ownerId: string) {
+  return prisma.tokenPayment.findMany({
+    where: {
+      property: {
+        ownerId,
+      },
+      status: "approved",
+      visitVerified: false,
+    },
+
+    include: {
+      student: true,
+      property: true,
+    },
+
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 }
