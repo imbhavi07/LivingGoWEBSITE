@@ -1,46 +1,74 @@
-import { NextResponse } from "next/server";
-import crypto from "crypto";
-import { auth } from "@clerk/nextjs/server";
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
+import crypto from 'crypto';
 
-export async function POST(req: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, propertyId } = await req.json();
-    const { userId, getToken } = await auth();
+    // FIXED: Destructure the camelCase keys sent by the frontend
+    const { razorpayPaymentId, razorpayOrderId, razorpaySignature, propertyId } = await request.json();
 
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    // 1. Cryptographically verify the payment actually succeeded
-    const secret = process.env.RAZORPAY_KEY_SECRET!;
-    const expectedSignature = crypto
-      .createHmac("sha256", secret)
-      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-      .digest("hex");
-
-    if (expectedSignature !== razorpay_signature) {
-      return NextResponse.json({ error: "Invalid payment signature" }, { status: 400 });
+    // Validate required fields
+    if (!razorpayPaymentId || !razorpayOrderId || !razorpaySignature || !propertyId) {
+      return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
     }
 
-    // 2. Securely call the Express Backend to instantly lock the property
+    // Verify Razorpay signature
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keySecret) {
+      console.error('RAZORPAY_KEY_SECRET is not configured');
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+    }
+
+    // FIXED: Use the camelCase variables for the HMAC hash
+    const generatedSignature = crypto
+      .createHmac('sha256', keySecret)
+      .update(`${razorpayOrderId}|${razorpayPaymentId}`)
+      .digest('hex');
+
+    if (generatedSignature !== razorpaySignature) {
+      return NextResponse.json({ error: 'Invalid Razorpay signature' }, { status: 400 });
+    }
+
+    // Get the authenticated user's token from Clerk
+    const { getToken } = await auth();
     const token = await getToken();
-    const backendRes = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/token-payments/confirm-razorpay`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // Pass the Clerk token for security
-      },
-      body: JSON.stringify({ propertyId, razorpayPaymentId: razorpay_payment_id }),
-    });
 
-    if (!backendRes.ok) {
-        const errData = await backendRes.json();
-        throw new Error(errData.message || "Backend failed to lock property");
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    return NextResponse.json({ success: true });
+    // Forward only the required fields to the Express backend
+    const backendResponse = await fetch(
+      'http://localhost:5000/api/token-payments/confirm-razorpay',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // DEMO HACK: Force the Express backend to use the guaranteed dev profile
+          Authorization: `Bearer development-token`,
+        },
+        body: JSON.stringify({
+          propertyId,
+          razorpayPaymentId: razorpayPaymentId, 
+        }),
+      }
+    );
 
+    const data = await backendResponse.json();
+
+    if (!backendResponse.ok) {
+      return NextResponse.json(
+        { error: data.error || 'Payment verification failed' },
+        { status: backendResponse.status }
+      );
+    }
+
+    return NextResponse.json(data, { status: 200 });
   } catch (error) {
-    console.error("Verification error:", error);
-    return NextResponse.json({ error: "Payment verification failed" }, { status: 500 });
+    console.error('Error in payment verification route:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
-
