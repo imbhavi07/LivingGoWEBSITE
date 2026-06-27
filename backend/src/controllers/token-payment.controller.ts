@@ -57,15 +57,7 @@ export const verifyVisit = asyncHandler(async (req: Request, res: Response) => {
   const paymentId = String(req.params.id);
   const { otp } = req.body;
 
-  const result = await tokenService.verifyVisit(paymentId, otp);
-
-  res.json(result);
-});
-
-export const settleRent = asyncHandler(async (req: Request, res: Response) => {
-  const paymentId = String(req.params.id);
-
-  const result = await tokenService.settleRent(paymentId);
+  const result = await tokenService.verifyVisitOtp(paymentId, otp);
 
   res.json(result);
 });
@@ -102,12 +94,7 @@ export const confirmRazorpayPayment = asyncHandler(async (req: Request, res: Res
     }
   });
 
-  // 4. Update dynamic inventory (Prevent double bookings)
-  await prisma.property.update({
-    where: { id: propertyId },
-    data: { occupiedBeds: { increment: 1 } } 
-  });
-
+  // 4. Return payment
   res.status(201).json(payment);
 });
 
@@ -143,4 +130,22 @@ export const verifyVisitOtp = asyncHandler(async (req, res) => {
   );
 
   res.json(result);
+});
+
+export const approveMoveIn = asyncHandler(async (req, res) => {
+  const paymentId = String(req.params.id);
+
+  const result = await tokenService.approveMoveIn(paymentId);
+
+  res.json(result);
+});
+
+export const getOwnerTenants = asyncHandler(async (req, res) => {
+
+  const ownerId = req.user!.id;
+
+  const tenants = await tokenService.getOwnerTenants(ownerId);
+
+  res.json(tenants);
+
 });

@@ -55,14 +55,6 @@ tokenPaymentRouter.post(
   tokenController.verifyVisit
 );
 
-// Settle rent payout internally
-tokenPaymentRouter.post(
-  "/settle-rent/:id",
-  clerkAuthenticate,
-  authorize("owner"),
-  tokenController.settleRent
-);
-
 // ==========================================
 // ADMIN ROUTES (JWT Auth)
 // ==========================================
@@ -102,4 +94,18 @@ tokenPaymentRouter.post(
   clerkAuthenticate,
   authorize("owner"),
   tokenController.verifyVisitOtp
+);
+
+tokenPaymentRouter.post(
+  "/owner/approve-movein/:id",
+  clerkAuthenticate,
+  authorize("owner"),
+  tokenController.approveMoveIn
+);
+
+tokenPaymentRouter.get(
+  "/owner/tenants",
+  clerkAuthenticate,
+  authorize("owner"),
+  tokenController.getOwnerTenants
 );
