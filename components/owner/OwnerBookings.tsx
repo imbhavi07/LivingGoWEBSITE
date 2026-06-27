@@ -5,7 +5,13 @@
 
 import { useEffect, useState } from "react";
 import { Clock, CheckCircle, XCircle, Phone, Mail, Users } from "lucide-react";
-import { getOwnerTokenPayments, type AdminTokenPayment } from "@/lib/api/token-payment";
+import {
+  getOwnerTokenPayments,
+  getOwnerPendingVisits,
+  verifyVisitOtp,
+  approveMoveIn,
+  type AdminTokenPayment,
+} from "@/lib/api/token-payment";
 
 const STATUS_CONFIG = {
   pending: { icon: Clock, label: "Pending Admin Review", color: "bg-amber-50 text-amber-700" },
@@ -16,12 +22,15 @@ const STATUS_CONFIG = {
 export function OwnerBookings() {
   const [payments, setPayments] = useState<AdminTokenPayment[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const [pendingVisits, setPendingVisits] = useState<any[]>([]);
+  const [otpValues, setOtpValues] = useState<Record<string, string>>({});
   useEffect(() => {
     (async () => {
       try {
         const data = await getOwnerTokenPayments();
         setPayments(data);
+        const visits = await getOwnerPendingVisits();
+        setPendingVisits(visits);
       } catch {
         // ignore
       } finally {
@@ -53,9 +62,99 @@ export function OwnerBookings() {
         Student Bookings
         <span className="text-sm font-semibold text-muted">({payments.length})</span>
       </h2>
+        {pendingVisits.length > 0 && (
+        <div className="mb-8">
+        
+          <h3 className="mb-4 text-xl font-black">
+            Pending Visit Verification
+          </h3>
+            
+          <div className="space-y-4">
+            
+            {pendingVisits.map((visit) => (
+            
+              <div
+                key={visit.id}
+                className="rounded-2xl border p-4"
+              >
+              
+                <p className="font-black">
+                  {visit.student.name}
+                </p>
+            
+                <p className="text-sm text-muted">
+                  {visit.property.title}
+                </p>
+            
+                <input
+                  value={otpValues[visit.id] ?? ""}
+                  onChange={(e)=>{
+                  
+                    setOtpValues({
+                    
+                      ...otpValues,
+                    
+                      [visit.id]:e.target.value
+                    
+                    });
+                  
+                  }}
+                  placeholder="Enter OTP"
+                  className="mt-3 w-full rounded-xl border px-4 py-2"
+                />
 
+                <button
+
+                  className="mt-3 rounded-xl bg-amber-600 px-4 py-2 font-bold text-white"
+                
+                  onClick={async()=>{
+                  
+                    try{
+                    
+                      await verifyVisitOtp(
+                      
+                        visit.id,
+                      
+                        otpValues[visit.id]
+                      
+                      );
+                    
+                      setPendingVisits(
+
+                        pendingVisits.filter(
+
+                          p=>p.id!==visit.id
+
+                        )
+
+                      );
+
+                      alert("Visit Verified");
+
+                    }catch{     
+
+                      alert("Invalid OTP");
+
+                    }
+
+                  }}
+                
+                >
+                
+                  Verify OTP
+                
+                </button>
+                
+              </div>
+
+            ))}
+
+          </div>
+          
+        </div>
+      )}
       <div className="space-y-3">
-        {payments.map((payment) => {
+        {payments.filter((payment) => !payment.rentSettled).map((payment) => {
           const config = STATUS_CONFIG[payment.status];
           const Icon = config.icon;
           const isApproved = payment.status === "approved";
@@ -98,6 +197,39 @@ export function OwnerBookings() {
                   Student contact details will be shared once admin confirms the payment.
                 </div>
               )}
+              {payment.visitVerified &&
+  payment.moveInRequested &&
+  !payment.rentSettled && (
+    <div className="mt-4 rounded-xl border border-green-300 bg-green-50 p-4">
+      <p className="font-bold text-green-700">
+        Student requested Move-in Approval
+      </p>
+      <button
+        onClick={async () => {
+          try {
+            await approveMoveIn(payment.id);
+            setPayments((current) =>
+              current.map((p) =>
+                p.id === payment.id
+                  ? {
+                      ...p,
+                      rentSettled: true,
+                    }
+                  : p
+              )
+            );
+            alert("Move-in Approved");
+            window.location.reload();
+          } catch {
+            alert("Approval Failed");
+          }
+        }}
+        className="mt-3 rounded-xl bg-green-600 px-4 py-2 font-bold text-white"
+      >
+        Approve Move-in
+      </button>
+    </div>
+)}
             </div>
           );
         })}

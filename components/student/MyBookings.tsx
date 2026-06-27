@@ -5,7 +5,7 @@
 
 import { useEffect, useState } from "react";
 import { Clock, CheckCircle, XCircle, MapPin, Phone, Building2 } from "lucide-react";
-import { getMyTokenPayments, type TokenPayment } from "@/lib/api/token-payment";
+import { getMyTokenPayments, requestMoveIn, type TokenPayment } from "@/lib/api/token-payment";
 
 const STATUS_CONFIG = {
   pending: { icon: Clock, label: "Under Review", color: "bg-amber-50 text-amber-700" },
@@ -136,27 +136,89 @@ export function MyBookings() {
 
         {!payment.visitVerified && payment.visitOtp && (
           <p className="text-sm text-amber-700">
-            Show OTP to owner: <b>{payment.visitOtp}</b>
+            Show this OTP to the property owner during your visit:<b>{payment.visitOtp}</b>
           </p>
         )}
       </div>
     </div>
 
-    <div className="flex items-center gap-3">
-      <div
-        className={`h-6 w-6 rounded-full flex items-center justify-center text-xs ${
-          payment.rentSettled
-            ? "bg-green-500 text-white"
-            : "bg-gray-200"
-        }`}
-      >
-        {payment.rentSettled ? "✓" : "3"}
-      </div>
+    <div className="flex items-start gap-3">
 
-      <span>
-        Rent Settled
-      </span>
-    </div>
+  <div
+    className={`h-6 w-6 rounded-full flex items-center justify-center text-xs ${
+      payment.rentSettled
+        ? "bg-green-500 text-white"
+        : payment.moveInRequested
+        ? "border-2 border-blue-500 text-blue-700"
+        : "bg-gray-200"
+    }`}
+  >
+    {payment.rentSettled ? "✓" : "3"}
+  </div>
+
+  <div className="flex-1">
+
+    <p className="font-medium">
+
+      {payment.rentSettled
+        ? "Move-in Approved"
+        : payment.moveInRequested
+        ? "Waiting for Owner Approval"
+        : "Request Move-in Approval"}
+
+    </p>
+
+    {!payment.moveInRequested &&
+      payment.visitVerified &&
+      !payment.rentSettled && (
+
+      <button
+
+        className="mt-2 rounded-xl bg-amber-600 px-4 py-2 text-sm font-bold text-white hover:bg-amber-700"
+
+        onClick={async()=>{
+
+          try{
+
+            await requestMoveIn(payment.id);
+
+            setPayments(current=>current.map(p=>
+
+              p.id===payment.id
+
+              ?{
+
+                  ...p,
+
+                  moveInRequested:true
+
+               }
+
+              :p
+
+            ));
+
+            alert("Move-in Request Sent");
+
+          }catch{
+
+            alert("Failed");
+
+          }
+
+        }}
+
+      >
+
+        Request Move-in Approval
+
+      </button>
+
+    )}
+
+  </div>
+
+</div>
 
   </div>
 </div>
