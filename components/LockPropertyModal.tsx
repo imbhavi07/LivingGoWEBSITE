@@ -120,13 +120,15 @@ export function LockPropertyModal({ propertyId, propertyTitle, monthlyRent, onCl
           setStep("loading");
           try {
             // Confirm transaction state safely on your backend servers via cryptographic check
-            console.log("ROUTE HIT: /api/token-payments/confirm-razorpay reached!");
-            const verifyRes = await fetch("/api/token-payments/confirm-razorpay", {
+            console.log("ROUTE HIT: /api/payments/verify reached!");
+            const verifyRes = await fetch("/api/payments/verify", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 propertyId,
                 razorpayPaymentId: paymentResponse.razorpay_payment_id,
+                razorpayOrderId: paymentResponse.razorpay_order_id,
+                razorpaySignature: paymentResponse.razorpay_signature,
               }),
             });
 

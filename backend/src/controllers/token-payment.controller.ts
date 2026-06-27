@@ -62,16 +62,49 @@ export const verifyVisit = asyncHandler(async (req: Request, res: Response) => {
   res.json(result);
 });
 
+import { verifyToken } from "@clerk/backend";
+
 export const confirmRazorpayPayment = asyncHandler(async (req: Request, res: Response) => {
   const user = requireUser(req);
   const { propertyId, razorpayPaymentId } = req.body;
+
+  // Ensure user record exists in DB (self-heal for missing webhook)
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (token) {
+    try {
+      const payload = await verifyToken(token, { secretKey: process.env.CLERK_SECRET_KEY });
+      const clerkUserId = payload.sub;
+      const email = payload.email as string | null;
+      const firstName = payload.first_name as string | null;
+      const lastName = payload.last_name as string | null;
+      const name = ((firstName ?? '') + ' ' + (lastName ?? '')).trim() || undefined;
+
+      await prisma.user.upsert({
+        where: { clerkId: clerkUserId },
+        update: {},
+        create: {
+          clerkId: clerkUserId,
+          email: email ?? `${clerkUserId}@users.clerk.dev`,
+          name: name ?? 'Clerk User',
+          role: 'student',
+          status: 'active',
+          passwordHash: 'dummy_hash',
+          verificationStatus: 'not_required',
+        },
+      });
+    } catch (err) {
+      // If token verification fails, we still have user from requireUser (which came from clerkAuthenticate)
+      // So we can ignore; the user record should exist from middleware.
+    }
+  }
 
   // 1. Fetch property to calculate token amount
   const property = await prisma.property.findUnique({ where: { id: propertyId } });
   if (!property) throw new AppError("Property not found", 404);
 
   const tokenAmount = Math.ceil(property.price / 2);
-  
+
   // 2. Generate the Visit OTP instantly (Anti-Bypass System)
   const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
@@ -89,7 +122,7 @@ export const confirmRazorpayPayment = asyncHandler(async (req: Request, res: Res
       propertyId,
       amount: tokenAmount,
       utrNumber: razorpayPaymentId,
-      status: "approved", 
+      status: "approved",
       visitOtp: otp,
     }
   });

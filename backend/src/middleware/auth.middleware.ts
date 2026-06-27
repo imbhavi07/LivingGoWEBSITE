@@ -74,24 +74,48 @@ export async function clerkAuthenticate(request: Request, _response: Response, n
     });
 
     const clerkUserId = payload.sub;
+    const email = payload.email as string | null;
+    const firstName = payload.first_name as string | null;
+    const lastName = payload.last_name as string | null;
+    const name = ((firstName ?? '') + ' ' + (lastName ?? '')).trim() || undefined;
 
-    const user = await prisma.user.findFirst({
+    // Find or create user record based on clerkId
+    let user = await prisma.user.findFirst({
       where: { clerkId: clerkUserId },
       select: { id: true, email: true, role: true, status: true, verificationStatus: true }
     });
 
     if (!user) {
-      return next(new AppError("User not found. Please sign up first.", 401));
+      // Auto-create baseline user record for missing webhook / first-time login
+      user = await prisma.user.create({
+        data: {
+          clerkId: clerkUserId,
+          email: email ?? `${clerkUserId}@users.clerk.dev`, // fallback email
+          name: name ?? 'Clerk User',
+          role: 'student', // default to student for token payment flow; adjust if needed elsewhere
+          status: 'active',
+          passwordHash: 'dummy_hash', // placeholder; password auth not used
+          verificationStatus: 'not_required',
+        },
+        select: { id: true, email: true, role: true, status: true, verificationStatus: true }
+      });
     }
 
     if (user.status === "suspended") {
       return next(new AppError("Account is inactive or suspended", 401));
     }
 
+    // --- PITCH DEMO OVERRIDE ---
+    // Replace 'your-email@example.com' with the email you used to log in
+    if (user.email === 'projectbhavishya1@gmail.com') {
+      user.role = 'owner'; // Force 'owner' role for the dashboard
+    }
+    // ---------------------------
+
     request.user = {
       id: user.id,
       email: user.email,
-      role: user.role,
+      role: user.role, // This will now be 'owner'
       verificationStatus: user.verificationStatus
     };
     next();
