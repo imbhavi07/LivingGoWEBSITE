@@ -47,6 +47,7 @@ export async function getStudentTokenPayments(studentId: string) {
       visitOtp: true,
       visitVerified: true,
       rentSettled: true,
+      moveInRequested: true,
       createdAt: true,
       property: {
         select: {
@@ -133,57 +134,203 @@ export async function getOwnerTokenPayments(ownerId: string) {
   });
 }
 
-export async function verifyVisit(
+export async function requestMoveIn(paymentId: string) {
+  const payment = await prisma.tokenPayment.findUnique({
+    where: { id: paymentId }
+  });
+  if (!payment)
+    throw new AppError("Booking not found", 404);
+  if (!payment.visitVerified)
+    throw new AppError("Visit not verified", 400);
+  if (payment.moveInRequested)
+    throw new AppError("Already requested", 400);
+  return prisma.tokenPayment.update({
+    where: { id: paymentId },
+    data: {
+      moveInRequested: true
+    }
+  });
+
+}
+
+export async function getOwnerPendingVisits(ownerId: string) {
+  return prisma.tokenPayment.findMany({
+    where: {
+      property: {
+        ownerId,
+      },
+      status: "approved",
+      visitVerified: false,
+    },
+    include: {
+      student: true,
+      property: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}
+
+export async function verifyVisitOtp(
   paymentId: string,
   otp: string
 ) {
   const payment = await prisma.tokenPayment.findUnique({
-    where: { id: paymentId }
+    where: {
+      id: paymentId,
+    },
   });
-
-  if (!payment)
-    throw new AppError("Payment not found", 404);
-
-  if (payment.visitOtp !== otp)
+  if (!payment) {
+    throw new AppError("Booking not found", 404);
+  }
+  if (payment.visitVerified) {
+    throw new AppError("Visit already verified", 400);
+  }
+  if (payment.visitOtp !== otp) {
     throw new AppError("Invalid OTP", 400);
-
+  }
   return prisma.tokenPayment.update({
-    where: { id: paymentId },
+    where: {
+      id: paymentId,
+    },
     data: {
-      visitVerified: true
-    }
+      visitVerified: true,
+      visitOtp: null, // OTP destroyed after successful verification
+    },
   });
 }
 
-export async function settleRent(
+export async function approveMoveIn(
   paymentId: string
 ) {
   const payment = await prisma.tokenPayment.findUnique({
-    where: { id: paymentId }
-  });
-
-  if (!payment)
-    throw new AppError("Payment not found", 404);
-
-  const updated = await prisma.tokenPayment.update({
-    where: { id: paymentId },
-    data: {
-      rentSettled: true
+    where:{
+      id:paymentId
+    },
+    include:{
+      property:true
     }
   });
+  if(!payment)
+    throw new AppError("Payment not found",404);
+  if(!payment.visitVerified)
+    throw new AppError("Visit not verified",400);
+  if(!payment.moveInRequested)
+    throw new AppError("Move-in not requested",400);
+  const totalBeds =
+      (payment.property.bedsSingle ?? 0)+
+      (payment.property.bedsDouble ?? 0)+
+      (payment.property.bedsTriple ?? 0);
 
-  await prisma.tenantResidence.upsert({
+  if(payment.property.occupiedBeds>=totalBeds)
+      throw new AppError("Property Full",400);
+
+  return prisma.$transaction(async(tx)=>{
+
+      await tx.tokenPayment.update({
+
+          where:{
+              id:paymentId
+          },
+
+          data:{
+              rentSettled:true
+          }
+
+      });
+
+      await tx.tenantResidence.upsert({
+
+          where:{
+              studentId:payment.studentId
+          },
+
+          update:{
+              propertyId:payment.propertyId
+          },
+
+          create:{
+              propertyId:payment.propertyId,
+              studentId:payment.studentId
+          }
+
+      });
+
+      await tx.property.update({
+
+          where:{
+              id:payment.propertyId
+          },
+
+          data:{
+              occupiedBeds:{
+                  increment:1
+              }
+          }
+
+      });
+
+      return {
+          success:true
+      };
+
+  });
+
+}
+
+export async function getOwnerTenants(ownerId: string) {
+
+  return prisma.tenantResidence.findMany({
+
     where: {
-      studentId: payment.studentId
+
+      property: {
+
+        ownerId
+
+      }
+
     },
-    update: {
-      propertyId: payment.propertyId
+
+    include: {
+
+      student: {
+
+        select: {
+
+          id: true,
+          name: true,
+          email: true,
+          phone: true
+
+        }
+
+      },
+
+      property: {
+
+        select: {
+
+          id: true,
+          title: true,
+          occupiedBeds: true,
+          bedsSingle: true,
+          bedsDouble: true,
+          bedsTriple: true
+
+        }
+
+      }
+
     },
-    create: {
-      studentId: payment.studentId,
-      propertyId: payment.propertyId
+
+    orderBy: {
+
+      createdAt: "desc"
+
     }
+
   });
 
-  return updated;
 }

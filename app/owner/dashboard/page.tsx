@@ -8,6 +8,7 @@ import { buttonClasses } from "@/components/Button";
 import { OwnerShell } from "@/components/owner/OwnerShell";
 import { OwnerStatCard } from "@/components/owner/OwnerStatCard";
 import { OwnerBookings } from "@/components/owner/OwnerBookings";
+import { OwnerTenants } from "@/components/owner/OwnerTenants";
 import { useOwnerDashboard } from "@/hooks/useOwnerProperties";
 import { useAuthContext } from "@/contexts/AuthContext";
 
@@ -48,8 +49,13 @@ export default function OwnerDashboardPage() {
         </section>
       )}
 
-      {/* NEW: Student bookings / token payments */}
+      {/* Student bookings */}
       <OwnerBookings />
+          
+      {/* Current tenants */}
+      <div className="mt-8">
+        <OwnerTenants />
+      </div>
     </OwnerShell>
   );
 }

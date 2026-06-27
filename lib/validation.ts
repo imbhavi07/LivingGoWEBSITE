@@ -20,7 +20,7 @@ export const ownerSignupSchema = z.object({
 export const ownerPropertySchema = z.object({
   title: z.string().min(4, "Property title is too short"),
   description: z.string().min(20, "Description must be at least 20 characters"),
-  price: z.coerce.number().min(1000, "Enter a realistic monthly price"),
+  price: z.coerce.number().min(1, "Enter a realistic monthly price"),
   priceSingle: z.coerce.number().min(0).optional(),
   bedsSingle: z.coerce.number().int().min(0).optional(),    // ← FIX: was missing
   priceDouble: z.coerce.number().min(0).optional(),

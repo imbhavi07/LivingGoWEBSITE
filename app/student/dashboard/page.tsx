@@ -92,7 +92,8 @@ export default function StudentDashboardPage() {
             </h2>
 
             {/* "I'm an existing tenant" button */}
-            <div className="relative">
+            {!residence && (
+              <div className="relative">
               <button
                 onClick={() => { setShowDropdown((v) => !v); setMarkError(null); }}
                 className="flex items-center gap-2 rounded-xl border border-black/10 bg-linen px-4 py-2 text-sm font-semibold text-ink hover:bg-black/5 transition-colors"
@@ -149,7 +150,7 @@ export default function StudentDashboardPage() {
                   </ul>
                 </div>
               )}
-            </div>
+            </div>)}
           </div>
 
           {markError && (
@@ -206,48 +207,6 @@ export default function StudentDashboardPage() {
 
         {/* ── My Bookings (token payments) ─────────────────────────────── */}
         <MyBookings />
-
-        {/* ── Application & Visit Tracker ───────────────────────────────── */}
-        <section className="bg-white rounded-3xl shadow-soft p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-ink flex items-center gap-2">
-              <Timer className="h-5 w-5" />
-              Application & Visit Tracker
-            </h2>
-          </div>
-          <div className="space-y-4">
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 flex items-center justify-center bg-green-50 text-green-600 rounded-full shrink-0">
-                <Check className="h-5 w-5" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-ink">Step 1: Token Paid</h3>
-                <p className="text-sm text-muted">Security deposit submitted and verified</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-4">
-              <div className="w-10 h-10 flex items-center justify-center border-2 border-dashed border-amber-500 rounded-full shrink-0">
-                <span className="text-xs font-black text-amber-700">8492</span>
-              </div>
-              <div>
-                <h3 className="font-semibold text-ink">Step 2: Visit Verification</h3>
-                <p className="text-sm text-muted">Owner verification required</p>
-                <p className="mt-1 text-xs font-medium text-amber-600">
-                  Show this OTP to the owner: <span className="font-black text-amber-800">8492</span>
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-4 opacity-50">
-              <div className="w-10 h-10 flex items-center justify-center bg-linen text-muted rounded-full shrink-0">
-                <Timer className="h-5 w-5" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-muted">Step 3: Rent Settled</h3>
-                <p className="text-sm text-muted">Monthly rent payment completed</p>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* ── Shortlisted Properties ────────────────────────────────────── */}
         <section className="bg-white rounded-3xl shadow-soft p-6">

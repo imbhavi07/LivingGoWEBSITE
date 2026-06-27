@@ -364,7 +364,7 @@ const price = Math.min(...prices);
                 <div className="grid gap-4 sm:grid-cols-2 animate-in fade-in slide-in-from-top-2 duration-300">
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-ink">Monthly Rent (₹)</span>
-                    <input name="priceSingle" type="number" min={1000} defaultValue={property?.priceSingle} className="input" placeholder="15000" />
+                    <input name="priceSingle" type="number" min={1} defaultValue={property?.priceSingle} className="input" placeholder="15000" />
                   </label>
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-ink">Total Beds Available</span>
@@ -383,7 +383,7 @@ const price = Math.min(...prices);
                 <div className="grid gap-4 sm:grid-cols-2 animate-in fade-in slide-in-from-top-2 duration-300">
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-ink">Monthly Rent (₹)</span>
-                    <input name="priceDouble" type="number" min={1000} defaultValue={property?.priceDouble} className="input" placeholder="12000" />
+                    <input name="priceDouble" type="number" min={1} defaultValue={property?.priceDouble} className="input" placeholder="12000" />
                   </label>
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-ink">Total Beds Available</span>
@@ -402,7 +402,7 @@ const price = Math.min(...prices);
                 <div className="grid gap-4 sm:grid-cols-2 animate-in fade-in slide-in-from-top-2 duration-300">
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-ink">Monthly Rent (₹)</span>
-                    <input name="priceTriple" type="number" min={1000} defaultValue={property?.priceTriple} className="input" placeholder="9000" />
+                    <input name="priceTriple" type="number" min={1} defaultValue={property?.priceTriple} className="input" placeholder="9000" />
                   </label>
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-ink">Total Beds Available</span>

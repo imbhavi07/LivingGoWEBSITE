@@ -10,6 +10,7 @@ export type TokenPayment = {
   visitOtp?: string | null;
   visitVerified: boolean;
   rentSettled: boolean;
+  moveInRequested: boolean;
   createdAt: string;
   property: {
     id: string;
@@ -59,4 +60,51 @@ export async function adminModeratePayment(
 ): Promise<AdminTokenPayment> {
   const { data } = await apiClient.patch<AdminTokenPayment>(`/payments/admin/token-payments/${paymentId}`, { action });
   return data;
+}
+
+export async function requestMoveIn(paymentId: string) {
+  const { data } = await apiClient.post(
+    `/payments/request-movein/${paymentId}`
+  );
+
+  return data;
+}
+
+export async function getOwnerPendingVisits(){
+const {data}=await apiClient.get(
+"/payments/owner/pending-visits"
+);
+return data;
+}
+export async function verifyVisitOtp(
+id:string,
+otp:string
+){
+const {data}=await apiClient.post(
+`/payments/owner/verify-otp/${id}`,
+{
+otp
+}
+);
+return data;
+}
+
+export async function approveMoveIn(id: string) {
+  const { data } = await apiClient.post(
+    `/payments/owner/approve-movein/${id}`
+  );
+
+  return data;
+}
+
+export async function getOwnerTenants() {
+
+  const { data } = await apiClient.get(
+
+    "/payments/owner/tenants"
+
+  );
+
+  return data;
+
 }
