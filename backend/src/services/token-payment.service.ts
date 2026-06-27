@@ -227,3 +227,36 @@ export async function getOwnerPendingVisits(ownerId: string) {
     },
   });
 }
+
+export async function verifyVisitOtp(
+  paymentId: string,
+  otp: string
+) {
+  const payment = await prisma.tokenPayment.findUnique({
+    where: {
+      id: paymentId,
+    },
+  });
+
+  if (!payment) {
+    throw new AppError("Booking not found", 404);
+  }
+
+  if (payment.visitVerified) {
+    throw new AppError("Visit already verified", 400);
+  }
+
+  if (payment.visitOtp !== otp) {
+    throw new AppError("Invalid OTP", 400);
+  }
+
+  return prisma.tokenPayment.update({
+    where: {
+      id: paymentId,
+    },
+    data: {
+      visitVerified: true,
+      visitOtp: null, // OTP destroyed after successful verification
+    },
+  });
+}

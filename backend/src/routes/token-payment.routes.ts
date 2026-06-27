@@ -96,3 +96,10 @@ tokenPaymentRouter.get(
   authorize("owner"),
   tokenController.getOwnerPendingVisits
 );
+
+tokenPaymentRouter.post(
+  "/owner/verify-otp/:id",
+  clerkAuthenticate,
+  authorize("owner"),
+  tokenController.verifyVisitOtp
+);

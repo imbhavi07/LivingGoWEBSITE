@@ -69,3 +69,32 @@ export async function requestMoveIn(paymentId: string) {
 
   return data;
 }
+
+export async function getOwnerPendingVisits(){
+
+const {data}=await apiClient.get(
+"/payments/owner/pending-visits"
+);
+
+return data;
+
+}
+
+export async function verifyVisitOtp(
+id:string,
+otp:string
+){
+
+const {data}=await apiClient.post(
+
+`/payments/owner/verify-otp/${id}`,
+
+{
+otp
+}
+
+);
+
+return data;
+
+}

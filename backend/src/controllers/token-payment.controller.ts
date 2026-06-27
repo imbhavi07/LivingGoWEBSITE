@@ -122,9 +122,25 @@ export const requestMoveIn = asyncHandler(async (req, res) => {
 });
 
 export const getOwnerPendingVisits = asyncHandler(async (req, res) => {
+
+  if (!req.user) {
+    throw new AppError("Unauthorized", 401);
+  }
   const ownerId = req.user.id;
 
   const visits = await tokenService.getOwnerPendingVisits(ownerId);
 
   res.json(visits);
+});
+
+export const verifyVisitOtp = asyncHandler(async (req, res) => {
+  const paymentId = String(req.params.id);
+  const { otp } = req.body;
+
+  const result = await tokenService.verifyVisitOtp(
+    paymentId,
+    otp
+  );
+
+  res.json(result);
 });
