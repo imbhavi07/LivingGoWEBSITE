@@ -3,6 +3,7 @@ import { FilterBar } from "@/components/FilterBar";
 import { ClientPropertyGrid } from "./ClientPropertyGrid";
 import { getProperties } from "@/lib/api/properties";
 import type { PropertyFilters } from "@/types/property";
+import Pagination from "@/components/pagination";
 
 // Next.js automatically passes URL parameters here
 // 1. Update the type to be a Promise
@@ -21,7 +22,13 @@ export default async function ListingsPage(props: {
     preference: searchParams.preference as PropertyFilters["preference"],
   };
 
-  const properties = await getProperties(filters);
+  const currentPage = Number(searchParams.page ?? 1);
+
+const { properties, meta } = await getProperties(
+  filters,
+  currentPage,
+  12
+);
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 md:py-10 lg:px-8">
@@ -31,7 +38,14 @@ export default async function ListingsPage(props: {
       </div>
       
       <FilterBar />
-      <ClientPropertyGrid properties={properties} />
+      <>
+  <ClientPropertyGrid properties={properties} />
+
+  <Pagination
+    current={meta.page}
+    total={meta.pages}
+  />
+</>
     </main>
   );
 }

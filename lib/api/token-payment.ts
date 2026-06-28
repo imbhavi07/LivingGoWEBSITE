@@ -101,7 +101,7 @@ export async function getOwnerTenants() {
 
   const { data } = await apiClient.get(
 
-    "/payments/owner/tenants"
+    "/api/token-payments/owner/tenants"
 
   );
 
