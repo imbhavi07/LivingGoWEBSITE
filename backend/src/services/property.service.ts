@@ -5,8 +5,8 @@ import { getPagination } from "../utils/pagination";
 import { findNearbyPlaces } from "./nearby.service";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-let cachedProperties: any = null;
-let cacheTimestamp = 0;
+// let cachedProperties: any = null;
+// let cacheTimestamp = 0;
 
 type PropertyInput = {
   title: string;
@@ -151,13 +151,13 @@ export async function getProperties(query: Record<string, unknown>, viewerRole?:
     preference: query.preference as GenderPreference | undefined
   };
 
-  if (
-    !viewerRole &&
-    cachedProperties &&
-    Date.now() - cacheTimestamp < 60000
-  ) {
-    return cachedProperties;
-  }
+  // if (
+  //   !viewerRole &&
+  //   cachedProperties &&
+  //   Date.now() - cacheTimestamp < 60000
+  // ) {
+  //   return cachedProperties;
+  // }
 
   const [items, total] = await prisma.$transaction([
   prisma.property.findMany({
@@ -180,10 +180,10 @@ const result = {
   }
 };
 
-if (!viewerRole) {
-  cachedProperties = result;
-  cacheTimestamp = Date.now();
-}
+// if (!viewerRole) {
+//   cachedProperties = result;
+//   cacheTimestamp = Date.now();
+// }
 
 return result;
 }
