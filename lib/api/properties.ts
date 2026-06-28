@@ -46,3 +46,17 @@ export async function getProperties(
     );
   }
 }
+
+export async function getProperty(id: string) {
+  try {
+    const { data } = await apiClient.get<ApiProperty>(`/properties/${id}`);
+    return toProperty(data);
+  } catch (error) {
+    throw new Error(
+      `Failed to load property: ${getApiErrorMessage(
+        error,
+        "Unknown error"
+      )}`
+    );
+  }
+}
