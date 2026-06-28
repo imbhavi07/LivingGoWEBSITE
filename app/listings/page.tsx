@@ -24,11 +24,7 @@ export default async function ListingsPage(props: {
 
   const currentPage = Number(searchParams.page ?? 1);
 
-const { properties, meta } = await getProperties(
-  filters,
-  currentPage,
-  12
-);
+const { properties, meta } = await getProperties(filters, currentPage, 12);
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 md:py-10 lg:px-8">
