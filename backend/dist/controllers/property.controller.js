@@ -45,8 +45,6 @@ function requireUser(request) {
 }
 exports.createProperty = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);
-    // Only approved owners can list properties
-    // admins bypass this check
     if (user.role === "owner" && user.verificationStatus !== "approved") {
         const statusMessages = {
             not_required: "Please complete your KYC verification before listing properties.",
@@ -77,7 +75,11 @@ exports.createProperty = (0, async_handler_1.asyncHandler)(async (request, respo
     console.log("BODY", request.body);
     console.log("FILES", files.length);
     console.log("USER", user.id);
-    const property = await propertyService.createProperty(user.id, request.body, uploads.map((upload) => ({ url: upload.secure_url, publicId: upload.public_id })));
+    const property = await propertyService.createProperty(user.id, request.body, uploads.map((upload, index) => ({
+        url: upload.secure_url,
+        publicId: upload.public_id,
+        roomCategory: roomTypeMappings[index]?.roomCategory ?? "common",
+    })));
     response.status(201).json(property);
 });
 exports.getProperties = (0, async_handler_1.asyncHandler)(async (request, response) => {
@@ -123,7 +125,11 @@ exports.updateProperty = (0, async_handler_1.asyncHandler)(async (request, respo
     if (request.files?.length) {
         const files = request.files ?? [];
         const rawUploads = await (0, cloudinary_service_1.uploadMany)(files);
-        images = rawUploads.map(upload => ({ url: upload.secure_url, publicId: upload.public_id }));
+        images = rawUploads.map((upload, index) => ({
+            url: upload.secure_url,
+            publicId: upload.public_id,
+            roomCategory: roomTypeMappings[index]?.roomCategory ?? "common",
+        }));
         // Extract room-type mappings from request body
         roomTypeMappings = request.body.roomTypeMappings
             ? JSON.parse(request.body.roomTypeMappings)

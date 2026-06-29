@@ -9,7 +9,6 @@ import { ToastProvider } from "@/contexts/ToastContext";
 import "./globals.css";
 import IntroOverlay from "@/components/IntroOverlay";
 import ServiceWorkerRegistry from "@/components/ServiceWorkerRegistry"; // Add this import
-import { InstallPrompt } from "@/components/InstallPrompt";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -43,7 +42,6 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
               <ClerkSessionSync />
               {/* Add ServiceWorkerRegistry component */}
               <ServiceWorkerRegistry />
-              <InstallPrompt />
               <AppChrome>{children}</AppChrome>
             </AuthProvider>
           </ToastProvider>
