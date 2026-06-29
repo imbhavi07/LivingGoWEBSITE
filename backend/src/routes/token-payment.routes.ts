@@ -21,9 +21,8 @@ tokenPaymentRouter.post(
 // Automated Razorpay webhook confirmation endpoint
 // FIXED: Stripped extra "/token-payments" prefix to match standard mounting structure
 tokenPaymentRouter.post(
-  "/confirm-razorpay", 
+  "/confirm-razorpay",
   clerkAuthenticate,
-  authorize("student"),
   tokenController.confirmRazorpayPayment
 );
 
