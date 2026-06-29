@@ -15,8 +15,8 @@ export function InstallPrompt() {
   const [activeModal, setActiveModal] = useState<"none" | "ios" | "android-fallback">("none");
 
   useEffect(() => {
-    // Show banner after (n) seconds
-     const timer = setTimeout(() => {
+    // Show banner after 5 seconds
+    const timer = setTimeout(() => {
       setIsBannerVisible(true);
     }, 5000);
 
