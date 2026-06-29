@@ -28,7 +28,7 @@ export function useProperties(filters?: PropertyFilters) {
     retryApiCall(() => getProperties(filters), 2)
       .then((data) => {
         if (isMounted) {
-          setProperties(data);
+          setProperties(data.properties);
           setError(null);
         }
       })
