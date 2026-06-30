@@ -117,14 +117,20 @@ useEffect(() => {
   const nearbyPlaces = property.nearbyPlaces as NearbyPlacesData | null;
   const hasNearby = nearbyPlaces && (nearbyPlaces.colleges?.length > 0 || nearbyPlaces.metro);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const propertyAny = property as any;
-  const rawRating = propertyAny.rating;
+  // Local lightweight type to avoid using `any` while accessing a few optional fields
+  type LocalPropertyOptional = {
+    updatedAt?: string | number | Date;
+    rating?: unknown;
+    reviews?: Review[];
+  };
+
+  const propertyOptional = property as LocalPropertyOptional;
+  const rawRating = propertyOptional.rating;
   const rating: RatingData =
     rawRating && typeof rawRating === "object" && "overall" in rawRating
       ? (rawRating as RatingData)
       : { overall: null, cleanliness: null, food: null, security: null, management: null, location: null, count: 0 };
-  const reviews: Review[] = propertyAny.reviews ?? [];
+  const reviews: Review[] = propertyOptional.reviews ?? [];
 
   // Bed availability per room type
   const totalBeds = (property.bedsSingle ?? 0) + (property.bedsDouble ?? 0) + (property.bedsTriple ?? 0);
@@ -138,13 +144,34 @@ useEffect(() => {
     setShowLockModal(true);
   }
 
-  const displayedImages =
-  roomOptions.find((r) => r?.key === selectedRoom)?.images ??
-  property.images;
+  // 1. Create a stable cache-buster based on the property's last update time.
+  // (If your backend doesn't send 'updatedAt', Date.now() works safely here on mount)
+  const cacheBuster = propertyOptional.updatedAt
+    ? new Date(propertyOptional.updatedAt).getTime()
+    : Date.now();
 
-const displayedPrice =
-  roomOptions.find((r) => r?.key === selectedRoom)?.price ??
-  property.price;
+  // 2. Grab the raw images based on the selected room
+  const rawImages = roomOptions.find((r) => r?.key === selectedRoom)?.images ?? property.images;
+
+  // 3. THE FIX: Update the URL fields without breaking the object structure
+  const displayedImages = rawImages.map((img) => {
+    const originalUrl = img.url;
+    if (!originalUrl) return img;
+
+    const bustedUrl = originalUrl.includes('?') 
+      ? `${originalUrl}&v=${cacheBuster}` 
+      : `${originalUrl}?v=${cacheBuster}`;
+
+    // Return the original object spread, but override the url field
+    return {
+      ...img,
+      url: bustedUrl,
+    };
+  });
+
+  const displayedPrice =
+    roomOptions.find((r) => r?.key === selectedRoom)?.price ??
+    property.price;
 
   return (
     <>
