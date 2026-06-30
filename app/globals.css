@@ -1,3 +1,4 @@
+@import url('https://googleapis.com');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -35,4 +36,15 @@ body {
   .input {
     @apply h-12 w-full rounded-2xl border border-black/10 bg-linen px-4 text-sm font-medium text-ink outline-none transition placeholder:text-muted/70 focus:border-ink/30 focus:ring-4 focus:ring-ink/5;
   }
+}
+
+@keyframes gradient-flow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient-flow {
+  background-size: 200% 200%;
+  animation: gradient-flow 2s ease infinite;
 }
