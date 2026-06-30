@@ -83,7 +83,7 @@ export async function rejectOwner(id: string) {
 export async function getAdminUserProperties(id: string) {
   const { data } = await apiClient.get(`/admin/users/${id}/properties`);
   return data;
-} 
+}
 
 export async function updateListing(id: string, payload: Partial<{
   title: string;
@@ -116,10 +116,16 @@ export async function addPropertyImages(
     formData.append("images", file);
   });
 
-  const { data } = await apiClient.post(
-    `/admin/listings/${propertyId}/images`,
-    formData
-  );
+  const { data } =
+    await apiClient.post(
+      `/admin/listings/${propertyId}/images`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        }
+      }
+    );
 
   return data;
 }
@@ -139,17 +145,20 @@ export async function replacePropertyImage(
   file: File
 ) {
   const formData = new FormData();
+  
+  // Keep this singular! The backend expects "image"
+  formData.append('image', file); 
 
-  formData.append(
-    "image",
-    file
+  const { data } = await apiClient.put(
+    `/admin/listings/${propertyId}/images/${imageId}`,
+    formData,
+    {
+      headers: {
+        // Use the correct string, NOT false
+        'Content-Type': 'multipart/form-data',
+      },
+    }
   );
-
-  const { data } =
-    await apiClient.put(
-      `/admin/listings/${propertyId}/images/${imageId}`,
-      formData
-    );
 
   return data;
 }
