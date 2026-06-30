@@ -1,66 +1,70 @@
 "use client";
 
-import Image from 'next/image';
-import { ArrowRight } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
-import styles from './IntroOverlay.module.css';
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import { ArrowRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function IntroOverlay() {
-  const [introState, setIntroState] = useState<'playing' | 'fading' | 'done'>('playing');
+  const [isVisible, setIsVisible] = useState(true);
 
-  useEffect(() => {
-    if (sessionStorage.getItem('hasSeenIntro')) {
-      setIntroState('done');
-    } else {
-      sessionStorage.setItem('hasSeenIntro', 'true');
-    }
-  }, []);
-
-  const handleSkip = () => {
-    setIntroState('fading');
-    setTimeout(() => {
-      setIntroState('done');
-    }, 500);
+  // Core callback function to clear intro state and wake up home page
+  const handleIntroComplete = () => {
+    sessionStorage.setItem("intro_skipped", "true");
+    // This is the magic signal that tells page.tsx to slide up!
+    window.dispatchEvent(new Event("introAnimationComplete"));
+    setIsVisible(false);
   };
 
   useEffect(() => {
-    const autoQuitTimer = setTimeout(() => {
-      handleSkip();
+    // Check if user has already bypassed intro in this active session
+    if (sessionStorage.getItem("intro_skipped") === "true") {
+      window.dispatchEvent(new Event("introAnimationComplete"));
+      setIsVisible(false);
+      return;
+    }
+
+    // Auto-complete intro timeline sequence after 5 seconds
+    const autoTimer = setTimeout(() => {
+      handleIntroComplete();
     }, 5000); 
 
-    return () => clearTimeout(autoQuitTimer);
+    return () => clearTimeout(autoTimer);
   }, []);
 
+  if (!isVisible) return null;
 
-  if (introState === 'done') {
-    return null;
-  }
-  // bootup kardiya fix
   return (
-    <div
-      // THE CSS VARIABLE HERE LISTENS TO THE HEAD SCRIPT TO INSTANTLY HIDE ITSELF
-      // Note: Swap 'bg-white' with the exact beige hex code of your video if needed!
-      className={`${styles.overlay} fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#f9e7d3] transition-opacity duration-500 ease-in-out ${
-        introState === 'fading' ? 'opacity-0 pointer-events-none' : 'opacity-100'
-      }`}
-    >
-      <div className="relative aspect-video w-full max-w-4xl mx-auto">
-        <Image
-          src="/bootup-animation.webp"
-          alt="LivingGo Intro Animation"
-          fill
-          priority
-          unoptimized
-          className="object-contain"
-        />
-      </div>
-
-      <button
-        onClick={handleSkip}
-        className="mt-8 px-4 py-2 text-xl font-semibold text-ink transition-colors hover:text-gray-700 flex items-center gap-2"
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 1 }}
+        exit={{ 
+          opacity: 0,
+          pointerEvents: "none",
+          transition: { ease: "easeInOut", duration: 0.5 }
+        }}
+        className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#f9e7d3]"
       >
-        Skip Intro <ArrowRight className="h-6 w-6" aria-hidden />
-      </button>
-    </div>
+        {/* Restored your exact animated WebP implementation */}
+        <div className="relative aspect-video w-full max-w-4xl mx-auto">
+          <Image
+            src="/bootup-animation.webp"
+            alt="LivingGo Intro Animation"
+            fill
+            priority
+            unoptimized
+            className="object-contain"
+          />
+        </div>
+
+        {/* Restored your original skip button styling but hooked to the new event logic */}
+        <button
+          onClick={handleIntroComplete}
+          className="mt-8 px-4 py-2 text-xl font-semibold text-ink transition-colors hover:text-gray-700 flex items-center gap-2"
+        >
+          Skip Intro <ArrowRight className="h-6 w-6" aria-hidden="true" />
+        </button>
+      </motion.div>
+    </AnimatePresence>
   );
 }

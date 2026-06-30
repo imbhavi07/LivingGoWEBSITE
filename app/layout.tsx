@@ -7,9 +7,9 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ClerkSessionSync } from "@/components/ClerkSessionSync";
 import { ToastProvider } from "@/contexts/ToastContext";
 import "./globals.css";
+// Clean named import matching our exact component signature
+import ServiceWorkerRegistry from "@/components/ServiceWorkerRegistry"; 
 import IntroOverlay from "@/components/IntroOverlay";
-import ServiceWorkerRegistry from "@/components/ServiceWorkerRegistry"; // Add this import
-import { InstallPrompt } from "@/components/InstallPrompt";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -20,8 +20,6 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "LivingGo Student Housing",
   description: "Find verified student housing, PGs, rooms, flats, and residences near your college",
-  // Next.js 13+ Metadata standards
-  // ab shayad ho jana chahiye PWA ka scene fix
   manifest: '/manifest.json',
   icons: {
     icon: '/favicon.ico',
@@ -34,16 +32,14 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
     <html lang="en" suppressHydrationWarning>
       <head />
       <body className={`${inter.variable} font-sans antialiased`}>
-        <ClerkProvider
-          afterSignOutUrl="/"
-        >
-          <IntroOverlay />
+        {/* THE FIX: Moved IntroOverlay inside body so it renders cleanly in the DOM tree */}
+        <IntroOverlay />
+        
+        <ClerkProvider afterSignOutUrl="/">
           <ToastProvider>
             <AuthProvider>
               <ClerkSessionSync />
-              {/* Add ServiceWorkerRegistry component */}
               <ServiceWorkerRegistry />
-              <InstallPrompt />
               <AppChrome>{children}</AppChrome>
             </AuthProvider>
           </ToastProvider>
