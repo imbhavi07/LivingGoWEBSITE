@@ -115,27 +115,28 @@ export type ApiOwnerApproval = {
   createdAt: string;
 };
 
-export function unwrapItems<T>(data: T[] | PaginatedResponse<T>) {
-  return Array.isArray(data) ? data : data.items;
-}
-
 export function toProperty(property: ApiProperty, index?: number): Property {
   const fallbackNumber = index !== undefined ? index + 1 : 1;
   const stableNumber = deriveStablePropertyNumber(property.id, fallbackNumber);
+  
   return {
     id: property.id,
-    title: `PG ${stableNumber}`,
+    title: property.title,
     description: property.description,
     price: property.price,
     priceSingle: property.priceSingle,
-    bedsSingle: property.bedsSingle,      // ← FIX: was missing
+    bedsSingle: property.bedsSingle,
     priceDouble: property.priceDouble,
-    bedsDouble: property.bedsDouble,      // ← FIX: was missing
+    bedsDouble: property.bedsDouble,
     priceTriple: property.priceTriple,
-    bedsTriple: property.bedsTriple,      // ← FIX: was missing
-    occupiedBeds: property.occupiedBeds,  // ← FIX: was missing
-    location: "Location shared after enquiry",
-    address: "Address shared after enquiry",
+    bedsTriple: property.bedsTriple,
+    occupiedBeds: property.occupiedBeds,
+    
+    // THE FIX: Use the actual location from the API for the frontend
+    // This allows the frontend to split the string for the locality title
+    location: property.location || "North Campus",
+    address: "Location shared after enquiry", // This keeps the UI private
+    
     roomType: property.roomType,
     sharedType: property.sharedType,
     preference: property.preference,
@@ -161,8 +162,10 @@ export function toProperty(property: ApiProperty, index?: number): Property {
     nearbyPlaces: property.nearbyPlaces ?? null,
     panoramas: property.panoramas ?? [],
     listingIndex: stableNumber,
-    lat: property.lat,
-    lng: property.lng,
+    
+    // Ensure these are passed through so distance calculation works!
+    lat: property.lat ?? null,
+    lng: property.lng ?? null,
   };
 }
 
@@ -271,4 +274,10 @@ export function toOwnerApproval(approval: ApiOwnerApproval): OwnerApproval {
     verificationStatus: approval.verificationStatus,
     createdAt: approval.createdAt
   };
+}
+
+export function unwrapItems<T>(
+  data: PaginatedResponse<T> | T[]
+): T[] {
+  return Array.isArray(data) ? data : data.items;
 }

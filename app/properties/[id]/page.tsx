@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { JSX, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
@@ -15,6 +15,33 @@ import { StarRating, type RatingData } from "@/components/StarRating";
 import { ReviewSection } from "@/components/ReviewSection";
 import { LockPropertyModal } from "@/components/LockPropertyModal";
 import dynamic from "next/dynamic";
+import { 
+  Wifi, 
+  Shirt, 
+  Droplets,  
+  AirVent, 
+  Cctv, 
+  Thermometer, 
+  Building2, 
+  WashingMachine, 
+  Car,
+  Coffee
+} from "lucide-react";
+
+const facilityIcons: Record<string, JSX.Element> = {
+  "Wi-Fi": <Wifi className="h-4 w-4" />,
+  "Laundry": <Shirt className="h-4 w-4" />,
+  "RO Water": <Droplets className="h-4 w-4" />,
+  "Security Guard": <ShieldCheck className="h-4 w-4" />,
+  "AC": <AirVent className="h-4 w-4" />,
+  "CCTV": <Cctv className="h-4 w-4" />,
+  "Geyser": <Thermometer className="h-4 w-4" />,
+  "Lift": <Building2 className="h-4 w-4" />,
+  "Washing Machine": <WashingMachine className="h-4 w-4" />,
+  "Parking": <Car className="h-4 w-4" />,
+  "Study Lounge": <Coffee className="h-4 w-4" />,
+};
+
 
 const PanoramaViewer = dynamic(
   () => import("@/components/PanoramaViewer"),
@@ -207,7 +234,6 @@ useEffect(() => {
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-full bg-linen px-3 py-1 text-xs font-bold text-ink">{property.roomType}</span>
-                <span className="rounded-full bg-linen px-3 py-1 text-xs font-bold text-ink">{property.preference === "Any" ? 'Boys & Girls' : property.preference + ' Only'}</span>
                 {property.rulesStrictness && (
                   <span className={`rounded-full px-3 py-1 text-xs font-bold ${property.rulesStrictness === "Strict" ? "bg-red-50 text-red-700" : "bg-green-50 text-moss"}`}>
                     {property.rulesStrictness} Rules
@@ -219,10 +245,23 @@ useEffect(() => {
                   </span>
                 )}
               </div>
-              <h1 className="mt-3 text-3xl font-black text-ink sm:text-5xl">{property.title}</h1>
+
+              {/* THE FIX: Checks if location is hidden/masked before attempting to split it */}
+              <h1 className="mt-3 text-3xl font-black text-ink sm:text-5xl">
+                {property.preference === "Any" ? "Boys & Girls PG" : `${property.preference} PG`} 
+                {" "}in{" "} 
+                <span className="text-amber-700">
+                  {property.location.toLowerCase().includes("shared after")
+                    ? (property.title.match(/(Civil Lines|Kamla Nagar|Hudson Lane|Vijay Nagar|North Campus|Satya Niketan)/i)?.[0] || "North Campus")
+                    : property.location.split(',')[0]}
+                </span>
+              </h1>
+
               <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-muted">
                 <MapPin className="h-4 w-4" aria-hidden />
-                {property.location}
+                {property.location.toLowerCase().includes("shared after")
+                  ? (property.title.match(/(Civil Lines|Kamla Nagar|Hudson Lane|Vijay Nagar|North Campus|Satya Niketan)/i)?.[0] || "North Campus")
+                  : property.location.split(',')[0]} (Exact address shared after pre-booking)
               </p>
               <p className="mt-4 max-w-3xl text-base leading-8 text-muted">{property.description}</p>
             </div>
@@ -362,37 +401,6 @@ useEffect(() => {
               </section>
             )}
 
-            {/* Pricing */}
-            <section>
-              <h2 className="text-2xl font-black text-ink">Pricing</h2>
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                {property.priceSingle && (
-                  <div className="rounded-2xl bg-white p-4 shadow-soft">
-                    <p className="text-xs font-bold uppercase text-muted">Single Room</p>
-                    <p className="mt-1 text-2xl font-black text-ink">{formatPrice(property.priceSingle)}<span className="text-sm font-semibold text-muted">/mo</span></p>
-                  </div>
-                )}
-                {property.priceDouble && (
-                  <div className="rounded-2xl bg-white p-4 shadow-soft">
-                    <p className="text-xs font-bold uppercase text-muted">Double Sharing</p>
-                    <p className="mt-1 text-2xl font-black text-ink">{formatPrice(property.priceDouble)}<span className="text-sm font-semibold text-muted">/mo</span></p>
-                  </div>
-                )}
-                {property.priceTriple && (
-                  <div className="rounded-2xl bg-white p-4 shadow-soft">
-                    <p className="text-xs font-bold uppercase text-muted">Triple Sharing</p>
-                    <p className="mt-1 text-2xl font-black text-ink">{formatPrice(property.priceTriple)}<span className="text-sm font-semibold text-muted">/mo</span></p>
-                  </div>
-                )}
-                {!property.priceSingle && !property.priceDouble && !property.priceTriple && (
-                  <div className="rounded-2xl bg-white p-4 shadow-soft sm:col-span-3">
-                    <p className="text-xs font-bold uppercase text-muted">Monthly Rent</p>
-                    <p className="mt-1 text-2xl font-black text-ink">{formatPrice(property.price)}<span className="text-sm font-semibold text-muted">/mo</span></p>
-                  </div>
-                )}
-              </div>
-            </section>
-
             {/* Meals */}
             {property.mealPlan && property.mealPlan !== "Not Included" && (
               <section>
@@ -416,11 +424,18 @@ useEffect(() => {
             {/* Facilities */}
             <section>
               <h2 className="text-2xl font-black text-ink">Facilities</h2>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {/* The Grid: 2 columns on mobile, 3 on desktop. No more massive full-width spans! */}
+              <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3">
                 {property.facilities.map((facility: string) => (
-                  <div key={facility} className="flex items-center gap-3 rounded-2xl bg-white p-4 text-sm font-bold text-ink shadow-soft">
-                    <Check className="h-5 w-5 text-moss" aria-hidden />
-                    {facility}
+                  <div 
+                    key={facility} 
+                    className="flex items-center gap-3 rounded-2xl bg-white p-3 text-xs md:text-sm font-bold text-ink shadow-soft border border-linen/50"
+                  >
+                    {/* Render the icon from our map, default to a checkmark if not found */}
+                    <div className="text-moss">
+                      {facilityIcons[facility] || <Check className="h-4 w-4" />}
+                    </div>
+                    <span className="truncate">{facility}</span>
                   </div>
                 ))}
               </div>
@@ -495,7 +510,7 @@ useEffect(() => {
               </p>
             </div>
             <div className="mt-4 rounded-2xl bg-amber-50 p-3">
-              <p className="text-xs font-bold text-amber-700">📍 Full address revealed after token payment approval</p>
+              <p className="text-xs font-bold text-amber-700">Bro really thought the address was free 💀</p>
             </div>
             <div className="mt-5 grid gap-3">
               <button
@@ -504,7 +519,7 @@ useEffect(() => {
                 className={buttonClasses("primary", undefined, "w-full")}
                 style={totalBeds > 0 && availableBeds === 0 ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
               >
-                {totalBeds > 0 && availableBeds === 0 ? "Property Full" : "Lock Property"}
+                {totalBeds > 0 && availableBeds === 0 ? "Property Full" : "Pre-Book Property"}
               </button>
               <Button variant="secondary" className="w-full" onClick={() => wishlist.toggle(property.id)}>
                 <Heart className={saved ? "h-4 w-4 fill-clay text-clay" : "h-4 w-4"} aria-hidden />

@@ -132,14 +132,50 @@ export async function createProperty(ownerId: string, input: PropertyInput, imag
   });
 }
 
-const propertyCardInclude = {
+const propertyCardSelect = {
+  id: true,
+
+  title: true,
+  description: true,
+
+  location: true,
+
+  lat: true,
+  lng: true,
+
+  roomType: true,
+  preference: true,
+
+  price: true,
+  priceSingle: true,
+  priceDouble: true,
+  priceTriple: true,
+
+  bedsSingle: true,
+  bedsDouble: true,
+  bedsTriple: true,
+  occupiedBeds: true,
+
+  facilities: true,
+
+  nearbyPlaces: true,
+
+  owner: {
+    select: {
+      id: true,
+      name: true,
+      phone: true,
+    },
+  },
+
   images: {
     select: {
-      url: true
+      url: true,
+      roomCategory: true,
     },
-    take: 1
-  }
-} satisfies Prisma.PropertyInclude;
+    take: 1,
+  },
+} satisfies Prisma.PropertySelect;
 
 export async function getProperties(query: Record<string, unknown>, viewerRole?: Role) {
   const { page, limit, skip } = getPagination(query);
@@ -162,12 +198,14 @@ export async function getProperties(query: Record<string, unknown>, viewerRole?:
   const [items, total] = await prisma.$transaction([
   prisma.property.findMany({
     where,
-    include: propertyCardInclude,
-    orderBy: { createdAt: "desc" },
+    select: propertyCardSelect,
+    orderBy: {
+      createdAt: "desc",
+    },
     skip,
-    take: limit
+    take: limit,
   }),
-  prisma.property.count({ where })
+  prisma.property.count({ where }),
 ]);
 
 const result = {

@@ -43,8 +43,14 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
     : property.roomType;
 
   // ── DYNAMIC DISTANCE CALCULATION & ANIMATION ─────────────────────────
-  const nearestColleges = (property.lat && property.lng)
-    ? getTailoredColleges(property.lat, property.lng, property.preference)
+  const nearestColleges =
+  property.lat != null &&
+  property.lng != null
+    ? getTailoredColleges(
+        property.lat,
+        property.lng,
+        property.preference
+      )
     : [];
 
   const [collegeIndex, setCollegeIndex] = useState(0);
@@ -82,6 +88,10 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
     );
   }
   // ───────────────────────────────────────────────────────────────────
+  const locality =
+  property.location
+    ?.split(",")[0]
+    ?.trim() || "North Campus";
 
   return (
     <article className="group flex-shrink-0 h-auto min-h-[fit-content] overflow-hidden rounded-3xl bg-white shadow-2xl transition-all duration-300 hover:-translate-y-3 hover:shadow-lift mb-4">
@@ -109,7 +119,18 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
             <p className="text-xl font-black text-ink">{formatPrice(property.price)}<span className="text-sm font-semibold text-muted">/mo</span></p>
-            <h2 className="mt-1 line-clamp-1 text-lg font-bold text-ink">{property.title}</h2>
+            
+            {/* THE FIX: Gender + PG in + Locality */}
+            <h2 className="mt-1 line-clamp-1 text-lg font-bold text-ink">
+              {property.preference === "Any" ? "Boys & Girls PG" : `${property.preference} PG`} 
+              {" "}in{" "} 
+              {/* Now it uses the real data passed through from the mapper */}
+
+              <span className="text-amber-700">
+                {locality}
+              </span>
+            </h2>
+            
             {displayRoomTypes && (
               <p className="mt-1 text-sm font-semibold text-muted">
                 {displayRoomTypes}
@@ -146,7 +167,7 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
 
         <div className="flex flex-wrap gap-2">
           <span className="rounded-full bg-linen px-3 py-1 text-xs font-bold text-ink">{property.preference}</span>
-          {property.facilities.slice(0, 3).map((facility) => (
+          {(property.facilities ?? []).slice(0, 3).map((facility) => (
             <span key={facility} className="rounded-full bg-linen px-3 py-1 text-xs font-semibold text-muted">
               {facility}
             </span>

@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
-import { AlertTriangle, Crosshair, Loader2, MapPin, Save } from "lucide-react";
+import { AlertTriangle, Crosshair, Loader2, MapPin, Save, Plus } from "lucide-react";
 import { Button } from "@/components/Button";
 import { ImageUploader } from "@/components/owner/ImageUploader";
 import { MapPicker } from "@/components/owner/MapPicker";
@@ -40,7 +40,10 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
   );
   const [categorizedImages, setCategorizedImages] = useState<Record<string, string[]>>({ Common: property?.images ?? [] });
   const [categorizedFiles, setCategorizedFiles] = useState<Record<string, File[]>>({});
+  
   const [selectedFacilities, setSelectedFacilities] = useState<string[]>(property?.facilities ?? []);
+  const [customFacility, setCustomFacility] = useState(""); 
+  
   const [selectedMealTimes, setSelectedMealTimes] = useState<string[]>(property?.mealTimes ?? []);
   const [hasSingle, setHasSingle] = useState(!!property?.priceSingle);
   const [hasDouble, setHasDouble] = useState(!!property?.priceDouble);
@@ -51,6 +54,10 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
   const [securityContact, setSecurityContact] = useState(property?.securityContact ?? "");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // @ts-expect-error - Assuming exactAddress might not be fully typed in OwnerProperty yet
+  const [exactAddress, setExactAddress] = useState(property?.exactAddress ?? property?.location ?? "");
+  const [locality, setLocality] = useState(property?.location ?? "");
 
   const [pickedLocation, setPickedLocation] = useState<PickedLocation | null>(
     property?.lat && property?.lng
@@ -64,6 +71,14 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
     setSelectedFacilities((current) =>
       current.includes(facility) ? current.filter((item) => item !== facility) : [...current, facility]
     );
+  }
+
+  function handleAddCustomFacility() {
+    const trimmed = customFacility.trim();
+    if (trimmed && !selectedFacilities.includes(trimmed)) {
+      setSelectedFacilities([...selectedFacilities, trimmed]);
+      setCustomFacility(""); 
+    }
   }
 
   function toggleMealTime(time: string) {
@@ -92,6 +107,7 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
           const data = await res.json() as { display_name?: string };
           const address = data.display_name ?? `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
           setPickedLocation({ lat: latitude, lng: longitude, address });
+          setExactAddress(address);
         } catch {
           setPickedLocation({ lat: latitude, lng: longitude, address: `${latitude.toFixed(4)}, ${longitude.toFixed(4)}` });
         } finally {
@@ -131,6 +147,11 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
       return;
     }
 
+    if (!locality.trim() || !exactAddress.trim()) {
+      setError("Please provide both the Exact Address and the Locality.");
+      return;
+    }
+
     const roomTypeMappings = Object.entries(categorizedFiles).flatMap(
       ([category, files]) =>
         files.map(() => ({
@@ -148,9 +169,8 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
       hasTriple ? Number(formData.get("priceTriple")) : undefined,
     ].filter((value): value is number => value !== undefined && value > 0);
 
-const price = Math.min(...prices);
+    const price = Math.min(...prices);
 
-    // Create form data object and override images with flattened URLs
     const parsed = ownerPropertySchema.safeParse({
         title: formData.get("title"),
         description: formData.get("description"),
@@ -161,7 +181,8 @@ const price = Math.min(...prices);
         bedsDouble: formData.get("bedsDouble") || undefined,
         priceTriple: formData.get("priceTriple") || undefined,
         bedsTriple: formData.get("bedsTriple") || undefined,
-        location: pickedLocation.address,
+        location: locality, 
+        exactAddress: exactAddress, 
         roomType,
         sharedType: hasDouble ? "Double" : hasTriple ? "Triple" : undefined,
         preference: formData.get("preference"),
@@ -219,6 +240,7 @@ const price = Math.min(...prices);
         <MapPicker
           onConfirm={(loc) => {
             setPickedLocation(loc);
+            setExactAddress(loc.address);
             setShowMapPicker(false);
           }}
           onClose={() => setShowMapPicker(false)}
@@ -248,6 +270,7 @@ const price = Math.min(...prices);
               />
             </label>
 
+            {/* RESTORED: Manager and Security Contact Fields */}
             <label className="block space-y-2 mt-4">
               <span className="text-sm font-bold text-ink">Manager&apos;s Contact Number <span className="text-xs font-normal text-muted">(Optional)</span></span>
               <input
@@ -300,8 +323,8 @@ const price = Math.min(...prices);
               </div>
             </div>
 
-            <div className="space-y-2">
-              <span className="text-sm font-bold text-ink">Property location</span>
+            <div className="space-y-2 pt-2">
+              <span className="text-sm font-bold text-ink">Map Location (Pin drop)</span>
               <div className="flex gap-2">
                 <button
                   type="button"
@@ -326,11 +349,10 @@ const price = Math.min(...prices);
               </div>
 
               {pickedLocation ? (
-                <div className="flex items-start gap-2 rounded-2xl bg-green-50 p-3">
+                <div className="flex items-start gap-2 rounded-2xl bg-green-50 p-3 mt-2">
                   <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-moss" aria-hidden />
                   <div className="flex-1">
-                    <p className="text-xs font-bold text-moss">Location set</p>
-                    <p className="mt-0.5 text-xs leading-5 text-muted line-clamp-2">{pickedLocation.address}</p>
+                    <p className="text-xs font-bold text-moss">Map Coordinates Set</p>
                   </div>
                   <button
                     type="button"
@@ -341,14 +363,39 @@ const price = Math.min(...prices);
                   </button>
                 </div>
               ) : (
-                <div className="flex items-start gap-2 rounded-2xl bg-amber-50 p-3">
+                <div className="flex items-start gap-2 rounded-2xl bg-amber-50 p-3 mt-2">
                   <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" aria-hidden />
                   <p className="text-xs leading-5 text-amber-700">
-                    Select the current location of your PG.
+                    Select the map pin of your PG.
                   </p>
                 </div>
               )}
             </div>
+
+            <label className="block space-y-2 mt-4">
+              <span className="text-sm font-bold text-ink">Exact Address</span>
+              <textarea
+                name="exactAddress"
+                value={exactAddress}
+                onChange={(e) => setExactAddress(e.target.value)}
+                className="input"
+                placeholder="E.g., House 12, Block B, Floor 2, Phase 1..."
+                required
+              />
+            </label>
+            
+            <label className="block space-y-2 mt-4">
+              <span className="text-sm font-bold text-ink">Neighborhood / Locality</span>
+              <input
+                name="locality"
+                value={locality}
+                onChange={(e) => setLocality(e.target.value)}
+                className="input"
+                placeholder="E.g., Kamla Nagar"
+                required
+              />
+            </label>
+
           </section>
 
           {/* Pricing */}
@@ -459,16 +506,48 @@ const price = Math.min(...prices);
             )}
           </section>
 
-          {/* Facilities */}
+          {/* Facilities (Includes Custom Additions) */}
           <section className="space-y-5 rounded-3xl bg-white p-5 shadow-soft sm:p-6">
             <p className="text-xs font-black uppercase text-clay">Facilities & Amenities</p>
+            
             <div className="grid gap-3 sm:grid-cols-2">
               {facilities.map((facility) => (
-                <label key={facility} className="flex cursor-pointer items-center gap-3 rounded-2xl bg-linen p-3 text-sm font-semibold text-ink">
+                <label key={facility} className="flex cursor-pointer items-center gap-3 rounded-2xl bg-linen p-3 text-sm font-semibold text-ink transition hover:bg-oat">
                   <input type="checkbox" checked={selectedFacilities.includes(facility)} onChange={() => toggleFacility(facility)} className="h-4 w-4 accent-ink" />
                   {facility}
                 </label>
               ))}
+
+              {/* Render User-Added Custom Facilities */}
+              {selectedFacilities.filter(f => !facilities.includes(f)).map((facility) => (
+                <label key={facility} className="flex cursor-pointer items-center gap-3 rounded-2xl bg-amber-50 border border-amber-200 p-3 text-sm font-semibold text-amber-900 transition hover:bg-amber-100">
+                  <input type="checkbox" checked onChange={() => toggleFacility(facility)} className="h-4 w-4 accent-amber-700" />
+                  {facility}
+                </label>
+              ))}
+            </div>
+
+            {/* Custom Facility Input */}
+            <div className="mt-4 pt-4 border-t border-linen">
+              <span className="text-sm font-bold text-ink">Have a facility not listed above?</span>
+              <div className="mt-2 flex items-center gap-2 rounded-xl bg-linen p-1.5 pl-4 focus-within:ring-2 focus-within:ring-ink">
+                <input 
+                  type="text" 
+                  value={customFacility}
+                  onChange={(e) => setCustomFacility(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddCustomFacility();
+                    }
+                  }}
+                  placeholder="e.g. PlayStation 5, Pool Table..."
+                  className="flex-1 bg-transparent text-sm font-semibold text-ink outline-none placeholder:text-muted"
+                />
+                <Button type="button" variant="secondary" onClick={handleAddCustomFacility} className="h-9 px-4 py-0 text-xs">
+                  <Plus className="h-4 w-4" /> Add
+                </Button>
+              </div>
             </div>
           </section>
 
