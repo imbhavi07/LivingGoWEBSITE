@@ -237,7 +237,7 @@ export function Navbar() {
               <Link
                 href={item.href}
                 className={cn(
-                  "flex w-full min-h-14 flex-col items-center justify-center rounded-3xl text-xs font-semibold text-muted transition",
+                  "flex w-full min-h-14 flex-col items-center justify-center rounded-3xl text-xs font-semibold text-ink transition",
                   isActive && "bg-ink text-white shadow-md"
                 )}
                 aria-label={item.label}
@@ -255,7 +255,7 @@ export function Navbar() {
               <Link
                 href={role === "admin" ? "/admin/dashboard" : "/owner/dashboard"}
                 className={cn(
-                  "flex w-full min-h-14 flex-col items-center justify-center rounded-3xl text-xs font-semibold text-muted transition",
+                  "flex w-full min-h-14 flex-col items-center justify-center rounded-3xl text-xs font-semibold text-ink transition",
                   (pathname === "/owner/dashboard" || pathname === "/admin/dashboard") && "bg-ink text-white shadow-md"
                 )}
                 aria-label="Account"
