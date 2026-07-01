@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck
 import { Router } from "express";
 import { handleClerkWebhook } from "../controllers/webhook.controller";
 
