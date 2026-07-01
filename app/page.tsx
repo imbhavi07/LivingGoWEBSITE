@@ -57,12 +57,6 @@ export default function HomePage() {
   return (
     <main className="bg-[#f9e7d3] min-h-screen flex flex-col">
       <section className="relative w-full">
-        <div 
-          className="absolute inset-0 z-0 pointer-events-none
-                    bg-gradient-to-b from-[#7f5534] via-[#7f5534]/80 to-transparent to-[30%]
-                    md:inset-y-0 md:left-0 md:right-auto md:w-full md:h-full
-                    md:bg-gradient-to-b md:from-[#7f5534] md:via-[#7f5534]/70 md:to-transparent md:to-[45%]"   
-        />
 
         <motion.div 
           variants={containerVariants}
@@ -74,7 +68,7 @@ export default function HomePage() {
           {/* Animated Text/Hero Group */}
           <motion.div variants={slideUp}>
             <LiquidGlass className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-bold text-white shadow-soft">
-              <p className="flex items-center gap-2 drop-shadow-[0_2px_2px_rgba(0,0,0,0.4)]">
+              <p className="flex items-center text-ink gap-2 drop-shadow-[0_2px_2px_rgba(0,0,0,0.2)]">
                   Verified Student Homes
               </p>
             </LiquidGlass>
@@ -85,7 +79,7 @@ export default function HomePage() {
               height={597}
               className="ml-[-50px] md:ml-[15px] mt-[-40px] md:mt-5 h-auto w-auto scale-75 md:scale-100 drop-shadow-[0_4px_3px_rgba(0,0,0,0.3)]"
             />
-            <p className="mt-[-30px] md:mt-5 max-w-xl md:text-xl text-2xl leading-7 md:leading-8 text-ink drop-shadow-xl" style={EBGaramond.style}>
+            <p className="mt-[-30px] md:mt-5 max-w-xl md:text-2xl text-xl leading-7 md:leading-8 md:text-ink text-brown [-webkit-text-stroke:0.1px_#000] drop-shadow-md" style={EBGaramond.style}>
               Find a calm, well-managed PG/flat near campus with transparent pricing, real facilities, and virtual tours before you visit.
             </p>
             <a
@@ -110,7 +104,7 @@ export default function HomePage() {
               width={510}
               height={650}
               className="block h-auto w-full drop-shadow-[0_8px_6px_rgba(0,0,0,0.3)]"
-            />
+          />
             <div className="absolute inset-0 px-[10%] pb-[5%] pt-[28%] sm:pt-[30%] flex flex-col items-center">
               <div className="mb-3 flex items-center gap-2 font-bold text-ink -translate-x-[10px] text-[15.5px]">
                 <ShieldCheck className="h-4 w-4 text-ink" aria-hidden />
@@ -127,7 +121,9 @@ export default function HomePage() {
               </Link>
             </div>
         </motion.div>
+        <div className="mt-[-100px] md:mt-[-50px]">
         <FeaturesSection />
+        </div>
       </section>
     </main>
   );

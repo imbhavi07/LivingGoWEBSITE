@@ -166,10 +166,10 @@ function KYCContent() {
               Your identity has been verified. Please sign in again to access your dashboard.
             </p>
             <button
-              onClick={() => void signOut({ redirectUrl: "/owner/login" })}
+              onClick={() => void signOut({ redirectUrl: "/owner/dashboard" })}
               className="mt-6 inline-block rounded-full bg-ink px-6 py-3 text-sm font-bold text-white"
             >
-              Sign in to continue →
+              Go To Dashboard →
             </button>
           </div>
         </div>
