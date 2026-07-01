@@ -2,7 +2,7 @@ import type { ButtonHTMLAttributes, PropsWithChildren } from "react";
 import { cn } from "@/lib/utils";
 
 type ButtonProps = PropsWithChildren<ButtonHTMLAttributes<HTMLButtonElement>> & {
-  variant?: "primary" | "secondary" | "ghost" | "outline";
+  variant?: "primary" | "secondary" | "ghost" | "outline" | "glow";
   size?: "sm" | "md" | "lg";
 };
 
@@ -16,6 +16,7 @@ export function buttonClasses(variant: ButtonProps["variant"] = "primary", size:
     variant === "secondary" && "bg-white text-ink shadow-soft ring-1 ring-black/5 hover:bg-linen",
     variant === "ghost" && "bg-transparent text-ink hover:bg-black/5",
     variant === "outline" && "border border-ink text-ink hover:bg-ink/10",
+    variant === "glow" && "animate-green-glow",
     className
   );
 }

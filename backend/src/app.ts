@@ -1,7 +1,11 @@
-import express from "express";
+import express, { Request, Response, NextFunction, RequestHandler, ErrorRequestHandler } from "express";
 import morgan from "morgan";
+import cors from 'cors';
 import { apiRouter } from "./routes";
 import { panoramaRouter } from "./routes/panorama.routes";
+import couponRoutes  from "./routes/coupon.routes";
+import affiliateRoutes from "./routes/affiliate.routes";
+import { wishlistRouter } from "./routes/wishlist.routes";
 import {
   apiLimiter,
   compressionMiddleware,
@@ -12,19 +16,37 @@ import { errorHandler, notFoundHandler } from "./middleware/error.middleware";
 
 export const app = express();
 
+// ==========================================
+// 1. GLOBAL MIDDLEWARES & SECURITY
+// ==========================================
+app.use(cors({
+  origin: ["http://localhost:3000"],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
+
 app.set("trust proxy", 1);
 app.use(helmetMiddleware);
 app.use(corsMiddleware);
 app.use(compressionMiddleware);
 app.use(apiLimiter);
+app.use(morgan("dev"));
+
+// Body Parsers (Consolidated to single 100mb limits so big file uploads don't fail)
 app.use(express.json({ limit: "100mb" }));
-app.use("/api/panoramas", panoramaRouter);
 app.use(express.urlencoded({ extended: true, limit: "100mb" }));
 
-if (process.env.NODE_ENV !== "test") {
-  app.use(morgan("combined"));
-}
+// ==========================================
+// 2. ROUTE MOUNTING (Must all be above error handlers!)
+// ==========================================
+app.use("/api", panoramaRouter);
+app.use("/api", couponRoutes);
+app.use("/api", affiliateRoutes);
+app.use("/api", wishlistRouter); // <--- Safely mounted here!
 
-app.use("/api", apiRouter);
-app.use(notFoundHandler);
-app.use(errorHandler);
+// ==========================================
+// 3. ERROR HANDLERS (Must always be last!)
+// ==========================================
+app.use(notFoundHandler as RequestHandler);
+app.use(errorHandler as ErrorRequestHandler);
