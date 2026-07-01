@@ -93,6 +93,9 @@ export default function HomePage() {
               <Link href="/listings" className={buttonClasses("primary", undefined, "w-full sm:w-auto")}>
                 Find PGs <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
+              <Link href="/earn" className={buttonClasses("secondary", undefined, "w-full sm:w-auto")}>
+                Refer & Earn <ArrowRight className="h-4 w-4" aria-hidden />
+              </Link>
             </div>
           </motion.div>
 
@@ -118,6 +121,11 @@ export default function HomePage() {
           <div className="md:hidden mt-6 gap-3 sm:flex sm:flex-row">
               <Link href="/listings" className={buttonClasses("primary", undefined, "w-full sm:w-auto")}>
                 Find PGs <ArrowRight className="h-4 w-4" aria-hidden />
+              </Link>
+            </div>
+             <div className="md:hidden mt-[-25px] sm:flex sm:flex-row">
+            <Link href="/earn" className={buttonClasses("secondary", undefined, "w-full sm:w-auto")}>
+                Refer & Earn <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
             </div>
         </motion.div>

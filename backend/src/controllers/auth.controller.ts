@@ -18,7 +18,8 @@ const ALLOWED_ADMIN_EMAILS = [
   "techshaan@hotmail.com",
   "faizaanahmedahmed123@gmail.com",
   "faizaanahmed601@gmail.com",
-  "parulthakur200504@gmail.com"
+  "parulthakur200504@gmail.com",
+  "parulllthakur17@gmail.com"
 ];
 
 export const signup = asyncHandler(async (request: Request, response: Response) => {

@@ -113,7 +113,7 @@ export async function addPropertyImages(
   const formData = new FormData();
 
   files.forEach((file) => {
-    formData.append("images", file);
+    formData.append("image", file);
   });
 
   const { data } =
