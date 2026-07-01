@@ -3,7 +3,10 @@ import { asyncHandler } from "../utils/async-handler";
 import { AppError } from "../utils/app-error";
 import { uploadMany } from "../services/cloudinary.service";
 import * as propertyService from "../services/property.service";
+import { PrismaClient } from "@prisma/client";
 
+// Create a Prisma client instance for DB operations in this controller
+const db = new PrismaClient();
 
 function requireUser(request: Request) {
   if (!request.user) throw new AppError("Authentication required", 401);
@@ -62,10 +65,18 @@ console.log("USER", user.id);
   response.status(201).json(property);
 });
 
-export const getProperties = asyncHandler(async (request: Request, response: Response) => {
-  const result = await propertyService.getProperties(request.query, request.user?.role);
-  response.json(result);
-});
+// backend/src/controllers/property.controller.ts
+
+export const getProperties = asyncHandler(
+  async (request: Request, response: Response) => {
+    const result = await propertyService.getProperties(
+      request.query,
+      request.user?.role
+    );
+
+    response.json(result);
+  }
+);
 
 export const getPropertyById = asyncHandler(async (request: Request, response: Response) => {
   const property = await propertyService.getPropertyById(String(request.params.id), request.user?.role);

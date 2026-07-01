@@ -21,10 +21,8 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "LivingGo Student Housing",
   description: "Find verified student housing, PGs, rooms, flats, and residences near your college",
-  manifest: '/manifest.json',
   icons: {
     icon: '/favicon.ico',
-    apple: '/icon-512.png'
   },
 };
 

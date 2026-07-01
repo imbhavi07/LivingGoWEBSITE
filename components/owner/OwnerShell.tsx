@@ -26,22 +26,44 @@ export function OwnerShell({ children }: { children: ReactNode }) {
       <div className="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-black/5 bg-white px-5 py-6 shadow-soft lg:block">
         <OwnerSidebar onSignOut={auth.signOut} />
       </div>
+      
+      {/* Mobile Top Header */}
       <header className="sticky top-0 z-30 border-b border-black/5 bg-white/90 px-4 py-4 backdrop-blur lg:hidden">
         <div className="flex items-center justify-between">
-          <Link href="/owner/dashboard" className="text-xl font-black text-ink">
-            LivingGo Owner
+          {/* THE FIX: Pointed href to "/" instead of the dashboard */}
+          <Link href="/" className="flex items-center gap-2 text-xl font-black text-ink">
+            <Image 
+              src={logo} 
+              alt="PG Management App" 
+              width={992} 
+              height={597} 
+              className="h-8 w-auto object-contain" 
+            />
+            <span>Owner</span>
           </Link>
           <button className="rounded-2xl bg-linen p-3" onClick={() => setOpen(true)} aria-label="Open owner menu">
             <Menu className="h-5 w-5" aria-hidden />
           </button>
         </div>
       </header>
+
+      {/* Mobile Slide-out Drawer */}
       {open ? (
         <div className="fixed inset-0 z-50 lg:hidden">
           <button className="absolute inset-0 bg-black/30" onClick={() => setOpen(false)} aria-label="Close menu" />
           <aside className="absolute inset-y-0 left-0 w-[82vw] max-w-80 bg-white p-5 shadow-lift">
             <div className="mb-5 flex items-center justify-between">
-              <p className="text-xl font-black text-ink">LivingGo Owner</p>
+              {/* THE FIX: Converted this static div into a Link pointing to "/" */}
+              <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-2 text-xl font-black text-ink">
+                <Image 
+                  src={logo} 
+                  alt="Best PG Management Software" 
+                  width={992} 
+                  height={597} 
+                  className="h-8 w-auto object-contain" 
+                />
+                <span>Owner</span>
+              </Link>
               <button className="rounded-2xl bg-linen p-3" onClick={() => setOpen(false)} aria-label="Close owner menu">
                 <X className="h-5 w-5" aria-hidden />
               </button>
@@ -50,6 +72,7 @@ export function OwnerShell({ children }: { children: ReactNode }) {
           </aside>
         </div>
       ) : null}
+      
       <main className="px-4 py-6 sm:px-6 lg:ml-72 lg:px-8">{children}</main>
     </div>
   );
@@ -60,17 +83,19 @@ function OwnerSidebar({ onNavigate, onSignOut }: { onNavigate?: () => void; onSi
 
   return (
     <div className="flex h-full flex-col">
+      {/* Desktop Sidebar Logo */}
+      {/* THE FIX: Pointed href to "/" */}
       <Link 
-        href="/owner/dashboard" 
+        href="/" 
         onClick={onNavigate} 
         className="hidden items-center gap-2 text-2xl font-black text-ink lg:flex"
       >
         <Image 
           src={logo} 
           alt="LivingGo Logo" 
-          width={992} // Fallback width for Next.js Image optimization
-          height={597} // Fallback height
-          className="h-16 w-auto object-contain" // Controls the actual display size
+          width={992} 
+          height={597} 
+          className="h-14 w-auto object-contain" 
         />
         <span>Owner</span>
       </Link>

@@ -47,7 +47,11 @@ export function FeaturedPropertyCard({ property, saved, onSave }: FeaturedProper
   const totalBeds = (property.bedsSingle ?? 0) + (property.bedsDouble ?? 0) + (property.bedsTriple ?? 0);
   const availableBeds = Math.max(0, totalBeds - (property.occupiedBeds ?? 0));
   const showAvailability = totalBeds > 0;
-
+  const locality =
+  property.location
+    ?.split(",")[0]
+    ?.trim() || "North Campus";
+  
   return (
     <article className="group w-[85%] max-w-[260px] sm:w-full sm:max-w-none mx-auto bg-white rounded-xl overflow-hidden shadow-soft flex flex-col transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
       <Link href={`/properties/${property.id}`} className="block">
@@ -99,12 +103,24 @@ export function FeaturedPropertyCard({ property, saved, onSave }: FeaturedProper
         </div>
 
         <div className="flex items-center justify-between gap-2 -mt-0.5">
-          <h2 className="line-clamp-1 text-xs sm:text-sm font-bold text-muted-foreground truncate">{property.title}</h2>
+
+          <h2 className="line-clamp-1 text-xs sm:text-sm font-bold text-ink">
+            {property.preference === "Any"
+              ? "Boys & Girls PG"
+              : `${property.preference} PG`}{" "}
+            in{" "}
+            <span className="text-amber-700">
+              {locality}
+            </span>
+          </h2>
+
           <div className="flex flex-shrink-0 gap-1">
-            <span className="inline-flex items-center gap-1 bg-linen px-1.5 sm:px-2 py-0.5 sm:py-1 rounded flex-shrink-0 text-[9px] sm:text-[10px] font-bold text-ink whitespace-nowrap">
-              <UserRound className="h-2.5 w-2.5 sm:h-3 sm:w-3" /> {property.preference} PG
+            <span className="inline-flex items-center gap-1 bg-linen px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-[9px] sm:text-[10px] font-bold text-ink whitespace-nowrap">
+              <UserRound className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+              {property.preference}
             </span>
           </div>
+
         </div>
 
         <Button variant="secondary" className="w-full mt-1 py-1 text-[10px] sm:text-xs" onClick={() => window.location.assign(`/properties/${property.id}`)}>
