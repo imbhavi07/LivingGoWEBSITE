@@ -10,6 +10,7 @@ import "./globals.css";
 // Clean named import matching our exact component signature
 import ServiceWorkerRegistry from "@/components/ServiceWorkerRegistry"; 
 import IntroOverlay from "@/components/IntroOverlay";
+import { WhatsAppButton } from "@/components/WhatsAppButton";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
             </AuthProvider>
           </ToastProvider>
         </ClerkProvider>
+        <WhatsAppButton />
       </body>
     </html>
   );
