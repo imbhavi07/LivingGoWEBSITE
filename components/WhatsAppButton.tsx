@@ -25,7 +25,7 @@ export function WhatsAppButton() {
       animate={{ scale: 1, opacity: 1 }}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.95 }}
-      className="fixed bottom-6 right-6 z-[9999] flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl transition-colors hover:bg-[#128C7E]"
+      className="fixed bottom-[100px] right-6 z-[9999] flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl transition-colors hover:bg-[#128C7E]"
       aria-label="Chat with us on WhatsApp"
     >
       <SiWhatsapp className="h-7 w-7" /> 
