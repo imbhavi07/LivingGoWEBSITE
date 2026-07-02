@@ -46,8 +46,6 @@ model User {
   @@index([status])
   @@index([verificationStatus])
   @@index([createdAt])
-
-  referrals Referral[] @relation("UserReferrals")
 }
 
 model EmailOtp {
@@ -65,7 +63,7 @@ model EmailOtp {
 }
 
 model Property {
-  id                    String            @id @default(cuid())
+  id                    String             @id @default(cuid())
   ownerId               String
   title                 String
   description           String
@@ -74,9 +72,9 @@ model Property {
   roomType              RoomType
   preference            GenderPreference
   facilities            String[]
-  status                PropertyStatus    @default(pending)
-  createdAt             DateTime          @default(now())
-  updatedAt             DateTime          @updatedAt
+  status                PropertyStatus     @default(pending)
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
   priceSingle           Int?
   bedsSingle            Int?
   priceDouble           Int?
@@ -84,7 +82,6 @@ model Property {
   priceTriple           Int?
   bedsTriple            Int?
   securityDepositMonths String?
-  isFeatured            Boolean           @default(false)
   sharedType            String?
   mealPlan              String?
   mealTimes             String[]
@@ -94,10 +91,11 @@ model Property {
   lat                   Float?
   lng                   Float?
   nearbyPlaces          Json?
-  occupiedBeds          Int               @default(0)
-  managerContact        String?           @db.VarChar(255)
-  securityContact       String?           @db.VarChar(255)
-  owner                 User              @relation("OwnerProperties", fields: [ownerId], references: [id], onDelete: Cascade)
+  occupiedBeds          Int                @default(0)
+  managerContact        String?            @db.VarChar(255)
+  securityContact       String?            @db.VarChar(255)
+  isFeatured            Boolean            @default(false)
+  owner                 User               @relation("OwnerProperties", fields: [ownerId], references: [id], onDelete: Cascade)
   images                PropertyImage[]
   panoramas             PropertyPanorama[]
   reviews               Review[]
@@ -113,29 +111,27 @@ model Property {
 }
 
 model PropertyImage {
-  id         String   @id @default(cuid())
-  propertyId String
-  url        String
-  publicId   String?
-  createdAt  DateTime @default(now())
+  id           String   @id @default(cuid())
+  propertyId   String
+  url          String
+  publicId     String?
+  createdAt    DateTime @default(now())
   roomCategory String?
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  property     Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@index([propertyId])
 }
 
 model PropertyPanorama {
-  id         String   @id @default(cuid())
-  propertyId String
-
-  title      String
-  imageUrl   String
-  publicId   String?
-  sortOrder  Int      @default(0)
-
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  propertyId   String
+  title        String
+  imageUrl     String
+  publicId     String?
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
   roomCategory String?
-  createdAt  DateTime @default(now())
+  property     Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
 
   @@index([propertyId])
 }
@@ -184,30 +180,54 @@ model TenantResidence {
 }
 
 model TokenPayment {
-  id              String             @id @default(cuid())
-  studentId       String
-  propertyId      String
+  id               String             @id @default(cuid())
+  studentId        String
+  propertyId       String
+  amount           Int
+  utrNumber        String
+  status           TokenPaymentStatus @default(pending)
+  visitOtp         String?
+  visitVerified    Boolean            @default(false)
+  rentSettled      Boolean            @default(false)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  moveInRequested  Boolean            @default(false)
   selectedRoomType RoomType?
-  amount          Int
-  utrNumber       String
-
-  status          TokenPaymentStatus @default(pending)
-
-  visitOtp        String?
-  visitVerified   Boolean            @default(false)
-  rentSettled     Boolean            @default(false)
-  moveInRequested Boolean            @default(false)
-  
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
-
-  property        Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  student         User @relation("StudentTokenPayments", fields: [studentId], references: [id], onDelete: Cascade)
+  property         Property           @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  student          User               @relation("StudentTokenPayments", fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, propertyId])
   @@index([studentId])
   @@index([propertyId])
   @@index([status])
+}
+
+model Coupon {
+  id           String       @id @default(cuid())
+  code         String       @unique
+  discountType DiscountType
+  value        Int
+  validFrom    DateTime
+  validTo      DateTime
+  targetPlans  String[]
+  isActive     Boolean      @default(true)
+  maxUses      Int?
+  currentUses  Int          @default(0)
+  affiliateId  String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@index([code])
+  @@index([affiliateId])
+}
+
+model Referral {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  code      String   @unique
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum Role {
@@ -254,57 +274,15 @@ enum TokenPaymentStatus {
   approved
   rejected
 }
+
 enum DiscountType {
   FLAT
   PERCENTAGE
   FIXED
 }
 
-model Coupon {
-  id            String   @id @default(cuid())
-  code          String   @unique
-  discountType  DiscountType
-  value         Int
-  validFrom     DateTime
-  validTo       DateTime
-  targetPlans   String[]
-  isActive      Boolean  @default(true)
-  maxUses       Int?
-  currentUses   Int      @default(0)
-  affiliateId   String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  @@index([code])
-  @@index([affiliateId])
-}
-
-model Referral {
-  id            String   @id @default(cuid())
-
-  ownerId       String   @unique
-  owner         User referral Referral? @relation("ReferralOwner"), fields: [ownerId], references: [id])
-
-  referralCode  String   @unique
-  status        ReferralStatus @default(PENDING)
-
-  invites       Int      @default(0)
-  successful    Int      @default(0)
-  earnings      Float    @default(0)
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-}
-
 enum ReferralStatus {
   PENDING
-  APPROVED
-  REJECTED
-}
-
-model ReferralSignup {
-   id
-   referralId
-   referredUserId
-   rewardGiven
-   joinedAt
+  COMPLETED
+  CANCELLED
 }
