@@ -19,6 +19,8 @@ export const app = express();
 // ==========================================
 // 1. GLOBAL MIDDLEWARES & SECURITY
 // ==========================================
+
+// added the CORS middleware to allow requests from specific origins
 app.use(cors({
   origin: ["http://localhost:3000",
     "https://livinggo.in", 
