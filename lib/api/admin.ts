@@ -1,6 +1,7 @@
 import { apiClient } from "@/lib/api/client";
 import { toAdminListing, toAdminUser, toOwnerApproval, unwrapItems, type ApiOwnerApproval, type ApiProperty, type ApiUser, type PaginatedResponse } from "@/lib/api/types";
 import type { AdminStats } from "@/types/admin";
+import imageCompression from 'browser-image-compression';
 
 export async function getAdminStats() {
   const { data } = await apiClient.get<AdminStats>("/admin/dashboard/stats");
@@ -111,21 +112,28 @@ export async function addPropertyImages(
   files: File[]
 ) {
   const formData = new FormData();
+  
+  // Options to keep files safely under the proxy ceiling (~3MB max)
+  const options = { maxSizeMB: 3.5, maxWidthOrHeight: 4096, useWebWorker: true };
 
-  files.forEach((file) => {
+  // Compress all files concurrently in parallel
+  const compressedFiles = await Promise.all(
+    files.map(file => imageCompression(file, options))
+  );
+
+  compressedFiles.forEach((file) => {
     formData.append("image", file);
   });
 
-  const { data } =
-    await apiClient.post(
-      `/admin/listings/${propertyId}/images`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        }
+  const { data } = await apiClient.post(
+    `/admin/listings/${propertyId}/images`,
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
       }
-    );
+    }
+  );
 
   return data;
 }
@@ -146,15 +154,16 @@ export async function replacePropertyImage(
 ) {
   const formData = new FormData();
   
-  // Keep this singular! The backend expects "image"
-  formData.append('image', file); 
+  const options = { maxSizeMB: 3.5, maxWidthOrHeight: 4096, useWebWorker: true };
+  const compressedFile = await imageCompression(file, options);
+
+  formData.append('image', compressedFile); 
 
   const { data } = await apiClient.put(
     `/admin/listings/${propertyId}/images/${imageId}`,
     formData,
     {
       headers: {
-        // Use the correct string, NOT false
         'Content-Type': 'multipart/form-data',
       },
     }
@@ -162,3 +171,4 @@ export async function replacePropertyImage(
 
   return data;
 }
+

@@ -13,6 +13,12 @@ import { errorHandler, notFoundHandler } from "./middleware/error.middleware";
 
 export const app = express();
 
+app.use(cors({
+  origin: ["http://localhost:3000", "https://livinggo.in", "https://www.livinggo.in"],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
 // 1. TRUST PROXY & SECURITY MIDDLEWARE (Must be at the top)
 app.set("trust proxy", 1);
 app.use(helmetMiddleware);
@@ -21,12 +27,7 @@ app.use(compressionMiddleware);
 app.use(apiLimiter);
 
 // 2. CORS (Must be ABOVE routes)
-app.use(cors({
-  origin: ["http://localhost:3000", "https://livinggo.in", "https://www.livinggo.in"],
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-}));
+
 
 // 3. BODY PARSERS
 app.use(express.json({ limit: "100mb" }));
