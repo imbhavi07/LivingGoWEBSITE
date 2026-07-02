@@ -1,0 +1,439 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "windows"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL")
+}
+
+model User {
+  id                                   String               @id @default(cuid())
+  name                                 String
+  email                                String               @unique
+  phone                                String?
+  passwordHash                         String
+  role                                 Role                 @default(student)
+  status                               UserStatus           @default(active)
+  createdAt                            DateTime             @default(now())
+  updatedAt                            DateTime             @updatedAt
+  ownerType                            String?
+  aadhaarNumber                        String?
+  aadhaarFrontUrl                      String?
+  aadhaarBackUrl                       String?
+  legalAcceptedAt                      DateTime?
+  verificationStatus                   VerificationStatus   @default(not_required)
+  reviewedAt                           DateTime?
+  clerkId                              String?              @unique
+  dob                                  DateTime?
+  mobileNumber                         String?
+  instagramHandle                      String?
+  xHandle                              String?
+  university                           String?
+  courseYear                           String?
+  gender                               String?
+  emergencyContact                     String?
+  properties                           Property[]           @relation("OwnerProperties")
+  reviews                              Review[]
+  tenantResidence                      TenantResidence?
+  tokenPayments                        TokenPayment[]       @relation("StudentTokenPayments")
+  wishlist                             Wishlist[]
+  affiliate_profiles                   affiliate_profiles?
+  coupon_redemptions                   coupon_redemptions[]
+  coupons_coupons_ownerIdToUser        coupons[]            @relation("coupons_ownerIdToUser")
+  coupons_copons_requestedByIdToUser   coupons[]            @relation("coupons_requestedByIdToUser")
+  referrals_referrals_refereeIdToUser  referrals[]          @relation("referrals_refereeIdToUser")
+  referrals_referrals_referrerIdToUser referrals[]          @relation("referrals_referrerIdToUser")
+
+  @@index([clerkId])
+  @@index([role])
+  @@index([status])
+  @@index([verificationStatus])
+  @@index([createdAt])
+}
+
+model EmailOtp {
+  id         String    @id @default(cuid())
+  email      String
+  codeHash   String
+  purpose    String
+  expiresAt  DateTime
+  verifiedAt DateTime?
+  usedAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([email, purpose, createdAt])
+  @@index([expiresAt])
+}
+
+model Property {
+  id                    String             @id @default(cuid())
+  ownerId               String
+  title                 String
+  description           String
+  price                 Int
+  location              String
+  roomType              RoomType
+  preference            GenderPreference
+  facilities            String[]
+  status                PropertyStatus     @default(pending)
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  priceSingle           Int?
+  bedsSingle            Int?
+  priceDouble           Int?
+  bedsDouble            Int?
+  priceTriple           Int?
+  bedsTriple            Int?
+  securityDepositMonths String?
+  sharedType            String?
+  mealPlan              String?
+  mealTimes             String[]
+  curfewTime            String?
+  noticePeriod          String?
+  rulesStrictness       String?
+  lat                   Float?
+  lng                   Float?
+  nearbyPlaces          Json?
+  occupiedBeds          Int                @default(0)
+  managerCost           String?            @db.VarChar(255)
+  securityContact       String?            @db.VarChar(255)
+  isFeatured            Boolean            @default(false)
+  owner                 User               @relation("OwnerProperties", fields: [ownerId], references: [id], onDelete: Cascade)
+  images                PropertyImage[]
+  panoramas             PropertyPanorama[]
+  reviews               Review[]
+  tenants               TenantResidence[]
+  tokenPayments         TokenPayment[]
+  wishlistedBy          Wishlist[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@index([location])
+  @@index([price])
+  @@index([createdAt])
+}
+
+model PropertyImage {
+  id           String   @id @default(cuid())
+  propertyId   String
+  url          String
+  publicId     String?
+  createdAt    DateTime @default(now())
+  roomCategory String?
+  property     Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+}
+
+model PropertyPanorama {
+  id           String   @id @default(cuid())
+  propertyId   String
+  title        String
+  imageUrl     String
+  publicId     String?
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  roomCategory String?
+  property     Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+}
+
+model Wishlist {
+  id         String   @id @default(cuid())
+  userId     String
+  propertyId String
+  createdAt  DateTime @default(now())
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, propertyId])
+  @@index([userId])
+  @@index([propertyId])
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  studentId   String
+  propertyId  String
+  cleanliness Int
+  food        Int
+  security    Int
+  management  Int
+  location    Int
+  comment     String?
+  createdAt   DateTime @default(now())
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, propertyId])
+  @@index([studentId])
+  @@index([propertyId])
+}
+
+model TenantResidence {
+  id         String   @id @default(cuid())
+  studentId  String   @unique
+  propertyId String
+  createdAt  DateTime @default(now())
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  student    User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+}
+
+model TokenPayment {
+  id               String             @id @default(cuid())
+  studentId        String
+  propertyId       String
+  amount           Int
+  utrNumber        String
+  status           TokenPaymentStatus @default(pending)
+  visitOtp         String?
+  visitVerified    Boolean            @default(false)
+  rentSettled      Boolean            @default(false)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  moveInRequested  Boolean            @default(false)
+  selectedRoomType RoomType?
+  property         Property           @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  student          User               @relation("StudentTokenPayments", fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, propertyId])
+  @@index([studentId])
+  @@index([propertyId])
+  @@index([status])
+}
+
+model affiliate_profiles {
+  id                    String                  @id
+  userId                String                  @unique
+  personaType           CouponOwnerType
+  status                AffiliateStatus         @default(PENDING_REVIEW)
+  displayName           String
+  socialLinks           Json?
+  audienceSizeNote      String?
+  lifetimeEarned        Decimal                 @default(0) @db.Decimal(12, 2)
+  pendingBalance        Decimal                 @default(0) @db.Decimal(12, 2)
+  availableBalance      Decimal                 @default(0) @db.Decimal(12, 2)
+  paidOutTotal          Decimal                 @default(0) @db.Decimal(12, 2)
+  payoutMethod          PayoutMethod?
+  upiId                 String?
+  bankAccountName       String?
+  bankAccountNumber     String?
+  bankIfsc              String?
+  minPayoutThreshold    Decimal                 @default(500) @db.Decimal(10, 2)
+  approvedById          String?
+  approvedAt            DateTime?
+  rejectionReason       String?
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime
+  User                  User                    @relation(fields: [userId], references: [id])
+  payout_ledger_entries payout_ledger_entries[]
+  payout_requests       payout_requests[]
+}
+
+model coupon_redemptions {
+  id              String   @id
+  couponId        String
+  userId          String
+  bookingId       String   @unique
+  discountApplied Decimal  @db.Decimal(10, 2)
+  createdAt       DateTime @default(now())
+  coupons         coupons  @relation(fields: [couponId], references: [id])
+  User            User     @relation(fields: [userId], references: [id])
+
+  @@unique([couponId, userId, bookingId])
+  @@index([userId])
+}
+
+model coupons {
+  id                               String               @id
+  code                             String               @unique
+  discountType                     DiscountType
+  discountValue                    Int
+  maxDiscountAmount                Int?
+  minBookingAmount                 Int?
+  applicableRoomCategories         RoomCategory[]       @default([ALL])
+  firstBookingOnly                 Boolean              @default(false)
+  maxTotalRedemptions              Int?
+  maxRedemptionsPerUser            Int                  @default(1)
+  currentRedemptions               Int                  @default(0)
+  validFrom                        DateTime             @default(now())
+  validUntil                       DateTime
+  status                           CouponStatus         @default(PENDING_APPROVAL)
+  ownerType                        CouponOwnerType      @default(SYSTEM)
+  ownerId                          String?
+  commissionType                   DiscountType?
+  commissionValue                  Decimal?             @db.Decimal(10, 2)
+  requestedById                    String?
+  requestNote                      String?
+  reviewedById                     String?
+  reviewedAt                       DateTime?
+  rejectionReason                  String?
+  createdAt                        DateTime             @default(now())
+  updatedAt                        DateTime
+  coupon_redemptions               coupon_redemptions[]
+  User_coupons_ownerIdToUser       User?                @relation("coupons_ownerIdToUser", fields: [ownerId], references: [id])
+  User_coupons_requestedByIdToUser User?                @relation("coupons_requestedByIdToUser", fields: [requestedById], references: [id])
+  referrals                        referrals[]
+}
+
+model payout_ledger_entries {
+  id                 String             @id
+  affiliateProfileId String
+  referralId         String?
+  type               LedgerEntryType
+  amount             Decimal            @db.Decimal(10, 2)
+  note               String?
+  createdAt          DateTime           @default(now())
+  affiliate_profiles affiliate_profiles @relation(fields: [affiliateProfileId], references: [id])
+
+  @@index([affiliateProfileId, createdAt])
+}
+
+model payout_requests {
+  id                 String             @id
+  affiliateProfileId String
+  amount             Decimal            @db.Decimal(10, 2)
+  status             String             @default("PENDING")
+  requestedAt        DateTime           @default(now())
+  processedAt        DateTime?
+  processedById      String?
+  failureReason      String?
+  affiliate_profiles affiliate_profiles @relation(fields: [affiliateProfileId], references: [id])
+}
+
+model referrals {
+  id                              String         @id
+  referrerId                      String
+  refereeId                       String?
+  couponId                        String?
+  status                          ReferralStatus @default(CLICKED)
+  clickSourceIp                   String?
+  clickUserAgent                  String?
+  attributionCookie               String?        @unique
+  isSelfReferral                  Boolean        @default(false)
+  bookingId                       String?        @unique
+  bookingValue                    Decimal?       @db.Decimal(10, 2)
+  commissionEarned                Decimal?       @db.Decimal(10, 2)
+  payoutLockedUntil               DateTime?
+  clickedAt                       DateTime       @default(now())
+  signedUpAt                      DateTime?
+  bookedAt                        DateTime?
+  paidAt                          DateTime?
+  coupons                         coupons?       @relation(fields: [couponId], references: [id])
+  User_referrals_refereeIdToUser  User?          @relation("referrals_refereeIdToUser", fields: [refereeId], references: [id])
+  User_referrals_referrerIdToUser User           @relation("referrals_referrerIdToUser", fields: [referrerId], references: [id])
+
+  @@index([attributionCookie])
+  @@index([referrerId, status])
+}
+
+enum Role {
+  student
+  owner
+  admin
+  SUPER_ADMIN
+  CREATOR
+}
+
+enum UserStatus {
+  active
+  suspended
+}
+
+enum VerificationStatus {
+  not_required
+  pending_email_verification
+  pending_approval
+  approved
+  rejected
+}
+
+enum RoomType {
+  Single
+  Shared
+}
+
+enum GenderPreference {
+  Boys
+  Girls
+  Any
+}
+
+enum PropertyStatus {
+  pending
+  approved
+  rejected
+  inactive
+}
+
+enum TokenPaymentStatus {
+  pending
+  approved
+  rejected
+}
+
+enum DiscountType {
+  FLAT
+  PERCENTAGE
+}
+
+enum AffiliateStatus {
+  PENDING_REVIEW
+  APPROVED
+  SUSPENDED
+  REJECTED
+}
+
+enum CouponOwnerType {
+  SYSTEM
+  STUDENT
+  CREATOR
+  AFFILIATE
+}
+
+enum CouponStatus {
+  PENDING_APPROVAL
+  ACTIVE
+  PAUSED
+  EXPIRED
+  REJECTED
+  ARCHIVED
+}
+
+enum LedgerEntryType {
+  EARNED_PENDING
+  EARNED_CONFIRMED
+  PAID_OUT
+  ADJUSTMENT
+  VOIDED
+}
+
+enum PayoutMethod {
+  BANK_TRANSFER
+  UPI
+}
+
+enum ReferralStatus {
+  CLICKED
+  SIGNED_UP
+  BOOKED
+  PAYOUT_LOCKED
+  PAYOUT_READY
+  PAID
+  VOIDED
+}
+
+enum RoomCategory {
+  SINGLE_SHARING
+  DOUBLE_SHARING
+  TRIPLE_SHARING
+  STUDIO
+  FULL_FLAT
+  ALL
+}

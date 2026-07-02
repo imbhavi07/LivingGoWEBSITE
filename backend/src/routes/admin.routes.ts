@@ -1,6 +1,7 @@
 import { Router } from "express";
 import * as adminController from "../controllers/admin.controller";
 import * as authController from "../controllers/auth.controller";
+import * as couponController from "../controllers/coupon.controller";
 import { authenticate, authorize } from "../middleware/auth.middleware";
 import { authLimiter } from "../middleware/security.middleware";
 import { validate } from "../middleware/validate.middleware";
@@ -12,7 +13,29 @@ export const adminRouter = Router();
 
 adminRouter.post("/auth/login", authLimiter, validate(loginSchema), authController.adminLogin);
 
+// Protect all routes after this middleware
 adminRouter.use(authenticate, authorize("admin"));
+
+// Additional restriction for super admins only (for coupon management)
+const superAdminCheck = (req: any, res: any, next: any) => {
+  const allowedEmails = ["semwalb3@gmail.com", "rctaccommodations@gmail.com"];
+  if (!allowedEmails.includes(req.user.email)) {
+    return res.status(403).json({ message: "Access denied. Super admin only." });
+  }
+  next();
+};
+
+// Coupon management routes (super admin only)
+adminRouter.route("/coupons")
+  .get(couponController.getCoupons)
+  .post(superAdminCheck, couponController.createCoupon);
+
+adminRouter.route("/coupons/:id")
+  .get(couponController.getCouponById)
+  .put(superAdminCheck, couponController.updateCoupon)
+  .delete(superAdminCheck, couponController.deleteCoupon);
+
+// Existing admin routes
 adminRouter.get("/dashboard/stats", adminController.getStats);
 adminRouter.get("/listings", validate(adminListSchema), adminController.getListings);
 adminRouter.get("/listings/:id", validate(adminIdSchema), adminController.getListingDetails);
