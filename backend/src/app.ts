@@ -20,7 +20,10 @@ export const app = express();
 // 1. GLOBAL MIDDLEWARES & SECURITY
 // ==========================================
 app.use(cors({
-  origin: ["http://localhost:3000"],
+  origin: ["http://localhost:3000",
+    "https://livinggo.in", 
+    "https://www.livinggo.in"
+  ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
