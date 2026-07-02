@@ -1,6 +1,5 @@
 // backend/src/routes/user.routes.ts  (FULL REPLACEMENT)
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
+
 import { Router } from "express";
 import { clerkAuthenticate } from "../middleware/auth.middleware";
 import * as userController from "../controllers/user.controller";
