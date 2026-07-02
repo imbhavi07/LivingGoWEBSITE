@@ -62,12 +62,17 @@ async function createProperty(ownerId, input, images) {
             // Don't fail property creation if nearby places fails
         }
     }
+    const calculatedPrice = Math.min(...[
+        input.priceSingle,
+        input.priceDouble,
+        input.priceTriple,
+    ].filter((v) => typeof v === "number" && v > 0));
     return prisma_1.prisma.property.create({
         data: {
             ownerId,
             title: input.title,
             description: input.description,
-            price: input.price,
+            price: calculatedPrice,
             priceSingle: input.priceSingle,
             bedsSingle: input.bedsSingle,
             priceDouble: input.priceDouble,
@@ -92,19 +97,45 @@ async function createProperty(ownerId, input, images) {
             securityContact: input.securityContact,
             status: "pending",
             images: {
-                create: images.map((image) => ({ url: image.url, publicId: image.publicId }))
+                create: images.map((image) => ({ url: image.url, publicId: image.publicId, roomCategory: image.roomCategory }))
             }
         },
         include: propertyInclude
     });
 }
-const propertyCardInclude = {
+const propertyCardSelect = {
+    id: true,
+    title: true,
+    description: true,
+    location: true,
+    lat: true,
+    lng: true,
+    roomType: true,
+    preference: true,
+    price: true,
+    priceSingle: true,
+    priceDouble: true,
+    priceTriple: true,
+    bedsSingle: true,
+    bedsDouble: true,
+    bedsTriple: true,
+    occupiedBeds: true,
+    facilities: true,
+    nearbyPlaces: true,
+    owner: {
+        select: {
+            id: true,
+            name: true,
+            phone: true,
+        },
+    },
     images: {
         select: {
-            url: true
+            url: true,
+            roomCategory: true,
         },
-        take: 1
-    }
+        take: 1,
+    },
 };
 async function getProperties(query, viewerRole) {
     const { page, limit, skip } = (0, pagination_1.getPagination)(query);
@@ -123,12 +154,14 @@ async function getProperties(query, viewerRole) {
     const [items, total] = await prisma_1.prisma.$transaction([
         prisma_1.prisma.property.findMany({
             where,
-            include: propertyCardInclude,
-            orderBy: { createdAt: "desc" },
+            select: propertyCardSelect,
+            orderBy: {
+                createdAt: "desc",
+            },
             skip,
-            take: limit
+            take: limit,
         }),
-        prisma_1.prisma.property.count({ where })
+        prisma_1.prisma.property.count({ where }),
     ]);
     const result = {
         items,
@@ -173,10 +206,16 @@ async function updateProperty(id, actorId, actorRole, input) {
             console.error("Nearby places recalculation failed:", err);
         }
     }
+    const calculatedPrice = Math.min(...[
+        input.priceSingle,
+        input.priceDouble,
+        input.priceTriple,
+    ].filter((v) => typeof v === "number" && v > 0));
     return prisma_1.prisma.property.update({
         where: { id },
         data: {
             ...input,
+            price: calculatedPrice,
             ...(nearbyPlaces ? { nearbyPlaces } : {}),
             status: actorRole === "admin" ? property.status : "pending",
             managerContact: input.managerContact,

@@ -30,6 +30,7 @@ exports.createPropertySchema = zod_1.z.object({
         bedsTriple: zod_1.z.coerce.number().int().positive().optional(),
         securityDepositMonths: zod_1.z.string().optional(),
         location: zod_1.z.string().min(2).max(120),
+        exactAddress: zod_1.z.string().min(2).max(200).optional(), // Optional field for exact address
         lat: zod_1.z.coerce.number().optional(),
         lng: zod_1.z.coerce.number().optional(),
         roomType: zod_1.z.enum(["Single", "Shared"]),

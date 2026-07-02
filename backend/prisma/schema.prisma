@@ -46,6 +46,8 @@ model User {
   @@index([status])
   @@index([verificationStatus])
   @@index([createdAt])
+
+  referrals Referral[] @relation("UserReferrals")
 }
 
 model EmailOtp {
@@ -212,6 +214,8 @@ enum Role {
   student
   owner
   admin
+  SUPER_ADMIN
+  CREATOR
 }
 
 enum UserStatus {
@@ -249,4 +253,58 @@ enum TokenPaymentStatus {
   pending
   approved
   rejected
+}
+enum DiscountType {
+  FLAT
+  PERCENTAGE
+  FIXED
+}
+
+model Coupon {
+  id            String   @id @default(cuid())
+  code          String   @unique
+  discountType  DiscountType
+  value         Int
+  validFrom     DateTime
+  validTo       DateTime
+  targetPlans   String[]
+  isActive      Boolean  @default(true)
+  maxUses       Int?
+  currentUses   Int      @default(0)
+  affiliateId   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  @@index([code])
+  @@index([affiliateId])
+}
+
+model Referral {
+  id            String   @id @default(cuid())
+
+  ownerId       String   @unique
+  owner         User referral Referral? @relation("ReferralOwner"), fields: [ownerId], references: [id])
+
+  referralCode  String   @unique
+  status        ReferralStatus @default(PENDING)
+
+  invites       Int      @default(0)
+  successful    Int      @default(0)
+  earnings      Float    @default(0)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+enum ReferralStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model ReferralSignup {
+   id
+   referralId
+   referredUserId
+   rewardGiven
+   joinedAt
 }

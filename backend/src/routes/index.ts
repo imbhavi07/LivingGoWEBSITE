@@ -9,6 +9,7 @@ import { userRouter } from "./user.routes";
 import kycRouter from "./kyc.routes";
 import webhookRouter from "./webhook.routes";
 import { tokenPaymentRouter } from "./token-payment.routes";
+import * as couponController from "../controllers/coupon.controller";
 
 export const apiRouter = Router();
 
@@ -26,3 +27,6 @@ apiRouter.use("/webhooks/clerk", webhookRouter);
 apiRouter.use("/admin", adminRouter);
 apiRouter.use("/uploads", uploadRouter);
 apiRouter.use("/token-payments", tokenPaymentRouter);
+
+// Public coupon application route
+apiRouter.post("/coupons/apply", couponController.applyCoupon);

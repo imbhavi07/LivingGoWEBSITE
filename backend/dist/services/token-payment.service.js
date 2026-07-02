@@ -6,8 +6,11 @@ exports.getStudentTokenPayments = getStudentTokenPayments;
 exports.getAllTokenPayments = getAllTokenPayments;
 exports.moderateTokenPayment = moderateTokenPayment;
 exports.getOwnerTokenPayments = getOwnerTokenPayments;
-exports.verifyVisit = verifyVisit;
-exports.settleRent = settleRent;
+exports.requestMoveIn = requestMoveIn;
+exports.getOwnerPendingVisits = getOwnerPendingVisits;
+exports.verifyVisitOtp = verifyVisitOtp;
+exports.approveMoveIn = approveMoveIn;
+exports.getOwnerTenants = getOwnerTenants;
 const prisma_1 = require("../config/prisma");
 const app_error_1 = require("../utils/app-error");
 // ─── Student: submit token payment ───────────────────────────────────────────
@@ -53,6 +56,7 @@ async function getStudentTokenPayments(studentId) {
             visitOtp: true,
             visitVerified: true,
             rentSettled: true,
+            moveInRequested: true,
             createdAt: true,
             property: {
                 select: {
@@ -134,44 +138,151 @@ async function getOwnerTokenPayments(ownerId) {
         orderBy: { createdAt: "desc" },
     });
 }
-async function verifyVisit(paymentId, otp) {
+async function requestMoveIn(paymentId) {
     const payment = await prisma_1.prisma.tokenPayment.findUnique({
         where: { id: paymentId }
     });
     if (!payment)
-        throw new app_error_1.AppError("Payment not found", 404);
-    if (payment.visitOtp !== otp)
-        throw new app_error_1.AppError("Invalid OTP", 400);
+        throw new app_error_1.AppError("Booking not found", 404);
+    if (!payment.visitVerified)
+        throw new app_error_1.AppError("Visit not verified", 400);
+    if (payment.moveInRequested)
+        throw new app_error_1.AppError("Already requested", 400);
     return prisma_1.prisma.tokenPayment.update({
         where: { id: paymentId },
         data: {
-            visitVerified: true
+            moveInRequested: true
         }
     });
 }
-async function settleRent(paymentId) {
+async function getOwnerPendingVisits(ownerId) {
+    return prisma_1.prisma.tokenPayment.findMany({
+        where: {
+            property: {
+                ownerId,
+            },
+            status: "approved",
+            visitVerified: false,
+        },
+        include: {
+            student: true,
+            property: true,
+        },
+        orderBy: {
+            createdAt: "desc",
+        },
+    });
+}
+async function verifyVisitOtp(paymentId, otp) {
     const payment = await prisma_1.prisma.tokenPayment.findUnique({
-        where: { id: paymentId }
+        where: {
+            id: paymentId,
+        },
+    });
+    if (!payment) {
+        throw new app_error_1.AppError("Booking not found", 404);
+    }
+    if (payment.visitVerified) {
+        throw new app_error_1.AppError("Visit already verified", 400);
+    }
+    if (payment.visitOtp !== otp) {
+        throw new app_error_1.AppError("Invalid OTP", 400);
+    }
+    return prisma_1.prisma.tokenPayment.update({
+        where: {
+            id: paymentId,
+        },
+        data: {
+            visitVerified: true,
+            visitOtp: null, // OTP destroyed after successful verification
+        },
+    });
+}
+async function approveMoveIn(paymentId) {
+    const payment = await prisma_1.prisma.tokenPayment.findUnique({
+        where: {
+            id: paymentId
+        },
+        include: {
+            property: true
+        }
     });
     if (!payment)
         throw new app_error_1.AppError("Payment not found", 404);
-    const updated = await prisma_1.prisma.tokenPayment.update({
-        where: { id: paymentId },
-        data: {
-            rentSettled: true
-        }
+    if (!payment.visitVerified)
+        throw new app_error_1.AppError("Visit not verified", 400);
+    if (!payment.moveInRequested)
+        throw new app_error_1.AppError("Move-in not requested", 400);
+    const totalBeds = (payment.property.bedsSingle ?? 0) +
+        (payment.property.bedsDouble ?? 0) +
+        (payment.property.bedsTriple ?? 0);
+    if (payment.property.occupiedBeds >= totalBeds)
+        throw new app_error_1.AppError("Property Full", 400);
+    return prisma_1.prisma.$transaction(async (tx) => {
+        await tx.tokenPayment.update({
+            where: {
+                id: paymentId
+            },
+            data: {
+                rentSettled: true
+            }
+        });
+        await tx.tenantResidence.upsert({
+            where: {
+                studentId: payment.studentId
+            },
+            update: {
+                propertyId: payment.propertyId
+            },
+            create: {
+                propertyId: payment.propertyId,
+                studentId: payment.studentId
+            }
+        });
+        await tx.property.update({
+            where: {
+                id: payment.propertyId
+            },
+            data: {
+                occupiedBeds: {
+                    increment: 1
+                }
+            }
+        });
+        return {
+            success: true
+        };
     });
-    await prisma_1.prisma.tenantResidence.upsert({
+}
+async function getOwnerTenants(ownerId) {
+    return prisma_1.prisma.tenantResidence.findMany({
         where: {
-            studentId: payment.studentId
+            property: {
+                ownerId
+            }
         },
-        update: {
-            propertyId: payment.propertyId
+        include: {
+            student: {
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    phone: true
+                }
+            },
+            property: {
+                select: {
+                    id: true,
+                    title: true,
+                    occupiedBeds: true,
+                    bedsSingle: true,
+                    bedsDouble: true,
+                    bedsTriple: true
+                }
+            }
         },
-        create: {
-            studentId: payment.studentId,
-            propertyId: payment.propertyId
+        orderBy: {
+            createdAt: "desc"
         }
     });
-    return updated;
 }

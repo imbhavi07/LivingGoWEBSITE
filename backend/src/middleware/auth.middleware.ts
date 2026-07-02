@@ -105,13 +105,6 @@ export async function clerkAuthenticate(request: Request, _response: Response, n
       return next(new AppError("Account is inactive or suspended", 401));
     }
 
-    // --- PITCH DEMO OVERRIDE ---
-    // Replace 'your-email@example.com' with the email you used to log in
-    if (user.email === 'projectbhavishya1@gmail.com') {
-      user.role = 'owner'; // Force 'owner' role for the dashboard
-    }
-    // ---------------------------
-
     request.user = {
       id: user.id,
       email: user.email,
@@ -131,4 +124,8 @@ export function authorize(...roles: Role[]) {
     if (!roles.includes(request.user.role)) return next(new AppError("Forbidden", 403));
     next();
   };
+}
+
+export function protect(request: Request, response: Response, next: NextFunction) {
+    return clerkAuthenticate(request, response, next);
 }

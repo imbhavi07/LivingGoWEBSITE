@@ -37,6 +37,7 @@ exports.adminRouter = void 0;
 const express_1 = require("express");
 const adminController = __importStar(require("../controllers/admin.controller"));
 const authController = __importStar(require("../controllers/auth.controller"));
+const couponController = __importStar(require("../controllers/coupon.controller"));
 const auth_middleware_1 = require("../middleware/auth.middleware");
 const security_middleware_1 = require("../middleware/security.middleware");
 const validate_middleware_1 = require("../middleware/validate.middleware");
@@ -45,7 +46,25 @@ const auth_validation_1 = require("../validations/auth.validation");
 const upload_middleware_1 = require("../middleware/upload.middleware");
 exports.adminRouter = (0, express_1.Router)();
 exports.adminRouter.post("/auth/login", security_middleware_1.authLimiter, (0, validate_middleware_1.validate)(auth_validation_1.loginSchema), authController.adminLogin);
+// Protect all routes after this middleware
 exports.adminRouter.use(auth_middleware_1.authenticate, (0, auth_middleware_1.authorize)("admin"));
+// Additional restriction for super admins only (for coupon management)
+const superAdminCheck = (req, res, next) => {
+    const allowedEmails = ["semwalb3@gmail.com", "rctaccommodations@gmail.com"];
+    if (!allowedEmails.includes(req.user.email)) {
+        return res.status(403).json({ message: "Access denied. Super admin only." });
+    }
+    next();
+};
+// Coupon management routes (super admin only)
+exports.adminRouter.route("/coupons")
+    .get(couponController.getCoupons)
+    .post(superAdminCheck, couponController.createCoupon);
+exports.adminRouter.route("/coupons/:id")
+    .get(couponController.getCouponById)
+    .put(superAdminCheck, couponController.updateCoupon)
+    .delete(superAdminCheck, couponController.deleteCoupon);
+// Existing admin routes
 exports.adminRouter.get("/dashboard/stats", adminController.getStats);
 exports.adminRouter.get("/listings", (0, validate_middleware_1.validate)(admin_validation_1.adminListSchema), adminController.getListings);
 exports.adminRouter.get("/listings/:id", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.getListingDetails);

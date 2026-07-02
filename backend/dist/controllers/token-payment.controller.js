@@ -34,7 +34,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.confirmRazorpayPayment = exports.settleRent = exports.verifyVisit = exports.ownerGetTokenPayments = exports.adminModerateTokenPayment = exports.adminGetTokenPayments = exports.getMyTokenPayments = exports.submitTokenPayment = void 0;
+exports.getOwnerTenants = exports.approveMoveIn = exports.verifyVisitOtp = exports.getOwnerPendingVisits = exports.requestMoveIn = exports.confirmRazorpayPayment = exports.verifyVisit = exports.ownerGetTokenPayments = exports.adminModerateTokenPayment = exports.adminGetTokenPayments = exports.getMyTokenPayments = exports.submitTokenPayment = void 0;
 const async_handler_1 = require("../utils/async-handler");
 const app_error_1 = require("../utils/app-error");
 const tokenService = __importStar(require("../services/token-payment.service"));
@@ -84,17 +84,43 @@ exports.ownerGetTokenPayments = (0, async_handler_1.asyncHandler)(async (req, re
 exports.verifyVisit = (0, async_handler_1.asyncHandler)(async (req, res) => {
     const paymentId = String(req.params.id);
     const { otp } = req.body;
-    const result = await tokenService.verifyVisit(paymentId, otp);
+    const result = await tokenService.verifyVisitOtp(paymentId, otp);
     res.json(result);
 });
-exports.settleRent = (0, async_handler_1.asyncHandler)(async (req, res) => {
-    const paymentId = String(req.params.id);
-    const result = await tokenService.settleRent(paymentId);
-    res.json(result);
-});
+const backend_1 = require("@clerk/backend");
 exports.confirmRazorpayPayment = (0, async_handler_1.asyncHandler)(async (req, res) => {
     const user = requireUser(req);
     const { propertyId, razorpayPaymentId } = req.body;
+    // Ensure user record exists in DB (self-heal for missing webhook)
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+    if (token) {
+        try {
+            const payload = await (0, backend_1.verifyToken)(token, { secretKey: process.env.CLERK_SECRET_KEY });
+            const clerkUserId = payload.sub;
+            const email = payload.email;
+            const firstName = payload.first_name;
+            const lastName = payload.last_name;
+            const name = ((firstName ?? '') + ' ' + (lastName ?? '')).trim() || undefined;
+            await prisma_1.prisma.user.upsert({
+                where: { clerkId: clerkUserId },
+                update: {},
+                create: {
+                    clerkId: clerkUserId,
+                    email: email ?? `${clerkUserId}@users.clerk.dev`,
+                    name: name ?? 'Clerk User',
+                    role: 'student',
+                    status: 'active',
+                    passwordHash: 'dummy_hash',
+                    verificationStatus: 'not_required',
+                },
+            });
+        }
+        catch (err) {
+            // If token verification fails, we still have user from requireUser (which came from clerkAuthenticate)
+            // So we can ignore; the user record should exist from middleware.
+        }
+    }
     // 1. Fetch property to calculate token amount
     const property = await prisma_1.prisma.property.findUnique({ where: { id: propertyId } });
     if (!property)
@@ -120,10 +146,35 @@ exports.confirmRazorpayPayment = (0, async_handler_1.asyncHandler)(async (req, r
             visitOtp: otp,
         }
     });
-    // 4. Update dynamic inventory (Prevent double bookings)
-    await prisma_1.prisma.property.update({
-        where: { id: propertyId },
-        data: { occupiedBeds: { increment: 1 } }
-    });
+    // 4. Return payment
     res.status(201).json(payment);
+});
+exports.requestMoveIn = (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const paymentId = String(req.params.id);
+    const result = await tokenService.requestMoveIn(paymentId);
+    res.json(result);
+});
+exports.getOwnerPendingVisits = (0, async_handler_1.asyncHandler)(async (req, res) => {
+    if (!req.user) {
+        throw new app_error_1.AppError("Unauthorized", 401);
+    }
+    const ownerId = req.user.id;
+    const visits = await tokenService.getOwnerPendingVisits(ownerId);
+    res.json(visits);
+});
+exports.verifyVisitOtp = (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const paymentId = String(req.params.id);
+    const { otp } = req.body;
+    const result = await tokenService.verifyVisitOtp(paymentId, otp);
+    res.json(result);
+});
+exports.approveMoveIn = (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const paymentId = String(req.params.id);
+    const result = await tokenService.approveMoveIn(paymentId);
+    res.json(result);
+});
+exports.getOwnerTenants = (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const ownerId = req.user.id;
+    const tenants = await tokenService.getOwnerTenants(ownerId);
+    res.json(tenants);
 });
