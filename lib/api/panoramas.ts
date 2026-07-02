@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import imageCompression from 'browser-image-compression';
 
 export type Panorama = {
   id: string;
@@ -26,8 +27,13 @@ export async function uploadPanorama(
 ) {
   const formData = new FormData();
 
+  // Optimized specifically for wide 360 aspect-ratio limits
+  const options = { maxSizeMB: 3.5, maxWidthOrHeight: 8000, useWebWorker: true };
+  console.log("Compressing panorama client-side...");
+  const compressedImage = await imageCompression(payload.image, options);
+
   formData.append("title", payload.title);
-  formData.append("image", payload.image);
+  formData.append("image", compressedImage); // Hand over the safe compressed blob
 
   if (payload.sortOrder !== undefined) {
     formData.append("sortOrder", String(payload.sortOrder));
@@ -75,15 +81,17 @@ export async function replacePanoramaImage(
 ) {
   const formData = new FormData();
 
-  formData.append("image", image);
+  const options = { maxSizeMB: 3.5, maxWidthOrHeight: 8000, useWebWorker: true };
+  const compressedImage = await imageCompression(image, options);
+
+  formData.append("image", compressedImage);
 
   const { data } = await apiClient.put(
     `/panoramas/admin/panoramas/${panoramaId}/image`,
     formData,
     {
       headers: {
-        "Content-Type":
-          "multipart/form-data",
+        "Content-Type": "multipart/form-data",
       },
     }
   );
