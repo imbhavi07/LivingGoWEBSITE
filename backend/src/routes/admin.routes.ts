@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
 import { Router } from "express";
 import * as adminController from "../controllers/admin.controller";
 import * as authController from "../controllers/auth.controller";

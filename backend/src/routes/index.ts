@@ -10,7 +10,6 @@ import kycRouter from "./kyc.routes";
 import webhookRouter from "./webhook.routes";
 import { tokenPaymentRouter } from "./token-payment.routes";
 
-
 export const apiRouter = Router();
 
 apiRouter.get("/health", (_request, response) => {
