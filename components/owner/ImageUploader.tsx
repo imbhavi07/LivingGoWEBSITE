@@ -23,9 +23,9 @@ export function ImageUploader({ images, onChange, onFilesChange }: ImageUploader
 
     try {
       const accepted = Array.from(nextFiles);
-      const invalid = accepted.find((file) => !["image/jpeg", "image/png", "image/webp", "image/gif", "image/heic"].includes(file.type));
+      const invalid = accepted.find((file) => !["image/jpeg", "image/png", "image/webp"].includes(file.type));
       if (invalid) {
-        setError("Only JPEG, PNG, WebP, GIF, and HEIC images are allowed.");
+        setError("Only JPEG, PNG, and WebP images are allowed.");
         return;
       }
 
