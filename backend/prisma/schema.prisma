@@ -227,7 +227,7 @@ model Referral {
   id             String           @id @default(cuid())
   userId         String           @unique
   code           String           @unique
-  status         ReferralStatus   @default(PENDING)
+  status         ReferralStatus
 
   invites        Int              @default(0)
   successful     Int              @default(0)
