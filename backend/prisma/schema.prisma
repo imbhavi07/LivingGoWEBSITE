@@ -227,7 +227,7 @@ model Referral {
   id             String           @id @default(cuid())
   userId         String           @unique
   code           String           @unique
-  status         ReferralStatus
+  status         ReferralStatus   @default(PENDING)
 
   invites        Int              @default(0)
   successful     Int              @default(0)
@@ -244,7 +244,7 @@ enum Role {
   owner
   admin
   SUPER_ADMIN
-  CREATOR
+  PARTNER
 }
 
 enum UserStatus {
@@ -294,4 +294,6 @@ enum ReferralStatus {
   PENDING
   APPROVED
   REJECTED
+  COMPLETED
+  CANCELLED
 }
