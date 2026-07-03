@@ -8,8 +8,6 @@ type Props = {
 };
 
 export default function Pagination({ current, total }: Props) {
-  if (total <= 1) return null;
-
   return (
     <div className="mt-10 flex items-center justify-center gap-6">
       {current > 1 ? (
@@ -20,7 +18,7 @@ export default function Pagination({ current, total }: Props) {
           ← Previous
         </Link>
       ) : (
-        <div />
+        <div className="hidden" />
       )}
 
       <span className="font-semibold">
@@ -35,7 +33,7 @@ export default function Pagination({ current, total }: Props) {
           Next →
         </Link>
       ) : (
-        <div />
+        <div className="hidden" />
       )}
     </div>
   );

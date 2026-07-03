@@ -1,7 +1,7 @@
 import { type Prisma, RoomType, GenderPreference, PropertyStatus, UserStatus } from "@prisma/client";
 import { prisma } from "../config/prisma";
 import { AppError } from "../utils/app-error";
-import { getPagination } from "../utils/pagination";
+import { getPagination } from "../utils/Pagination";
 
 const adminPropertyInclude = {
   owner: {

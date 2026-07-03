@@ -11,7 +11,7 @@ import { formatPrice } from "@/lib/utils";
 import type { Property } from "@/types/property";
 import { getTailoredColleges } from "@/lib/distance";
 
-// Helper to force Cloudinary to convert HEIC uploads to ultra-light WebP inline strings
+// fast fast
 const optimizeImageUrl = (url: string | undefined): string => {
   if (!url) return "/placeholder-property.jpg";
   
@@ -30,9 +30,12 @@ type PropertyCardProps = {
   property: Property;
   saved: boolean;
   onSave: (id: string) => void | Promise<void>;
+  priority?: boolean; 
 };
 
-export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
+
+export function PropertyCard({ property, saved, onSave, priority = false }: PropertyCardProps) {
+
   const { isSignedIn } = useUser();
   const router = useRouter();
 
@@ -82,7 +85,7 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
         setIsFading(false);
       }, 500); 
       
-    }, 3500); 
+    }, 2500); 
 
     return () => clearInterval(cycleTimer);
   }, [nearestColleges.length]);
@@ -115,6 +118,7 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
             src={optimizeImageUrl(property.images[0]?.url)}
             alt={property.title}
             fill
+            priority={priority}
             className="object-cover transition duration-500 group-hover:scale-105"
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           />

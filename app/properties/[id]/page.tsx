@@ -15,18 +15,31 @@ import { StarRating, type RatingData } from "@/components/StarRating";
 import { ReviewSection } from "@/components/ReviewSection";
 import { LockPropertyModal } from "@/components/LockPropertyModal";
 import dynamic from "next/dynamic";
-import { 
-  Wifi, 
-  Shirt, 
-  Droplets,  
-  AirVent, 
-  Cctv, 
-  Thermometer, 
-  Building2, 
-  WashingMachine, 
+import {
+  Wifi,
+  Shirt,
+  Droplets,
+  AirVent,
+  Cctv,
+  Thermometer,
+  Building2,
+  WashingMachine,
   Car,
   Coffee
 } from "lucide-react";
+
+// Cloudinary image optimization helper
+const optimizeImageUrl = (url: string | undefined): string => {
+  if (!url) return "/placeholder-property.jpg";
+  if (url.includes("res.cloudinary.com")) {
+    let optimizedUrl = url;
+    if (!optimizedUrl.includes("f_auto")) {
+      optimizedUrl = optimizedUrl.replace("/upload/", "/upload/f_auto,q_auto/");
+    }
+    return optimizedUrl.replace(/\.heic$/i, ".webp");
+  }
+  return url;
+};
 
 const facilityIcons: Record<string, JSX.Element> = {
   "Wi-Fi": <Wifi className="h-4 w-4" />,
@@ -179,14 +192,18 @@ useEffect(() => {
   // 2. Grab the raw images based on the selected room
   const rawImages = roomOptions.find((r) => r?.key === selectedRoom)?.images ?? property.images;
 
-  // 3. THE FIX: Update the URL fields without breaking the object structure
+  // 3. Apply Cloudinary image optimization and cache-busting
   const displayedImages = rawImages.map((img) => {
     const originalUrl = img.url;
     if (!originalUrl) return img;
 
-    const bustedUrl = originalUrl.includes('?') 
-      ? `${originalUrl}&v=${cacheBuster}` 
-      : `${originalUrl}?v=${cacheBuster}`;
+    // First apply Cloudinary optimization
+    const optimizedUrl = optimizeImageUrl(originalUrl);
+
+    // Then add cache-buster
+    const bustedUrl = optimizedUrl.includes('?')
+      ? `${optimizedUrl}&v=${cacheBuster}`
+      : `${optimizedUrl}?v=${cacheBuster}`;
 
     // Return the original object spread, but override the url field
     return {
@@ -217,7 +234,7 @@ useEffect(() => {
                    key={panorama.id}
                    variant="secondary"
                    onClick={() => {
-                     setActivePanorama(panorama.imageUrl);
+                     setActivePanorama(optimizeImageUrl(panorama.imageUrl));
                      setShowPanorama(true);
                    }}
                  >
@@ -261,7 +278,7 @@ useEffect(() => {
                 <MapPin className="h-4 w-4" aria-hidden />
                 {property.location.toLowerCase().includes("shared after")
                   ? (property.title.match(/(Civil Lines|Kamla Nagar|Hudson Lane|Vijay Nagar|North Campus|Satya Niketan)/i)?.[0] || "North Campus")
-                  : property.location.split(',')[0]} (Exact address shared after pre-booking)
+                  : property.location.split(',')[0]} (Message/Call Us for exact address)
               </p>
               <p className="mt-4 max-w-3xl text-base leading-8 text-muted">{property.description}</p>
             </div>
@@ -501,16 +518,9 @@ useEffect(() => {
               </div>
             )}
 
-            <div className="mt-5 space-y-3 rounded-3xl bg-linen p-4">
-              <p className="text-sm font-bold text-ink">Owner info</p>
-              <p className="text-lg font-black text-ink">{property.owner.name}</p>
-              <p className="flex items-center gap-2 text-sm font-bold text-moss">
-                <ShieldCheck className="h-4 w-4" aria-hidden />
-                {property.owner.verified ? "Verified owner" : "Verification pending"}
-              </p>
-            </div>
+            
             <div className="mt-4 rounded-2xl bg-amber-50 p-3">
-              <p className="text-xs font-bold text-amber-700">Bro really thought the address was free 💀</p>
+              <p className="text-xs font-bold text-amber-700">Message/Call Us For Exact Address</p>
             </div>
             <div className="mt-5 grid gap-3">
               <button
@@ -555,7 +565,7 @@ useEffect(() => {
               {property.panoramas.map((panorama) => (
                 <button
                   key={panorama.id}
-                  onClick={() => setActivePanorama(panorama.imageUrl)}
+                  onClick={() => setActivePanorama(optimizeImageUrl(panorama.imageUrl))}
                   className="rounded-xl bg-white px-4 py-2 text-sm font-bold shadow-lg hover:bg-linen"
                 >
                   {panorama.title}

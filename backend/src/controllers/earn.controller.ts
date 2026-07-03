@@ -1,6 +1,4 @@
 import { Request, Response } from 'express';
-// CHANGE THIS PATH to wherever you instantiated "export const prisma = new PrismaClient()"
-import { PrismaClient } from '@prisma/client';
 import { prisma } from "../config/prisma";
 
 // Fix: Use a request type alias to avoid incompatible user property overrides
