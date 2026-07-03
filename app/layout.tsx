@@ -6,6 +6,7 @@ import { AppChrome } from "@/components/AppChrome";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ClerkSessionSync } from "@/components/ClerkSessionSync";
 import { ToastProvider } from "@/contexts/ToastContext";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 // Clean named import matching our exact component signature
 import ServiceWorkerRegistry from "@/components/ServiceWorkerRegistry"; 
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           </ToastProvider>
         </ClerkProvider>
         <WhatsAppButton />
+        <Analytics />
       </body>
     </html>
   );
