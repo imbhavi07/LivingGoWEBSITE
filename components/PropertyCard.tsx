@@ -11,6 +11,21 @@ import { formatPrice } from "@/lib/utils";
 import type { Property } from "@/types/property";
 import { getTailoredColleges } from "@/lib/distance";
 
+// Helper to force Cloudinary to convert HEIC uploads to ultra-light WebP inline strings
+const optimizeImageUrl = (url: string | undefined): string => {
+  if (!url) return "/placeholder-property.jpg";
+  
+  if (url.includes("res.cloudinary.com")) {
+    let optimizedUrl = url;
+    if (!optimizedUrl.includes("f_auto")) {
+      optimizedUrl = optimizedUrl.replace("/upload/", "/upload/f_auto,q_auto/");
+    }
+    return optimizedUrl.replace(/\.heic$/i, ".webp");
+  }
+  
+  return url;
+};
+
 type PropertyCardProps = {
   property: Property;
   saved: boolean;
@@ -72,8 +87,7 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
     return () => clearInterval(cycleTimer);
   }, [nearestColleges.length]);
 
-  // CHANGED: Flattened UI, removed the label, and set text-sm
-  let distanceUI = <span className="text-sm font-medium text-muted truncate flex-1 min-w-0">{property.location}</span>;
+  let distanceUI = <span className="text-sm font-medium text-muted truncate flex-1 min-w-0">{property.location ?? ''}</span>;
 
   if (nearestColleges.length > 0) {
     const currentCollege = nearestColleges[collegeIndex];
@@ -83,7 +97,7 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
           isFading ? "opacity-0" : "opacity-100"
         }`}
       >
-        {currentCollege.distance.toFixed(1)} km to {currentCollege.name}
+        {Number.isFinite(currentCollege.distance) ? currentCollege.distance.toFixed(1) : '—'} km to {currentCollege.name}
       </span>
     );
   }
@@ -98,7 +112,7 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
       <Link href={`/properties/${property.id}`} className="block">
         <div className="relative aspect-[4/3] overflow-hidden">
           <Image
-            src={property.images[0]?.url ?? "/placeholder-property.jpg"}
+            src={optimizeImageUrl(property.images[0]?.url)}
             alt={property.title}
             fill
             className="object-cover transition duration-500 group-hover:scale-105"
@@ -120,12 +134,9 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
           <div className="flex-1">
             <p className="text-xl font-black text-ink">{formatPrice(property.price)}<span className="text-sm font-semibold text-muted">/mo</span></p>
             
-            {/* THE FIX: Gender + PG in + Locality */}
             <h2 className="mt-1 line-clamp-1 text-lg font-bold text-ink">
               {property.preference === "Any" ? "Boys & Girls PG" : `${property.preference} PG`} 
               {" "}in{" "} 
-              {/* Now it uses the real data passed through from the mapper */}
-
               <span className="text-amber-700">
                 {locality}
               </span>
@@ -159,7 +170,6 @@ export function PropertyCard({ property, saved, onSave }: PropertyCardProps) {
           </div>
         </div>
 
-        {/* CHANGED: Switched to items-center to align the pin and text perfectly */}
         <div className="flex items-center gap-2 pt-1 pb-2">
           <MapPin className="h-4 w-4 text-ink flex-shrink-0" aria-hidden />
           {distanceUI}

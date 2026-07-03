@@ -119,9 +119,26 @@ export async function clerkAuthenticate(request: Request, _response: Response, n
 }
 
 export function authorize(...roles: Role[]) {
-  return (request: Request, _response: Response, next: NextFunction) => {
-    if (!request.user) return next(new AppError("Authentication required", 401));
-    if (!roles.includes(request.user.role)) return next(new AppError("Forbidden", 403));
+  return (
+    request: Request,
+    _response: Response,
+    next: NextFunction
+  ) => {
+    if (!request.user) {
+      return next(new AppError("Authentication required", 401));
+    }
+
+    const role = request.user.role;
+
+    // SUPER_ADMIN bypasses all role checks
+    if (role === "SUPER_ADMIN") {
+      return next();
+    }
+
+    if (!roles.includes(role)) {
+      return next(new AppError("Forbidden", 403));
+    }
+
     next();
   };
 }

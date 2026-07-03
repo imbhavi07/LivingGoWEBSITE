@@ -15,13 +15,31 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  console.log("AuthProvider mounted");
   const [user, setUser] = useState<AuthUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
 
   function refreshSession() {
-    setUser(getSessionUser());
-    setToken(getToken());
-  }
+
+  console.log("Loaded user:", user);
+  console.log("Loaded token:", token);
+  console.log(
+  "Raw localStorage:",
+  localStorage.getItem("LivingGo_user")
+);
+  const storedUser = getSessionUser();
+  const storedToken = getToken();
+
+ 
+
+  console.log("refreshSession()", {
+    storedUser,
+    storedToken,
+  });
+
+  setUser(() => storedUser);
+  setToken(() => storedToken);
+}
 
   async function logout() {
     await clearSession();

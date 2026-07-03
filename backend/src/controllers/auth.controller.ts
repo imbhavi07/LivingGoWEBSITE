@@ -6,21 +6,22 @@ import { AppError } from "../utils/app-error";
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { Resend } from "resend";
-import jwt from "jsonwebtoken";
+import { signJwt } from "../utils/jwt";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const ALLOWED_ADMIN_EMAILS = [
-  "rctaccommodations@gmail.com",
-  "falitnautiyal7@gmail.com",
-  "semwalb3@gmail.com",
-  "shaannothere@gmail.com",
-  "techshaan@hotmail.com",
-  "faizaanahmedahmed123@gmail.com",
-  "faizaanahmed601@gmail.com",
-  "parulthakur200504@gmail.com",
-  "parulllthakur17@gmail.com"
-];
+const ADMIN_ROLES: Record<string, "admin" | "SUPER_ADMIN"> = {
+  "semwalb3@gmail.com": "SUPER_ADMIN",
+  "rctaccommodations@gmail.com": "SUPER_ADMIN",
+
+  "falitnautiyal7@gmail.com": "admin",
+  "shaannothere@gmail.com": "admin",
+  "techshaan@hotmail.com": "admin",
+  "faizaanahmedahmed123@gmail.com": "admin",
+  "faizaanahmed601@gmail.com": "admin",
+  "parulthakur200504@gmail.com": "admin",
+  "parulllthakur17@gmail.com": "admin",
+};
 
 export const signup = asyncHandler(async (request: Request, response: Response) => {
   const result = await authService.signup(request.body);
@@ -33,14 +34,14 @@ export const login = asyncHandler(async (request: Request, response: Response) =
 });
 
 export const adminLogin = asyncHandler(async (request: Request, response: Response) => {
-  const result = await authService.login(request.body, ["admin"]);
+  const result = await authService.login(request.body, ["admin", "SUPER_ADMIN"]);
   response.json(result);
 });
 
 export const sendAdminOtp = asyncHandler(async (request: Request, response: Response) => {
   const { email } = request.body as { email: string };
 
-  if (!ALLOWED_ADMIN_EMAILS.includes(email)) {
+  if (!(email in ADMIN_ROLES)) {
     throw new AppError("Unauthorized email address.", 403);
   }
 
@@ -74,7 +75,7 @@ export const sendAdminOtp = asyncHandler(async (request: Request, response: Resp
 export const verifyAdminOtp = asyncHandler(async (request: Request, response: Response) => {
   const { email, otp } = request.body as { email: string; otp: string };
 
-  if (!ALLOWED_ADMIN_EMAILS.includes(email)) {
+  if (!(email in ADMIN_ROLES)) {
     throw new AppError("Unauthorized email address.", 403);
   }
 
@@ -98,18 +99,33 @@ export const verifyAdminOtp = asyncHandler(async (request: Request, response: Re
     data: { usedAt: new Date() },
   });
 
-  let admin = await prisma.user.findUnique({ where: { email } });
-  if (!admin) {
-    admin = await prisma.user.create({
-      data: { name: email.split("@")[0], email, passwordHash: "otp-auth", role: "admin" },
-    });
-  }
+ const role = ADMIN_ROLES[email];
 
-  const token = jwt.sign(
-    { id: admin.id, role: admin.role },
-    process.env.JWT_SECRET as string,
-    { expiresIn: "7d" }
-  );
+let admin = await prisma.user.findUnique({
+  where: { email },
+});
+
+if (!admin) {
+  admin = await prisma.user.create({
+    data: {
+      name: email.split("@")[0],
+      email,
+      passwordHash: "otp-auth",
+      role,
+    },
+  });
+} else if (admin.role !== role) {
+  admin = await prisma.user.update({
+    where: { id: admin.id },
+    data: { role },
+  });
+}
+
+  const token = signJwt({
+  id: admin.id,
+  email: admin.email,
+  role: admin.role,
+});
 
   response.json({
     token,
