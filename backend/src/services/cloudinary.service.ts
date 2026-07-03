@@ -7,7 +7,13 @@ export async function uploadImage(file: Express.Multer.File) {
     const stream = cloudinary.uploader.upload_stream(
       {
         folder: "LivingGo/properties",
-        resource_type: "image"
+        resource_type: "image",
+        transformation: [
+          {
+            quality: "auto:good",
+            format: "jpg"
+          }
+        ]
       },
       (error, result) => {
         if (error || !result) return reject(error);
