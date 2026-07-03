@@ -3,7 +3,7 @@ import { FilterBar } from "@/components/FilterBar";
 import { ClientPropertyGrid } from "./ClientPropertyGrid";
 import { getProperties } from "@/lib/api/properties";
 import type { PropertyFilters } from "@/types/property";
-import Pagination from "@/components/Pagination";
+import Pagination from "@/components/Pagination"; //bc sahi toh hai
 
 interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
