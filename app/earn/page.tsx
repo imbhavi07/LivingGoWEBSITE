@@ -43,7 +43,7 @@ export default function EarnPage() {
         const response = await apiClient.get('/earn/dashboard');
         setData(response.data);
         setError(null);
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError('Failed to load dashboard data. Please try again.');
         console.error('Earn dashboard error:', err);
       } finally {
@@ -67,7 +67,7 @@ export default function EarnPage() {
       const response = await apiClient.get('/earn/dashboard');
       setData(response.data);
       setDesiredCode('');
-    } catch (err: any) {
+    } catch (err: unknown) {
       setRequestCodeError('Failed to request code. Please try again.');
       console.error('Request code error:', err);
     } finally {

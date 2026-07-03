@@ -7,7 +7,6 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ClerkSessionSync } from "@/components/ClerkSessionSync";
 import { ToastProvider } from "@/contexts/ToastContext";
 import "./globals.css";
-// Clean named import matching our exact component signature
 import ServiceWorkerRegistry from "@/components/ServiceWorkerRegistry"; 
 import IntroOverlay from "@/components/IntroOverlay";
 import { WhatsAppButton } from "@/components/WhatsAppButton";

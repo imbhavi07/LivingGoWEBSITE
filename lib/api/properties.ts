@@ -24,6 +24,11 @@ export async function getProperties(
         roomType: filters?.roomType,
         preference: filters?.preference,
       },
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
     });
 
     const properties = data.items.map((p, i) => toProperty(p, i));
@@ -60,4 +65,3 @@ export async function getProperty(id: string) {
     );
   }
 }
-

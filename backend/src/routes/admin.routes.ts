@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { NextFunction, Router, Request, Response } from "express";
 import * as adminController from "../controllers/admin.controller";
 import * as authController from "../controllers/auth.controller";
 import * as couponController from "../controllers/coupon.controller";
@@ -17,10 +17,13 @@ adminRouter.post("/auth/login", authLimiter, validate(loginSchema), authControll
 adminRouter.use(authenticate, authorize("admin"));
 
 // Additional restriction for super admins only (for coupon management)
-const superAdminCheck = (req: any, res: any, next: any) => {
+const superAdminCheck = (req: Request, res: Response, next: NextFunction): void => {
   const allowedEmails = ["semwalb3@gmail.com", "rctaccommodations@gmail.com"];
-  if (!allowedEmails.includes(req.user.email)) {
-    return res.status(403).json({ message: "Access denied. Super admin only." });
+  
+  // Use optional chaining to safely check user payload shape
+  if (!req.user || !req.user.email || !allowedEmails.includes(req.user.email)) {
+    res.status(403).json({ message: "Access denied. Super admin only." });
+    return;
   }
   next();
 };

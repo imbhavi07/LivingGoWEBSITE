@@ -81,8 +81,8 @@ export default function CouponManagement() {
       // Final safety check to guarantee it's an array before setting state
       setCoupons(Array.isArray(couponsArray) ? couponsArray : []);
       
-    } catch (err: any) {
-      setError(err.response?.data?.message || err.message || "Failed to fetch coupons");
+    } catch (err: unknown) {
+      setError((err as { response?: { data?: { message?: string } }; message?: string }).response?.data?.message || (err as { message?: string }).message || "Failed to fetch coupons");
       setCoupons([]);
     } finally {
       setLoading(false);
@@ -124,7 +124,11 @@ export default function CouponManagement() {
     }
 
     try {
-      editingId ? setUpdating(true) : setCreating(true);
+      if (editingId) {
+        setUpdating(true);
+      } else {
+        setCreating(true);
+      }
 
       const payload = {
         code: formData.code.toUpperCase().trim(),
@@ -151,10 +155,14 @@ export default function CouponManagement() {
         code: "", discountType: "PERCENTAGE", value: "", validFrom: "", validTo: "", targetPlans: "", isActive: true, maxUses: "", affiliateId: ""
       });
       setError(null);
-    } catch (err: any) {
-      setError(err.response?.data?.message || `Failed to ${editingId ? "update" : "create"} coupon`);
+    } catch (err: unknown) {
+      setError((err as { response?: { data?: { message?: string } }; message?: string }).response?.data?.message || `Failed to ${editingId ? "update" : "create"} coupon`);
     } finally {
-      editingId ? setUpdating(false) : setCreating(false);
+      if (editingId) {
+        setUpdating(false);
+      } else {
+        setCreating(false);
+      }
     }
   };
 
@@ -171,8 +179,8 @@ export default function CouponManagement() {
       setCoupons(prev => prev.map(coupon => 
         coupon.id === id ? { ...coupon, isActive: newStatus } : coupon
       ));
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to update status");
+    } catch (err: unknown) {
+      setError((err as { response?: { data?: { message?: string } }; message?: string }).response?.data?.message || "Failed to update status");
     } finally {
       setToggling(prev => {
         const newSet = new Set(prev);
@@ -189,8 +197,8 @@ export default function CouponManagement() {
       setCoupons(prev => prev.filter(coupon => coupon.id !== id));
       setShowDeleteConfirm(false);
       setDeleteCouponId(null);
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to delete coupon");
+    } catch (err: unknown) {
+      setError((err as { response?: { data?: { message?: string } }; message?: string }).response?.data?.message || "Failed to delete coupon");
     } finally {
       setDeleting(prev => {
         const newSet = new Set(prev);

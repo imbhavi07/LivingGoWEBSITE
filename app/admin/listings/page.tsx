@@ -12,6 +12,22 @@ import { EmptyState } from "@/components/EmptyState";
 import { useAdminListings } from "@/hooks/useAdmin";
 import { formatPrice, formatIST } from "@/lib/utils";
 
+
+// yahan pe image optimization daala hai
+const optimizeImageUrl = (url: string | undefined): string => {
+  if (!url) return "/placeholder-property.jpg";
+  
+  if (url.includes("res.cloudinary.com")) {
+    let optimizedUrl = url;
+    if (!optimizedUrl.includes("f_auto")) {
+      optimizedUrl = optimizedUrl.replace("/upload/", "/upload/f_auto,q_auto/");
+    }
+    return optimizedUrl.replace(/\.heic$/i, ".webp");
+  }
+  
+  return url;
+};
+
 export default function AdminListingsPage() {
   const [search, setSearch] = useState("");
   const { listings, isLoading, approve, reject, remove } = useAdminListings(search);
@@ -34,7 +50,7 @@ export default function AdminListingsPage() {
           {listings.map((listing) => (
             <article key={listing.id} className="grid gap-4 border-b border-black/5 p-4 last:border-0 xl:grid-cols-[112px_1fr_auto] xl:items-center">
               <div className="relative h-28 overflow-hidden rounded-2xl bg-oat xl:h-24">
-                <Image src={listing.images[0]?.url || "/placeholder-property.jpg"} alt={listing.title} fill className="object-cover" sizes="128px" />
+                <Image src={optimizeImageUrl(listing.images[0]?.url)} alt={listing.title} fill className="object-cover" sizes="128px" />
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2">

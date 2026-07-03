@@ -1,12 +1,16 @@
 import type { GenderPreference, Prisma, PropertyStatus, Role, RoomType } from "@prisma/client";
 import { prisma } from "../config/prisma";
 import { AppError } from "../utils/app-error";
-import { getPagination } from "../utils/pagination";
+import { getPagination } from "../utils/Pagination";
 import { findNearbyPlaces } from "./nearby.service";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let cachedProperties: any = null;
-let cacheTimestamp = 0;
+type CacheEntry = {
+  // Use unknown to avoid allowing arbitrary operations on cached values
+  value: unknown;
+  timestamp: number;
+};
+const cache = new Map<string, CacheEntry>();
+const CACHE_TTL_MS = 60000;
 
 type PropertyInput = {
   title: string;
@@ -187,43 +191,42 @@ export async function getProperties(query: Record<string, unknown>, viewerRole?:
     preference: query.preference as GenderPreference | undefined
   };
 
-  if (
-    !viewerRole &&
-    cachedProperties &&
-    Date.now() - cacheTimestamp < 60000
-  ) {
-    return cachedProperties;
+  const cacheKey = `properties:${JSON.stringify({ status: where.status, location: where.location, roomType: where.roomType, preference: where.preference, page, limit })}`;
+  if (!viewerRole) {
+    const cachedEntry = cache.get(cacheKey);
+    if (cachedEntry && Date.now() - cachedEntry.timestamp < CACHE_TTL_MS) {
+      return cachedEntry.value;
+    }
   }
 
   const [items, total] = await prisma.$transaction([
-  prisma.property.findMany({
-    where,
-    select: propertyCardSelect,
-    orderBy: {
-      createdAt: "desc",
-    },
-    skip,
-    take: limit,
-  }),
-  prisma.property.count({ where }),
-]);
+    prisma.property.findMany({
+      where,
+      select: propertyCardSelect,
+      orderBy: {
+        createdAt: "desc",
+      },
+      skip,
+      take: limit,
+    }),
+    prisma.property.count({ where }),
+  ]);
 
-const result = {
-  items,
-  meta: {
-    total,
-    page,
-    limit,
-    pages: Math.ceil(total / limit)
+  const result = {
+    items,
+    meta: {
+      total,
+      page,
+      limit,
+      pages: Math.ceil(total / limit)
+    }
+  };
+
+  if (!viewerRole) {
+    cache.set(cacheKey, { value: result, timestamp: Date.now() });
   }
-};
 
-if (!viewerRole) {
-  cachedProperties = result;
-  cacheTimestamp = Date.now();
-}
-
-return result;
+  return result;
 }
 
 export async function getPropertyById(id: string, viewerRole?: Role) {
