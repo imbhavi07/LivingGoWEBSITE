@@ -164,8 +164,9 @@ export function toProperty(property: ApiProperty, index?: number): Property {
     listingIndex: stableNumber,
     
     // Ensure these are passed through so distance calculation works!
-    lat: property.lat ?? null,
-    lng: property.lng ?? null,
+    // Convert to valid numbers or null to prevent NaN issues in distance calculations
+    lat: typeof property.lat === 'number' && !isNaN(property.lat) ? property.lat : null,
+    lng: typeof property.lng === 'number' && !isNaN(property.lng) ? property.lng : null,
   };
 }
 

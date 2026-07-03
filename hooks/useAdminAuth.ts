@@ -21,7 +21,9 @@ export function useAdminAuth() {
 
     try {
       const session = await adminLogin(payload);
-      if (session.user.role !== "admin") {
+      if (session.user.role !== "admin" &&
+          session.user.role !== "SUPER_ADMIN"
+      ) {
         setError("This account does not have admin access.");
         return;
       }

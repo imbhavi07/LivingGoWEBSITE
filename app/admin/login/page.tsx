@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import { ShieldCheck, Loader2 } from "lucide-react";
 import { Button } from "@/components/Button";
 import { useRouter } from "next/navigation";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { setSession } from "@/lib/auth";
 import type { AuthUser } from "@/types/auth";  // ← ye bhi add karo
 
@@ -29,6 +30,7 @@ export default function AdminLoginPage() {
 
 function AdminLoginForm() {
   const router = useRouter();
+  const auth = useAuthContext();
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
@@ -82,8 +84,15 @@ function AdminLoginForm() {
     if (!res.ok) throw new Error(data.message ?? "Invalid OTP");
 
     if (data.token && data.user) {
-      await setSession({ token: data.token, user: data.user as AuthUser }); // ← ye use karo
+      await setSession({
+      token: data.token,
+      user: data.user as AuthUser,
+      });
+
+      auth.refreshSession();      // ← THIS IS MISSING
     }
+
+    router.push("/admin/dashboard");
 
     router.push("/admin/dashboard");
   } catch (err) {

@@ -7,7 +7,7 @@ export type AuthUser = {
   id: string;
   name: string;
   email: string;
-  role?: "student" | "owner" | "admin";
+  role?: "student" | "owner" | "admin" | "SUPER_ADMIN";
   verificationStatus?: "not_required" | "pending_email_verification" | "pending_approval" | "approved" | "rejected";
 };
 

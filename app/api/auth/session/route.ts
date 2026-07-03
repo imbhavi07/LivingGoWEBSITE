@@ -3,7 +3,7 @@ import { z } from "zod";
 
 const sessionSchema = z.object({
   token: z.string().min(1),
-  role: z.enum(["student", "owner", "admin"]).default("student")
+  role: z.enum(["student", "owner", "admin", "SUPER_ADMIN"]).default("student"),
 });
 
 export async function POST(request: Request) {

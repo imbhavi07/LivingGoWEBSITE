@@ -46,6 +46,8 @@ model User {
   @@index([status])
   @@index([verificationStatus])
   @@index([createdAt])
+
+  referral Referral?
 }
 
 model EmailOtp {
@@ -222,12 +224,19 @@ model Coupon {
 }
 
 model Referral {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  code      String   @unique
-  status    String   @default("PENDING")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String           @id @default(cuid())
+  userId         String           @unique
+  code           String           @unique
+  status         ReferralStatus   @default(PENDING)
+
+  invites        Int              @default(0)
+  successful     Int              @default(0)
+  earnings       Float            @default(0)
+
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum Role {
@@ -283,6 +292,6 @@ enum DiscountType {
 
 enum ReferralStatus {
   PENDING
-  COMPLETED
-  CANCELLED
+  APPROVED
+  REJECTED
 }

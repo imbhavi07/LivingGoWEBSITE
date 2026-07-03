@@ -331,14 +331,28 @@ export default function CouponManagement() {
                 }}
                 className="text-ink/50 hover:text-ink transition-colors p-2 bg-ink/5 rounded-full"
               >
-                ×
               </button>
             </div>
 
             <form onSubmit={handleFormSubmit} className="space-y-5">
               <div>
                 <label className="block text-sm font-bold text-ink mb-1.5">Coupon Code</label>
-                <input type="text" name="code" value={formData.code} onChange={handleFormChange} required className="w-full px-4 py-2.5 rounded-xl border border-ink/20 bg-linen/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-ink" placeholder="SUMMER20" />
+                <input
+              type="text"
+              name="code"
+              value={formData.code}
+              onChange={handleFormChange}
+              required
+              disabled={!!editingId}
+              className={`w-full px-4 py-2.5 rounded-xl border border-ink/20
+              ${
+                editingId
+                  ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                  : "bg-linen/50 focus:bg-white"
+              }
+              focus:outline-none focus:ring-2 focus:ring-ink`}
+              placeholder="SUMMER20"
+            />
               </div>
 
               <div className="grid grid-cols-2 gap-4">

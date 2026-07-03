@@ -12,7 +12,12 @@ export function getToken() {
 
 export async function setSession(session: AuthResponse) {
   localStorage.setItem(TOKEN_KEY, session.token);
+  console.log("setSession called", session);
   localStorage.setItem(USER_KEY, JSON.stringify(session.user));
+  console.log(
+  "Saved user:",
+  localStorage.getItem(USER_KEY)
+);
   const res = await fetch("/api/auth/session", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -27,9 +32,11 @@ export async function setSession(session: AuthResponse) {
 }
 
 export function getSessionUser() {
+  console.log("getSessionUser()");
   if (typeof window === "undefined") return null;
   try {
     const user = localStorage.getItem(USER_KEY);
+    console.log("Stored user =", user);
     return user ? (JSON.parse(user) as AuthResponse["user"]) : null;
   } catch {
     localStorage.removeItem(USER_KEY);

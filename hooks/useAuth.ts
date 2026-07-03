@@ -25,8 +25,9 @@ export function useAuth() {
       const session = await login(payload);
       await setSession(session);
       authContext.refreshSession();
-      showToast("Signed in successfully.", "success");
-      router.push("/wishlist");
+      await new Promise(resolve => setTimeout(resolve, 0));
+      showToast("Admin access verified.", "success");
+      router.push("/admin/dashboard");
     } catch {
       setError("Unable to sign in. Please check your credentials.");
       showToast("Unable to sign in.", "error");

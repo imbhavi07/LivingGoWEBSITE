@@ -8,7 +8,7 @@ import { ClipboardCheck, LayoutDashboard, LogOut, Menu, ShieldCheck, Shield, Use
 import { Button } from "@/components/Button";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 import { cn } from "@/lib/utils";
-import { useUser } from "@clerk/nextjs";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 const adminLinks = [
   { href: "/admin/dashboard", label: "Overview", icon: LayoutDashboard },
@@ -22,15 +22,17 @@ const adminLinks = [
 export function AdminShell({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const auth = useAdminAuth();
-  const { user } = useUser();
-  
-  // Added .trim() to prevent invisible space bugs
-  const userEmail = user?.primaryEmailAddress?.emailAddress?.toLowerCase().trim();
-  
-  const isSuperAdmin = 
-  userEmail === "semwalb3@gmail.com" ||
-  userEmail === "rctaccommodations@gmail.com";
+  const { user } = useAuthContext();
 
+  console.log("AuthContext User:", user);
+
+  const isSuperAdmin = user?.role === "SUPER_ADMIN"; 
+
+  console.log({
+  role: user?.role,
+  isSuperAdmin,
+});
+  
   return (
     <div className="min-h-screen bg-[#F6F7F8]">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-black/10 bg-[#111315] p-5 text-white lg:block">
@@ -79,11 +81,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
   );
 }
 
-// FIX: Added `isSuperAdmin` to the left-side destructured parameters
-function AdminSidebar({ onNavigate, onSignOut, isSuperAdmin }: { onNavigate?: () => void; onSignOut: () => void; isSuperAdmin: boolean }) {
+function AdminSidebar({ onNavigate, onSignOut}: { onNavigate?: () => void; onSignOut: () => void; isSuperAdmin: boolean }) {
   const pathname = usePathname();
-
-  // FIX: Removed the redundant local user calculation. We trust the parent prop now.
+  
+  const { user } = useAuthContext();
+  const isSuperAdmin = user?.role === "SUPER_ADMIN"; 
+  
 
   return (
     <div className="flex h-full flex-col">
@@ -97,10 +100,9 @@ function AdminSidebar({ onNavigate, onSignOut, isSuperAdmin }: { onNavigate?: ()
       </div>
       <nav className="mt-6 space-y-2">
         {adminLinks.map((item) => {
-          // Hide coupons link from non-super admins
           if (item.label === "Coupons" && !isSuperAdmin) {
             return null;
-          }
+          }   
           const Icon = item.icon;
           const active = pathname === item.href;
           return (
