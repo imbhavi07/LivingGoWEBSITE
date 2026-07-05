@@ -194,3 +194,32 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
+
+export async function GET(request: Request) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const properties = await prisma.property.findMany({
+      where: {
+        ownerId: userId,
+      },
+      include: {
+        images: true, // Make sure we fetch the images so the dashboard can display thumbnails
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return NextResponse.json(properties, { status: 200 });
+  } catch (error) {
+    console.error("🚨 Fatal Server Error in Property GET:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch properties" },
+      { status: 500 }
+    );
+  }
+}
