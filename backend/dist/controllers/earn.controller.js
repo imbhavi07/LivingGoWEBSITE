@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.rejectReferral = exports.approveReferral = exports.requestReferralCode = exports.getEarnDashboard = void 0;
-const prisma_1 = require("../config/prisma");
+const client_1 = require("@prisma/client");
+const prisma = new client_1.PrismaClient();
 const getEarnDashboard = async (req, res) => {
     try {
         const userId = req.user?.id;
@@ -9,7 +10,7 @@ const getEarnDashboard = async (req, res) => {
             return res.status(401).json({ message: "Unauthorized" });
         }
         // 1. Fixed: Changed 'ownerId' to 'userId' to match your schema type
-        const referral = await prisma_1.prisma.referral.findFirst({
+        const referral = await prisma.referral.findFirst({
             where: {
                 userId: userId,
             },
@@ -26,14 +27,16 @@ const getEarnDashboard = async (req, res) => {
                 }
                 : null,
             metrics: {
-                // NOTE: If 'invites', 'successful', and 'earnings' belong to a different model 
-                // (like a User or a separate Referrals relation), you will need to query them explicitly.
-                // For now, setting defaults or placeholders to stop the crashes:
-                totalInvites: 0,
-                pendingBookings: 0,
-                totalEarnings: 0,
+                // Now correctly getting values from the referral record
+                totalInvites: referral?.invites ?? 0,
+                pendingBookings: referral?.successful ?? 0, // Note: In the referral model, 'successful' refers to successful conversions
+                totalEarnings: referral?.earnings ?? 0,
             },
+            // For history, we would need to query a separate table or create a referral history table
+            // For now, returning empty array as before
             history: [],
+            // Also include the referral object directly for convenience in the frontend
+            referral: referral || null
         });
     }
     catch (error) {
@@ -70,7 +73,7 @@ const requestReferralCode = async (req, res) => {
             });
         }
         // Student already requested one?
-        const existingReferral = await prisma_1.prisma.referral.findUnique({
+        const existingReferral = await prisma.referral.findUnique({
             where: {
                 userId,
             },
@@ -81,7 +84,7 @@ const requestReferralCode = async (req, res) => {
             });
         }
         // Code already exists?
-        const existingCode = await prisma_1.prisma.referral.findUnique({
+        const existingCode = await prisma.referral.findUnique({
             where: {
                 code: referralCode,
             },
@@ -91,7 +94,7 @@ const requestReferralCode = async (req, res) => {
                 message: "This referral code is already taken.",
             });
         }
-        const referral = await prisma_1.prisma.referral.create({
+        const referral = await prisma.referral.create({
             data: {
                 userId,
                 code: referralCode,
@@ -119,7 +122,7 @@ const approveReferral = async (req, res) => {
                 message: "Invalid referral id."
             });
         }
-        const referral = await prisma_1.prisma.referral.findUnique({
+        const referral = await prisma.referral.findUnique({
             where: { id }
         });
         if (!referral) {
@@ -132,7 +135,7 @@ const approveReferral = async (req, res) => {
                 message: "Referral is already approved."
             });
         }
-        const updated = await prisma_1.prisma.referral.update({
+        const updated = await prisma.referral.update({
             where: { id },
             data: {
                 status: "APPROVED"
@@ -159,34 +162,34 @@ const rejectReferral = async (req, res) => {
                 message: "Invalid referral id."
             });
         }
-        const referral = await prisma_1.prisma.referral.findUnique({
-            where: { id },
+        const referral = await prisma.referral.findUnique({
+            where: { id }
         });
         if (!referral) {
             return res.status(404).json({
-                message: "Referral request not found.",
+                message: "Referral request not found."
             });
         }
         if (referral.status === "REJECTED") {
             return res.status(400).json({
-                message: "Referral is already rejected.",
+                message: "Referral is already rejected."
             });
         }
-        const updated = await prisma_1.prisma.referral.update({
+        const updated = await prisma.referral.update({
             where: { id },
             data: {
-                status: "REJECTED",
-            },
+                status: "REJECTED"
+            }
         });
         return res.status(200).json({
             message: "Referral request rejected successfully.",
-            referral: updated,
+            referral: updated
         });
     }
     catch (error) {
         console.error("Reject Referral Error:", error);
         return res.status(500).json({
-            message: "Internal server error.",
+            message: "Internal server error."
         });
     }
 };

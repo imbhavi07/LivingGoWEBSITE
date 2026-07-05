@@ -23,10 +23,16 @@ export function useOwnerDashboard() {
       const token = await getToken();
       if (!token) return;
       try {
-        const data = await getOwnerStats(token);
-        setStats(data);
+        const response = await getOwnerStats(token);
+        setStats(response.data);
       } catch (err) {
         console.error("Failed to fetch stats", err);
+        // Return default stats object (all zeros) instead of null to prevent crashes
+        setStats({
+          totalListings: 0,
+          activeListings: 0,
+          pendingListings: 0
+        });
       } finally {
         setIsLoading(false);
       }
@@ -49,17 +55,10 @@ export function useOwnerProperties() {
       setIsLoading(false);
       return;
     }
-    const token = await getToken();
-    if (!token) {
-      setIsLoading(false);
-      setError("No auth token available");
-      showToast("Authentication required.", "error");
-      return;
-    }
     setIsLoading(true);
     try {
-      const data = await getOwnerProperties(token);
-      setProperties(data);
+      const response = await getOwnerProperties();
+      setProperties(response.data);
       setError(null);
     } catch (err) {
       setError("Could not load your properties.");
@@ -68,7 +67,7 @@ export function useOwnerProperties() {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoaded, isSignedIn, getToken, showToast]);
+  }, [isLoaded, isSignedIn, showToast]);
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;

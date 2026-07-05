@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
-import { prisma } from "../config/prisma";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 // Fix: Use a request type alias to avoid incompatible user property overrides
 type AuthRequest = Request & { user?: { id: string } };
@@ -14,7 +16,7 @@ export const getEarnDashboard = async (req: AuthRequest, res: Response) => {
     // 1. Fixed: Changed 'ownerId' to 'userId' to match your schema type
     const referral = await prisma.referral.findFirst({
       where: {
-        userId: userId, 
+        userId: userId,
       },
     });
 
@@ -24,7 +26,7 @@ export const getEarnDashboard = async (req: AuthRequest, res: Response) => {
       referralData: referral
         ? {
             // 2. Fixed: Changed 'referral.referralCode' to 'referral.code'
-            code: referral.code, 
+            code: referral.code,
             status: referral.status,
             discountValue: 100,
             discountType: "FLAT",
@@ -32,15 +34,18 @@ export const getEarnDashboard = async (req: AuthRequest, res: Response) => {
         : null,
 
       metrics: {
-        // NOTE: If 'invites', 'successful', and 'earnings' belong to a different model 
-        // (like a User or a separate Referrals relation), you will need to query them explicitly.
-        // For now, setting defaults or placeholders to stop the crashes:
-        totalInvites: 0, 
-        pendingBookings: 0,
-        totalEarnings: 0,
+        // Now correctly getting values from the referral record
+        totalInvites: referral?.invites ?? 0,
+        pendingBookings: referral?.successful ?? 0, // Note: In the referral model, 'successful' refers to successful conversions
+        totalEarnings: referral?.earnings ?? 0,
       },
 
+      // For history, we would need to query a separate table or create a referral history table
+      // For now, returning empty array as before
       history: [],
+
+      // Also include the referral object directly for convenience in the frontend
+      referral: referral || null
     });
 
   } catch (error) {
@@ -196,38 +201,38 @@ export const rejectReferral = async (
     }
 
     const referral = await prisma.referral.findUnique({
-      where: { id },
+      where: { id }
     });
 
     if (!referral) {
       return res.status(404).json({
-        message: "Referral request not found.",
+        message: "Referral request not found."
       });
     }
 
     if (referral.status === "REJECTED") {
       return res.status(400).json({
-        message: "Referral is already rejected.",
+        message: "Referral is already rejected."
       });
     }
 
     const updated = await prisma.referral.update({
       where: { id },
       data: {
-        status: "REJECTED",
-      },
+        status: "REJECTED"
+      }
     });
 
     return res.status(200).json({
       message: "Referral request rejected successfully.",
-      referral: updated,
+      referral: updated
     });
 
   } catch (error) {
     console.error("Reject Referral Error:", error);
 
     return res.status(500).json({
-      message: "Internal server error.",
+      message: "Internal server error."
     });
   }
 };

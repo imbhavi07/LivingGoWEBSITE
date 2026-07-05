@@ -12,6 +12,7 @@ export type TokenPayment = {
   rentSettled: boolean;
   moveInRequested: boolean;
   createdAt: string;
+  appliedCode?: string | null;
   property: {
     id: string;
     title: string;
@@ -42,13 +43,25 @@ export async function getMyTokenPayments(): Promise<TokenPayment[]> {
 
 // ─── Owner ────────────────────────────────────────────────────────────────
 export async function getOwnerTokenPayments(): Promise<AdminTokenPayment[]> {
-  const { data } = await apiClient.get<AdminTokenPayment[]>("/payments/owner-payments");
-  return data;
+  try {
+    const response = await fetch('/api/owner/payments');
+
+    if (!response.ok) {
+      console.warn(`Owner payments fetch failed with status: ${response.status}`);
+      return []; // Return empty array safely
+    }
+
+    const data = await response.json();
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.warn("Failed to fetch owner token payments:", error);
+    return []; // Safe fallback
+  }
 }
 
 // ─── Admin ────────────────────────────────────────────────────────────────
 export async function adminGetTokenPayments(status?: string): Promise<AdminTokenPayment[]> {
-  const { data } = await apiClient.get<AdminTokenPayment[]>("/payments/admin/token-payments", {
+  const { data } = await apiClient.get<AdminTokenPayment[]>("/token-payments/admin/token-payments", {
     params: status ? { status } : undefined,
   });
   return data;
@@ -58,7 +71,7 @@ export async function adminModeratePayment(
   paymentId: string,
   action: "approved" | "rejected"
 ): Promise<AdminTokenPayment> {
-  const { data } = await apiClient.patch<AdminTokenPayment>(`/payments/admin/token-payments/${paymentId}`, { action });
+  const { data } = await apiClient.patch<AdminTokenPayment>(`/token-payments/admin/token-payments/${paymentId}`, { action });
   return data;
 }
 
@@ -70,41 +83,82 @@ export async function requestMoveIn(paymentId: string) {
   return data;
 }
 
-export async function getOwnerPendingVisits(){
-const {data}=await apiClient.get(
-"/payments/owner/pending-visits"
-);
-return data;
-}
-export async function verifyVisitOtp(
-id:string,
-otp:string
-){
-const {data}=await apiClient.post(
-`/payments/owner/verify-otp/${id}`,
-{
-otp
-}
-);
-return data;
+export async function getOwnerPendingVisits(): Promise<TokenPayment[]> {
+  try {
+    const response = await fetch('/api/owner/pending-visits');
+
+    if (!response.ok) {
+      console.warn(`Owner pending visits fetch failed with status: ${response.status}`);
+      return []; // Return empty array safely
+    }
+
+    const data = await response.json();
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.warn("Failed to fetch owner pending visits:", error);
+    return []; // Safe fallback
+  }
 }
 
-export async function approveMoveIn(id: string) {
-  const { data } = await apiClient.post(
-    `/payments/owner/approve-movein/${id}`
-  );
+export async function verifyVisitOtp(paymentId: string, otp: string): Promise<{ success: boolean }> {
+  try {
+    const response = await fetch('/api/owner/verify-otp', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ paymentId, otp }),
+    });
 
-  return data;
+    if (!response.ok) {
+      console.warn(`Verify OTP failed with status: ${response.status}`);
+      return { success: false };
+    }
+
+    const data = await response.json();
+    return { success: !!data.success };
+  } catch (error) {
+    console.warn("Failed to verify visit OTP:", error);
+    return { success: false };
+  }
+}
+
+export async function approveMoveIn(id: string): Promise<{ success: boolean } | null> {
+  try {
+    const response = await fetch('/api/owner/approve-movein', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id }),
+    });
+
+    if (!response.ok) {
+      console.warn(`Approve move-in failed with status: ${response.status}`);
+      return null;
+    }
+
+    const data = await response.json();
+    return { success: !!data.success };
+  } catch (error) {
+    console.warn("Failed to approve move-in:", error);
+    return null;
+  }
 }
 
 export async function getOwnerTenants() {
+  try {
+    const response = await fetch("/api/owner/tenants");
 
-  const { data } = await apiClient.get(
+    if (!response.ok) {
+      console.warn(`Owner tenants fetch failed with status: ${response.status}`);
+      return []; // Safe fallback to empty array
+    }
 
-    "/api/token-payments/owner/tenants"
-
-  );
-
-  return data;
-
+    const data = await response.json();
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.warn("Failed to fetch owner tenants:", error); // Changed to warn
+    return []; // Safe fallback so React never crashes
+  }
 }

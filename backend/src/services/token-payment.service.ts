@@ -2,9 +2,10 @@
 
 import { prisma } from "../config/prisma";
 import { AppError } from "../utils/app-error";
+import { Prisma } from '@prisma/client';
 
 // ─── Student: submit token payment ───────────────────────────────────────────
-export async function createTokenPayment(studentId: string, propertyId: string, utrNumber: string) {
+export async function createTokenPayment(studentId: string, propertyId: string, utrNumber: string, appliedCode?: string) {
   const property = await prisma.property.findUnique({
     where: { id: propertyId },
     select: { id: true, price: true, status: true, title: true },
@@ -23,7 +24,7 @@ export async function createTokenPayment(studentId: string, propertyId: string, 
     // If rejected, allow re-submission — update the record
     return prisma.tokenPayment.update({
       where: { id: existing.id },
-      data: { utrNumber, status: "pending", updatedAt: new Date() },
+      data: { utrNumber, status: "pending", updatedAt: new Date(), appliedCode: appliedCode || undefined },
       include: { property: { select: { id: true, title: true } } },
     });
   }
@@ -31,14 +32,14 @@ export async function createTokenPayment(studentId: string, propertyId: string, 
   const tokenAmount = Math.ceil(property.price / 2); // half monthly rent
 
   return prisma.tokenPayment.create({
-    data: { studentId, propertyId, amount: tokenAmount, utrNumber },
+    data: { studentId, propertyId, amount: tokenAmount, utrNumber, appliedCode },
     include: { property: { select: { id: true, title: true } } },
   });
 }
 
 // ─── Student: get their token payments ───────────────────────────────────────
 export async function getStudentTokenPayments(studentId: string) {
-  return prisma.tokenPayment.findMany({
+  return await prisma.tokenPayment.findMany({
     where: { studentId },
     select: {
       id: true,
@@ -78,9 +79,19 @@ export async function getStudentTokenPayments(studentId: string) {
 
 // ─── Admin: get all token payments ───────────────────────────────────────────
 export async function getAllTokenPayments(status?: string) {
-  return prisma.tokenPayment.findMany({
+  return await prisma.tokenPayment.findMany({
     where: status ? { status: status as "pending" | "approved" | "rejected" } : undefined,
-    include: {
+    select: {
+      id: true,
+      amount: true,
+      utrNumber: true,
+      status: true,
+      visitOtp: true,
+      visitVerified: true,
+      rentSettled: true,
+      moveInRequested: true,
+      createdAt: true,
+      appliedCode: true,
       student: { select: { id: true, name: true, email: true, phone: true } },
       property: {
         select: {
@@ -104,17 +115,12 @@ export async function moderateTokenPayment(id: string, action: "approved" | "rej
 
   const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
-  return prisma.tokenPayment.update({
+  return await prisma.tokenPayment.update({
     where: { id },
-    data: { 
+    data: {
       status: action,
-      ...(action === "approved"
-      ? {
-          visitOtp: otp,
-        }
-      : {}),
-     },
-    
+      ...(action === "approved" ? { visitOtp: otp } : {}),
+    },
     include: {
       student: { select: { id: true, name: true, email: true } },
       property: { select: { id: true, title: true, location: true } },
@@ -124,7 +130,7 @@ export async function moderateTokenPayment(id: string, action: "approved" | "rej
 
 // ─── Owner: get token payments for their properties ───────────────────────────
 export async function getOwnerTokenPayments(ownerId: string) {
-  return prisma.tokenPayment.findMany({
+  return await prisma.tokenPayment.findMany({
     where: { property: { ownerId } },
     include: {
       student: { select: { id: true, name: true, email: true, phone: true } },
@@ -144,17 +150,16 @@ export async function requestMoveIn(paymentId: string) {
     throw new AppError("Visit not verified", 400);
   if (payment.moveInRequested)
     throw new AppError("Already requested", 400);
-  return prisma.tokenPayment.update({
+  return await prisma.tokenPayment.update({
     where: { id: paymentId },
     data: {
       moveInRequested: true
     }
   });
-
 }
 
 export async function getOwnerPendingVisits(ownerId: string) {
-  return prisma.tokenPayment.findMany({
+  return await prisma.tokenPayment.findMany({
     where: {
       property: {
         ownerId,
@@ -190,7 +195,7 @@ export async function verifyVisitOtp(
   if (payment.visitOtp !== otp) {
     throw new AppError("Invalid OTP", 400);
   }
-  return prisma.tokenPayment.update({
+  return await prisma.tokenPayment.update({
     where: {
       id: paymentId,
     },
@@ -218,15 +223,15 @@ export async function approveMoveIn(
     throw new AppError("Visit not verified",400);
   if(!payment.moveInRequested)
     throw new AppError("Move-in not requested",400);
-  const totalBeds =
-      (payment.property.bedsSingle ?? 0)+
-      (payment.property.bedsDouble ?? 0)+
+    const totalBeds =
+      (payment.property.bedsSingle ?? 0) +
+      (payment.property.bedsDouble ?? 0) +
       (payment.property.bedsTriple ?? 0);
 
-  if(payment.property.occupiedBeds>=totalBeds)
+    if (payment.property.occupiedBeds >= totalBeds)
       throw new AppError("Property Full",400);
 
-  return prisma.$transaction(async(tx)=>{
+  return await prisma.$transaction(async(tx: Prisma.TransactionClient)=>{
 
       await tx.tokenPayment.update({
 
@@ -257,19 +262,16 @@ export async function approveMoveIn(
 
       });
 
-      await tx.property.update({
-
-          where:{
-              id:payment.propertyId
+        await tx.property.update({
+          where: {
+            id: payment.propertyId,
           },
-
-          data:{
-              occupiedBeds:{
-                  increment:1
-              }
-          }
-
-      });
+          data: {
+            occupiedBeds: {
+              increment: 1,
+            },
+          },
+        });
 
       return {
           success:true
@@ -281,7 +283,7 @@ export async function approveMoveIn(
 
 export async function getOwnerTenants(ownerId: string) {
 
-  return prisma.tenantResidence.findMany({
+  return await prisma.tenantResidence.findMany({
 
     where: {
 
@@ -300,8 +302,11 @@ export async function getOwnerTenants(ownerId: string) {
         select: {
 
           id: true,
+
           name: true,
+
           email: true,
+
           phone: true
 
         }
@@ -313,10 +318,15 @@ export async function getOwnerTenants(ownerId: string) {
         select: {
 
           id: true,
+
           title: true,
+
           occupiedBeds: true,
+
           bedsSingle: true,
+
           bedsDouble: true,
+
           bedsTriple: true
 
         }

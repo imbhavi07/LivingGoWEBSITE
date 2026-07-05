@@ -4,15 +4,36 @@ import { useEffect, useState } from "react";
 import { Users } from "lucide-react";
 import { getOwnerTenants } from "@/lib/api/token-payment";
 
+interface Student {
+  id: string;
+  name: string;
+  phone?: string;
+}
+
+interface Property {
+  id: string;
+  title: string;
+}
+
+interface Tenant {
+  id: string;
+  student: Student;
+  property: Property;
+  createdAt: string;
+}
+
 export function OwnerTenants() {
-  const [tenants, setTenants] = useState<any[]>([]);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       try {
         const data = await getOwnerTenants();
-        setTenants(data);
+        setTenants(data ?? []);
+      } catch (error) {
+        console.error("Failed to load tenants", error);
+        setTenants([]);
       } finally {
         setLoading(false);
       }

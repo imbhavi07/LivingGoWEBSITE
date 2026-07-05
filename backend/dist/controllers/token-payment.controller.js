@@ -48,10 +48,10 @@ function requireUser(req) {
 exports.submitTokenPayment = (0, async_handler_1.asyncHandler)(async (req, res) => {
     const user = requireUser(req);
     const propertyId = String(req.params.id);
-    const { utrNumber } = req.body;
+    const { utrNumber, appliedCode } = req.body;
     if (!utrNumber?.trim())
         throw new app_error_1.AppError("UTR number is required", 400);
-    const payment = await tokenService.createTokenPayment(user.id, propertyId, utrNumber.trim());
+    const payment = await tokenService.createTokenPayment(user.id, propertyId, utrNumber.trim(), appliedCode);
     res.status(201).json(payment);
 });
 // Student: get their own token payments
@@ -90,7 +90,7 @@ exports.verifyVisit = (0, async_handler_1.asyncHandler)(async (req, res) => {
 const backend_1 = require("@clerk/backend");
 exports.confirmRazorpayPayment = (0, async_handler_1.asyncHandler)(async (req, res) => {
     const user = requireUser(req);
-    const { propertyId, razorpayPaymentId } = req.body;
+    const { propertyId, razorpayPaymentId, appliedCode } = req.body;
     // Ensure user record exists in DB (self-heal for missing webhook)
     const authHeader = req.headers.authorization;
     const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
@@ -136,6 +136,7 @@ exports.confirmRazorpayPayment = (0, async_handler_1.asyncHandler)(async (req, r
             utrNumber: razorpayPaymentId, // Save the Razorpay ID as the UTR
             status: "approved", // INSTANT APPROVAL!
             visitOtp: otp,
+            appliedCode: appliedCode || undefined, // Store the applied code if any
         },
         create: {
             studentId: user.id,
@@ -144,6 +145,7 @@ exports.confirmRazorpayPayment = (0, async_handler_1.asyncHandler)(async (req, r
             utrNumber: razorpayPaymentId,
             status: "approved",
             visitOtp: otp,
+            appliedCode: appliedCode || undefined,
         }
     });
     // 4. Return payment
