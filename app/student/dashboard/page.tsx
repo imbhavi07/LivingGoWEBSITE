@@ -20,21 +20,29 @@ export default async function StudentDashboardPage() {
     redirect("/login");
   }
 
-  // Fetch the student's token payments including the property details
-  const payments = await prisma.tokenPayment.findMany({
-    where: { studentId: userId },
-    include: {
-      property: {
-        select: {
-          id: true,
-          title: true,
-          location: true,
-          images: true, 
-        }
-      }
-    },
-    orderBy: { createdAt: "desc" }
+  // Find the internal User record using the Clerk ID
+  const user = await prisma.user.findUnique({
+    where: { clerkId: userId }
   });
+
+  // Fetch the student's token payments using INTERNAL User ID (cuid)
+  let payments = [] as any;
+  if (user) {
+    payments = await prisma.tokenPayment.findMany({
+      where: { studentId: user.id },
+      include: {
+        property: {
+          select: {
+            id: true,
+            title: true,
+            location: true,
+            images: true,
+          }
+        }
+      },
+      orderBy: { createdAt: "desc" }
+    });
+  }
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
