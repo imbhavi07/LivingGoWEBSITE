@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { auth } from '@clerk/nextjs/server';
+import { Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -22,8 +23,7 @@ export async function POST(request: Request) {
     // Generate a random 6-digit OTP for visit verification
     const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Run in a transaction to update coupon uses and create the payment
-    const payment = await prisma.$transaction(async (tx) => {
+    const payment = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // 1. Save or Update the Token Payment
       const tokenPayment = await tx.tokenPayment.upsert({
         where: {

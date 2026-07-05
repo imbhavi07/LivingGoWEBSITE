@@ -81,7 +81,7 @@ export async function POST(request: Request) {
     const securityContact = getOptionalString('securityContact');
     
     // FIX: Safely parse security deposit as an integer (Prisma usually expects Int here)
-    const securityDepositMonths = getInt('securityDepositMonths');
+    const securityDepositMonths = getOptionalString('securityDepositMonths');
 
     // Extract numeric fields
     const priceSingle = getNumber('priceSingle');
