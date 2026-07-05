@@ -215,14 +215,11 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
     };
 
     try {
-      const token = await getToken();
-      if (!token) throw new Error("No auth token");
-
       if (property) {
-        await updateOwnerProperty(property.id, payload, token);
+        await updateOwnerProperty(property.id, payload);
         showToast("Property updated and sent for review.", "success");
       } else {
-        await createOwnerProperty(payload, token);
+        await createOwnerProperty(payload);
         showToast("Property submitted for admin moderation.", "success");
       }
       router.push("/owner/properties");

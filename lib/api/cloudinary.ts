@@ -1,7 +1,12 @@
 export async function uploadToCloudinary(file: string | File) {
-  // 🚨 HARDCODED TO BYPASS NEXT.JS .ENV CACHE BULLSHIT 🚨
-  const cloudName = "dihrofjrq";
-  const uploadPreset = "LivingGo";
+  // Hardcoded fallbacks to your EXACT account so .env caching can't break it
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dlgk4nhqb";
+  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "livinggo_unsigned";
+
+  if (!cloudName || !uploadPreset) {
+    console.error("🚨 Missing Cloudinary ENV variables!");
+    throw new Error("Missing Cloudinary configuration");
+  }
 
   const formData = new FormData();
   formData.append("file", file);

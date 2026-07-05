@@ -23,8 +23,8 @@ export async function GET() {
     
 // Convert Prisma status strings to counts
     // Compare using a string array to avoid strict union type mismatch from Prisma
-    const activeListings = properties.filter((p: any) => ['approved', 'active'].includes(p.status)).length;
-    const pendingListings = properties.filter((p: any) => p.status === 'pending').length;
+    const activeListings = properties.filter((p: { status: string }) => ['approved', 'active'].includes(p.status)).length;
+    const pendingListings = properties.filter((p: { status: string }) => p.status === 'pending').length;
 
     return NextResponse.json({
       totalListings,
