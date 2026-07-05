@@ -9,29 +9,28 @@ const prisma = new PrismaClient();
 
 export async function PUT(
   request: Request, 
-  { params }: { params: Promise<{ id: string }> } // <-- Update type to Promise
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
+  const { id } = await params; // Extract it ONCE here
+  
   try {
-    const { userId } = await auth();
-    if (!userId) {
+    const { userId: clerkId } = await auth();
+    if (!clerkId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // 1. Find the internal User record using the Clerk ID
     const user = await prisma.user.findUnique({
-      where: { clerkId: userId }
+      where: { clerkId: clerkId }
     });
 
     if (!user) {
       return NextResponse.json({ error: "User not found in database" }, { status: 404 });
     }
 
-    const propertyId = (await params).id;
-
-    // 2. Verify the property exists and belongs to the user (or user is admin)
+    // 2. Verify the property exists and belongs to the user
     const existingProperty = await prisma.property.findUnique({
-      where: { id: propertyId },
+      where: { id: id }, // Using the id we extracted at the top
       include: { images: true }
     });
 
@@ -39,13 +38,16 @@ export async function PUT(
       return NextResponse.json({ error: "Property not found" }, { status: 404 });
     }
 
-    // Check ownership: user must be owner or admin
+    // Check ownership
     const isOwner = existingProperty.ownerId === user.id;
-    // We don't have user.role in this context, but we could fetch it if needed
-    // For simplicity, we'll assume the user is owner if ownerId matches
-    // In a real app, you'd want to check role as well
     if (!isOwner) {
       return NextResponse.json({ error: "Forbidden: You don't have permission to update this property" }, { status: 403 });
+    }
+
+    // 3. ENV GHOST CHECK (Fixes the ENV_NAME_REQUIRED_BUT_PRIVATE crash)
+    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+      console.error("🚨 CRITICAL: Missing Cloudinary Environment Variables in Vercel/Render!");
+      return NextResponse.json({ error: "Server misconfiguration: Missing image upload credentials." }, { status: 500 });
     }
 
     const formData = await request.formData();
@@ -114,7 +116,6 @@ export async function PUT(
     const managerContact = getOptionalString('managerContact');
     const securityContact = getOptionalString('securityContact');
 
-    // FIX: Safely parse security deposit as an integer (Prisma usually expects Int here)
     const securityDepositMonths = getOptionalString('securityDepositMonths');
 
     // Extract numeric fields
@@ -151,20 +152,17 @@ export async function PUT(
       else if (hasTriple) sharedType = 'Triple';
     }
 
-    // CRITICAL FIX: Convert Web Files to Base64 for Cloudinary
+    // Convert Web Files to Base64 for Cloudinary
     const imageFiles = formData.getAll('images') as File[];
     const uploadedImages = await Promise.all(
       imageFiles.map(async (file) => {
         if (!(file instanceof File)) throw new Error('Invalid file');
 
         try {
-          // Convert the file to a buffer, then to a base64 string
           const bytes = await file.arrayBuffer();
           const buffer = Buffer.from(bytes);
           const base64Image = `data:${file.type};base64,${buffer.toString('base64')}`;
 
-          // uploadToCloudinary expects a File in some typings; pass the base64 string
-          // and cast to satisfy TypeScript. The implementation should accept data URLs.
           const result = await uploadToCloudinary(base64Image as unknown as File);
           return { url: result.url, publicId: result.publicId };
         } catch (uploadError) {
@@ -205,9 +203,6 @@ export async function PUT(
     // Only add images if we have new uploads
     if (uploadedImages.length > 0) {
       updateData.images = {
-        // We'll update by creating new images and optionally deleting old ones
-        // For simplicity, we'll just add new ones. In a real app, you might want to
-        // handle deletions separately based on form data.
         create: uploadedImages.map(img => ({
           url: img.url,
           publicId: img.publicId,
@@ -216,9 +211,8 @@ export async function PUT(
     }
 
     try {
-      // Update property
       const updatedProperty = await prisma.property.update({
-        where: { id: propertyId },
+        where: { id: id }, // Using extracted id
         data: updateData,
         include: { images: true }
       });
@@ -236,52 +230,50 @@ export async function PUT(
   }
 }
 
-// Optional: Add DELETE method if needed
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(
+  request: Request, 
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params; // Extract ONCE
+  
   try {
-    const { userId } = await auth();
-    if (!userId) {
+    const { userId: clerkId } = await auth();
+    if (!clerkId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // 1. Find the internal User record using the Clerk ID
     const user = await prisma.user.findUnique({
-      where: { clerkId: userId }
+      where: { clerkId: clerkId }
     });
 
     if (!user) {
       return NextResponse.json({ error: "User not found in database" }, { status: 404 });
     }
 
-    const propertyId = params.id;
-
-    // 2. Verify the property exists and belongs to the user (or user is admin)
+    // 2. Verify the property exists and belongs to the user
     const existingProperty = await prisma.property.findUnique({
-      where: { id: propertyId }
+      where: { id: id } // Using extracted id
     });
 
     if (!existingProperty) {
       return NextResponse.json({ error: "Property not found" }, { status: 404 });
     }
 
-    // Check ownership: user must be owner or admin
+    // Check ownership
     const isOwner = existingProperty.ownerId === user.id;
-    // We don't have user.role in this context, but we could fetch it if needed
-    // For simplicity, we'll assume the user is owner if ownerId matches
-    // In a real app, you'd want to check role as well
     if (!isOwner) {
       return NextResponse.json({ error: "Forbidden: You don't have permission to delete this property" }, { status: 403 });
     }
 
     try {
-      // Delete property (and associated images due to cascade)
       await prisma.property.delete({
-        where: { id: propertyId }
+        where: { id: id }
       });
       return NextResponse.json({ success: true }, { status: 200 });
 
     } catch (dbError) {
-      console.error("🚨 Prisma Database Error! Delete error for propertyId:", propertyId);
+      console.error("🚨 Prisma Database Error! Delete error for propertyId:", id);
       console.error("🚨 Exact Prisma Error:", dbError);
       return NextResponse.json({ error: "Database deletion failed. Check terminal." }, { status: 500 });
     }
