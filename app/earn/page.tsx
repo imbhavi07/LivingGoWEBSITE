@@ -22,8 +22,8 @@ export default function EarnPage() {
   const handleGenerate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const form = e.currentTarget;  
-  
+    const form = e.currentTarget;
+
     setGenerateLoading(true);
     setGenerateError(null);
     setGenerateSuccess(null);
@@ -33,6 +33,14 @@ export default function EarnPage() {
     const name = formData.get('name') as string;
     const college = formData.get('college') as string | null;
     const upiId = formData.get('upiId') as string;
+    const confirmUpiId = formData.get('confirmUpiId') as string;
+
+    // Validate UPI IDs match
+    if (upiId !== confirmUpiId) {
+      setGenerateError('UPI IDs do not match. Please check for typos.');
+      setGenerateLoading(false);
+      return;
+    }
 
     try {
       const response = await fetch('/api/earn/public', {
@@ -145,6 +153,34 @@ export default function EarnPage() {
                   id="upiId"
                   name="upiId"
                   placeholder="e.g., name@upi"
+                  required
+                  className="w-full px-4 py-3 bg-linen/50 border border-ink/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-ink focus:bg-white transition-all duration-200 text-lg font-mono"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="confirmUpiId" className="block text-sm font-bold text-ink mb-2">
+                  Confirm UPI ID
+                </label>
+                <input
+                  type="text"
+                  id="confirmUpiId"
+                  name="confirmUpiId"
+                  placeholder="Re-enter your UPI ID"
+                  required
+                  className="w-full px-4 py-3 bg-linen/50 border border-ink/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-ink focus:bg-white transition-all duration-200 text-lg font-mono"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="confirmUpiId" className="block text-sm font-bold text-ink mb-2">
+                  Confirm UPI ID
+                </label>
+                <input
+                  type="text"
+                  id="confirmUpiId"
+                  name="confirmUpiId"
+                  placeholder="Re-enter UPI ID"
                   required
                   className="w-full px-4 py-3 bg-linen/50 border border-ink/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-ink focus:bg-white transition-all duration-200 text-lg font-mono"
                 />

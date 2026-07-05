@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -6,6 +6,19 @@ import Image from "next/image";
 // 👇 Notice I added Building2 to the lucide-react imports 👇
 import { CheckCircle, Clock, XCircle, MapPin, ReceiptText, Home, Building2 } from "lucide-react";
 import { format } from "date-fns";
+
+type PaymentWithProperty = Prisma.TokenPaymentGetPayload<{
+  include: {
+    property: {
+      select: {
+        id: true;
+        title: true;
+        location: true;
+        images: true;
+      };
+    };
+  };
+}>;
 
 const prisma = new PrismaClient();
 
@@ -26,7 +39,7 @@ export default async function StudentDashboardPage() {
   });
 
   // Fetch the student's token payments using INTERNAL User ID (cuid)
-  let payments = [] as any;
+  let payments: PaymentWithProperty[] = [];
   if (user) {
     payments = await prisma.tokenPayment.findMany({
       where: { studentId: user.id },
