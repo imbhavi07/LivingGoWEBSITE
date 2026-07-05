@@ -6,7 +6,7 @@ async function getProperty(id: string) {
     // We must fetch from your actual Backend API, not the Next.js frontend URL!
     // This defaults to localhost:5000 if the env variable isn't found. 
     // Adjust the port if your backend runs on a different one (e.g., 8000).
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000/api";
     
     // Ensure we don't double up on '/api' in the URL path
     const apiUrl = baseUrl.endsWith('/api') 
