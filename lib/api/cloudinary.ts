@@ -1,36 +1,69 @@
-export async function uploadToCloudinary(file: string | File) {
-  // Hardcoded fallbacks to your EXACT account so .env caching can't break it
-  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dlgk4nhqb";
-  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "livinggo_unsigned";
+import { v2 as cloudinary } from "cloudinary";
+import { Readable } from "stream";
 
-  if (!cloudName || !uploadPreset) {
-    console.error("🚨 Missing Cloudinary ENV variables!");
-    throw new Error("Missing Cloudinary configuration");
-  }
+// Configure Cloudinary with required environment variables
+const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+const apiKey = process.env.CLOUDINARY_API_KEY;
+const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", uploadPreset);
+// Validate that all required environment variables are present
+if (!cloudName || !apiKey || !apiSecret) {
+  throw new Error("Cloudinary environment variables are missing in production");
+}
 
+cloudinary.config({
+  cloud_name: cloudName,
+  api_key: apiKey,
+  api_secret: apiSecret,
+});
+
+/**
+ * Uploads a file to Cloudinary using the Node.js SDK
+ * @param file - File object (from FormData) or base64 data URL string
+ * @returns Promise resolving to Cloudinary upload result with url and publicId
+ */
+export async function uploadToCloudinary(file: string | File): Promise<{
+  url: string;
+  publicId: string;
+}> {
   try {
-    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-      method: "POST",
-      body: formData,
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error("🚨 Exact Cloudinary Rejection Reason:", data.error?.message || data);
-      throw new Error(data.error?.message || "Image upload failed");
+    // Convert File to buffer if needed
+    let buffer: Buffer;
+    if (typeof file === "string") {
+      // Assuming it's a base64 data URL
+      const matches = file.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+      if (!matches?.length) {
+        throw new Error("Invalid base64 data URL");
+      }
+      buffer = Buffer.from(matches[2], "base64");
+    } else {
+      // Convert File to buffer
+      const arrayBuffer = await file.arrayBuffer();
+      buffer = Buffer.from(arrayBuffer);
     }
 
-    return {
-      url: data.secure_url,
-      publicId: data.public_id,
-    };
+    return new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: "LivingGo/properties",
+          resource_type: "auto",
+        },
+        (error, result) => {
+          if (error || !result) {
+            console.error("Cloudinary upload error:", error);
+            return reject(new Error(error?.message || "Image upload failed"));
+          }
+          resolve({
+            url: result.secure_url,
+            publicId: result.public_id,
+          });
+        }
+      );
+
+      Readable.from(buffer).pipe(uploadStream);
+    });
   } catch (error) {
-    console.error("🚨 Cloudinary Fetch Failed:", error);
-    throw error;
+    console.error("Cloudinary upload failed:", error);
+    throw new Error("Image upload failed: " + (error instanceof Error ? error.message : String(error)));
   }
 }
