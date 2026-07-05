@@ -66,13 +66,12 @@ export async function GET(request: Request) {
       status: payment.status,
     }));
 
+    // Return the data needed for the UI
     return NextResponse.json({
-      referralCode: referral.code,
-      referrerName: referral.user?.name || 'Unknown',
-      totalEarnings: referral.earnings,
-      totalInvites: referral.invites,
-      successfulConversions: referral.successful,
-      ledger,
+      earnings: referral.earnings || 0,
+      successful: referral.successful || 0,
+      upiId: referral.upiId || '',
+      ledger: ledger,
     });
   } catch (error: unknown) {
     console.error('Error fetching referral tracking:', error);
