@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     const referralCode = `${prefix.toUpperCase()}500`;
 
     // Run this in a Prisma Transaction so it's bulletproof
-    const newReferral = await prisma.$transaction(async (tx) => {
+    const newReferral = await prisma.$transaction(async (tx: any) => {
       // 1. Check if referral code already exists
       const existingReferral = await tx.referral.findUnique({
         where: { code: referralCode },
