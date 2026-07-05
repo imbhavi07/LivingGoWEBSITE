@@ -197,17 +197,28 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
+    const { userId: clerkId } = await auth();
+    if (!clerkId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // 1. Find the internal User record using the Clerk ID
+    const user = await prisma.user.findUnique({
+      where: { clerkId: clerkId }
+    });
+
+    if (!user) {
+      // If the user isn't fully synced in the DB yet, they have no properties
+      return NextResponse.json([], { status: 200 });
+    }
+
+    // 2. Fetch properties using the INTERNAL User ID (cuid)
     const properties = await prisma.property.findMany({
       where: {
-        ownerId: userId,
+        ownerId: user.id, // This matches the cmqguhe... ID in your database!
       },
       include: {
-        images: true, // Make sure we fetch the images so the dashboard can display thumbnails
+        images: true, 
       },
       orderBy: {
         createdAt: 'desc',
