@@ -155,7 +155,7 @@ export async function POST(request: Request) {
       rulesStrictness,
       managerContact,
       securityContact,
-      securityDepositMonths, // Now safely typed as a number/undefined
+      securityDepositMonths, 
       priceSingle,
       priceDouble,
       priceTriple,
@@ -178,7 +178,6 @@ export async function POST(request: Request) {
     try {
       // Create property
       const property = await prisma.property.create({
-        // @ts-expect-error - Temporary bypass if your schema expects securityDepositMonths as a string
         data: propertyData,
         include: { images: true },
       });
