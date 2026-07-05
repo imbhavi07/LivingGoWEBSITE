@@ -2,12 +2,12 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { uploadToCloudinary } from '@/lib/api/cloudinary';
 
 const prisma = new PrismaClient();
 
-export async function POST(request: Request) {
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -21,6 +21,27 @@ export async function POST(request: Request) {
 
     if (!user) {
       return NextResponse.json({ error: "User not found in database" }, { status: 404 });
+    }
+
+    const propertyId = params.id;
+
+    // 2. Verify the property exists and belongs to the user (or user is admin)
+    const existingProperty = await prisma.property.findUnique({
+      where: { id: propertyId },
+      include: { images: true }
+    });
+
+    if (!existingProperty) {
+      return NextResponse.json({ error: "Property not found" }, { status: 404 });
+    }
+
+    // Check ownership: user must be owner or admin
+    const isOwner = existingProperty.ownerId === user.id;
+    // We don't have user.role in this context, but we could fetch it if needed
+    // For simplicity, we'll assume the user is owner if ownerId matches
+    // In a real app, you'd want to check role as well
+    if (!isOwner) {
+      return NextResponse.json({ error: "Forbidden: You don't have permission to update this property" }, { status: 403 });
     }
 
     const formData = await request.formData();
@@ -68,7 +89,7 @@ export async function POST(request: Request) {
     // Extract required string fields
     const title = getString('title');
     const description = getString('description');
-    const location = getString('location'); 
+    const location = getString('location');
     const preference = getString('preference') as 'Boys' | 'Girls' | 'Any' | null;
 
     if (!title || title.trim() === '') return NextResponse.json({ error: "Title is required" }, { status: 400 });
@@ -88,7 +109,7 @@ export async function POST(request: Request) {
     const rulesStrictness = getOptionalString('rulesStrictness');
     const managerContact = getOptionalString('managerContact');
     const securityContact = getOptionalString('securityContact');
-    
+
     // FIX: Safely parse security deposit as an integer (Prisma usually expects Int here)
     const securityDepositMonths = getOptionalString('securityDepositMonths');
 
@@ -110,7 +131,7 @@ export async function POST(request: Request) {
     const hasSingle = priceSingle !== undefined && priceSingle > 0 && bedsSingle !== undefined && bedsSingle > 0;
     const hasDouble = priceDouble !== undefined && priceDouble > 0 && bedsDouble !== undefined && bedsDouble > 0;
     const hasTriple = priceTriple !== undefined && priceTriple > 0 && bedsTriple !== undefined && bedsTriple > 0;
-    
+
     if (!hasSingle && !hasDouble && !hasTriple) {
       return NextResponse.json({ error: "At least one room type with price and beds must be provided" }, { status: 400 });
     }
@@ -127,17 +148,17 @@ export async function POST(request: Request) {
     }
 
     // CRITICAL FIX: Convert Web Files to Base64 for Cloudinary
-    const imageFiles = formData.getAll('images') as File[]; 
+    const imageFiles = formData.getAll('images') as File[];
     const uploadedImages = await Promise.all(
       imageFiles.map(async (file) => {
         if (!(file instanceof File)) throw new Error('Invalid file');
-        
+
         try {
           // Convert the file to a buffer, then to a base64 string
           const bytes = await file.arrayBuffer();
           const buffer = Buffer.from(bytes);
           const base64Image = `data:${file.type};base64,${buffer.toString('base64')}`;
-          
+
           // uploadToCloudinary expects a File in some typings; pass the base64 string
           // and cast to satisfy TypeScript. The implementation should accept data URLs.
           const result = await uploadToCloudinary(base64Image as unknown as File);
@@ -149,9 +170,8 @@ export async function POST(request: Request) {
       })
     );
 
-    // Build the payload object
-    const propertyData = {
-      ownerId: user.id,
+    // Build the update object
+    const updateData: Prisma.PropertyUpdateInput = {
       title: title.trim(),
       description: description.trim(),
       price,
@@ -176,70 +196,94 @@ export async function POST(request: Request) {
       mealTimes,
       facilities,
       sharedType,
-      images: {
+    };
+
+    // Only add images if we have new uploads
+    if (uploadedImages.length > 0) {
+      updateData.images = {
+        // We'll update by creating new images and optionally deleting old ones
+        // For simplicity, we'll just add new ones. In a real app, you might want to
+        // handle deletions separately based on form data.
         create: uploadedImages.map(img => ({
           url: img.url,
           publicId: img.publicId,
         })),
-      },
-    };
+      };
+    }
 
     try {
-      // Create property
-      const property = await prisma.property.create({
-        data: propertyData,
-        include: { images: true },
+      // Update property
+      const updatedProperty = await prisma.property.update({
+        where: { id: propertyId },
+        data: updateData,
+        include: { images: true }
       });
-      return NextResponse.json(property, { status: 201 });
-      
+      return NextResponse.json(updatedProperty, { status: 200 });
+
     } catch (dbError) {
-      console.error("🚨 Prisma Database Error! Payload was:", JSON.stringify(propertyData, null, 2));
+      console.error("🚨 Prisma Database Error! Update data was:", JSON.stringify(updateData, null, 2));
       console.error("🚨 Exact Prisma Error:", dbError);
-      return NextResponse.json({ error: "Database creation failed. Check terminal." }, { status: 500 });
+      return NextResponse.json({ error: "Database update failed. Check terminal." }, { status: 500 });
     }
 
   } catch (error) {
-    console.error("🚨 Fatal Server Error in Property POST:", error);
+    console.error("🚨 Fatal Server Error in Property PUT:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
 
-export async function GET(request: Request) {
+// Optional: Add DELETE method if needed
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
-    const { userId: clerkId } = await auth();
-    if (!clerkId) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // 1. Find the internal User record using the Clerk ID
     const user = await prisma.user.findUnique({
-      where: { clerkId: clerkId }
+      where: { clerkId: userId }
     });
 
     if (!user) {
-      // If the user isn't fully synced in the DB yet, they have no properties
-      return NextResponse.json([], { status: 200 });
+      return NextResponse.json({ error: "User not found in database" }, { status: 404 });
     }
 
-    // 2. Fetch properties using the INTERNAL User ID (cuid)
-    const properties = await prisma.property.findMany({
-      where: {
-        ownerId: user.id, // This matches the cmqguhe... ID in your database!
-      },
-      include: {
-        images: true, 
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
+    const propertyId = params.id;
+
+    // 2. Verify the property exists and belongs to the user (or user is admin)
+    const existingProperty = await prisma.property.findUnique({
+      where: { id: propertyId }
     });
 
-    return NextResponse.json(properties, { status: 200 });
+    if (!existingProperty) {
+      return NextResponse.json({ error: "Property not found" }, { status: 404 });
+    }
+
+    // Check ownership: user must be owner or admin
+    const isOwner = existingProperty.ownerId === user.id;
+    // We don't have user.role in this context, but we could fetch it if needed
+    // For simplicity, we'll assume the user is owner if ownerId matches
+    // In a real app, you'd want to check role as well
+    if (!isOwner) {
+      return NextResponse.json({ error: "Forbidden: You don't have permission to delete this property" }, { status: 403 });
+    }
+
+    try {
+      // Delete property (and associated images due to cascade)
+      await prisma.property.delete({
+        where: { id: propertyId }
+      });
+      return NextResponse.json({ success: true }, { status: 200 });
+
+    } catch (dbError) {
+      console.error("🚨 Prisma Database Error! Delete error for propertyId:", propertyId);
+      console.error("🚨 Exact Prisma Error:", dbError);
+      return NextResponse.json({ error: "Database deletion failed. Check terminal." }, { status: 500 });
+    }
+
   } catch (error) {
-    console.error("🚨 Fatal Server Error in Property GET:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch properties" },
-      { status: 500 }
-    );
+    console.error("🚨 Fatal Server Error in Property DELETE:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
