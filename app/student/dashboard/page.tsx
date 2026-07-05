@@ -63,7 +63,7 @@ export default async function StudentDashboardPage() {
       ) : (
         /* ── BOOKINGS LIST ── */
         <div className="grid gap-6">
-          {payments.map((payment) => {
+          {payments.map((payment: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => {
             // 👇 THIS IS THE FIX FOR THE IMAGES 👇
             // Force TypeScript to treat the Prisma JSON field as an array of objects
             const images = payment.property.images as Array<{ url: string }> | null;
