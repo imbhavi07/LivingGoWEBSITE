@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import { CouponService } from '../services/coupon.service';
 import { asyncHandler } from '../utils/async-handler';
 import { AppError } from '../utils/app-error';
@@ -67,17 +67,55 @@ export const deleteCoupon = asyncHandler(async (req: Request, res: Response) => 
 });
 
 /**
- * @desc    Validate and apply coupon
+ * @desc    Validate and apply coupon or referral code
  * @route   POST /api/coupons/apply
  * @access  Public
  */
 export const applyCoupon = asyncHandler(async (req: Request, res: Response) => {
   const { code, purchaseAmount } = req.body;
-  
+
   if (!code || typeof purchaseAmount !== 'number' || purchaseAmount < 0) {
     throw new AppError('Please provide coupon code and purchase amount', 400);
   }
-  
-  const result = await couponService.applyCoupon(code, purchaseAmount);
+
+  const upperCode = code.toUpperCase().trim();
+
+  // Check if it's a referral code (ends with 500)
+  if (upperCode.endsWith('500')) {
+    const referral = await prisma.referral.findFirst({
+      where: {
+        code: upperCode,
+        status: 'APPROVED',
+      },
+    });
+
+    if (referral) {
+      // Apply flat ₹500 discount
+      const discountAmount = Math.min(500, purchaseAmount);
+      const finalAmount = Math.max(0, purchaseAmount - discountAmount);
+
+      // Optionally, you could increment referral usage here if needed
+      // await prisma.referral.update({
+      //   where: { id: referral.id },
+      //   data: { successful: { increment: 1 }, earnings: { increment: discountAmount } },
+      // });
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          code: upperCode,
+          discountAmount,
+          finalAmount,
+          discountType: 'FLAT',
+          discountValue: 500,
+          isReferral: true,
+        },
+      });
+    }
+    // If not a valid referral, fall through to coupon check
+  }
+
+  // Otherwise, treat as a regular coupon
+  const result = await couponService.applyCoupon(upperCode, purchaseAmount);
   res.status(200).json({ success: true, data: result });
 });

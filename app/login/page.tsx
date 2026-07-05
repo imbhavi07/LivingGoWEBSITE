@@ -24,15 +24,15 @@ function LoginForm() {
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn || !user) return;
-    const role = 
-      (user?.publicMetadata?.role as string) ?? 
-      (user?.unsafeMetadata?.role as string) ?? 
-      "student";
+    const role = (user?.publicMetadata?.role as string) ?? (user?.unsafeMetadata?.role as string);
+    
     if (role === "owner") {
       router.push("/owner/dashboard");
-    } else {
-      // student or no role yet — both go to listings
+    } else if (role === "student") {
       router.push("/listings");
+    } else {
+      // No role assigned yet — force them through the student sync
+      router.push("/sync");
     }
   }, [isLoaded, isSignedIn, user, router]);
 
@@ -120,7 +120,6 @@ function LoginForm() {
               </Link>
             </div>
           ) : mode === "owner" ? (
-            // Owner login — redirect to dedicated owner login page
             <div className="rounded-3xl bg-linen p-6 text-center">
               <Building2 className="mx-auto mb-3 h-8 w-8 text-ink" />
               <p className="font-black text-ink text-lg">Owner Portal</p>
@@ -139,25 +138,26 @@ function LoginForm() {
               </p>
             </div>
           ) : (
-    <div className="flex flex-col items-center gap-3">
-      <SignIn
-        routing="hash"
-        fallbackRedirectUrl="/listings"
-        signUpUrl="/signup"
-        appearance={{
-          elements: {
-            footer: "hidden",
-          },
-        }}
-      />
-     <p className="text-sm text-muted">
-       Don&apos;t have an account?{" "}
-       <Link href="/signup" className="font-bold text-ink underline">
-         Sign up
-       </Link>
-     </p>
-    </div>
-)}
+            <div className="flex flex-col items-center gap-3">
+              <SignIn
+                routing="hash"
+                fallbackRedirectUrl="/sync"
+                forceRedirectUrl="/sync"
+                signUpUrl="/signup"
+                appearance={{
+                  elements: {
+                    footer: "hidden",
+                  },
+                }}
+              />
+              <p className="text-sm text-muted">
+                Don&apos;t have an account?{" "}
+                <Link href="/signup" className="font-bold text-ink underline">
+                  Sign up
+                </Link>
+              </p>
+            </div>
+          )}
         </div>
       </section>
     </main>

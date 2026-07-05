@@ -14,7 +14,7 @@ exports.getOwnerTenants = getOwnerTenants;
 const prisma_1 = require("../config/prisma");
 const app_error_1 = require("../utils/app-error");
 // ─── Student: submit token payment ───────────────────────────────────────────
-async function createTokenPayment(studentId, propertyId, utrNumber) {
+async function createTokenPayment(studentId, propertyId, utrNumber, appliedCode) {
     const property = await prisma_1.prisma.property.findUnique({
         where: { id: propertyId },
         select: { id: true, price: true, status: true, title: true },
@@ -35,19 +35,19 @@ async function createTokenPayment(studentId, propertyId, utrNumber) {
         // If rejected, allow re-submission — update the record
         return prisma_1.prisma.tokenPayment.update({
             where: { id: existing.id },
-            data: { utrNumber, status: "pending", updatedAt: new Date() },
+            data: { utrNumber, status: "pending", updatedAt: new Date(), appliedCode: appliedCode || undefined },
             include: { property: { select: { id: true, title: true } } },
         });
     }
     const tokenAmount = Math.ceil(property.price / 2); // half monthly rent
     return prisma_1.prisma.tokenPayment.create({
-        data: { studentId, propertyId, amount: tokenAmount, utrNumber },
+        data: { studentId, propertyId, amount: tokenAmount, utrNumber, appliedCode },
         include: { property: { select: { id: true, title: true } } },
     });
 }
 // ─── Student: get their token payments ───────────────────────────────────────
 async function getStudentTokenPayments(studentId) {
-    return prisma_1.prisma.tokenPayment.findMany({
+    return await prisma_1.prisma.tokenPayment.findMany({
         where: { studentId },
         select: {
             id: true,
@@ -86,9 +86,19 @@ async function getStudentTokenPayments(studentId) {
 }
 // ─── Admin: get all token payments ───────────────────────────────────────────
 async function getAllTokenPayments(status) {
-    return prisma_1.prisma.tokenPayment.findMany({
+    return await prisma_1.prisma.tokenPayment.findMany({
         where: status ? { status: status } : undefined,
-        include: {
+        select: {
+            id: true,
+            amount: true,
+            utrNumber: true,
+            status: true,
+            visitOtp: true,
+            visitVerified: true,
+            rentSettled: true,
+            moveInRequested: true,
+            createdAt: true,
+            appliedCode: true,
             student: { select: { id: true, name: true, email: true, phone: true } },
             property: {
                 select: {
@@ -111,15 +121,11 @@ async function moderateTokenPayment(id, action) {
     if (payment.status !== "pending")
         throw new app_error_1.AppError("Payment has already been reviewed", 400);
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
-    return prisma_1.prisma.tokenPayment.update({
+    return await prisma_1.prisma.tokenPayment.update({
         where: { id },
         data: {
             status: action,
-            ...(action === "approved"
-                ? {
-                    visitOtp: otp,
-                }
-                : {}),
+            ...(action === "approved" ? { visitOtp: otp } : {}),
         },
         include: {
             student: { select: { id: true, name: true, email: true } },
@@ -129,7 +135,7 @@ async function moderateTokenPayment(id, action) {
 }
 // ─── Owner: get token payments for their properties ───────────────────────────
 async function getOwnerTokenPayments(ownerId) {
-    return prisma_1.prisma.tokenPayment.findMany({
+    return await prisma_1.prisma.tokenPayment.findMany({
         where: { property: { ownerId } },
         include: {
             student: { select: { id: true, name: true, email: true, phone: true } },
@@ -148,7 +154,7 @@ async function requestMoveIn(paymentId) {
         throw new app_error_1.AppError("Visit not verified", 400);
     if (payment.moveInRequested)
         throw new app_error_1.AppError("Already requested", 400);
-    return prisma_1.prisma.tokenPayment.update({
+    return await prisma_1.prisma.tokenPayment.update({
         where: { id: paymentId },
         data: {
             moveInRequested: true
@@ -156,7 +162,7 @@ async function requestMoveIn(paymentId) {
     });
 }
 async function getOwnerPendingVisits(ownerId) {
-    return prisma_1.prisma.tokenPayment.findMany({
+    return await prisma_1.prisma.tokenPayment.findMany({
         where: {
             property: {
                 ownerId,
@@ -188,7 +194,7 @@ async function verifyVisitOtp(paymentId, otp) {
     if (payment.visitOtp !== otp) {
         throw new app_error_1.AppError("Invalid OTP", 400);
     }
-    return prisma_1.prisma.tokenPayment.update({
+    return await prisma_1.prisma.tokenPayment.update({
         where: {
             id: paymentId,
         },
@@ -218,7 +224,7 @@ async function approveMoveIn(paymentId) {
         (payment.property.bedsTriple ?? 0);
     if (payment.property.occupiedBeds >= totalBeds)
         throw new app_error_1.AppError("Property Full", 400);
-    return prisma_1.prisma.$transaction(async (tx) => {
+    return await prisma_1.prisma.$transaction(async (tx) => {
         await tx.tokenPayment.update({
             where: {
                 id: paymentId
@@ -241,13 +247,13 @@ async function approveMoveIn(paymentId) {
         });
         await tx.property.update({
             where: {
-                id: payment.propertyId
+                id: payment.propertyId,
             },
             data: {
                 occupiedBeds: {
-                    increment: 1
-                }
-            }
+                    increment: 1,
+                },
+            },
         });
         return {
             success: true
@@ -255,7 +261,7 @@ async function approveMoveIn(paymentId) {
     });
 }
 async function getOwnerTenants(ownerId) {
-    return prisma_1.prisma.tenantResidence.findMany({
+    return await prisma_1.prisma.tenantResidence.findMany({
         where: {
             property: {
                 ownerId

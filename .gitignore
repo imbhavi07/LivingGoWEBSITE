@@ -6,3 +6,5 @@ node_modules/
 *.log
 /lib/generated/prismabackend/.env
 backend/.env
+
+.worktrees/

@@ -1,287 +1,207 @@
-"use client";
+import { PrismaClient } from "@prisma/client";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+// 👇 Notice I added Building2 to the lucide-react imports 👇
+import { CheckCircle, Clock, XCircle, MapPin, ReceiptText, Home, Building2 } from "lucide-react";
+import { format } from "date-fns";
 
-// app/student/dashboard/page.tsx  (FULL REPLACEMENT)
+const prisma = new PrismaClient();
 
-import { useEffect, useState } from "react";
-import {
-  CreditCard, Activity, MapPin, TrendingUp, Timer,
-  Check, Loader2, Banknote, Home, ChevronDown, X
-} from "lucide-react";
-import { StudentShell } from "@/components/student/StudentShell";
-import { Button } from "@/components/Button";
-import { StarRating } from "@/components/StarRating";
-import { MyBookings } from "@/components/student/MyBookings";
-import {
-  getStudentResidence,
-  getApprovedPropertyList,
-  markResidence,
-  type ResidenceInfo,
-  type PropertyListItem,
-} from "@/lib/api/residence";
+// Force dynamic rendering so the dashboard is always fresh
+export const dynamic = "force-dynamic";
 
-export default function StudentDashboardPage() {
+export default async function StudentDashboardPage() {
+  const { userId } = await auth();
 
-  const [residence, setResidence] = useState<ResidenceInfo>(null);
-  const [residenceLoading, setResidenceLoading] = useState(true);
-
-  const [pgList, setPgList] = useState<PropertyListItem[]>([]);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [dropdownQuery, setDropdownQuery] = useState("");
-  const [markingId, setMarkingId] = useState<string | null>(null);
-  const [markError, setMarkError] = useState<string | null>(null);
-
-  // Load current residence
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await getStudentResidence();
-        setResidence(res);
-      } catch {
-        // ignore — dashboard still works without residence data
-      } finally {
-        setResidenceLoading(false);
-      }
-    })();
-  }, []);
-
-  // Load PG list when dropdown opens
-  useEffect(() => {
-    if (showDropdown && pgList.length === 0) {
-      getApprovedPropertyList().then(setPgList);
-    }
-  }, [showDropdown, pgList.length]);
-
-  const filteredPgs = pgList.filter(
-    (pg) =>
-      pg.title.toLowerCase().includes(dropdownQuery.toLowerCase()) ||
-      pg.location.toLowerCase().includes(dropdownQuery.toLowerCase())
-  );
-
-  async function handleSelectPg(pg: PropertyListItem) {
-    setMarkingId(pg.id);
-    setMarkError(null);
-    try {
-      const result = await markResidence(pg.id);
-      setResidence({
-        propertyId: pg.id,
-        propertyTitle: pg.title,
-        location: pg.location,
-        occupiedBeds: result.occupiedBeds,
-        totalBeds: result.totalBeds,
-        availableBeds: result.availableBeds,
-      });
-      setShowDropdown(false);
-      setDropdownQuery("");
-    } catch (err: unknown) {
-      setMarkError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setMarkingId(null);
-    }
+  // Protect the route
+  if (!userId) {
+    redirect("/login");
   }
 
+  // Fetch the student's token payments including the property details
+  const payments = await prisma.tokenPayment.findMany({
+    where: { studentId: userId },
+    include: {
+      property: {
+        select: {
+          id: true,
+          title: true,
+          location: true,
+          images: true, 
+        }
+      }
+    },
+    orderBy: { createdAt: "desc" }
+  });
+
   return (
-    <StudentShell>
-      <div className="space-y-8">
-
-        {/* ── Current Residence ─────────────────────────────────────────── */}
-        <section className="bg-white rounded-3xl shadow-soft p-6">
-          <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-            <h2 className="text-2xl font-bold text-ink flex items-center gap-2">
-              <Home className="h-5 w-5" />
-              Current Residence
-            </h2>
-
-            {/* "I'm an existing tenant" button */}
-            {!residence && (
-              <div className="relative">
-              <button
-                onClick={() => { setShowDropdown((v) => !v); setMarkError(null); }}
-                className="flex items-center gap-2 rounded-xl border border-black/10 bg-linen px-4 py-2 text-sm font-semibold text-ink hover:bg-black/5 transition-colors"
-              >
-                <Home className="h-4 w-4" />
-                I am an existing tenant
-                <ChevronDown className={`h-4 w-4 transition-transform ${showDropdown ? "rotate-180" : ""}`} />
-              </button>
-
-              {/* Dropdown */}
-              {showDropdown && (
-                <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-2xl shadow-lg border border-black/10 z-50 overflow-hidden">
-                  <div className="p-3 border-b border-black/5 flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={dropdownQuery}
-                      onChange={(e) => setDropdownQuery(e.target.value)}
-                      placeholder="Search PG name or location…"
-                      className="flex-1 text-sm outline-none placeholder:text-muted"
-                      autoFocus
-                    />
-                    {dropdownQuery && (
-                      <button onClick={() => setDropdownQuery("")} aria-label="Clear search">
-                        <X className="h-4 w-4 text-muted" />
-                      </button>
-                    )}
-                  </div>
-
-                  <ul className="max-h-56 overflow-y-auto divide-y divide-black/5">
-                    {pgList.length === 0 && (
-                      <li className="p-4 text-sm text-muted text-center">Loading…</li>
-                    )}
-                    {pgList.length > 0 && filteredPgs.length === 0 && (
-                      <li className="p-4 text-sm text-muted text-center">No matching PGs found</li>
-                    )}
-                    {filteredPgs.map((pg) => (
-                      <li key={pg.id}>
-                        <button
-                          onClick={() => handleSelectPg(pg)}
-                          disabled={markingId === pg.id}
-                          className="w-full text-left px-4 py-3 hover:bg-linen transition-colors flex items-center gap-3 disabled:opacity-60"
-                        >
-                          {markingId === pg.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin text-muted shrink-0" />
-                          ) : (
-                            <MapPin className="h-4 w-4 text-muted shrink-0" />
-                          )}
-                          <div>
-                            <p className="text-sm font-semibold text-ink">{pg.title}</p>
-                          </div>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>)}
-          </div>
-
-          {markError && (
-            <div className="mb-4 rounded-xl bg-red-50 px-4 py-2 text-sm text-red-700 font-medium">
-              {markError}
-            </div>
-          )}
-
-          {residenceLoading ? (
-            <div className="grid gap-4 md:grid-cols-3">
-              {[0,1,2].map((i) => <div key={i} className="h-12 animate-pulse rounded-xl bg-linen" />)}
-            </div>
-          ) : residence ? (
-            <>
-              <div className="mb-3 flex items-center gap-2">
-                <Check className="h-4 w-4 text-green-600" />
-                <span className="text-sm font-semibold text-green-700">You are registered as a tenant</span>
-              </div>
-              <div className="grid gap-4 md:grid-cols-3">
-                <div>
-                  <p className="text-sm text-muted">PG Name</p>
-                  <p className="font-bold text-lg text-ink">{residence.propertyTitle}</p>
-                  <p className="text-xs text-muted mt-0.5 flex items-center gap-1">
-                    <MapPin className="h-3 w-3" />{residence.location}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted">Occupied Beds</p>
-                  <p className="font-bold text-lg text-ink">{residence.occupiedBeds}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted">Available Beds</p>
-                  <p className="font-bold text-lg text-ink">{residence.availableBeds}</p>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-3">
-              <div>
-                <p className="text-sm text-muted">PG Name</p>
-                <p className="font-bold text-lg text-ink text-muted">Not assigned</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted">Occupied Beds</p>
-                <p className="font-bold text-lg text-ink">—</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted">Available Beds</p>
-                <p className="font-bold text-lg text-ink">—</p>
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* ── My Bookings (token payments) ─────────────────────────────── */}
-        <MyBookings />
-
-        {/* ── Shortlisted Properties ────────────────────────────────────── */}
-        <section className="bg-white rounded-3xl shadow-soft p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-ink flex items-center gap-2">
-              <MapPin className="h-5 w-5" />
-              Shortlisted Properties
-            </h2>
-            <button className="text-sm text-muted hover:text-ink">View All</button>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            {[
-              { name: "Modern PG Near Campus", distance: "200m from Hansraj College", single: "₹14k", double: "₹9k" },
-              { name: "Shared Accommodation", distance: "150m from Miranda House", single: "₹12k", double: "₹8k" },
-            ].map((p) => (
-              <div key={p.name} className="bg-linen rounded-xl p-4 border border-black/5">
-                <div className="flex items-start gap-3 mb-3">
-                  <MapPin className="h-4 w-4 text-muted mt-0.5" />
-                  <div>
-                    <p className="font-medium text-ink">{p.name}</p>
-                    <p className="text-xs text-muted">{p.distance}</p>
-                    {/* Placeholder rating */}
-                    <div className="mt-1">
-                      <StarRating value={4.0} count={12} size="sm" />
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-3 pt-2 border-t border-black/5">
-                  <Button variant="ghost" size="sm" className="w-full">View Details</Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ── Quick Actions ─────────────────────────────────────────────── */}
-        <section className="bg-white rounded-3xl shadow-soft p-6">
-          <div className="grid gap-6 md:grid-cols-2">
-            <div>
-              <h3 className="text-xl font-bold text-ink mb-3 flex items-center gap-2">
-                <Banknote className="h-5 w-5" />
-                Quick Actions
-              </h3>
-              <div className="space-y-3">
-                <Button variant="outline" className="w-full flex items-center justify-start gap-3">
-                  <Activity className="h-4 w-4" />
-                  Download Platform Guidelines
-                </Button>
-                <Button variant="outline" className="w-full flex items-center justify-start gap-3">
-                  <MapPin className="h-4 w-4" />
-                  Generate Moving Checklist
-                </Button>
-                <Button variant="outline" className="w-full flex items-center justify-start gap-3">
-                  <Activity className="h-4 w-4" />
-                  Schedule Property Visit
-                </Button>
-              </div>
-            </div>
-            <div className="bg-linen rounded-xl p-4 border border-black/5">
-              <h3 className="text-xl font-bold text-ink mb-3 flex items-center gap-2">
-                <Banknote className="h-5 w-5" />
-                Virtual Bank Account
-              </h3>
-              <p className="text-sm text-muted">Your secure platform wallet for transactions</p>
-              <div className="mt-4">
-                <div className="h-8 w-full bg-white rounded-lg border border-black/5 flex items-center justify-center">
-                  <span className="text-xs font-medium text-muted">Pending Setup</span>
-                </div>
-                <Button variant="outline" size="sm" className="w-full mt-3">Setup Account</Button>
-              </div>
-            </div>
-          </div>
-        </section>
-
+    <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-black text-ink sm:text-4xl">My Dashboard</h1>
+        <p className="mt-2 text-sm text-muted">Track your property bookings and token payments.</p>
       </div>
-    </StudentShell>
+
+      {payments.length === 0 ? (
+        /* ── EMPTY STATE ── */
+        <div className="flex flex-col items-center justify-center rounded-3xl bg-white px-6 py-20 text-center shadow-soft border border-black/5">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-linen mb-6">
+            <Home className="h-10 w-10 text-clay" />
+          </div>
+          <h2 className="text-2xl font-black text-ink">No bookings yet</h2>
+          <p className="mt-2 max-w-md text-sm text-muted">
+            You haven&apos;t paid a token for any properties yet. Browse our verified listings to find your perfect student home.
+          </p>
+          <Link 
+            href="/listings" 
+            className="mt-8 rounded-full bg-ink px-8 py-3.5 text-sm font-bold text-white hover:bg-ink/90 transition-transform hover:scale-105 shadow-lg"
+          >
+            Explore Properties
+          </Link>
+        </div>
+      ) : (
+        /* ── BOOKINGS LIST ── */
+        <div className="grid gap-6">
+          {payments.map((payment) => {
+            // 👇 THIS IS THE FIX FOR THE IMAGES 👇
+            // Force TypeScript to treat the Prisma JSON field as an array of objects
+            const images = payment.property.images as Array<{ url: string }> | null;
+            let imageUrl = images?.[0]?.url || null;
+
+            // Optimize Cloudinary URLs if they exist
+            if (imageUrl && imageUrl.includes("res.cloudinary.com") && !imageUrl.includes("f_auto")) {
+              imageUrl = imageUrl.replace("/upload/", "/upload/f_auto,q_auto/").replace(/\.heic$/i, ".webp");
+            }
+
+            const locationName = payment.property.location.split(',')[0] || "Location restricted";
+
+            return (
+              <div key={payment.id} className="overflow-hidden rounded-3xl bg-white shadow-soft border border-black/5">
+                <div className="flex flex-col sm:flex-row">
+                  
+                  {/* Property Image with Fallback */}
+                  <div className="relative h-48 sm:h-auto sm:w-64 shrink-0 bg-linen">
+                    {imageUrl ? (
+                      <Image 
+                        src={imageUrl} 
+                        alt={payment.property.title}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-black/5">
+                        <Building2 className="h-12 w-12 text-black/20" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Booking Details */}
+                  <div className="flex flex-1 flex-col justify-between p-6">
+                    <div>
+                      <div className="flex flex-wrap items-start justify-between gap-4">
+                        <div>
+                          <h3 className="text-xl font-black text-ink line-clamp-1">{payment.property.title}</h3>
+                          <p className="mt-1 flex items-center gap-1.5 text-sm font-semibold text-muted">
+                            <MapPin className="h-4 w-4 shrink-0" />
+                            {locationName}
+                          </p>
+                        </div>
+                        
+                        {/* Dynamic Status Badge */}
+                        <div className="shrink-0">
+                          {payment.status === 'pending' && (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1.5 text-xs font-bold text-amber-800">
+                              <span className="h-2 w-2 rounded-full bg-amber-600 animate-pulse" />
+                              Pending Verification
+                            </span>
+                          )}
+                          {payment.status === 'approved' && (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1.5 text-xs font-bold text-green-800">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              Confirmed
+                            </span>
+                          )}
+                          {payment.status === 'rejected' && (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-red-100 px-3 py-1.5 text-xs font-bold text-red-800">
+                              <XCircle className="h-4 w-4 text-red-600" />
+                              Rejected
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="mt-6 flex flex-wrap gap-x-8 gap-y-4">
+                        <div>
+                          <p className="text-xs font-bold uppercase text-muted">Token Paid</p>
+                          <p className="mt-1 text-lg font-black text-ink">₹{payment.amount.toLocaleString("en-IN")}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold uppercase text-muted">Transaction UTR</p>
+                          <p className="mt-1 flex items-center gap-1.5 text-sm font-mono font-bold text-ink">
+                            <ReceiptText className="h-4 w-4 text-muted" />
+                            {payment.utrNumber}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold uppercase text-muted">Date Requested</p>
+                          <p className="mt-1 text-sm font-bold text-ink">
+                            {format(new Date(payment.createdAt), "dd MMM yyyy")}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Dynamic Status Messages (Proper React Conditional Rendering) */}
+                    <div className="mt-6 pt-5 border-t border-black/5">
+                      {payment.status === 'pending' && (
+                        <div className="flex items-start gap-3 rounded-2xl bg-amber-50 p-4 border border-amber-100">
+                          <Clock className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+                          <div>
+                            <h4 className="text-sm font-bold text-amber-900">Verification in progress</h4>
+                            <p className="text-xs text-amber-700 mt-1">
+                              We are verifying your UTR with our bank records. This usually takes 2-4 hours. The owner will contact you once approved.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {payment.status === 'approved' && (
+                        <div className="flex items-start gap-3 rounded-2xl bg-emerald-50 p-4 border border-emerald-100">
+                          <CheckCircle className="h-5 w-5 text-emerald-600 mt-0.5 shrink-0" />
+                          <div>
+                            <h4 className="text-sm font-bold text-emerald-900">
+                              {!payment.visitVerified ? 'Visit Verification Required' : 'Booking Confirmed!'}
+                            </h4>
+                            <p className="text-xs text-emerald-700 mt-1">
+                              {!payment.visitVerified
+                                ? `Your Visit OTP: ${payment.visitOtp}. Please share this with the property owner upon arrival.`
+                                : 'Visit Verified! Welcome to your new home.'}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
+                      {payment.status === 'rejected' && (
+                        <div className="flex items-start gap-3 rounded-2xl bg-red-50 p-4 border border-red-100">
+                          <XCircle className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
+                          <div>
+                            <h4 className="text-sm font-bold text-red-900">Payment Rejected</h4>
+                            <p className="text-xs text-red-700 mt-1">
+                              We couldn&apos;t verify this UTR number. Please check the details and try again, or contact our support team.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </main>
   );
 }

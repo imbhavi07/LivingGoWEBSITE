@@ -15,7 +15,7 @@ model User {
   email              String             @unique
   phone              String?
   passwordHash       String
-  role               Role               @default(student)
+  role               Role
   status             UserStatus         @default(active)
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
@@ -195,6 +195,10 @@ model TokenPayment {
   updatedAt        DateTime           @updatedAt
   moveInRequested  Boolean            @default(false)
   selectedRoomType RoomType?
+  payeeName        String?
+  payeeUpi         String?
+  payeePhone       String?
+  appliedCode      String?
   property         Property           @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   student          User               @relation("StudentTokenPayments", fields: [studentId], references: [id], onDelete: Cascade)
 
@@ -232,6 +236,7 @@ model Referral {
   invites        Int              @default(0)
   successful     Int              @default(0)
   earnings       Float            @default(0)
+  upiId          String?
 
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt

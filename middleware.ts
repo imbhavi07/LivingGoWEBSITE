@@ -1,6 +1,8 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
+// 🚨 REMOVED PrismaClient import because Prisma crashes Next.js Edge Middleware!
+
 const isPublicRoute = createRouteMatcher([
   "/",
   "/login(.*)",
@@ -13,6 +15,9 @@ const isPublicRoute = createRouteMatcher([
   "/legal(.*)",
   "/api/auth(.*)",
   "/api/webhooks(.*)",
+  "/earn",
+  "/api/earn/public(.*)",
+  "/api/earn/track(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
@@ -25,6 +30,11 @@ export default clerkMiddleware(async (auth, request) => {
   if (isPublicRoute(request)) return NextResponse.next();
 
   const { userId, sessionClaims } = await auth();
+  
+  const role = (sessionClaims?.publicMetadata as { role?: string })?.role;
+  
+  // Fixed the console log to use the lowercase 'role' variable
+  console.log("[MIDDLEWARE HIT]:", pathname, "| Role:", role); 
 
   // Not signed in — redirect to appropriate login
   if (!userId) {
@@ -38,22 +48,24 @@ export default clerkMiddleware(async (auth, request) => {
     return NextResponse.redirect(loginUrl);
   }
 
-  const role = (sessionClaims?.publicMetadata as { role?: string })?.role;
-
   // Owner routes — must have owner or admin role
-  // Allow undefined role through /owner/kyc and /owner/properties so new signups can complete KYC and access property routes
   if (pathname.startsWith("/owner")) {
+    
+    // 👇 THIS IS THE CORRECT PLACE FOR THE SYNC BYPASS 👇
+    if (pathname.startsWith("/owner/sync")) {
+      return NextResponse.next();
+    }
+
     if (pathname.startsWith("/owner/kyc") && !role) {
       return NextResponse.next();
     }
-    // Allow property routes (including new) when role is undefined
     if (pathname.startsWith("/owner/properties") && !role) {
       return NextResponse.next();
     }
-    // Allow the entire dashboard subtree without role check (we'll check in the dashboard layout)
     if (pathname.startsWith("/owner/dashboard")) {
       return NextResponse.next();
     }
+    
     // For other owner routes, require owner or admin role
     if (role !== "owner" && role !== "admin") {
       return NextResponse.redirect(new URL("/owner/login", request.url));

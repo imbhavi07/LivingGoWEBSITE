@@ -15,11 +15,11 @@ function requireUser(req: Request) {
 export const submitTokenPayment = asyncHandler(async (req: Request, res: Response) => {
   const user = requireUser(req);
   const propertyId = String(req.params.id);
-  const { utrNumber } = req.body as { utrNumber: string };
+  const { utrNumber, appliedCode } = req.body as { utrNumber: string; appliedCode?: string };
 
   if (!utrNumber?.trim()) throw new AppError("UTR number is required", 400);
 
-  const payment = await tokenService.createTokenPayment(user.id, propertyId, utrNumber.trim());
+  const payment = await tokenService.createTokenPayment(user.id, propertyId, utrNumber.trim(), appliedCode);
   res.status(201).json(payment);
 });
 
@@ -66,7 +66,7 @@ import { verifyToken } from "@clerk/backend";
 
 export const confirmRazorpayPayment = asyncHandler(async (req: Request, res: Response) => {
   const user = requireUser(req);
-  const { propertyId, razorpayPaymentId } = req.body;
+  const { propertyId, razorpayPaymentId, appliedCode } = req.body;
 
   // Ensure user record exists in DB (self-heal for missing webhook)
   const authHeader = req.headers.authorization;
@@ -93,7 +93,7 @@ export const confirmRazorpayPayment = asyncHandler(async (req: Request, res: Res
           verificationStatus: 'not_required',
         },
       });
-    } catch (err) {
+    } catch (err: unknown) {
       // If token verification fails, we still have user from requireUser (which came from clerkAuthenticate)
       // So we can ignore; the user record should exist from middleware.
     }
@@ -116,6 +116,7 @@ export const confirmRazorpayPayment = asyncHandler(async (req: Request, res: Res
       utrNumber: razorpayPaymentId, // Save the Razorpay ID as the UTR
       status: "approved", // INSTANT APPROVAL!
       visitOtp: otp,
+      appliedCode: appliedCode || undefined, // Store the applied code if any
     },
     create: {
       studentId: user.id,
@@ -124,6 +125,7 @@ export const confirmRazorpayPayment = asyncHandler(async (req: Request, res: Res
       utrNumber: razorpayPaymentId,
       status: "approved",
       visitOtp: otp,
+      appliedCode: appliedCode || undefined,
     }
   });
 
@@ -146,11 +148,12 @@ export const getOwnerPendingVisits = asyncHandler(async (req, res) => {
   if (!req.user) {
     throw new AppError("Unauthorized", 401);
   }
-  const ownerId = req.user.id;
+  const ownerId = req.user!.id;
 
   const visits = await tokenService.getOwnerPendingVisits(ownerId);
 
   res.json(visits);
+
 });
 
 export const verifyVisitOtp = asyncHandler(async (req, res) => {

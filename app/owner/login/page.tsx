@@ -14,7 +14,13 @@ export default function OwnerLoginPage() {
   useEffect(() => {
     if (!isLoaded || !user) return;
     const role = (user.publicMetadata as { role?: string })?.role;
-    if (role === "owner" || role === "admin") router.replace("/owner/dashboard");
+    
+    if (role === "owner" || role === "admin") {
+      router.replace("/owner/dashboard");
+    } else {
+      // If logged in but role isn't owner yet, force them through sync
+      router.replace("/owner/sync");
+    }
   }, [isLoaded, user, router]);
 
   if (!isLoaded || user) return null;
@@ -47,8 +53,8 @@ export default function OwnerLoginPage() {
             <div className="flex flex-col items-center gap-3">
               <SignIn
                 routing="hash"
-                fallbackRedirectUrl="/owner/dashboard"
-                forceRedirectUrl="/owner/dashboard"
+                fallbackRedirectUrl="/owner/sync"
+                forceRedirectUrl="/owner/sync"
                 signUpUrl="/owner/signup"
                 appearance={{
                   elements: { footer: "hidden" },

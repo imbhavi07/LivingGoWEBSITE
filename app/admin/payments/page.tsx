@@ -132,6 +132,10 @@ export default function AdminPaymentsPage() {
                         <p className="text-sm font-mono font-bold text-ink">{payment.utrNumber}</p>
                       </div>
                       <div>
+                        <p className="text-xs text-muted">Applied Code</p>
+                        <p className="text-sm font-mono font-bold text-ink">{payment.appliedCode || '-'}</p>
+                      </div>
+                      <div>
                         <p className="text-xs text-muted">Submitted</p>
                         <p className="text-sm font-bold text-ink">
                           {new Date(payment.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
