@@ -242,7 +242,7 @@ export function PropertyEditForm({ initialData, onSave, onCancel, isSaving }: Pr
             />
           </div>
           <div>
-            <label htmlFor="noticePeriod" className="mb-1 block text-sm font-bold text-ink">Notice Period</label>
+            <label htmlFor="noticePeriod" className="mb-1 block text-sm font-bold text-ink">Lock-In Period</label>
             <select
               id="noticePeriod"
               value={form.noticePeriod ?? ""}

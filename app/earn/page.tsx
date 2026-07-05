@@ -10,13 +10,21 @@ interface TrackRecord {
   status: string;
 }
 
+// Define the shape of the tracking API response
+interface TrackResponse {
+  earnings: number;
+  successful: number;
+  upiId: string;
+  ledger: TrackRecord[];
+}
+
 export default function EarnPage() {
   const [generateLoading, setGenerateLoading] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [generateSuccess, setGenerateSuccess] = useState<string | null>(null);
   const [trackLoading, setTrackLoading] = useState(false);
   const [trackError, setTrackError] = useState<string | null>(null);
-  const [trackResults, setTrackResults] = useState<TrackRecord[] | null>(null);
+  const [trackResults, setTrackResults] = useState<TrackResponse | null>(null);
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
 
   const handleGenerate = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -171,21 +179,6 @@ export default function EarnPage() {
                   className="w-full px-4 py-3 bg-linen/50 border border-ink/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-ink focus:bg-white transition-all duration-200 text-lg font-mono"
                 />
               </div>
-
-              <div>
-                <label htmlFor="confirmUpiId" className="block text-sm font-bold text-ink mb-2">
-                  Confirm UPI ID
-                </label>
-                <input
-                  type="text"
-                  id="confirmUpiId"
-                  name="confirmUpiId"
-                  placeholder="Re-enter UPI ID"
-                  required
-                  className="w-full px-4 py-3 bg-linen/50 border border-ink/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-ink focus:bg-white transition-all duration-200 text-lg font-mono"
-                />
-              </div>
-
               <div>
                 <label htmlFor="prefix" className="block text-sm font-bold text-ink mb-2">
                   Desired Code Prefix (Letters only)
@@ -232,11 +225,30 @@ export default function EarnPage() {
               </div>
             )}
 
-            {trackResults && trackResults.length > 0 && (
+            {trackResults && (
+              <div className="mb-6 p-4 bg-linen/50 rounded-xl border border-ink/10">
+                <div className="grid gap-4 md:grid-cols-3 text-center">
+                  <div>
+                    <p className="text-xs text-ink/50">Amount Receivable</p>
+                    <p className="text-2xl font-bold text-ink">₹{trackResults.earnings}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-ink/50">Total Uses</p>
+                    <p className="text-2xl font-bold text-ink">{trackResults.successful}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-ink/50">Linked UPI</p>
+                    <p className="text-lg font-mono text-ink break-all">{trackResults.upiId || 'Not set'}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {trackResults && trackResults.ledger.length > 0 && (
               <div className="mb-4">
                 <h3 className="text-lg font-bold text-ink mb-2">Usage History</h3>
                 <div className="space-y-3">
-                  {trackResults.map((record: TrackRecord, index: number) => (
+                  {trackResults.ledger.map((record: TrackRecord, index: number) => (
                     <div key={index} className="p-3 bg-linen/50 rounded-xl border border-ink/5">
                       <div className="flex justify-between text-sm">
                         <span>{new Date(record.date).toLocaleDateString()}</span>
@@ -257,7 +269,7 @@ export default function EarnPage() {
               </div>
             )}
 
-            {trackResults && trackResults.length === 0 && (
+            {trackResults && trackResults.ledger.length === 0 && (
               <div className="text-center py-6 text-ink/50">
                 No usage data found for this code.
               </div>

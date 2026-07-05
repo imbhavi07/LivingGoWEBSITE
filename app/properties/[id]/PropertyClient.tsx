@@ -450,7 +450,7 @@ export default function PropertyClient({ property }: { property: any }) {
                   )}
                   {property.noticePeriod && (
                     <div className="rounded-2xl bg-white p-4 shadow-soft">
-                      <p className="text-xs font-bold uppercase text-muted">Notice Period</p>
+                      <p className="text-xs font-bold uppercase text-muted">Lock-In Period</p>
                       <p className="mt-1 font-black text-ink">{property.noticePeriod}</p>
                     </div>
                   )}
