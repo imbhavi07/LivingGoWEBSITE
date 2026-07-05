@@ -7,10 +7,19 @@ const prisma = new PrismaClient();
 
 export async function POST(request: Request) {
   try {
-    const { userId } = await auth();
+    const { userId: clerkId } = await auth();
 
-    if (!userId) {
+    if (!clerkId) {
       return NextResponse.json({ error: 'Unauthorized. Please log in.' }, { status: 401 });
+    }
+
+    // 1. CRITICAL FIX: Find the internal user record
+    const user = await prisma.user.findUnique({
+      where: { clerkId: clerkId }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User profile not found in database.' }, { status: 404 });
     }
 
     const body = await request.json();
@@ -24,11 +33,11 @@ export async function POST(request: Request) {
     const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
 
     const payment = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      // 1. Save or Update the Token Payment
+      // 2. Save or Update the Token Payment using INTERNAL user.id
       const tokenPayment = await tx.tokenPayment.upsert({
         where: {
           studentId_propertyId: {
-            studentId: userId,
+            studentId: user.id, // <-- FIX: using internal cuid
             propertyId: propertyId,
           }
         },
@@ -40,7 +49,7 @@ export async function POST(request: Request) {
           // Do NOT update visitOtp here - preserve the original OTP if resubmitting UTR
         },
         create: {
-          studentId: userId,
+          studentId: user.id, // <-- FIX: using internal cuid
           propertyId: propertyId,
           amount: amount,
           utrNumber: utrNumber,
@@ -50,7 +59,7 @@ export async function POST(request: Request) {
         }
       });
 
-      // 2. Increment Super Admin Coupon Usage (if a coupon was used)
+      // 3. Increment Super Admin Coupon Usage (if a coupon was used)
       if (appliedCode) {
         const coupon = await tx.coupon.findUnique({ where: { code: appliedCode } });
         if (coupon) {
@@ -59,8 +68,6 @@ export async function POST(request: Request) {
             data: { currentUses: { increment: 1 } }
           });
         }
-        // Note: We don't increment Referral earnings here yet.
-        // We only pay the peer AFTER the admin verifies the UTR!
       }
 
       return tokenPayment;

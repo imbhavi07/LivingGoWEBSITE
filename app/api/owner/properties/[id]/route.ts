@@ -7,7 +7,11 @@ import { uploadToCloudinary } from '@/lib/api/cloudinary';
 
 const prisma = new PrismaClient();
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(
+  request: Request, 
+  { params }: { params: Promise<{ id: string }> } // <-- Update type to Promise
+) {
+  const { id } = await params;
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -23,7 +27,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: "User not found in database" }, { status: 404 });
     }
 
-    const propertyId = params.id;
+    const propertyId = (await params).id;
 
     // 2. Verify the property exists and belongs to the user (or user is admin)
     const existingProperty = await prisma.property.findUnique({
