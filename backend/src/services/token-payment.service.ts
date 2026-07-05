@@ -99,6 +99,11 @@ export async function getAllTokenPayments(status?: string) {
           title: true,
           location: true,
           price: true,
+          images: {
+            select: {
+              url: true,
+            },
+          },
           owner: { select: { id: true, name: true, phone: true } },
         },
       },

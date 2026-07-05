@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { z } from 'zod';
 
 const prisma = new PrismaClient();
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     const referralCode = `${prefix.toUpperCase()}500`;
 
     // Run this in a Prisma Transaction so it's bulletproof
-    const newReferral = await prisma.$transaction(async (tx: any) => {
+    const newReferral = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // 1. Check if referral code already exists
       const existingReferral = await tx.referral.findUnique({
         where: { code: referralCode },
