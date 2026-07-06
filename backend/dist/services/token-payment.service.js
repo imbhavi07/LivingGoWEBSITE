@@ -1,6 +1,8 @@
 "use strict";
 // backend/src/services/token-payment.service.ts  (NEW FILE)
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.trackReferralInvite = trackReferralInvite;
+exports.trackReferralConfirmation = trackReferralConfirmation;
 exports.createTokenPayment = createTokenPayment;
 exports.getStudentTokenPayments = getStudentTokenPayments;
 exports.getAllTokenPayments = getAllTokenPayments;
@@ -13,6 +15,57 @@ exports.approveMoveIn = approveMoveIn;
 exports.getOwnerTenants = getOwnerTenants;
 const prisma_1 = require("../config/prisma");
 const app_error_1 = require("../utils/app-error");
+// Helper function to handle referral invite when a code is used
+async function handleReferralInvite(code) {
+    const upperCode = code.toUpperCase().trim();
+    // Check if it's a referral code (ends with 500)
+    if (upperCode.endsWith('500')) {
+        const referral = await prisma_1.prisma.referral.findFirst({
+            where: {
+                code: upperCode,
+                status: 'APPROVED',
+            },
+        });
+        if (referral) {
+            // Increment the invite count
+            await prisma_1.prisma.referral.update({
+                where: { id: referral.id },
+                data: { invites: { increment: 1 } },
+            });
+        }
+    }
+}
+// Exported function to handle referral invitation (for use in controllers)
+async function trackReferralInvite(code) {
+    await handleReferralInvite(code);
+}
+// Helper function to handle successful referral confirmation (when payment is approved/confirmed)
+async function handleReferralConfirmation(code) {
+    const upperCode = code.toUpperCase().trim();
+    // Check if it's a referral code (ends with 500)
+    if (upperCode.endsWith('500')) {
+        const referral = await prisma_1.prisma.referral.findFirst({
+            where: {
+                code: upperCode,
+                status: 'APPROVED',
+            },
+        });
+        if (referral) {
+            // Increment successful conversions and add earnings (₹500 commission)
+            await prisma_1.prisma.referral.update({
+                where: { id: referral.id },
+                data: {
+                    successful: { increment: 1 },
+                    earnings: { increment: 500 }
+                },
+            });
+        }
+    }
+}
+// Exported function to handle referral confirmation (for use in controllers)
+async function trackReferralConfirmation(code) {
+    await handleReferralConfirmation(code);
+}
 // ─── Student: submit token payment ───────────────────────────────────────────
 async function createTokenPayment(studentId, propertyId, utrNumber, appliedCode) {
     const property = await prisma_1.prisma.property.findUnique({
@@ -40,10 +93,16 @@ async function createTokenPayment(studentId, propertyId, utrNumber, appliedCode)
         });
     }
     const tokenAmount = Math.ceil(property.price / 2); // half monthly rent
-    return prisma_1.prisma.tokenPayment.create({
+    // Create the token payment
+    const payment = await prisma_1.prisma.tokenPayment.create({
         data: { studentId, propertyId, amount: tokenAmount, utrNumber, appliedCode },
         include: { property: { select: { id: true, title: true } } },
     });
+    // If a referral code was applied, increment the referral's invite count
+    if (appliedCode) {
+        await trackReferralInvite(appliedCode);
+    }
+    return payment;
 }
 // ─── Student: get their token payments ───────────────────────────────────────
 async function getStudentTokenPayments(studentId) {
@@ -58,6 +117,7 @@ async function getStudentTokenPayments(studentId) {
             rentSettled: true,
             moveInRequested: true,
             createdAt: true,
+            appliedCode: true,
             property: {
                 select: {
                     id: true,
@@ -68,7 +128,6 @@ async function getStudentTokenPayments(studentId) {
                         select: {
                             url: true,
                         },
-                        take: 1,
                     },
                     owner: {
                         select: {
@@ -78,6 +137,7 @@ async function getStudentTokenPayments(studentId) {
                     },
                 },
             },
+            student: { select: { id: true, name: true, email: true, phone: true } },
         },
         orderBy: {
             createdAt: "desc",
@@ -86,8 +146,48 @@ async function getStudentTokenPayments(studentId) {
 }
 // ─── Admin: get all token payments ───────────────────────────────────────────
 async function getAllTokenPayments(status) {
+    if (status) {
+        const trimmed = status.trim().toLowerCase();
+        if (["pending", "approved", "rejected"].includes(trimmed)) {
+            return await prisma_1.prisma.tokenPayment.findMany({
+                where: { status: trimmed },
+                select: {
+                    id: true,
+                    amount: true,
+                    utrNumber: true,
+                    status: true,
+                    visitOtp: true,
+                    visitVerified: true,
+                    rentSettled: true,
+                    moveInRequested: true,
+                    createdAt: true,
+                    appliedCode: true,
+                    student: { select: { id: true, name: true, email: true, phone: true } },
+                    property: {
+                        select: {
+                            id: true,
+                            title: true,
+                            location: true,
+                            price: true,
+                            images: {
+                                select: {
+                                    url: true,
+                                },
+                            },
+                            owner: { select: { id: true, name: true, phone: true } },
+                        },
+                    },
+                },
+                orderBy: { createdAt: "desc" },
+            });
+        }
+        else {
+            // Invalid status value, return empty array.
+            return [];
+        }
+    }
+    // No status filter, return all.
     return await prisma_1.prisma.tokenPayment.findMany({
-        where: status ? { status: status } : undefined,
         select: {
             id: true,
             amount: true,
@@ -106,6 +206,11 @@ async function getAllTokenPayments(status) {
                     title: true,
                     location: true,
                     price: true,
+                    images: {
+                        select: {
+                            url: true,
+                        },
+                    },
                     owner: { select: { id: true, name: true, phone: true } },
                 },
             },
@@ -121,7 +226,7 @@ async function moderateTokenPayment(id, action) {
     if (payment.status !== "pending")
         throw new app_error_1.AppError("Payment has already been reviewed", 400);
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
-    return await prisma_1.prisma.tokenPayment.update({
+    const updatedPayment = await prisma_1.prisma.tokenPayment.update({
         where: { id },
         data: {
             status: action,
@@ -132,6 +237,25 @@ async function moderateTokenPayment(id, action) {
             property: { select: { id: true, title: true, location: true } },
         },
     });
+    // If the payment was approved and had a referral code, update referral stats
+    if (action === "approved" && payment.appliedCode) {
+        // Referral commission is ₹500 (same as the discount amount)
+        await trackReferralConfirmation(payment.appliedCode);
+    }
+    // Increment coupon usage if a coupon code was applied and payment was approved
+    if (action === "approved" && payment.appliedCode) {
+        try {
+            await prisma_1.prisma.coupon.update({
+                where: { code: payment.appliedCode },
+                data: { currentUses: { increment: 1 } }
+            });
+        }
+        catch (err) {
+            console.error('Error incrementing coupon usage:', err);
+            // Don't fail the payment processing if coupon increment fails
+        }
+    }
+    return updatedPayment;
 }
 // ─── Owner: get token payments for their properties ───────────────────────────
 async function getOwnerTokenPayments(ownerId) {

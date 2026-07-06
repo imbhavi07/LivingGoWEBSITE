@@ -148,6 +148,36 @@ exports.confirmRazorpayPayment = (0, async_handler_1.asyncHandler)(async (req, r
             appliedCode: appliedCode || undefined,
         }
     });
+    // Increment coupon usage if a coupon code was applied
+    if (payment.appliedCode) {
+        try {
+            await prisma_1.prisma.coupon.update({
+                where: { code: payment.appliedCode },
+                data: { currentUses: { increment: 1 } }
+            });
+        }
+        catch (err) {
+            console.error('Error incrementing coupon usage:', err);
+            // Don't fail the payment processing if coupon increment fails
+        }
+    }
+    // Handle referral credits when a payment is confirmed (used in webhook and manual approval)
+    async function handleReferralCredits(appliedCode) {
+        if (!appliedCode)
+            return;
+        try {
+            // Handle referral invitation (when code is used)
+            await tokenService.trackReferralInvite(appliedCode);
+            // Handle referral success (when payment is approved/confirmed)
+            await tokenService.trackReferralConfirmation(appliedCode); // ₹500 commission
+        }
+        catch (err) {
+            console.error('Error processing referral credits:', err);
+            // Don't fail the payment processing if referral tracking fails
+        }
+    }
+    // Handle referral credits for this confirmed payment
+    await handleReferralCredits(appliedCode);
     // 4. Return payment
     res.status(201).json(payment);
 });

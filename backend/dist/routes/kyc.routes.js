@@ -9,6 +9,7 @@ const kyc_controller_1 = require("../controllers/kyc.controller");
 const upload = (0, multer_1.default)({ storage: multer_1.default.memoryStorage() });
 const router = (0, express_1.Router)();
 router.get("/status", kyc_controller_1.getKycStatus);
+router.get("/callback/status", kyc_controller_1.getKycStatus);
 // The Secure DigiLocker Redirect Route
 router.get("/digilocker/init", kyc_controller_1.initiateDigilockerSession);
 // The Webhook to catch the approved KYC data later
