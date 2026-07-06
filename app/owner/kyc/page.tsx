@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
 import { CheckCircle2, Clock, ShieldCheck, XCircle } from "lucide-react";
-import { useUser, useClerk } from "@clerk/nextjs";
+import { useUser, useClerk, useAuth } from "@clerk/nextjs";
 import { Suspense } from "react";
 import { OwnerShell } from "@/components/owner/OwnerShell";
 import { Button } from "@/components/Button";
@@ -11,17 +11,12 @@ import { useSearchParams } from "next/navigation";
 
 type KYCStatus = "checking" | "form" | "submitting" | "submitted" | "already_pending" | "approved" | "rejected";
 
-async function getClerkToken() {
-  const clerk = (window as unknown as {
-    Clerk?: { session?: { getToken: () => Promise<string> } }
-  }).Clerk;
-  return clerk?.session?.getToken() ?? null;
-}
 
 function KYCContent() {
   const { user, isLoaded } = useUser();
   const searchParams = useSearchParams();
   const { signOut } = useClerk();
+  const { getToken } = useAuth();
   const sessionId = searchParams.get("session_id");
 
   // Removed fullName and phoneNumber states entirely!
@@ -38,11 +33,10 @@ function KYCContent() {
       const email = user?.primaryEmailAddress?.emailAddress;
       if (!email) { setStatus("form"); return; }
       try {
-        const token = await getClerkToken();
-        // Clean the base URL to avoid double /api if it already ends with /api
-        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/api$/, '');
+        const token = await getToken();
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
         const res = await fetch(
-          `${baseUrl}/api/owner/kyc/status?email=${encodeURIComponent(email)}`,
+          `${baseUrl}/kyc/status?email=${encodeURIComponent(email)}`,
           { headers: { Authorization: `Bearer ${token ?? ""}` } }
         );
         if (!res.ok) {
@@ -78,11 +72,14 @@ function KYCContent() {
 
       setIsLoading(true);
       try {
-        // Clean the base URL to avoid double /api if it already ends with /api
-        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/api$/, '');
-        const res = await fetch(`${baseUrl}/api/owner/kyc/digilocker/complete`, {
+        const token = await getToken();
+        const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+        const res = await fetch(`${baseUrl}/kyc/digilocker/complete`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token ?? ""}`
+          },
           body: JSON.stringify({
             email: user.primaryEmailAddress.emailAddress,
             sessionId: sessionId
@@ -217,9 +214,11 @@ function KYCContent() {
       const email = user?.primaryEmailAddress?.emailAddress;
       if (!email) throw new Error("User email not found. Please sign in again.");
 
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/api$/, ''); // Removes /api if it exists at the end
+      const token = await getToken();
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
       const res = await fetch(
-      `${baseUrl}/api/owner/kyc/digilocker/init?email=${encodeURIComponent(email)}`
+        `${baseUrl}/kyc/digilocker/init?email=${encodeURIComponent(email)}`,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       const data = await res.json();
 

@@ -39,6 +39,7 @@ async function clerkAuthenticate(request, _response, next) {
     const header = request.headers.authorization;
     const token = header?.startsWith("Bearer ") ? header.slice(7) : null;
     if (!token) {
+        console.error("❌ Clerk authentication: Missing Authorization header or token");
         return next(new app_error_1.AppError("Authentication token is required", 401));
     }
     if (process.env.NODE_ENV === 'development' && token === 'development-token') {
@@ -63,6 +64,11 @@ async function clerkAuthenticate(request, _response, next) {
             verificationStatus: user.verificationStatus
         };
         return next();
+    }
+    // Ensure clerk secret key is configured
+    if (!process.env.CLERK_SECRET_KEY) {
+        console.error("❌ Clerk authentication: CLERK_SECRET_KEY is not defined");
+        return next(new app_error_1.AppError("Server configuration error", 500));
     }
     try {
         const payload = await (0, backend_1.verifyToken)(token, {

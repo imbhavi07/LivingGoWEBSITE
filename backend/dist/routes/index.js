@@ -57,7 +57,7 @@ exports.apiRouter.use("/auth", auth_routes_1.authRouter);
 exports.apiRouter.use("/properties", property_routes_1.propertyRouter);
 exports.apiRouter.use("/wishlist", wishlist_routes_1.wishlistRouter);
 exports.apiRouter.use("/user", user_routes_1.userRouter);
-exports.apiRouter.use("/owner/kyc", kyc_routes_1.default);
+exports.apiRouter.use("/kyc", kyc_routes_1.default);
 exports.apiRouter.use("/owner", owner_routes_1.ownerRouter);
 exports.apiRouter.use("/webhooks/clerk", webhook_routes_1.default);
 exports.apiRouter.use("/admin", admin_routes_1.adminRouter);
