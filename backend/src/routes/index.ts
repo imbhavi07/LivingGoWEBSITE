@@ -21,7 +21,7 @@ apiRouter.use("/auth", authRouter);
 apiRouter.use("/properties", propertyRouter);
 apiRouter.use("/wishlist", wishlistRouter);
 apiRouter.use("/user", userRouter);
-apiRouter.use("/owner/kyc", kycRouter);
+apiRouter.use("/kyc", kycRouter);
 apiRouter.use("/owner", ownerRouter);
 apiRouter.use("/webhooks/clerk", webhookRouter);
 apiRouter.use("/admin", adminRouter);
