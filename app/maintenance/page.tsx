@@ -2,22 +2,27 @@ import Image from 'next/image';
 
 export default function MaintenancePage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center space-y-6">
+    <div className="fixed inset-0 z-[99999] w-screen h-screen bg-[#f9e4d3] flex items-center justify-center">
+      {/* Desktop View - Horizontal Banner */}
+      <div className="hidden md:block relative w-full h-full">
         <Image
           src="/maintenance-h.png"
-          alt="Maintenance - Desktop View"
-          className="hidden md:block max-w-2xl"
+          alt="Maintenance"
+          fill
+          priority
+          className="object-cover object-center"
         />
+      </div>
+
+      {/* Mobile View - Vertical Banner */}
+      <div className="block md:hidden relative w-full h-full">
         <Image
           src="/maintenance-v.png"
-          alt="Maintenance - Mobile View"
-          className="md:hidden max-w-sm"
+          alt="Maintenance"
+          fill
+          priority
+          className="object-cover object-center"
         />
-        <p className="text-lg text-gray-600">
-          We're currently undergoing maintenance to improve your experience.
-          Please check back soon.
-        </p>
       </div>
     </div>
   );
