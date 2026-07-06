@@ -108,6 +108,11 @@ export default function PropertyClient({ property }: { property: any }) {
   const [activePanorama, setActivePanorama] = useState<string | null>(null);
   const [selectedRoom, setSelectedRoom] = useState("common");
 
+  // Fix scroll bug: Ensure page scrolls to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Bulletproof filter function: If categorization fails, fallback to ALL images
   const getImagesForCategory = (category: string) => {
     if (!property?.images || !Array.isArray(property.images)) return [];

@@ -12,8 +12,6 @@ export const submitKyc = asyncHandler(async (req: Request, res: Response) => {
   const owner = await prisma.user.findUnique({ where: { email: clerkEmail } });
   if (!owner) throw new AppError("Owner not found. Please sign up first.", 404);
 
-  const ownerId = owner.id;
-
   if (owner.verificationStatus === "approved") {
     throw new AppError("Your KYC is already approved.", 400);
   }
@@ -30,7 +28,7 @@ export const submitKyc = asyncHandler(async (req: Request, res: Response) => {
   }
 
   if (!/^\d{12}$/.test(aadhaarNumber)) {
-    throw new AppError("Aadhaar number must be exactly 12 digits.", 400);
+    throw new AppError("Invalid verification number format.", 400);
   }
 
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
@@ -38,13 +36,13 @@ export const submitKyc = asyncHandler(async (req: Request, res: Response) => {
   const backFile = files?.aadhaarBack?.[0];
 
   if (!frontFile || !backFile) {
-    throw new AppError("Both Aadhaar front and back images are required.", 400);
+    throw new AppError("Both document images are required.", 400);
   }
 
   const uploads = await uploadMany([frontFile, backFile]);
 
   const updatedOwner = await prisma.user.update({
-    where: { id: ownerId },
+    where: { id: owner.id },
     data: {
       name,
       phone,
@@ -110,7 +108,6 @@ export const initiateDigilockerSession = asyncHandler(async (req: Request, res: 
   }
 
   try {
-    // 1. Authenticate with Sandbox to get the Access Token
     const authResponse = await axios.post("https://api.sandbox.co.in/authenticate", {}, {
       headers: {
         "x-api-key": sandboxApiKey,
@@ -121,7 +118,6 @@ export const initiateDigilockerSession = asyncHandler(async (req: Request, res: 
 
     const accessToken = authResponse.data?.access_token || authResponse.data?.data?.access_token;
 
-    // 2. Request the DigiLocker Portal Redirect URL
     const response = await axios.post("https://api.sandbox.co.in/kyc/digilocker/sessions/init", {
       "@entity": "in.co.sandbox.kyc.digilocker.session.request",
       "flow": "signin",
@@ -136,7 +132,6 @@ export const initiateDigilockerSession = asyncHandler(async (req: Request, res: 
       }
     });
 
-    // 3. Extract URL and send to frontend
     const authorizationUrl = response.data?.data?.authorization_url;
 
     if (!authorizationUrl) {
@@ -164,11 +159,9 @@ export const handleSandboxWebhook = asyncHandler(async (req: Request, res: Respo
   }
 
   const payload = req.body;
-  console.log("✅ Sandbox Webhook Received!", JSON.stringify(payload, null, 2));
-
-  // If Sandbox sends a verification success status, mark user approved in DB
+  
   if (payload?.data?.status === "VALID" || payload?.code === 200) {
-    const email = payload?.data?.email; // Adjust key based on Sandbox's incoming body
+    const email = payload?.data?.email; 
     if (email) {
       await prisma.user.update({
         where: { email },
@@ -186,7 +179,6 @@ export const completeDigilockerSession = asyncHandler(async (req: Request, res: 
   if (!email || !sessionId) throw new AppError("Missing details", 400);
 
   try {
-    // 1. Get Token
     const auth = await axios.post("https://api.sandbox.co.in/authenticate", {}, {
       headers: {
         "x-api-key": process.env.SANDBOX_API_KEY,
@@ -197,7 +189,6 @@ export const completeDigilockerSession = asyncHandler(async (req: Request, res: 
 
     const accessToken = auth.data.access_token;
 
-    // 2. Fetch User Profile data
     const userProfileResponse = await axios.get(`https://api.sandbox.co.in/kyc/digilocker/sessions/${sessionId}/user/profile`, {
       headers: {
         "Authorization": accessToken,
@@ -206,7 +197,6 @@ export const completeDigilockerSession = asyncHandler(async (req: Request, res: 
       }
     });
 
-    // 3. Fetch Document data
     const documentResponse = await axios.get(`https://api.sandbox.co.in/kyc/digilocker/sessions/${sessionId}/documents/aadhaar`, {
       headers: {
         "Authorization": accessToken,
@@ -218,10 +208,6 @@ export const completeDigilockerSession = asyncHandler(async (req: Request, res: 
     const userProfileData = userProfileResponse.data;
     const documentData = documentResponse.data;
 
-    // Debug log after fetching document data
-    console.log("SANDBOX DOCUMENT PAYLOAD:", JSON.stringify(documentData.data, null, 2));
-
-    // Extract file URL and check if XML
     const fileUrl = documentData.data?.files?.[0]?.url;
     const isXml = documentData.data?.files?.[0]?.metadata?.ContentType === "application/xml" || fileUrl?.includes('.xml');
 
@@ -235,7 +221,6 @@ export const completeDigilockerSession = asyncHandler(async (req: Request, res: 
         const numberMatch = xmlText.match(/number="([^"]+)"/i);
         extractedId = uidMatch ? uidMatch[1] : (numberMatch ? numberMatch[1] : null);
 
-        // Extract photo from XML
         const photoMatch = xmlText.match(/<(?:Photo|Pht)>([^<]+)<\/(?:Photo|Pht)>/i);
         extractedPhoto = photoMatch ? `data:image/jpeg;base64,${photoMatch[1]}` : null;
       } catch (err) {
@@ -243,28 +228,39 @@ export const completeDigilockerSession = asyncHandler(async (req: Request, res: 
       }
     }
 
-    // 4. Sync to DB with verified data
-    await prisma.user.update({
-      where: { email },
-      data: {
-        name: userProfileData.data.name,
-        phone: userProfileData.data?.phone || userProfileData.data?.mobile || "Not provided by DigiLocker",
-        ownerType: "PG Owner",
-        aadhaarNumber: extractedId || documentData.data?.parsed_data?.uid || documentData.data?.parsed_data?.id_number || "Verified via XML Document",
-        aadhaarFrontUrl: extractedPhoto || documentData.data?.files?.[0]?.url || documentData.data?.url || null,
-        aadhaarBackUrl: null,
-        verificationStatus: "pending_approval",
-        legalAcceptedAt: new Date()
-      }
-    });
+    // CRITICAL FIX: Look up the user by the email passed in the request body
+    const internalUser = await prisma.user.findUnique({ where: { email } });
+
+    if (!internalUser) {
+      return res.status(404).json({ error: "User profile not found in database. Please re-login." });
+    }
+
+    try {
+      // Use the internal user ID for the update to prevent P2025 constraints
+      await prisma.user.update({
+        where: { id: internalUser.id },
+        data: {
+          name: userProfileData.data.name,
+          phone: userProfileData.data?.phone || userProfileData.data?.mobile || "Not provided by DigiLocker",
+          ownerType: "PG Owner",
+          aadhaarNumber: extractedId || documentData.data?.parsed_data?.uid || documentData.data?.parsed_data?.id_number || "Verified via XML Document",
+          aadhaarFrontUrl: extractedPhoto || documentData.data?.files?.[0]?.url || documentData.data?.url || null,
+          aadhaarBackUrl: null,
+          verificationStatus: "pending_approval",
+          legalAcceptedAt: new Date()
+        }
+      });
+    } catch (error) {
+      console.error("🚨 KYC Update Error:", error);
+      return res.status(500).json({ error: "Database failed to save KYC data." });
+    }
 
     res.status(200).json({ success: true });
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       console.error("SANDBOX API ERROR:", error.response?.data || error.message);
-      res.status(500).json({ error: "Failed to fetch data from Sandbox", details: error.response?.data });
+      res.status(500).json({ error: "Failed to fetch data from Sandbox" });
     } else {
-      console.error("SANDBOX API ERROR:", error);
       res.status(500).json({ error: "Failed to fetch data from Sandbox" });
     }
   }

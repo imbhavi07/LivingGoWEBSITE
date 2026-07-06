@@ -4,6 +4,17 @@ import { useState, useEffect } from "react";
 import { X, CheckCircle, Loader2, AlertCircle, ShieldCheck, QrCode } from "lucide-react";
 import { useRouter } from "next/navigation";
 import QRCode from "react-qr-code";
+import confetti from 'canvas-confetti';
+
+// Confetti celebration function
+function triggerConfetti() {
+  confetti({
+    particleCount: 150,
+    spread: 70,
+    origin: { y: 0.6 },
+    colors: ['#22c55e', '#eab308', '#ffffff'],
+  });
+}
 
 type LockPropertyModalProps = {
   propertyId: string;
@@ -35,6 +46,13 @@ export function LockPropertyModal({ propertyId, propertyTitle, monthlyRent, onCl
   // Payment state
   const [utrNumber, setUtrNumber] = useState("");
   const [upiIntentString, setUpiIntentString] = useState("");
+
+  // Trigger confetti when success step is reached
+  useEffect(() => {
+    if (step === "success") {
+      triggerConfetti();
+    }
+  }, [step]);
 
   useEffect(() => {
     const final = tokenAmount - discountAmount;
