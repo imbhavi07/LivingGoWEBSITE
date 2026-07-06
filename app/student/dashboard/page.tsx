@@ -64,6 +64,24 @@ export default async function StudentDashboardPage() {
         <p className="mt-2 text-sm text-muted">Track your property bookings and token payments.</p>
       </div>
 
+      {/* Quick Action Buttons */}
+      <div className="mb-6 flex flex-wrap gap-4">
+        <Link
+          href="/listings"
+          className="flex-1 md:flex-none px-5 py-3 bg-ink text-white rounded-xl font-bold text-md hover:bg-ink/90 transition-colors flex items-center justify-center gap-2"
+        >
+          <MapPin className="h-4 w-4" />
+          Explore Other Properties
+        </Link>
+        <Link
+          href="/earn"
+          className="flex-1 md:flex-none px-5 py-3 bg-moss text-white rounded-xl font-bold text-md hover:bg-moss/90 transition-colors flex items-center justify-center gap-2"
+        >
+          <CheckCircle className="h-4 w-4" />
+          Refer & Earn
+        </Link>
+      </div>
+
       {payments.length === 0 ? (
         /* ── EMPTY STATE ── */
         <div className="flex flex-col items-center justify-center rounded-3xl bg-white px-6 py-20 text-center shadow-soft border border-black/5">

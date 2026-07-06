@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import confetti from 'canvas-confetti';
 
 // Define the shape of our tracking records to satisfy TypeScript/ESLint
 interface TrackRecord {
@@ -16,6 +17,16 @@ interface TrackResponse {
   successful: number;
   upiId: string;
   ledger: TrackRecord[];
+}
+
+// Confetti celebration function
+function triggerConfetti() {
+  confetti({
+    particleCount: 150,
+    spread: 70,
+    origin: { y: 0.6 },
+    colors: ['#22c55e', '#eab308', '#ffffff'],
+  });
 }
 
 export default function EarnPage() {
@@ -65,6 +76,7 @@ export default function EarnPage() {
 
       setGeneratedCode(data.referralCode);
       setGenerateSuccess('Referral code generated successfully!');
+      triggerConfetti();
       form.reset();
     } catch (err: unknown) {
       setGenerateError((err as Error).message || 'An error occurred');
@@ -207,7 +219,16 @@ export default function EarnPage() {
                   generateLoading ? 'bg-ink/70' : ''
                 }`}
               >
-                {generateLoading ? 'Generating...' : 'Generate Code'}
+                {generateLoading ? (
+                  <div className="flex items-center gap-2">
+                    <span>Processing</span>
+                    <span className="h-2 w-2 bg-ink/50 rounded-full animate-bounce delay-75"></span>
+                    <span className="h-2 w-2 bg-ink/50 rounded-full animate-bounce delay-150"></span>
+                    <span className="h-2 w-2 bg-ink/50 rounded-full animate-bounce delay-225"></span>
+                  </div>
+                ) : (
+                  'Generate Code'
+                )}
               </button>
             </form>
           </div>
@@ -297,7 +318,16 @@ export default function EarnPage() {
                   trackLoading ? 'bg-ink/70' : ''
                 }`}
               >
-                {trackLoading ? 'Tracking...' : 'Track Code'}
+                {trackLoading ? (
+                  <div className="flex items-center gap-2">
+                    <span>Processing</span>
+                    <span className="h-2 w-2 bg-ink/50 rounded-full animate-bounce delay-75"></span>
+                    <span className="h-2 w-2 bg-ink/50 rounded-full animate-bounce delay-150"></span>
+                    <span className="h-2 w-2 bg-ink/50 rounded-full animate-bounce delay-225"></span>
+                  </div>
+                ) : (
+                  'Track Code'
+                )}
               </button>
             </form>
           </div>

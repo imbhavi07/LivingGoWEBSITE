@@ -67,8 +67,10 @@ export async function GET(request: Request) {
     }));
 
     // Return the data needed for the UI
+    // Calculate earnings as successful * 500 (₹500 per successful referral)
+    const calculatedEarnings = (referral.successful || 0) * 500;
     return NextResponse.json({
-      earnings: referral.earnings || 0,
+      earnings: calculatedEarnings,
       successful: referral.successful || 0,
       upiId: referral.upiId || '',
       ledger: ledger,
