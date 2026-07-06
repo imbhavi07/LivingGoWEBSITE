@@ -59,12 +59,16 @@ export async function GET(request: Request) {
     });
 
     // Build the ledger
-    const ledger = payments.map((payment: { createdAt: Date; status: string; student: { name: string } | null }) => ({
-      date: payment.createdAt,
-      name: payment.student?.name || 'Anonymous',
-      amount: 500, // Fixed ₹500 per referral
-      status: payment.status,
-    }));
+    const ledger = payments.map((payment: { createdAt: Date; status: string; student: { name: string } | null }) => {
+      const studentName = payment.student?.name;
+      const displayName = studentName && studentName.trim() !== '' ? studentName : 'Anonymous';
+      return {
+        date: payment.createdAt,
+        name: displayName,
+        amount: 500, // Fixed ₹500 per referral
+        status: payment.status,
+      };
+    });
 
     // Return the data needed for the UI
     // Calculate earnings as successful * 500 (₹500 per successful referral)
