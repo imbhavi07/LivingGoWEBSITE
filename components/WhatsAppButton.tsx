@@ -12,7 +12,7 @@ export function WhatsAppButton() {
     return null;
   }
 
-  const phoneNumber = "9068902886";
+  const phoneNumber = "93554 05403";
   const message = "Hi! I need help with student housing.";
   const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
