@@ -15,8 +15,8 @@ type PaymentWithProperty = Prisma.TokenPaymentGetPayload<{
         title: true;
         location: true;
         images: true;
-        lat: true,
-        lng: true,
+        lat: true;
+        lng: true;
       };
     };
   };
