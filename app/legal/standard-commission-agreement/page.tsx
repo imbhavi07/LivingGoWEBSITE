@@ -795,7 +795,7 @@ in writing.
 </p>
 
 </div>
-          <div className="mt-10 rounded-2xl border border-clay/20 bg-white p-6 text-center">
+  <div className="mt-10 rounded-2xl border border-clay/20 bg-white p-6 text-center">
 
 <p className="text-lg font-bold text-ink">
 

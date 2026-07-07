@@ -2,7 +2,7 @@
 import { JSX, useEffect, useState, useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { Check, Clock, GraduationCap, Heart, MapPin, ShieldCheck, Train, UtensilsCrossed, BedDouble } from "lucide-react";
+import { Check, Navigation, ExternalLink, Clock, GraduationCap, Heart, MapPin, ShieldCheck, Train, UtensilsCrossed, BedDouble } from "lucide-react";
 import { Button, buttonClasses } from "@/components/Button";
 import { Gallery } from "@/components/Gallery";
 import { useWishlist } from "@/hooks/useWishlist";
@@ -199,6 +199,25 @@ export default function PropertyClient({ property }: { property: any }) {
 
   const displayedPrice = roomOptions.find((r) => r.key === selectedRoom)?.price ?? property?.price;
 
+  const openMap = () => {
+  if (!property?.lat || !property?.lng) return;
+
+  window.open(
+    `https://www.google.com/maps?q=${property.lat},${property.lng}`,
+    "_blank",
+    "noopener,noreferrer"
+  );
+};
+
+const openDirections = () => {
+  if (!property?.lat || !property?.lng) return;
+
+  window.open(
+    `https://www.google.com/maps/dir/?api=1&destination=${property.lat},${property.lng}&travelmode=driving`,
+    "_blank",
+    "noopener,noreferrer"
+  );
+};
   return (
     <>
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 md:py-10 lg:px-8">
@@ -494,10 +513,44 @@ export default function PropertyClient({ property }: { property: any }) {
               </div>
             )}
             
-            <div className="mt-4 rounded-2xl bg-amber-50 p-3">
-              <p className="text-xs font-bold text-amber-700">Message/Call Us For Exact Address</p>
+            <div className="mt-4 rounded-2xl border border-green-200 bg-green-50 p-4">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-5 w-5 text-green-700"/>
+                <p className="font-black text-green-900">
+                  Verified Property Location
+                </p>
+              </div>
+              <p className="mt-2 text-xs text-green-800">
+                Exact address becomes available after token payment approval.
+              </p>
+              <div className="mt-4 grid gap-2">
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  onClick={openMap}
+                >
+                  <ExternalLink className="mr-2 h-4 w-4"/>
+                  View on Google Maps
+                </Button>
+
+                <Button           
+                  className="w-full"
+                  onClick={openDirections}
+                >
+                  <Navigation className="mr-2 h-4 w-4"/>
+                  Get Directions
+                </Button>
+              </div>
             </div>
             <div className="mt-5 grid gap-3">
+              <div className="mt-4 rounded-xl bg-white p-3">
+                <p className="text-xs font-bold uppercase text-muted">
+                  Address
+                </p>
+                <p className="mt-1 text-sm font-semibold text-ink">
+                  {property.address}
+                </p>
+              </div>
               <button
                 onClick={handleLockClick}
                 disabled={totalBeds > 0 && availableBeds === 0}
