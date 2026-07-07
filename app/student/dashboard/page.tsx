@@ -120,7 +120,12 @@ export default async function StudentDashboardPage() {
             const locationName = payment.property.location.split(',')[0] || "Location restricted";
 
             return (
-              <div key={payment.id} className="overflow-hidden rounded-3xl bg-white shadow-soft border border-black/5">
+              <Link
+                key={payment.id}
+                href={`/properties/${payment.property.id}`}
+                className="block group"
+              >
+                <div className="overflow-hidden rounded-3xl border border-black/5 bg-white shadow-soft transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-xl group-hover:border-clay/30 cursor-pointer">
                 <div className="flex flex-col sm:flex-row">
                   
                   {/* Property Image with Fallback */}
@@ -266,6 +271,7 @@ export default async function StudentDashboardPage() {
                   </div>
                 </div>
               </div>
+              </Link>
             );
           })}
         </div>
