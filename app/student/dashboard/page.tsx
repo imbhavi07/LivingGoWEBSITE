@@ -3,8 +3,8 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-// 👇 Notice I added Building2 to the lucide-react imports 👇
-import { CheckCircle, Clock, XCircle, MapPin, ReceiptText, Home, Building2 } from "lucide-react";
+
+import { CheckCircle, Clock, XCircle, MapPin, ReceiptText, Home, Building2, Navigation, ExternalLink} from "lucide-react";
 import { format } from "date-fns";
 
 type PaymentWithProperty = Prisma.TokenPaymentGetPayload<{
@@ -15,6 +15,8 @@ type PaymentWithProperty = Prisma.TokenPaymentGetPayload<{
         title: true;
         location: true;
         images: true;
+        lat: true,
+        lng: true,
       };
     };
   };
@@ -217,6 +219,31 @@ export default async function StudentDashboardPage() {
                                 ? `Your Visit OTP: ${payment.visitOtp}. Please share this with the property owner upon arrival.`
                                 : 'Visit Verified! Welcome to your new home.'}
                             </p>
+                            {payment.property.lat && payment.property.lng && (
+                              <div className="mt-4 grid gap-2">
+                              
+                                <a
+                                  href={`https://www.google.com/maps?q=${payment.property.lat},${payment.property.lng}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center justify-center gap-2 rounded-xl border border-emerald-300 bg-white px-4 py-3 text-sm font-bold text-emerald-700 transition hover:bg-emerald-100"
+                                >
+                                  <ExternalLink className="h-4 w-4" />
+                                  View Property on Google Maps
+                                </a>
+                                                        
+                                <a
+                                  href={`https://www.google.com/maps/dir/?api=1&destination=${payment.property.lat},${payment.property.lng}&travelmode=driving`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-emerald-700"
+                                >
+                                  <Navigation className="h-4 w-4" />
+                                  Get Directions
+                                </a>
+                                                        
+                              </div>
+                            )}
                           </div>
                         </div>
                       )}

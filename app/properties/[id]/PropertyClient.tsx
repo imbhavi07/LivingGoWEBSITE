@@ -499,10 +499,10 @@ export default function PropertyClient({ property }: { property: any }) {
               </div>
             )}
             
-            <div className="mt-4 rounded-2xl bg-amber-50 p-3">
-              <p className="text-xs font-bold text-amber-700">Message/Call Us For Exact Address</p>
-            </div>
-            <div className="mt-5 grid gap-3">
+            <div className="mt-4 rounded-2xl border border-green-200 bg-green-50 p-4">
+              <p className="mt-2 text-xs text-green-800">
+                Exact address becomes available after token payment approval.
+              </p>
               <button
                 onClick={handleLockClick}
                 disabled={totalBeds > 0 && availableBeds === 0}
