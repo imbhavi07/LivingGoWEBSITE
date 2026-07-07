@@ -52,6 +52,8 @@ export default async function StudentDashboardPage() {
             title: true,
             location: true,
             images: true,
+            lat: true,
+            lng: true,
           }
         }
       },
