@@ -44,13 +44,16 @@ export function FilterBar() {
         </label>
         <label className="space-y-2">
           <span className="text-xs font-semibold uppercase text-muted">Location</span>
-          <input
-            name="location"
-            defaultValue={searchParams.get("location") ?? ""}
-            onChange={update}
-            placeholder="Search city or area"
-            className="input"
-          />
+          <select name="location" defaultValue={searchParams.get("location") ?? ""} onChange={update} className="input">
+            <option value="">Any location</option>
+            {[ "GTB Nagar", "Hudson Lane", "Kamla Nagar", "Malka Ganj", "Roop Nagar", "Shakti Nagar", "Vijay Nagar" ]
+              .sort()
+              .map((locality) => (
+                <option key={locality} value={locality}>
+                  {locality}
+                </option>
+              ))}
+          </select>
         </label>
         <label className="space-y-2">
           <span className="text-xs font-semibold uppercase text-muted">Room</span>

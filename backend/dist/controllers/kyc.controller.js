@@ -16,7 +16,6 @@ exports.submitKyc = (0, async_handler_1.asyncHandler)(async (req, res) => {
     const owner = await prisma_1.prisma.user.findUnique({ where: { email: clerkEmail } });
     if (!owner)
         throw new app_error_1.AppError("Owner not found. Please sign up first.", 404);
-    const ownerId = owner.id;
     if (owner.verificationStatus === "approved") {
         throw new app_error_1.AppError("Your KYC is already approved.", 400);
     }
@@ -25,17 +24,17 @@ exports.submitKyc = (0, async_handler_1.asyncHandler)(async (req, res) => {
         throw new app_error_1.AppError("All fields are required.", 400);
     }
     if (!/^\d{12}$/.test(aadhaarNumber)) {
-        throw new app_error_1.AppError("Aadhaar number must be exactly 12 digits.", 400);
+        throw new app_error_1.AppError("Invalid verification number format.", 400);
     }
     const files = req.files;
     const frontFile = files?.aadhaarFront?.[0];
     const backFile = files?.aadhaarBack?.[0];
     if (!frontFile || !backFile) {
-        throw new app_error_1.AppError("Both Aadhaar front and back images are required.", 400);
+        throw new app_error_1.AppError("Both document images are required.", 400);
     }
     const uploads = await (0, cloudinary_service_1.uploadMany)([frontFile, backFile]);
     const updatedOwner = await prisma_1.prisma.user.update({
-        where: { id: ownerId },
+        where: { id: owner.id },
         data: {
             name,
             phone,
@@ -93,7 +92,6 @@ exports.initiateDigilockerSession = (0, async_handler_1.asyncHandler)(async (req
         throw new app_error_1.AppError("Sandbox API credentials missing", 500);
     }
     try {
-        // 1. Authenticate with Sandbox to get the Access Token
         const authResponse = await axios_1.default.post("https://api.sandbox.co.in/authenticate", {}, {
             headers: {
                 "x-api-key": sandboxApiKey,
@@ -102,7 +100,6 @@ exports.initiateDigilockerSession = (0, async_handler_1.asyncHandler)(async (req
             }
         });
         const accessToken = authResponse.data?.access_token || authResponse.data?.data?.access_token;
-        // 2. Request the DigiLocker Portal Redirect URL
         const response = await axios_1.default.post("https://api.sandbox.co.in/kyc/digilocker/sessions/init", {
             "@entity": "in.co.sandbox.kyc.digilocker.session.request",
             "flow": "signin",
@@ -116,7 +113,6 @@ exports.initiateDigilockerSession = (0, async_handler_1.asyncHandler)(async (req
                 "x-api-version": "1.0"
             }
         });
-        // 3. Extract URL and send to frontend
         const authorizationUrl = response.data?.data?.authorization_url;
         if (!authorizationUrl) {
             throw new app_error_1.AppError("Failed to get DigiLocker URL from Sandbox", 500);
@@ -140,10 +136,8 @@ exports.handleSandboxWebhook = (0, async_handler_1.asyncHandler)(async (req, res
         throw new app_error_1.AppError("Unauthorized webhook", 401);
     }
     const payload = req.body;
-    console.log("✅ Sandbox Webhook Received!", JSON.stringify(payload, null, 2));
-    // If Sandbox sends a verification success status, mark user approved in DB
     if (payload?.data?.status === "VALID" || payload?.code === 200) {
-        const email = payload?.data?.email; // Adjust key based on Sandbox's incoming body
+        const email = payload?.data?.email;
         if (email) {
             await prisma_1.prisma.user.update({
                 where: { email },
@@ -158,7 +152,6 @@ exports.completeDigilockerSession = (0, async_handler_1.asyncHandler)(async (req
     if (!email || !sessionId)
         throw new app_error_1.AppError("Missing details", 400);
     try {
-        // 1. Get Token
         const auth = await axios_1.default.post("https://api.sandbox.co.in/authenticate", {}, {
             headers: {
                 "x-api-key": process.env.SANDBOX_API_KEY,
@@ -167,7 +160,6 @@ exports.completeDigilockerSession = (0, async_handler_1.asyncHandler)(async (req
             }
         });
         const accessToken = auth.data.access_token;
-        // 2. Fetch User Profile data
         const userProfileResponse = await axios_1.default.get(`https://api.sandbox.co.in/kyc/digilocker/sessions/${sessionId}/user/profile`, {
             headers: {
                 "Authorization": accessToken,
@@ -175,7 +167,6 @@ exports.completeDigilockerSession = (0, async_handler_1.asyncHandler)(async (req
                 "x-api-version": "1.0"
             }
         });
-        // 3. Fetch Document data
         const documentResponse = await axios_1.default.get(`https://api.sandbox.co.in/kyc/digilocker/sessions/${sessionId}/documents/aadhaar`, {
             headers: {
                 "Authorization": accessToken,
@@ -185,9 +176,6 @@ exports.completeDigilockerSession = (0, async_handler_1.asyncHandler)(async (req
         });
         const userProfileData = userProfileResponse.data;
         const documentData = documentResponse.data;
-        // Debug log after fetching document data
-        console.log("SANDBOX DOCUMENT PAYLOAD:", JSON.stringify(documentData.data, null, 2));
-        // Extract file URL and check if XML
         const fileUrl = documentData.data?.files?.[0]?.url;
         const isXml = documentData.data?.files?.[0]?.metadata?.ContentType === "application/xml" || fileUrl?.includes('.xml');
         let extractedId = null;
@@ -199,7 +187,6 @@ exports.completeDigilockerSession = (0, async_handler_1.asyncHandler)(async (req
                 const uidMatch = xmlText.match(/uid="([^"]+)"/i);
                 const numberMatch = xmlText.match(/number="([^"]+)"/i);
                 extractedId = uidMatch ? uidMatch[1] : (numberMatch ? numberMatch[1] : null);
-                // Extract photo from XML
                 const photoMatch = xmlText.match(/<(?:Photo|Pht)>([^<]+)<\/(?:Photo|Pht)>/i);
                 extractedPhoto = photoMatch ? `data:image/jpeg;base64,${photoMatch[1]}` : null;
             }
@@ -207,29 +194,39 @@ exports.completeDigilockerSession = (0, async_handler_1.asyncHandler)(async (req
                 console.error("Failed to parse XML", err);
             }
         }
-        // 4. Sync to DB with verified data
-        await prisma_1.prisma.user.update({
-            where: { email },
-            data: {
-                name: userProfileData.data.name,
-                phone: userProfileData.data?.phone || userProfileData.data?.mobile || "Not provided by DigiLocker",
-                ownerType: "PG Owner",
-                aadhaarNumber: extractedId || documentData.data?.parsed_data?.uid || documentData.data?.parsed_data?.id_number || "Verified via XML Document",
-                aadhaarFrontUrl: extractedPhoto || documentData.data?.files?.[0]?.url || documentData.data?.url || null,
-                aadhaarBackUrl: null,
-                verificationStatus: "pending_approval",
-                legalAcceptedAt: new Date()
-            }
-        });
+        // CRITICAL FIX: Look up the user by the email passed in the request body
+        const internalUser = await prisma_1.prisma.user.findUnique({ where: { email } });
+        if (!internalUser) {
+            return res.status(404).json({ error: "User profile not found in database. Please re-login." });
+        }
+        try {
+            // Use the internal user ID for the update to prevent P2025 constraints
+            await prisma_1.prisma.user.update({
+                where: { id: internalUser.id },
+                data: {
+                    name: userProfileData.data.name,
+                    phone: userProfileData.data?.phone || userProfileData.data?.mobile || "Not provided by DigiLocker",
+                    ownerType: "PG Owner",
+                    aadhaarNumber: extractedId || documentData.data?.parsed_data?.uid || documentData.data?.parsed_data?.id_number || "Verified via XML Document",
+                    aadhaarFrontUrl: extractedPhoto || documentData.data?.files?.[0]?.url || documentData.data?.url || null,
+                    aadhaarBackUrl: null,
+                    verificationStatus: "pending_approval",
+                    legalAcceptedAt: new Date()
+                }
+            });
+        }
+        catch (error) {
+            console.error("🚨 KYC Update Error:", error);
+            return res.status(500).json({ error: "Database failed to save KYC data." });
+        }
         res.status(200).json({ success: true });
     }
     catch (error) {
         if (axios_1.default.isAxiosError(error)) {
             console.error("SANDBOX API ERROR:", error.response?.data || error.message);
-            res.status(500).json({ error: "Failed to fetch data from Sandbox", details: error.response?.data });
+            res.status(500).json({ error: "Failed to fetch data from Sandbox" });
         }
         else {
-            console.error("SANDBOX API ERROR:", error);
             res.status(500).json({ error: "Failed to fetch data from Sandbox" });
         }
     }

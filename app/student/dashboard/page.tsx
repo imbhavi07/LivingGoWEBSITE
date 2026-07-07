@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -6,6 +6,19 @@ import Image from "next/image";
 // 👇 Notice I added Building2 to the lucide-react imports 👇
 import { CheckCircle, Clock, XCircle, MapPin, ReceiptText, Home, Building2 } from "lucide-react";
 import { format } from "date-fns";
+
+type PaymentWithProperty = Prisma.TokenPaymentGetPayload<{
+  include: {
+    property: {
+      select: {
+        id: true;
+        title: true;
+        location: true;
+        images: true;
+      };
+    };
+  };
+}>;
 
 const prisma = new PrismaClient();
 
@@ -20,27 +33,53 @@ export default async function StudentDashboardPage() {
     redirect("/login");
   }
 
-  // Fetch the student's token payments including the property details
-  const payments = await prisma.tokenPayment.findMany({
-    where: { studentId: userId },
-    include: {
-      property: {
-        select: {
-          id: true,
-          title: true,
-          location: true,
-          images: true, 
-        }
-      }
-    },
-    orderBy: { createdAt: "desc" }
+  // Find the internal User record using the Clerk ID
+  const user = await prisma.user.findUnique({
+    where: { clerkId: userId }
   });
+
+  // Fetch the student's token payments using INTERNAL User ID (cuid)
+  let payments: PaymentWithProperty[] = [];
+  if (user) {
+    payments = await prisma.tokenPayment.findMany({
+      where: { studentId: user.id },
+      include: {
+        property: {
+          select: {
+            id: true,
+            title: true,
+            location: true,
+            images: true,
+          }
+        }
+      },
+      orderBy: { createdAt: "desc" }
+    });
+  }
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="mb-8">
         <h1 className="text-3xl font-black text-ink sm:text-4xl">My Dashboard</h1>
         <p className="mt-2 text-sm text-muted">Track your property bookings and token payments.</p>
+      </div>
+
+      {/* Quick Action Buttons */}
+      <div className="mb-6 flex flex-wrap gap-4">
+        <Link
+          href="/listings"
+          className="flex-1 md:flex-none px-5 py-3 bg-ink text-white rounded-xl font-bold text-md hover:bg-ink/90 transition-colors flex items-center justify-center gap-2"
+        >
+          <MapPin className="h-4 w-4" />
+          Explore Other Properties
+        </Link>
+        <Link
+          href="/earn"
+          className="flex-1 md:flex-none px-5 py-3 bg-moss text-white rounded-xl font-bold text-md hover:bg-moss/90 transition-colors flex items-center justify-center gap-2"
+        >
+          <CheckCircle className="h-4 w-4" />
+          Refer & Earn
+        </Link>
       </div>
 
       {payments.length === 0 ? (

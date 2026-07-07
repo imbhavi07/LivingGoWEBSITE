@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import confetti from 'canvas-confetti';
 
 // Define the shape of our tracking records to satisfy TypeScript/ESLint
 interface TrackRecord {
@@ -10,20 +11,38 @@ interface TrackRecord {
   status: string;
 }
 
+// Define the shape of the tracking API response
+interface TrackResponse {
+  earnings: number;
+  successful: number;
+  upiId: string;
+  ledger: TrackRecord[];
+}
+
+// Confetti celebration function
+function triggerConfetti() {
+  confetti({
+    particleCount: 150,
+    spread: 70,
+    origin: { y: 0.6 },
+    colors: ['#22c55e', '#eab308', '#ffffff'],
+  });
+}
+
 export default function EarnPage() {
   const [generateLoading, setGenerateLoading] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
   const [generateSuccess, setGenerateSuccess] = useState<string | null>(null);
   const [trackLoading, setTrackLoading] = useState(false);
   const [trackError, setTrackError] = useState<string | null>(null);
-  const [trackResults, setTrackResults] = useState<TrackRecord[] | null>(null);
+  const [trackResults, setTrackResults] = useState<TrackResponse | null>(null);
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
 
   const handleGenerate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const form = e.currentTarget;  
-  
+    const form = e.currentTarget;
+
     setGenerateLoading(true);
     setGenerateError(null);
     setGenerateSuccess(null);
@@ -33,6 +52,14 @@ export default function EarnPage() {
     const name = formData.get('name') as string;
     const college = formData.get('college') as string | null;
     const upiId = formData.get('upiId') as string;
+    const confirmUpiId = formData.get('confirmUpiId') as string;
+
+    // Validate UPI IDs match
+    if (upiId !== confirmUpiId) {
+      setGenerateError('UPI IDs do not match. Please check for typos.');
+      setGenerateLoading(false);
+      return;
+    }
 
     try {
       const response = await fetch('/api/earn/public', {
@@ -49,6 +76,7 @@ export default function EarnPage() {
 
       setGeneratedCode(data.referralCode);
       setGenerateSuccess('Referral code generated successfully!');
+      triggerConfetti();
       form.reset();
     } catch (err: unknown) {
       setGenerateError((err as Error).message || 'An error occurred');
@@ -151,6 +179,19 @@ export default function EarnPage() {
               </div>
 
               <div>
+                <label htmlFor="confirmUpiId" className="block text-sm font-bold text-ink mb-2">
+                  Confirm UPI ID
+                </label>
+                <input
+                  type="text"
+                  id="confirmUpiId"
+                  name="confirmUpiId"
+                  placeholder="Re-enter your UPI ID"
+                  required
+                  className="w-full px-4 py-3 bg-linen/50 border border-ink/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-ink focus:bg-white transition-all duration-200 text-lg font-mono"
+                />
+              </div>
+              <div>
                 <label htmlFor="prefix" className="block text-sm font-bold text-ink mb-2">
                   Desired Code Prefix (Letters only)
                 </label>
@@ -178,7 +219,16 @@ export default function EarnPage() {
                   generateLoading ? 'bg-ink/70' : ''
                 }`}
               >
-                {generateLoading ? 'Generating...' : 'Generate Code'}
+                {generateLoading ? (
+                  <div className="flex items-center gap-2">
+                    <span>Processing</span>
+                    <span className="h-2 w-2 bg-ink/50 rounded-full animate-bounce delay-75"></span>
+                    <span className="h-2 w-2 bg-ink/50 rounded-full animate-bounce delay-150"></span>
+                    <span className="h-2 w-2 bg-ink/50 rounded-full animate-bounce delay-225"></span>
+                  </div>
+                ) : (
+                  'Generate Code'
+                )}
               </button>
             </form>
           </div>
@@ -196,11 +246,30 @@ export default function EarnPage() {
               </div>
             )}
 
-            {trackResults && trackResults.length > 0 && (
+            {trackResults && (
+              <div className="mb-6 p-4 bg-linen/50 rounded-xl border border-ink/10">
+                <div className="grid gap-4 md:grid-cols-3 text-center">
+                  <div>
+                    <p className="text-xs text-ink/50">Amount Receivable</p>
+                    <p className="text-2xl font-bold text-ink">₹{trackResults.earnings}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-ink/50">Total Uses</p>
+                    <p className="text-2xl font-bold text-ink">{trackResults.successful}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-ink/50">Linked UPI</p>
+                    <p className="text-lg font-mono text-ink break-all">{trackResults.upiId || 'Not set'}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {trackResults && trackResults.ledger.length > 0 && (
               <div className="mb-4">
                 <h3 className="text-lg font-bold text-ink mb-2">Usage History</h3>
                 <div className="space-y-3">
-                  {trackResults.map((record: TrackRecord, index: number) => (
+                  {trackResults.ledger.map((record: TrackRecord, index: number) => (
                     <div key={index} className="p-3 bg-linen/50 rounded-xl border border-ink/5">
                       <div className="flex justify-between text-sm">
                         <span>{new Date(record.date).toLocaleDateString()}</span>
@@ -221,7 +290,7 @@ export default function EarnPage() {
               </div>
             )}
 
-            {trackResults && trackResults.length === 0 && (
+            {trackResults && trackResults.ledger.length === 0 && (
               <div className="text-center py-6 text-ink/50">
                 No usage data found for this code.
               </div>
@@ -249,7 +318,16 @@ export default function EarnPage() {
                   trackLoading ? 'bg-ink/70' : ''
                 }`}
               >
-                {trackLoading ? 'Tracking...' : 'Track Code'}
+                {trackLoading ? (
+                  <div className="flex items-center gap-2">
+                    <span>Processing</span>
+                    <span className="h-2 w-2 bg-ink/50 rounded-full animate-bounce delay-75"></span>
+                    <span className="h-2 w-2 bg-ink/50 rounded-full animate-bounce delay-150"></span>
+                    <span className="h-2 w-2 bg-ink/50 rounded-full animate-bounce delay-225"></span>
+                  </div>
+                ) : (
+                  'Track Code'
+                )}
               </button>
             </form>
           </div>

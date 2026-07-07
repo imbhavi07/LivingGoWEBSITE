@@ -6,6 +6,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 const router = Router();
 
 router.get("/status", getKycStatus);
+router.get("/callback/status", getKycStatus);
 
 // The Secure DigiLocker Redirect Route
 router.get("/digilocker/init", initiateDigilockerSession);

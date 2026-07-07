@@ -3,12 +3,22 @@ import { Webhook } from "svix";
 import { prisma } from "../config/prisma";
 import { createClerkClient } from "@clerk/backend";
 
+// Define the expected structure to avoid 'any' types
+interface ClerkUserPayload {
+  id: string;
+  email_addresses?: Array<{ id: string; email_address: string }>;
+  first_name?: string | null;
+  last_name?: string | null;
+  primary_email_address_id?: string | null;
+  unsafe_metadata?: { role?: string };
+}
+
 export async function handleClerkWebhook(req: Request, res: Response) {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
   if (!WEBHOOK_SECRET) throw new Error("CLERK_WEBHOOK_SECRET missing");
 
   const wh = new Webhook(WEBHOOK_SECRET);
-  let event;
+  let event: { type: string; data: Record<string, unknown> };
 
   try {
     const payload = typeof req.body === "string" ? req.body : JSON.stringify(req.body);
@@ -26,46 +36,60 @@ export async function handleClerkWebhook(req: Request, res: Response) {
   });
 
   if (event.type === "user.created") {
-    const data = event.data;
-    const email = (data.email_addresses as { email_address: string }[])[0]?.email_address;
-    const firstName = (data.first_name as string) ?? "";
-    const lastName = (data.last_name as string) ?? "";
-    const clerkId = data.id as string;
+    try {
+      // Cast the payload safely
+      const data = event.data as unknown as ClerkUserPayload;
 
-    const unsafeMetadata = (data.unsafe_metadata as Record<string, unknown>) ?? {};
-    const role = (unsafeMetadata.role === "owner" ? "owner" : "student") as "owner" | "student";
+      // 1. Extract Primary Email safely without 'any'
+      const primaryEmailObj = data.email_addresses?.find(
+        (e) => e.id === data.primary_email_address_id
+      ) || data.email_addresses?.[0];
 
-    if (email) {
+      const actualEmail = primaryEmailObj?.email_address;
+
+      // 2. Extract Name safely
+      const firstName = data.first_name || '';
+      const lastName = data.last_name || '';
+      const actualName = `${firstName} ${lastName}`.trim();
+
+      const clerkId = data.id;
+      const emailToUse = actualEmail || `${clerkId}@users.clerk.dev`;
+      const role = (data.unsafe_metadata?.role === "owner" ? "owner" : "student") as "owner" | "student";
+
       await prisma.user.upsert({
-        where: { email },
+        where: { email: emailToUse },
         update: {
-          clerkId, // sync clerkId if user record already exists (e.g. was manually seeded)
+          clerkId,
         },
         create: {
-          name: `${firstName} ${lastName}`.trim() || email,
-          email,
-          clerkId,       // ← THE FIX: was missing, causing all auth lookups to fail
+          name: actualName || 'Student',
+          email: emailToUse,
+          clerkId,
           phone: null,
-          passwordHash: clerkId,
+          passwordHash: clerkId, // Safe to store clerkId here as a dummy
           role,
           verificationStatus: "not_required",
         },
       });
 
-      // Sync role to Clerk publicMetadata so it can be read client-side if needed
       await clerkClient.users.updateUserMetadata(clerkId, {
         publicMetadata: { role },
       });
+    } catch (error) {
+      console.error("Error processing user.created webhook:", error);
     }
   }
 
-  // Handle account deletion — clean up DB when user deletes their Clerk account
   if (event.type === "user.deleted") {
-    const clerkId = event.data.id as string;
-    if (clerkId) {
-      await prisma.user.deleteMany({
-        where: { clerkId },
-      });
+    try {
+      const clerkId = event.data.id as string;
+      if (clerkId) {
+        await prisma.user.deleteMany({
+          where: { clerkId },
+        });
+      }
+    } catch (error) {
+      console.error("Error processing user.deleted webhook:", error);
     }
   }
 
