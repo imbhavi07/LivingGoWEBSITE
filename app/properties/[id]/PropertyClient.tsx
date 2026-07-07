@@ -498,23 +498,10 @@ export default function PropertyClient({ property }: { property: any }) {
                 {availableBeds === 0 ? "No beds available" : `${availableBeds} beds available`}
               </div>
             )}
-            
-            <div className="mt-4 rounded-2xl border border-green-200 bg-green-50 p-4">
-              <p className="mt-2 text-xs text-green-800">
-                Exact address becomes available after token payment approval.
+            <div className="mt-4 rounded-2xl bg-amber-50 p-3">
+              <p className="text-center text-sm font-bold text-amber-700">
+                Message/Call Us For Exact Address
               </p>
-              <button
-                onClick={handleLockClick}
-                disabled={totalBeds > 0 && availableBeds === 0}
-                className={buttonClasses("primary", undefined, "w-full")}
-                style={totalBeds > 0 && availableBeds === 0 ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
-              >
-                {totalBeds > 0 && availableBeds === 0 ? "Property Full" : "Pre-Book Property"}
-              </button>
-              <Button variant="secondary" className="w-full" onClick={() => wishlist.toggle(property?.id)}>
-                <Heart className={saved ? "h-4 w-4 fill-clay text-clay" : "h-4 w-4"} aria-hidden />
-                {saved ? "Saved" : "Save property"}
-              </Button>
             </div>
           </aside>
         </section>
