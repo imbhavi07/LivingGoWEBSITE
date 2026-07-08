@@ -1,6 +1,7 @@
 "use client";
 
 import type { ChangeEvent } from "react";
+import { Search } from "lucide-react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { SlidersHorizontal } from "lucide-react";
 
@@ -26,6 +27,26 @@ export function FilterBar() {
   return (
     <section className="rounded-3xl bg-white p-4 shadow-soft">
       <div className="mb-4 flex items-center gap-2 text-sm font-bold text-ink">
+        <div className="mb-5">
+  <label className="space-y-2 block">
+    <span className="text-xs font-semibold uppercase text-muted">
+      Search
+    </span>
+
+    <div className="relative">
+      <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+
+      <input
+        type="text"
+        name="location"
+        defaultValue={searchParams.get("location") ?? ""}
+        onChange={update}
+        placeholder="Search by Property ID, Property Name or Locality..."
+        className="input w-full pl-10"
+      />
+    </div>
+  </label>
+</div>
         <SlidersHorizontal className="h-4 w-4" aria-hidden />
         Filters
       </div>
@@ -40,19 +61,6 @@ export function FilterBar() {
             <option value="25000">Under ₹25,000</option>
             <option value="30000">Under ₹30,000</option>
             <option value="35000">Under ₹35,000</option>
-          </select>
-        </label>
-        <label className="space-y-2">
-          <span className="text-xs font-semibold uppercase text-muted">Location</span>
-          <select name="location" defaultValue={searchParams.get("location") ?? ""} onChange={update} className="input">
-            <option value="">Any location</option>
-            {[ "GTB Nagar", "Hudson Lane", "Kamla Nagar", "Malka Ganj", "Roop Nagar", "Shakti Nagar", "Vijay Nagar" ]
-              .sort()
-              .map((locality) => (
-                <option key={locality} value={locality}>
-                  {locality}
-                </option>
-              ))}
           </select>
         </label>
         <label className="space-y-2">
