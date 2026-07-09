@@ -258,6 +258,26 @@ export default function PropertyClient({ property }: { property: any }) {
                 <span className="text-amber-700">{maskedLocation}</span>
               </h1>
 
+              {property?.propertyCode && (
+                <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-2">
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-700">
+                    Property ID
+                  </span>
+
+                  <span className="font-mono text-sm font-black text-amber-900">              
+                    {property.propertyCode}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => navigator.clipboard.writeText(property.propertyCode)}
+                    className="rounded-md px-2 py-1 text-xs font-bold text-amber-700 hover:bg-amber-100"
+                  >
+                    Copy
+                  </button>
+                </div>
+              )}
+
               <p className="mt-2 flex items-center gap-2 text-sm font-semibold text-muted">
                 <MapPin className="h-4 w-4" aria-hidden />
                 {maskedLocation} (Message/Call Us for exact address)
@@ -480,6 +500,27 @@ export default function PropertyClient({ property }: { property: any }) {
           {/* Sidebar */}
           <aside className="h-fit rounded-3xl bg-white p-6 shadow-soft">
             <p className="text-sm font-bold uppercase text-muted">Starting from</p>
+            {property?.propertyCode && (
+              <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                  Property ID
+                </p>
+                        
+                <div className="mt-1 flex items-center justify-between">
+                  <span className="font-mono text-lg font-black text-ink">
+                    {property.propertyCode}
+                  </span>
+                        
+                  <button
+                    type="button"
+                    onClick={() => navigator.clipboard.writeText(property.propertyCode)}
+                    className="rounded-md bg-white px-2 py-1 text-xs font-bold shadow hover:bg-slate-100"
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
+            )}
             <p
               key={displayedPrice}
               className="mt-2 text-4xl font-black text-ink transition-all duration-300 animate-in fade-in zoom-in-95"

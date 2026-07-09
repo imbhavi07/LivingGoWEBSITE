@@ -133,19 +133,26 @@ export function PropertyCard({ property, saved, onSave, priority = false }: Prop
         </div>
       </Link>
       <div className="space-y-4 p-5">
-        
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
             <p className="text-xl font-black text-ink">{formatPrice(property.price)}<span className="text-sm font-semibold text-muted">/mo</span></p>
-            
             <h2 className="mt-1 line-clamp-1 text-lg font-bold text-ink">
               {property.preference === "Any" ? "Boys & Girls PG" : `${property.preference} PG`} 
               {" "}in{" "} 
               <span className="text-amber-700">
                 {locality}
               </span>
+              
             </h2>
-            
+            {property.propertyCode && (
+              <div className="mt-2 inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-bold tracking-wide text-slate-700">
+                🏷
+                <span>Property ID:</span>
+                <span className="font-extrabold text-amber-700">
+                  {property.propertyCode}
+                </span>
+              </div>
+            )}
             {displayRoomTypes && (
               <p className="mt-1 text-sm font-semibold text-muted">
                 {displayRoomTypes}

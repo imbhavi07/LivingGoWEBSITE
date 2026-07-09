@@ -36,6 +36,7 @@ model User {
   gender             String?
   emergencyContact   String?
   properties         Property[]         @relation("OwnerProperties")
+  referral           Referral?
   reviews            Review[]
   tenantResidence    TenantResidence?
   tokenPayments      TokenPayment[]     @relation("StudentTokenPayments")
@@ -46,8 +47,6 @@ model User {
   @@index([status])
   @@index([verificationStatus])
   @@index([createdAt])
-
-  referral Referral?
 }
 
 model EmailOtp {
@@ -66,6 +65,7 @@ model EmailOtp {
 
 model Property {
   id                    String             @id @default(cuid())
+  propertyCode          String?            @unique
   ownerId               String
   title                 String
   description           String
@@ -195,10 +195,10 @@ model TokenPayment {
   updatedAt        DateTime           @updatedAt
   moveInRequested  Boolean            @default(false)
   selectedRoomType RoomType?
-  payeeName        String?
-  payeeUpi         String?
-  payeePhone       String?
   appliedCode      String?
+  payeeName        String?
+  payeePhone       String?
+  payeeUpi         String?
   property         Property           @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   student          User               @relation("StudentTokenPayments", fields: [studentId], references: [id], onDelete: Cascade)
 
@@ -228,21 +228,18 @@ model Coupon {
 }
 
 model Referral {
-  id             String           @id @default(cuid())
-  userId         String           @unique
-  code           String           @unique
-  status         ReferralStatus   @default(PENDING)
-
-  invites        Int              @default(0)
-  successful     Int              @default(0)
-  earnings       Float            @default(0)
-  upiId          String?
-
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  name           String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id         String         @id @default(cuid())
+  userId     String         @unique
+  code       String         @unique
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  earnings   Float          @default(0)
+  invites    Int            @default(0)
+  successful Int            @default(0)
+  status     ReferralStatus @default(PENDING)
+  upiId      String?
+  name       String?
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum Role {
@@ -298,8 +295,8 @@ enum DiscountType {
 
 enum ReferralStatus {
   PENDING
-  APPROVED
-  REJECTED
   COMPLETED
   CANCELLED
+  APPROVED
+  REJECTED
 }

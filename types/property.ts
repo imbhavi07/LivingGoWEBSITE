@@ -5,6 +5,7 @@ export type GenderPreference = "Boys" | "Girls" | "Any";
 
 export type Owner = {
   id: string;
+propertyCode?: string;
   name: string;
   phone: string;
   verified: boolean;
@@ -14,7 +15,7 @@ export type Owner = {
 type Review = {
   id: string;
   cleanliness: number; food: number; security: number;
-  management: number; location: number;
+  management: number; location: number; 
   comment?: string | null;
   createdAt: string;
   student: { id: string; name: string };
@@ -34,6 +35,7 @@ export type Property = {
   bedsDouble?: number | null;
   bedsTriple?: number | null;
   id: string;
+  propertyCode?: string;
   title: string;
   price: number;
   priceSingle?: number;

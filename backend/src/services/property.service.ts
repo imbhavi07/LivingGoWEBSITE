@@ -74,6 +74,59 @@ const propertyInclude = {
   }
 } satisfies Prisma.PropertyInclude;
 
+function getLocationCode(location: string) {
+  const value = location.toLowerCase();
+
+  if (value.includes("vijay nagar")) return "VG";
+  if (value.includes("mp nagar")) return "MP";
+  if (value.includes("arera")) return "AR";
+  if (value.includes("indrapuri")) return "IN";
+  if (value.includes("kolar")) return "KO";
+  if (value.includes("nehru nagar")) return "NN";
+
+  return "OT";
+}
+
+function getPreferenceCode(preference: GenderPreference) {
+  switch (preference) {
+    case "Boys":
+      return "B";
+
+    case "Girls":
+      return "G";
+
+    default:
+      return "C";
+  }
+}
+
+async function generatePropertyCode(
+  location: string,
+  preference: GenderPreference
+) {
+  const area = getLocationCode(location);
+
+  const gender = getPreferenceCode(preference);
+
+  while (true) {
+    const random = Math.floor(
+      100000 + Math.random() * 900000
+    );
+
+    const code = `${area}-${gender}-${random}`;
+
+    const exists = await prisma.property.findFirst({
+      where: {
+        propertyCode: code,
+      },
+    });
+
+    if (!exists) {
+      return code;
+    }
+  }
+}
+
 export async function createProperty(ownerId: string, input: PropertyInput, images: ImageInput[]) {
   // Calculate nearby places if coordinates provided
   let nearbyPlaces = undefined;
@@ -99,8 +152,13 @@ export async function createProperty(ownerId: string, input: PropertyInput, imag
     ].filter((v): v is number => typeof v === "number" && v > 0)
   );
 
+  const propertyCode = await generatePropertyCode(
+    input.location,
+    input.preference
+  );
   return prisma.property.create({
     data: {
+      propertyCode,
       ownerId,
       title: input.title,
       description: input.description,
@@ -138,7 +196,7 @@ export async function createProperty(ownerId: string, input: PropertyInput, imag
 
 const propertyCardSelect = {
   id: true,
-
+  propertyCode: true,
   title: true,
   description: true,
 
@@ -184,14 +242,38 @@ const propertyCardSelect = {
 export async function getProperties(query: Record<string, unknown>, viewerRole?: Role) {
   const { page, limit, skip } = getPagination(query);
   const status = query.status as PropertyStatus | undefined;
+  const search = String(query.location ?? "").trim();
   const where: Prisma.PropertyWhereInput = {
     status: viewerRole === "admin" ? status : "approved",
-    location: query.location ? { contains: String(query.location), mode: "insensitive" } : undefined,
+    ...(search
+      ? {
+          OR: [
+            {
+              title: {
+                contains: search,
+                mode: "insensitive",
+              },
+            },
+            {
+              location: {
+                contains: search,
+                mode: "insensitive",
+              },
+            },
+            {
+              propertyCode: {
+                contains: search,
+                mode: "insensitive",
+              },
+            },
+          ],
+        }
+      : {}),
     roomType: query.roomType as RoomType | undefined,
-    preference: query.preference as GenderPreference | undefined
+    preference: query.preference as GenderPreference | undefined,
   };
 
-  const cacheKey = `properties:${JSON.stringify({ status: where.status, location: where.location, roomType: where.roomType, preference: where.preference, page, limit })}`;
+  const cacheKey = `properties:${JSON.stringify({ status: where.status, search, roomType: where.roomType, preference: where.preference, page, limit })}`;
   if (!viewerRole) {
     const cachedEntry = cache.get(cacheKey);
     if (cachedEntry && Date.now() - cachedEntry.timestamp < CACHE_TTL_MS) {
@@ -243,7 +325,7 @@ export async function getPropertyById(id: string, viewerRole?: Role) {
 }
 
 export async function updateProperty(id: string, actorId: string, actorRole: Role, input: Partial<PropertyInput>) {
-  const property = await prisma.property.findUnique({ where: { id } });
+  const property = await prisma.property.findUnique({ where: { id },include: propertyInclude });
   if (!property) throw new AppError("Property not found", 404);
   if (actorRole !== "admin" && property.ownerId !== actorId) throw new AppError("Forbidden", 403);
 
@@ -392,6 +474,7 @@ export async function getStudentResidence(studentId: string) {
     include: {
       property: {
         select: {
+          propertyCode: true,
           id: true,
           title: true,
           location: true,

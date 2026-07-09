@@ -33,6 +33,7 @@ export type ApiProperty = {
   rating?: number;
   reviewCount?: number;
   id: string;
+  propertyCode?: string;
   title: string;
   description: string;
   price: number;
@@ -121,6 +122,7 @@ export function toProperty(property: ApiProperty, index?: number): Property {
   
   return {
     id: property.id,
+    propertyCode: property.propertyCode,
     title: property.title,
     description: property.description,
     price: property.price,
