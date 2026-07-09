@@ -65,7 +65,6 @@ model EmailOtp {
 
 model Property {
   id                    String             @id @default(cuid())
-  propertyCode          String?            @unique
   ownerId               String
   title                 String
   description           String
@@ -97,6 +96,7 @@ model Property {
   managerContact        String?            @db.VarChar(255)
   securityContact       String?            @db.VarChar(255)
   isFeatured            Boolean            @default(false)
+  propertyCode          String?            @unique
   owner                 User               @relation("OwnerProperties", fields: [ownerId], references: [id], onDelete: Cascade)
   images                PropertyImage[]
   panoramas             PropertyPanorama[]

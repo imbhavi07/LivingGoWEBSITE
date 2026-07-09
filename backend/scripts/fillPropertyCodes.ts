@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 function getLocationCode(location: string) {
   const value = location.toLowerCase();
 
-  if (value.includes("vijay nagar")) return "VG";
+  if (value.includes("vijay nagar")) return "VN";
   if (value.includes("mp nagar")) return "MP";
   if (value.includes("arera")) return "AR";
   if (value.includes("indrapuri")) return "IN";
