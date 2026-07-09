@@ -49,6 +49,48 @@ const propertyInclude = {
         }
     }
 };
+function getLocationCode(location) {
+    const value = location.toLowerCase();
+    if (value.includes("vijay nagar"))
+        return "VG";
+    if (value.includes("mp nagar"))
+        return "MP";
+    if (value.includes("arera"))
+        return "AR";
+    if (value.includes("indrapuri"))
+        return "IN";
+    if (value.includes("kolar"))
+        return "KO";
+    if (value.includes("nehru nagar"))
+        return "NN";
+    return "OT";
+}
+function getPreferenceCode(preference) {
+    switch (preference) {
+        case "Boys":
+            return "B";
+        case "Girls":
+            return "G";
+        default:
+            return "C";
+    }
+}
+async function generatePropertyCode(location, preference) {
+    const area = getLocationCode(location);
+    const gender = getPreferenceCode(preference);
+    while (true) {
+        const random = Math.floor(100000 + Math.random() * 900000);
+        const code = `${area}-${gender}-${random}`;
+        const exists = await prisma_1.prisma.property.findFirst({
+            where: {
+                propertyCode: code,
+            },
+        });
+        if (!exists) {
+            return code;
+        }
+    }
+}
 async function createProperty(ownerId, input, images) {
     // Calculate nearby places if coordinates provided
     let nearbyPlaces = undefined;
@@ -66,8 +108,10 @@ async function createProperty(ownerId, input, images) {
         input.priceDouble,
         input.priceTriple,
     ].filter((v) => typeof v === "number" && v > 0));
+    const propertyCode = await generatePropertyCode(input.location, input.preference);
     return prisma_1.prisma.property.create({
         data: {
+            propertyCode,
             ownerId,
             title: input.title,
             description: input.description,
@@ -104,6 +148,7 @@ async function createProperty(ownerId, input, images) {
 }
 const propertyCardSelect = {
     id: true,
+    propertyCode: true,
     title: true,
     description: true,
     location: true,
@@ -139,13 +184,37 @@ const propertyCardSelect = {
 async function getProperties(query, viewerRole) {
     const { page, limit, skip } = (0, Pagination_1.getPagination)(query);
     const status = query.status;
+    const search = String(query.location ?? "").trim();
     const where = {
         status: viewerRole === "admin" ? status : "approved",
-        location: query.location ? { contains: String(query.location), mode: "insensitive" } : undefined,
+        ...(search
+            ? {
+                OR: [
+                    {
+                        title: {
+                            contains: search,
+                            mode: "insensitive",
+                        },
+                    },
+                    {
+                        location: {
+                            contains: search,
+                            mode: "insensitive",
+                        },
+                    },
+                    {
+                        propertyCode: {
+                            contains: search,
+                            mode: "insensitive",
+                        },
+                    },
+                ],
+            }
+            : {}),
         roomType: query.roomType,
-        preference: query.preference
+        preference: query.preference,
     };
-    const cacheKey = `properties:${JSON.stringify({ status: where.status, location: where.location, roomType: where.roomType, preference: where.preference, page, limit })}`;
+    const cacheKey = `properties:${JSON.stringify({ status: where.status, search, roomType: where.roomType, preference: where.preference, page, limit })}`;
     if (!viewerRole) {
         const cachedEntry = cache.get(cacheKey);
         if (cachedEntry && Date.now() - cachedEntry.timestamp < CACHE_TTL_MS) {
@@ -191,7 +260,7 @@ async function getPropertyById(id, viewerRole) {
     return property;
 }
 async function updateProperty(id, actorId, actorRole, input) {
-    const property = await prisma_1.prisma.property.findUnique({ where: { id } });
+    const property = await prisma_1.prisma.property.findUnique({ where: { id }, include: propertyInclude });
     if (!property)
         throw new app_error_1.AppError("Property not found", 404);
     if (actorRole !== "admin" && property.ownerId !== actorId)
@@ -312,6 +381,7 @@ async function getStudentResidence(studentId) {
         include: {
             property: {
                 select: {
+                    propertyCode: true,
                     id: true,
                     title: true,
                     location: true,

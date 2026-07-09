@@ -24,7 +24,7 @@ async function handleClerkWebhook(req, res) {
     const clerkClient = (0, backend_1.createClerkClient)({
         secretKey: process.env.CLERK_SECRET_KEY,
     });
-    if (event.type === "user.created") {
+    if (event.type === "user.created" || event.type === "user.updated") {
         try {
             // Cast the payload safely
             const data = event.data;
@@ -58,7 +58,7 @@ async function handleClerkWebhook(req, res) {
             });
         }
         catch (error) {
-            console.error("Error processing user.created webhook:", error);
+            console.error("Error processing user.created/updated webhook:", error);
         }
     }
     if (event.type === "user.deleted") {

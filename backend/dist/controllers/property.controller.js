@@ -48,6 +48,12 @@ function requireUser(request) {
 }
 exports.createProperty = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);
+    // Verify user exists in Prisma database (protect against Clerk-Prisma desync)
+    const internalUser = await db.user.findUnique({ where: { id: user.id } });
+    if (!internalUser) {
+        console.error(`🚨 Sync Error: Prisma user ${user.id} not found in database.`);
+        return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
+    }
     if (user.role === "owner" && user.verificationStatus !== "approved") {
         const statusMessages = {
             not_required: "Please complete your KYC verification before listing properties.",
@@ -78,12 +84,19 @@ exports.createProperty = (0, async_handler_1.asyncHandler)(async (request, respo
     console.log("BODY", request.body);
     console.log("FILES", files.length);
     console.log("USER", user.id);
-    const property = await propertyService.createProperty(user.id, request.body, uploads.map((upload, index) => ({
-        url: upload.secure_url,
-        publicId: upload.public_id,
-        roomCategory: roomTypeMappings[index]?.roomCategory ?? "common",
-    })));
-    response.status(201).json(property);
+    // Wrap database operation in try/catch to prevent unhandled rejections
+    try {
+        const property = await propertyService.createProperty(user.id, request.body, uploads.map((upload, index) => ({
+            url: upload.secure_url,
+            publicId: upload.public_id,
+            roomCategory: roomTypeMappings[index]?.roomCategory ?? "common",
+        })));
+        response.status(201).json(property);
+    }
+    catch (error) {
+        console.error("Property Creation Error:", error);
+        return response.status(500).json({ error: "Failed to create property. Please try again." });
+    }
 });
 // backend/src/controllers/property.controller.ts
 exports.getProperties = (0, async_handler_1.asyncHandler)(async (request, response) => {
@@ -109,8 +122,21 @@ exports.getStudentResidence = (0, async_handler_1.asyncHandler)(async (request, 
 });
 exports.getOwnerProperties = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);
-    const result = await propertyService.getOwnerProperties(user.id, request.query);
-    response.json(result);
+    // Verify user exists in Prisma database (protect against Clerk-Prisma desync)
+    const internalUser = await db.user.findUnique({ where: { id: user.id } });
+    if (!internalUser) {
+        console.error(`🚨 Sync Error: Prisma user ${user.id} not found in database.`);
+        return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
+    }
+    // Wrap database operation in try/catch to prevent unhandled rejections
+    try {
+        const result = await propertyService.getOwnerProperties(user.id, request.query);
+        response.json(result);
+    }
+    catch (error) {
+        console.error("Get Owner Properties Error:", error);
+        return response.status(500).json({ error: "Failed to retrieve properties. Please try again." });
+    }
 });
 exports.getOwnerStats = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);

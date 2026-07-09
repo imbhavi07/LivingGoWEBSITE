@@ -35,7 +35,7 @@ export async function handleClerkWebhook(req: Request, res: Response) {
     secretKey: process.env.CLERK_SECRET_KEY,
   });
 
-  if (event.type === "user.created") {
+  if (event.type === "user.created" || event.type === "user.updated") {
     try {
       // Cast the payload safely
       const data = event.data as unknown as ClerkUserPayload;
@@ -76,7 +76,7 @@ export async function handleClerkWebhook(req: Request, res: Response) {
         publicMetadata: { role },
       });
     } catch (error) {
-      console.error("Error processing user.created webhook:", error);
+      console.error("Error processing user.created/updated webhook:", error);
     }
   }
 
