@@ -39,6 +39,25 @@ export async function POST(req: Request) {
     
   } catch (error) {
     console.error("Error syncing user:", error);
+    // Check if it's a database connection error
+    if (error instanceof Error) {
+      const message = error.message.toLowerCase();
+      if (
+        message.includes("failed to connect") ||
+        message.includes("connection refused") ||
+        message.includes("connection timeout") ||
+        message.includes("timeout")
+      ) {
+        return NextResponse.json({ error: "Service temporarily unavailable." }, { status: 503 });
+      }
+      // Check for Prisma error codes related to connection issues
+      if (
+        (error as any).code &&
+        ((error as any).code.startsWith('P10') || (error as any).code === 'P2024')
+      ) {
+        return NextResponse.json({ error: "Service temporarily unavailable." }, { status: 503 });
+      }
+    }
     return NextResponse.json({ error: "Failed to sync user" }, { status: 500 });
   }
 }

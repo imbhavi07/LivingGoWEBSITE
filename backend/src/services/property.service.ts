@@ -77,11 +77,15 @@ const propertyInclude = {
 function getLocationCode(location: string) {
   const value = location.toLowerCase();
 
-  if (value.includes("vijay nagar")) return "VG";
+  if (value.includes("vijay nagar")) return "VN";
   if (value.includes("mp nagar")) return "MP";
   if (value.includes("arera")) return "AR";
   if (value.includes("indrapuri")) return "IN";
   if (value.includes("kolar")) return "KO";
+  if (value.includes("malka ganj")) return "MG";
+  if (value.includes("shakti nagar")) return "SN";
+  if (value.includes("roop nagar")) return "RN";
+  if (value.includes("kamla nagar")) return "KM";
   if (value.includes("nehru nagar")) return "NN";
 
   return "OT";
@@ -96,7 +100,7 @@ function getPreferenceCode(preference: GenderPreference) {
       return "G";
 
     default:
-      return "C";
+      return "N/A";
   }
 }
 
