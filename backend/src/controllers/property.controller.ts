@@ -90,6 +90,14 @@ export const getProperties = asyncHandler(
       request.user?.role
     );
 
+    // Map the items to ensure the 'images' key exists
+    if (result && result.items) {
+      result.items = result.items.map((item: any) => ({
+        ...item,
+        images: item.PropertyImage || item.images || []
+      }));
+    }
+
     response.json(result);
   }
 );
@@ -106,11 +114,16 @@ export const getPropertyById = asyncHandler(async (request: Request, response: R
   }
 
   const property = await propertyService.getPropertyById(propertyId, request.user?.role, internalUserId);
+  // Map the property to ensure the 'images' key exists
+  const mappedProperty = {
+    ...property,
+    images: property.PropertyImage || property.images || []
+  };
   const [rating, reviews] = await Promise.all([
     propertyService.getPropertyRating(propertyId),
     propertyService.getPropertyReviews(propertyId),
   ]);
-  response.json({ ...property, rating, reviews });
+  response.json({ ...mappedProperty, rating, reviews });
 });
 
 export const getApprovedPropertyList = asyncHandler(async (_request: Request, response: Response) => {
@@ -264,5 +277,14 @@ export const getOwnerProperties = asyncHandler(async (request: Request, response
     return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
   }
   const result = await propertyService.getOwnerProperties(internalUser.id, request.query);
+
+  // Map the items to ensure the 'images' key exists
+  if (result && result.items) {
+    result.items = result.items.map((item: any) => ({
+      ...item,
+      images: item.PropertyImage || item.images || []
+    }));
+  }
+
   response.json(result);
 });
