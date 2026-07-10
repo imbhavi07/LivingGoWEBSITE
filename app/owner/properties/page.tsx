@@ -10,6 +10,21 @@ import { OwnerTableSkeleton } from "@/components/owner/OwnerTableSkeleton";
 import { useOwnerProperties } from "@/hooks/useOwnerProperties";
 import { formatPrice } from "@/lib/utils";
 
+// fast fast - same logic as PropertyCard component
+const optimizeImageUrl = (url: string | undefined): string => {
+  if (!url) return "/placeholder-property.jpg";
+
+  if (url.includes("res.cloudinary.com")) {
+    let optimizedUrl = url;
+    if (!optimizedUrl.includes("f_auto")) {
+      optimizedUrl = optimizedUrl.replace("/upload/", "/upload/f_auto,q_auto/");
+    }
+    return optimizedUrl.replace(/\.heic$/i, ".webp");
+  }
+
+  return url;
+};
+
 export default function OwnerPropertiesPage() {
   const { properties, isLoading, error, remove, toggleStatus } = useOwnerProperties();
 
@@ -37,7 +52,7 @@ export default function OwnerPropertiesPage() {
               
               {/* 1. Clickable Image Panel */}
               <Link href={`/owner/properties/${property.id}`} className="relative h-28 overflow-hidden rounded-2xl bg-oat md:h-24 hover:opacity-80 transition-opacity block">
-                <Image src={property.images[0]} alt={property.title} fill className="object-cover" sizes="120px" unoptimized />
+                <Image src={optimizeImageUrl(property.images[0])} alt={property.title} fill className="object-cover" sizes="120px" unoptimized />
               </Link>
               
               <div>
