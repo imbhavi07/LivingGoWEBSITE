@@ -119,6 +119,7 @@ export default function AdminListingDetailsPage() {
                       alt={listing.title}
                       fill
                       className="object-cover"
+                      unoptimized
                     />
                   </div>
                               
@@ -213,6 +214,7 @@ export default function AdminListingDetailsPage() {
             alt={panorama.title}
             fill
             className="object-cover"
+            unoptimized
           />
         </div>
 
