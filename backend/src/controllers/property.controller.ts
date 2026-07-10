@@ -90,11 +90,21 @@ export const getProperties = asyncHandler(
       request.user?.role
     );
 
-    // Map the items to ensure the 'images' key exists
-    if (result && result.items) {
+    // Map the items to ensure the 'images' key exists and convert HEIC URLs
+    if (result && typeof result === 'object' && 'items' in result && Array.isArray(result.items)) {
       result.items = result.items.map((item: any) => ({
         ...item,
-        images: item.PropertyImage || item.images || []
+        images: item.images?.map((image: any) => {
+          let url = image.url;
+          // Cloudinary auto-format injection for HEIC images
+          if (url.includes('/upload/')) {
+            url = url.replace('/upload/', '/upload/f_auto,q_auto/');
+          }
+          // Fallback extension replacement for HEIC
+          url = url.replace(/\.heic$/i, '.jpg');
+
+          return { ...image, url };
+        }) || []
       }));
     }
 
@@ -114,10 +124,20 @@ export const getPropertyById = asyncHandler(async (request: Request, response: R
   }
 
   const property = await propertyService.getPropertyById(propertyId, request.user?.role, internalUserId);
-  // Map the property to ensure the 'images' key exists
+  // Map the property to ensure the 'images' key exists and convert HEIC URLs
   const mappedProperty = {
     ...property,
-    images: property.PropertyImage || property.images || []
+    images: property.images?.map((image: any) => {
+      let url = image.url;
+      // Cloudinary auto-format injection for HEIC images
+      if (url.includes('/upload/')) {
+        url = url.replace('/upload/', '/upload/f_auto,q_auto/');
+      }
+      // Fallback extension replacement for HEIC
+      url = url.replace(/\.heic$/i, '.jpg');
+
+      return { ...image, url };
+    }) || []
   };
   const [rating, reviews] = await Promise.all([
     propertyService.getPropertyRating(propertyId),
@@ -278,11 +298,21 @@ export const getOwnerProperties = asyncHandler(async (request: Request, response
   }
   const result = await propertyService.getOwnerProperties(internalUser.id, request.query);
 
-  // Map the items to ensure the 'images' key exists
-  if (result && result.items) {
+  // Map the items to ensure the 'images' key exists and convert HEIC URLs
+  if (result && typeof result === 'object' && 'items' in result && Array.isArray(result.items)) {
     result.items = result.items.map((item: any) => ({
       ...item,
-      images: item.PropertyImage || item.images || []
+      images: item.images?.map((image: any) => {
+        let url = image.url;
+        // Cloudinary auto-format injection for HEIC images
+        if (url.includes('/upload/')) {
+          url = url.replace('/upload/', '/upload/f_auto,q_auto/');
+        }
+        // Fallback extension replacement for HEIC
+        url = url.replace(/\.heic$/i, '.jpg');
+
+        return { ...image, url };
+      }) || []
     }));
   }
 
