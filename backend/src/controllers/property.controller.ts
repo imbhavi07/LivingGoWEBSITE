@@ -246,3 +246,23 @@ export const getFeaturedProperty = asyncHandler(async (_request: Request, respon
 
   return response.json({ ...property, rating, reviews });
 });
+
+export const getOwnerStats = asyncHandler(async (request: Request, response: Response) => {
+  const user = requireUser(request);
+  const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
+  if (!internalUser) {
+    return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
+  }
+  const stats = await propertyService.getOwnerStats(internalUser.id);
+  response.json(stats);
+});
+
+export const getOwnerProperties = asyncHandler(async (request: Request, response: Response) => {
+  const user = requireUser(request);
+  const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
+  if (!internalUser) {
+    return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
+  }
+  const result = await propertyService.getOwnerProperties(internalUser.id, request.query);
+  response.json(result);
+});
