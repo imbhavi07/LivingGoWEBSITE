@@ -12,6 +12,13 @@ export function Footer() {
           <p className="font-semibold text-ink md:hidden">wrapped with warmth</p>
           
           <div className="flex flex-row gap-6 md:gap-8">
+            <Link
+              href="/about"
+              className="hover:text-ink hover:underline transition-colors"
+            >
+              About Us
+            </Link>
+
             <Link 
               href="/legal/privacy-policy" 
               className="hover:text-ink hover:underline transition-colors"

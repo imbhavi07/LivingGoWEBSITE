@@ -18,6 +18,7 @@ const isPublicRoute = createRouteMatcher([
   "/earn",
   "/api/earn/public(.*)",
   "/api/earn/track(.*)",
+  "/about(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
