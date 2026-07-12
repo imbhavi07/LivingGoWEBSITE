@@ -210,23 +210,6 @@ export const deletePropertyImage = asyncHandler(
   }
 );
 
-export const getProperties = asyncHandler(
-  async (req, res) => {
-    res.json(
-      await adminService.getAllProperties(req.query)
-    );
-  }
-);
-
-export const getPropertyManagement =
-  asyncHandler(async (req, res) => {
-    res.json(
-      await adminService.getPropertyManagement(
-        String(req.params.id)
-      )
-    );
-  });
-
 export const replacePropertyImage = asyncHandler(
   async (request: Request, response: Response) => {
     const imageId = String(

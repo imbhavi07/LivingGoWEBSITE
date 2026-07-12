@@ -275,7 +275,7 @@ export async function getAllProperties(query: Record<string, unknown>) {
         select: {
           tenants: true,
           reviews: true,
-          wishlist: true,
+          wishlistedBy: true,
         },
       },
     },
@@ -302,7 +302,7 @@ export async function getPropertyManagement(id: string) {
         },
       },
 
-      wishlist: true,
+      wishlistedBy: true,
 
       tenants: {
         include: {
