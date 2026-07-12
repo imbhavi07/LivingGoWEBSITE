@@ -131,11 +131,12 @@ export default async function StudentDashboardPage() {
                   {/* Property Image with Fallback */}
                   <div className="relative h-48 sm:h-auto sm:w-64 shrink-0 bg-linen">
                     {imageUrl ? (
-                      <Image 
-                        src={imageUrl} 
+                      <Image
+                        src={imageUrl}
                         alt={payment.property.title}
                         fill
                         className="object-cover"
+                        unoptimized
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-black/5">

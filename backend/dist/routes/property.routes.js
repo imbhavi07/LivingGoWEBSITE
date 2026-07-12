@@ -48,6 +48,8 @@ exports.propertyRouter.get("/", (0, validate_middleware_1.validate)(property_val
 exports.propertyRouter.get("/list", propertyController.getApprovedPropertyList);
 // 🔥 NEW: Featured route (Must be above /:id)
 exports.propertyRouter.get("/featured", propertyController.getFeaturedProperty);
+// Get current user's properties (owner/dashboard route)
+exports.propertyRouter.get("/my-properties", auth_middleware_1.clerkAuthenticate, (0, auth_middleware_1.authorize)("owner"), propertyController.getOwnerProperties);
 exports.propertyRouter.get("/:id", (0, validate_middleware_1.validate)(property_validation_1.propertyIdSchema), propertyController.getPropertyById);
 // Owner / admin routes
 exports.propertyRouter.post("/", auth_middleware_1.clerkAuthenticate, (0, auth_middleware_1.authorize)("owner", "admin"), upload_middleware_1.uploadImages, (0, validate_middleware_1.validate)(property_validation_1.createPropertySchema), propertyController.createProperty);

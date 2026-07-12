@@ -77,11 +77,15 @@ const propertyInclude = {
 function getLocationCode(location: string) {
   const value = location.toLowerCase();
 
-  if (value.includes("vijay nagar")) return "VG";
+  if (value.includes("vijay nagar")) return "VN";
   if (value.includes("mp nagar")) return "MP";
   if (value.includes("arera")) return "AR"; 
   if (value.includes("indrapuri")) return "IN";
   if (value.includes("kolar")) return "KO";
+  if (value.includes("malka ganj")) return "MG";
+  if (value.includes("shakti nagar")) return "SN";
+  if (value.includes("roop nagar")) return "RN";
+  if (value.includes("kamla nagar")) return "KM";
   if (value.includes("nehru nagar")) return "NN";
 
   return "OT";
@@ -96,16 +100,15 @@ function getPreferenceCode(preference: GenderPreference) {
       return "G";
 
     default:
-      return "C";
+      return "N/A";
   }
-}
+}  
 
 async function generatePropertyCode(
   location: string,
   preference: GenderPreference
 ) {
   const area = getLocationCode(location);
-
   const gender = getPreferenceCode(preference);
 
   while (true) {
@@ -311,12 +314,24 @@ export async function getProperties(query: Record<string, unknown>, viewerRole?:
   return result;
 }
 
-export async function getPropertyById(id: string, viewerRole?: Role) {
+export async function getPropertyById(id: string, viewerRole?: Role, internalUserId?: string) {
+  const where: Prisma.PropertyWhereInput = { id };
+
+  if (viewerRole === "admin") {
+    // No additional conditions for admin
+  } else if (internalUserId) {
+    // For non-admin, logged-in user: show if approved OR owned by the user
+    where.OR = [
+      { status: "approved" },
+      { ownerId: internalUserId }
+    ];
+  } else {
+    // Not logged in and not admin: only show approved
+    where.status = "approved";
+  }
+
   const property = await prisma.property.findFirst({
-    where: {
-      id,
-      ...(viewerRole === "admin" ? {} : { status: "approved" })
-    },
+    where,
     include: propertyInclude
   });
 

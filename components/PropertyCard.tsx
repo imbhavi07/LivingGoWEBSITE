@@ -121,6 +121,7 @@ export function PropertyCard({ property, saved, onSave, priority = false }: Prop
             priority={priority}
             className="object-cover transition duration-500 group-hover:scale-105"
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            unoptimized
           />
           {showAvailability && (
             <span className={`absolute top-3 right-3 rounded-full px-3 py-1 text-xs font-bold flex items-center gap-1.5 ${

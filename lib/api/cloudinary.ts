@@ -6,11 +6,6 @@ const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
 const apiKey = process.env.CLOUDINARY_API_KEY;
 const apiSecret = process.env.CLOUDINARY_API_SECRET;
 
-// Validate that all required environment variables are present
-if (!cloudName || !apiKey || !apiSecret) {
-  throw new Error("Cloudinary environment variables are missing in production");
-}
-
 cloudinary.config({
   cloud_name: cloudName,
   api_key: apiKey,
@@ -26,6 +21,11 @@ export async function uploadToCloudinary(file: string | File): Promise<{
   url: string;
   publicId: string;
 }> {
+  // Check if Cloudinary credentials are configured
+  if (!cloudName || !apiKey || !apiSecret) {
+    throw new Error("Cloudinary environment variables are missing in production");
+  }
+
   try {
     // Convert File to buffer if needed
     let buffer: Buffer;

@@ -69,7 +69,7 @@ export function ImageUploader({ images, onChange, onFilesChange }: ImageUploader
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {images.map((image) => (
             <div key={image} className="relative aspect-square overflow-hidden rounded-2xl bg-oat">
-              <Image src={image} alt="Uploaded property" fill className="object-cover" sizes="160px" unoptimized={image.startsWith("blob:")} />
+              <Image src={image} alt="Uploaded property" fill className="object-cover" sizes="160px" unoptimized />
               <button
                 type="button"
                 onClick={() => removeImage(image)}

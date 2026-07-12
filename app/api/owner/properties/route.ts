@@ -200,6 +200,17 @@ export async function POST(request: Request) {
 
   } catch (error) {
     console.error("🚨 Fatal Server Error in Property POST:", error);
+    // Check for service unavailability conditions
+    if (error instanceof Error) {
+      const message = error.message;
+      if (message.includes("Cloudinary environment variables are missing") ||
+          message.includes("P1001") ||
+          message.includes("P1002") ||
+          message.includes("Failed to connect to") ||
+          (message.includes("connection") && message.includes("failed"))) {
+        return NextResponse.json({ error: "Service temporarily unavailable." }, { status: 503 });
+      }
+    }
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
@@ -237,6 +248,17 @@ export async function GET(request: Request) {
     return NextResponse.json(properties, { status: 200 });
   } catch (error) {
     console.error("🚨 Fatal Server Error in Property GET:", error);
+    // Check for service unavailability conditions
+    if (error instanceof Error) {
+      const message = error.message;
+      if (message.includes("Cloudinary environment variables are missing") ||
+          message.includes("P1001") ||
+          message.includes("P1002") ||
+          message.includes("Failed to connect to") ||
+          (message.includes("connection") && message.includes("failed"))) {
+        return NextResponse.json({ error: "Service temporarily unavailable." }, { status: 503 });
+      }
+    }
     return NextResponse.json(
       { error: "Failed to fetch properties" },
       { status: 500 }

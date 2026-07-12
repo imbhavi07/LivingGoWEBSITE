@@ -67,6 +67,7 @@ export function FeaturedPropertyCard({ property, saved, onSave }: FeaturedProper
               className={`object-cover transition-all duration-1000 group-hover:scale-105 ${
                 index === currentImageIndex ? "opacity-100 z-10" : "opacity-0 z-0"
               }`}
+              unoptimized
             />
           ))}
 

@@ -36,8 +36,9 @@ export function Gallery({
               fill
               priority // Forces instant loading for the hero image
               // THE FIX: Tells Next.js exactly what size to generate
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 800px" 
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 800px"
               className="object-cover"
+              unoptimized
             />
           </div>
 
@@ -56,7 +57,7 @@ export function Gallery({
                   priority={index < 2} 
                   // THE FIX: Tells Next.js these are small grid images, don't download 4K!
                   sizes="(max-width: 768px) 50vw, (max-width: 1200px) 16vw, 250px"
-                  className="object-cover"
+                  className="object-cover" unoptimized
                 />
               </div>
             ))}
@@ -105,7 +106,7 @@ export function Gallery({
                     loading="lazy" // Strictly forces the browser NOT to download these until the modal opens
                     // THE FIX: Sizes for the expanded modal view
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
-                    className="object-cover"
+                    className="object-cover" unoptimized
                   />
                 </div>
               ))}
