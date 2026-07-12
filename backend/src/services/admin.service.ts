@@ -231,6 +231,94 @@ export async function deletePropertyImage(
   });
 }
 
+export async function getAllProperties(query: Record<string, unknown>) {
+  const search = query.search ? String(query.search) : "";
+
+  return prisma.property.findMany({
+    where: search
+      ? {
+          OR: [
+            {
+              propertyCode: {
+                contains: search,
+                mode: "insensitive",
+              },
+            },
+            {
+              title: {
+                contains: search,
+                mode: "insensitive",
+              },
+            },
+            {
+              location: {
+                contains: search,
+                mode: "insensitive",
+              },
+            },
+            {
+              owner: {
+                name: {
+                  contains: search,
+                  mode: "insensitive",
+                },
+              },
+            },
+          ],
+        }
+      : {},
+    include: {
+      owner: true,
+      images: true,
+
+      _count: {
+        select: {
+          tenants: true,
+          reviews: true,
+          wishlist: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}
+
+export async function getPropertyManagement(id: string) {
+  return prisma.property.findUnique({
+    where: { id },
+
+    include: {
+      owner: true,
+
+      images: true,
+
+      panoramas: true,
+
+      reviews: {
+        include: {
+          student: true,  
+        },
+      },
+
+      wishlist: true,
+
+      tenants: {
+        include: {
+          student: true,
+        },
+      },
+
+      tokenPayments: {
+        include: {
+          student: true,
+        },
+      },
+    },
+  });
+}
+
 export async function replacePropertyImage(
   imageId: string,
   url: string,

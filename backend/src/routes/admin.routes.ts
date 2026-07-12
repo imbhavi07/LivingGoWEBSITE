@@ -65,3 +65,23 @@ adminRouter.put(
   uploadImages,
   adminController.replacePropertyImage
 );
+
+adminRouter.get(
+  "/properties",
+  adminController.getProperties
+);
+
+adminRouter.get(
+  "/properties/:id",
+  adminController.getPropertyManagement
+);
+
+adminRouter.get(
+  "/properties",
+  adminController.getProperties
+);
+
+adminRouter.get(
+  "/properties/:id",
+  adminController.getPropertyManagement
+);

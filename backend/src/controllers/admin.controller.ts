@@ -210,6 +210,23 @@ export const deletePropertyImage = asyncHandler(
   }
 );
 
+export const getProperties = asyncHandler(
+  async (req, res) => {
+    res.json(
+      await adminService.getAllProperties(req.query)
+    );
+  }
+);
+
+export const getPropertyManagement =
+  asyncHandler(async (req, res) => {
+    res.json(
+      await adminService.getPropertyManagement(
+        String(req.params.id)
+      )
+    );
+  });
+
 export const replacePropertyImage = asyncHandler(
   async (request: Request, response: Response) => {
     const imageId = String(
@@ -242,3 +259,23 @@ export const replacePropertyImage = asyncHandler(
     response.json(result);
   }
 );
+
+export const getProperties = asyncHandler(async (req, res) => {
+  const properties = await adminService.getAllProperties(req.query);
+  res.json(properties);
+});
+
+export const getPropertyManagement = asyncHandler(async (req, res) => {
+  const property = await adminService.getPropertyManagement(
+    String(req.params.id)
+  );
+
+  if (!property) {
+    res.status(404).json({
+      message: "Property not found",
+    });
+    return;
+  }
+
+  res.json(property);
+});

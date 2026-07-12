@@ -79,7 +79,7 @@ function getLocationCode(location: string) {
 
   if (value.includes("vijay nagar")) return "VG";
   if (value.includes("mp nagar")) return "MP";
-  if (value.includes("arera")) return "AR";
+  if (value.includes("arera")) return "AR"; 
   if (value.includes("indrapuri")) return "IN";
   if (value.includes("kolar")) return "KO";
   if (value.includes("nehru nagar")) return "NN";
