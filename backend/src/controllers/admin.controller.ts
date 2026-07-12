@@ -7,7 +7,6 @@ import { createClerkClient } from "@clerk/backend";
 import { prisma } from "../config/prisma";
 import { AppError } from "../utils/app-error";
 import { getPropertyRating } from "../services/property.service";
-import { uploadMany } from "../services/cloudinary.service";
 
 const clerkClient = createClerkClient({
   secretKey: process.env.CLERK_SECRET_KEY!,
@@ -60,8 +59,8 @@ export const getOwnerApprovalById = asyncHandler(async (request: Request, respon
 });
 
 export const getUserProperties = asyncHandler(async (request: Request, response: Response) => {
-  const id= String(request.params.id);
- 
+  const id = String(request.params.id); // ← was request.params (bug fix from earlier)
+
   const user = await prisma.user.findUnique({
     where: { id },
     select: {
@@ -91,10 +90,9 @@ export const getUserProperties = asyncHandler(async (request: Request, response:
       },
     },
   });
- 
+
   if (!user) throw new AppError("User not found", 404);
- 
-  // Attach ratings to each property
+
   const propertiesWithRatings = await Promise.all(
     user.properties.map(async (property) => {
       const rating = await getPropertyRating(property.id);
@@ -110,24 +108,27 @@ export const getUserProperties = asyncHandler(async (request: Request, response:
       };
     })
   );
- 
+
   response.json({ user, properties: propertiesWithRatings });
 });
- 
+
+// ← NEW: full property management detail
+export const getPropertyManagement = asyncHandler(async (request: Request, response: Response) => {
+  const id = String(request.params.id);
+  const property = await adminService.getPropertyManagement(id);
+  if (!property) throw new AppError("Property not found", 404);
+  response.json(property);
+});
 
 export const approveOwner = asyncHandler(async (request: Request, response: Response) => {
   const id = String(request.params.id);
-
-  // 1. Update DB via service
   const result = await ownerVerificationService.reviewOwnerApproval(id, "approved");
 
-  // 2. Fetch clerkId from DB
   const owner = await prisma.user.findUnique({
     where: { id },
     select: { clerkId: true },
   });
 
-  // 3. Update Clerk metadata so middleware sees role: "owner"
   if (owner?.clerkId) {
     await clerkClient.users.updateUserMetadata(owner.clerkId, {
       publicMetadata: {
@@ -137,23 +138,18 @@ export const approveOwner = asyncHandler(async (request: Request, response: Resp
     });
   }
 
-  // 4. Send response
   response.json(result);
 });
 
 export const rejectOwner = asyncHandler(async (request: Request, response: Response) => {
   const id = String(request.params.id);
-
-  // 1. Update DB via service
   const result = await ownerVerificationService.reviewOwnerApproval(id, "rejected");
 
-  // 2. Fetch clerkId from DB
   const owner = await prisma.user.findUnique({
     where: { id },
     select: { clerkId: true },
   });
 
-  // 3. Update Clerk metadata on rejection too
   if (owner?.clerkId) {
     await clerkClient.users.updateUserMetadata(owner.clerkId, {
       publicMetadata: {
@@ -163,7 +159,6 @@ export const rejectOwner = asyncHandler(async (request: Request, response: Respo
     });
   }
 
-  // 4. Send response
   response.json(result);
 });
 
@@ -173,92 +168,6 @@ export const updateListing = asyncHandler(async (request: Request, response: Res
   response.json(result);
 });
 
-export const addPropertyImages = asyncHandler(
-  async (request: Request, response: Response) => {
-    const propertyId = String(request.params.id);
-
-    const files =
-      (request.files as Express.Multer.File[]) ?? [];
-
-    const uploads = await uploadMany(files);
-
-    const result =
-      await adminService.addImagesToProperty(
-        propertyId,
-        uploads.map((u) => ({
-          url: u.secure_url,
-          publicId: u.public_id,
-        }))
-      );
-    response.json(result);
-  }
-);
-
-export const deletePropertyImage = asyncHandler(
-  async (request: Request, response: Response) => {
-    const imageId = String(
-      request.params.imageId
-    );
-
-    await adminService.deletePropertyImage(
-      imageId
-    );
-
-    response.json({
-      success: true
-    });
-  }
-);
-
-export const replacePropertyImage = asyncHandler(
-  async (request: Request, response: Response) => {
-    const imageId = String(
-      request.params.imageId
-    );
-
-    const file =
-      (request.files as Express.Multer.File[])?.[0];
-
-    if (!file) {
-      throw new AppError(
-        "Image is required",
-        400
-      );
-    }
-
-    const uploads =
-      await uploadMany([file]);
-
-    const upload =
-      uploads[0];
-
-    const result =
-      await adminService.replacePropertyImage(
-        imageId,
-        upload.secure_url,
-        upload.public_id
-      );
-
-    response.json(result);
-  }
-);
-
-export const getProperties = asyncHandler(async (req, res) => {
-  const properties = await adminService.getAllProperties(req.query);
-  res.json(properties);
-});
-
-export const getPropertyManagement = asyncHandler(async (req, res) => {
-  const property = await adminService.getPropertyManagement(
-    String(req.params.id)
-  );
-
-  if (!property) {
-    res.status(404).json({
-      message: "Property not found",
-    });
-    return;
-  }
-
-  res.json(property);
+export const getAllProperties = asyncHandler(async (request: Request, response: Response) => {
+  response.json(await adminService.getAllProperties(request.query));
 });
