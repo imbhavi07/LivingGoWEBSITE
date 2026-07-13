@@ -6,7 +6,8 @@ const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp", "image/jpg", 
 export const uploadImages = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 20 * 1024 * 1024,
+    fileSize: 10 * 1024 * 1024, // 10 MB limit per file
+    fieldSize: 10 * 1024 * 1024, // 10 MB limit for text fields
     files: 8
   },
   fileFilter: (_request, file, callback) => {
@@ -21,6 +22,7 @@ export const uploadImages = multer({
 export const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 50 * 1024 * 1024
+    fileSize: 10 * 1024 * 1024, // 10 MB limit per file
+    fieldSize: 10 * 1024 * 1024 // 10 MB limit for text fields
   }
 });
