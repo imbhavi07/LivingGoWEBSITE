@@ -2,284 +2,107 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { PrismaClient, Prisma } from '@prisma/client';
-import { uploadToCloudinary } from '@/lib/api/cloudinary';
 
-const prisma = new PrismaClient();
-
-export async function PUT(
-  request: Request, 
+export async function GET(
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params; // Extract it ONCE here
-  
+  const { id } = await params;
+  const { userId: clerkId } = await auth();
+  if (!clerkId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { getToken } = await auth();
+  const token = await getToken();
+
+  // Forward the request to the backend
+  const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5000/api";
+  const url = `${backendUrl}/owner/properties/${id}`;
+
   try {
-    const { userId: clerkId } = await auth();
-    if (!clerkId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // 1. Find the internal User record using the Clerk ID
-    const user = await prisma.user.findUnique({
-      where: { clerkId: clerkId }
+    const backendResponse = await fetch(url, {
+      method: 'GET',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
     });
 
-    if (!user) {
-      return NextResponse.json({ error: "User not found in database" }, { status: 404 });
-    }
+    const data = await backendResponse.json();
+    return NextResponse.json(data, { status: backendResponse.status });
+  } catch (error) {
+    console.error('Error proxying GET to backend:', error);
+    return NextResponse.json({ error: 'Failed to fetch property' }, { status: 500 });
+  }
+}
 
-    // 2. Verify the property exists and belongs to the user
-    const existingProperty = await prisma.property.findUnique({
-      where: { id: id }, // Using the id we extracted at the top
-      include: { images: true }
-    });
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  // Proxy PUT to the backend
+  const { id } = await params;
+  const { userId: clerkId } = await auth();
+  if (!clerkId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-    if (!existingProperty) {
-      return NextResponse.json({ error: "Property not found" }, { status: 404 });
-    }
+  const { getToken } = await auth();
+  const token = await getToken();
 
-    // Check ownership
-    const isOwner = existingProperty.ownerId === user.id;
-    if (!isOwner) {
-      return NextResponse.json({ error: "Forbidden: You don't have permission to update this property" }, { status: 403 });
-    }
+  // Forward the request to the backend
+  const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5000/api";
+  const url = `${backendUrl}/owner/properties/${id}`;
 
-    // 3. ENV GHOST CHECK (Fixes the ENV_NAME_REQUIRED_BUT_PRIVATE crash)
-    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
-      console.error("🚨 CRITICAL: Missing Cloudinary Environment Variables in Vercel/Render!");
-      return NextResponse.json({ error: "Server misconfiguration: Missing image upload credentials." }, { status: 500 });
-    }
-
+  try {
     const formData = await request.formData();
 
-    // Helper function to get string value from FormData
-    const getString = (key: string): string | null => {
-      const value = formData.get(key);
-      return typeof value === 'string' ? value : null;
-    };
+    const backendResponse = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        // Do not set Content-Type; let fetch set it from the FormData
+      },
+      body: formData,
+    });
 
-    // Helper function to get number value from FormData
-    const getNumber = (key: string): number | undefined => {
-      const value = formData.get(key);
-      if (typeof value === 'string') {
-        const num = parseFloat(value);
-        return isNaN(num) ? undefined : num;
-      }
-      return undefined;
-    };
-
-    // Helper function to get integer value from FormData
-    const getInt = (key: string): number | undefined => {
-      const value = formData.get(key);
-      if (typeof value === 'string') {
-        const num = parseInt(value, 10);
-        return isNaN(num) ? undefined : num;
-      }
-      return undefined;
-    };
-
-    // Helper function to get JSON array from FormData
-    const getJsonArray = (key: string): string[] => {
-      const value = formData.get(key);
-      if (typeof value === 'string') {
-        try {
-          const parsed = JSON.parse(value);
-          return Array.isArray(parsed) ? parsed.map(String) : [];
-        } catch {
-          return [];
-        }
-      }
-      return [];
-    };
-
-    // Extract required string fields
-    const title = getString('title');
-    const description = getString('description');
-    const location = getString('location');
-    const preference = getString('preference') as 'Boys' | 'Girls' | 'Any' | null;
-
-    if (!title || title.trim() === '') return NextResponse.json({ error: "Title is required" }, { status: 400 });
-    if (!description || description.trim() === '') return NextResponse.json({ error: "Description is required" }, { status: 400 });
-    if (!location || location.trim() === '') return NextResponse.json({ error: "Location is required" }, { status: 400 });
-    if (!preference) return NextResponse.json({ error: "Preference is required" }, { status: 400 });
-
-    // Extract optional string fields
-    const getOptionalString = (key: string): string | null => {
-      const value = getString(key);
-      return value && value.trim() !== '' ? value.trim() : null;
-    };
-
-    const mealPlan = getOptionalString('mealPlan');
-    const curfewTime = getOptionalString('curfewTime');
-    const noticePeriod = getOptionalString('noticePeriod');
-    const rulesStrictness = getOptionalString('rulesStrictness');
-    const managerContact = getOptionalString('managerContact');
-    const securityContact = getOptionalString('securityContact');
-
-    const securityDepositMonths = getOptionalString('securityDepositMonths');
-
-    // Extract numeric fields
-    const priceSingle = getNumber('priceSingle');
-    const priceDouble = getNumber('priceDouble');
-    const priceTriple = getNumber('priceTriple');
-    const bedsSingle = getInt('bedsSingle');
-    const bedsDouble = getInt('bedsDouble');
-    const bedsTriple = getInt('bedsTriple');
-    const lat = getNumber('lat');
-    const lng = getNumber('lng');
-
-    // Extract JSON array fields
-    const mealTimes = getJsonArray('mealTimes');
-    const facilities = getJsonArray('facilities');
-
-    // Validate at least one room type with price and beds > 0
-    const hasSingle = priceSingle !== undefined && priceSingle > 0 && bedsSingle !== undefined && bedsSingle > 0;
-    const hasDouble = priceDouble !== undefined && priceDouble > 0 && bedsDouble !== undefined && bedsDouble > 0;
-    const hasTriple = priceTriple !== undefined && priceTriple > 0 && bedsTriple !== undefined && bedsTriple > 0;
-
-    if (!hasSingle && !hasDouble && !hasTriple) {
-      return NextResponse.json({ error: "At least one room type with price and beds must be provided" }, { status: 400 });
-    }
-
-    const prices = [priceSingle, priceDouble, priceTriple].filter((p): p is number => p !== undefined && p > 0);
-    const price = Math.min(...prices);
-
-    let roomType: 'Single' | 'Shared' = 'Single';
-    let sharedType: string | undefined;
-    if (hasDouble || hasTriple) {
-      roomType = 'Shared';
-      if (hasDouble) sharedType = 'Double';
-      else if (hasTriple) sharedType = 'Triple';
-    }
-
-    // Convert Web Files to Base64 for Cloudinary
-    const imageFiles = formData.getAll('images') as File[];
-    const uploadedImages = await Promise.all(
-      imageFiles.map(async (file) => {
-        if (!(file instanceof File)) throw new Error('Invalid file');
-
-        try {
-          const bytes = await file.arrayBuffer();
-          const buffer = Buffer.from(bytes);
-          const base64Image = `data:${file.type};base64,${buffer.toString('base64')}`;
-
-          const result = await uploadToCloudinary(base64Image as unknown as File);
-          return { url: result.url, publicId: result.publicId };
-        } catch (uploadError) {
-          console.error("🚨 Cloudinary Upload Failed:", uploadError);
-          throw new Error("Failed to upload image to Cloudinary");
-        }
-      })
-    );
-
-    // Build the update object
-    const updateData: Prisma.PropertyUpdateInput = {
-      title: title.trim(),
-      description: description.trim(),
-      price,
-      location: location.trim(),
-      roomType,
-      preference,
-      mealPlan,
-      curfewTime,
-      noticePeriod,
-      rulesStrictness,
-      managerContact,
-      securityContact,
-      securityDepositMonths,
-      priceSingle,
-      priceDouble,
-      priceTriple,
-      bedsSingle,
-      bedsDouble,
-      bedsTriple,
-      lat,
-      lng,
-      mealTimes,
-      facilities,
-      sharedType,
-    };
-
-    // Only add images if we have new uploads
-    if (uploadedImages.length > 0) {
-      updateData.images = {
-        create: uploadedImages.map(img => ({
-          url: img.url,
-          publicId: img.publicId,
-        })),
-      };
-    }
-
-    try {
-      const updatedProperty = await prisma.property.update({
-        where: { id: id }, // Using extracted id
-        data: updateData,
-        include: { images: true }
-      });
-      return NextResponse.json(updatedProperty, { status: 200 });
-
-    } catch (dbError) {
-      console.error("🚨 Prisma Database Error! Update data was:", JSON.stringify(updateData, null, 2));
-      console.error("🚨 Exact Prisma Error:", dbError);
-      return NextResponse.json({ error: "Database update failed. Check terminal." }, { status: 500 });
-    }
-
+    const data = await backendResponse.json();
+    return NextResponse.json(data, { status: backendResponse.status });
   } catch (error) {
-    console.error("🚨 Fatal Server Error in Property PUT:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error('Error proxying PUT to backend:', error);
+    return NextResponse.json({ error: 'Failed to update property' }, { status: 500 });
   }
 }
 
 export async function DELETE(
-  request: Request, 
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params; // Extract ONCE
-  
+  const { id } = await params;
+  const { userId: clerkId } = await auth();
+  if (!clerkId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { getToken } = await auth();
+  const token = await getToken();
+
+  // Forward the request to the backend
+  const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:5000/api";
+  const url = `${backendUrl}/owner/properties/${id}`;
+
   try {
-    const { userId: clerkId } = await auth();
-    if (!clerkId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // 1. Find the internal User record using the Clerk ID
-    const user = await prisma.user.findUnique({
-      where: { clerkId: clerkId }
+    const backendResponse = await fetch(url, {
+      method: 'DELETE',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
     });
 
-    if (!user) {
-      return NextResponse.json({ error: "User not found in database" }, { status: 404 });
-    }
-
-    // 2. Verify the property exists and belongs to the user
-    const existingProperty = await prisma.property.findUnique({
-      where: { id: id } // Using extracted id
-    });
-
-    if (!existingProperty) {
-      return NextResponse.json({ error: "Property not found" }, { status: 404 });
-    }
-
-    // Check ownership
-    const isOwner = existingProperty.ownerId === user.id;
-    if (!isOwner) {
-      return NextResponse.json({ error: "Forbidden: You don't have permission to delete this property" }, { status: 403 });
-    }
-
-    try {
-      await prisma.property.delete({
-        where: { id: id }
-      });
-      return NextResponse.json({ success: true }, { status: 200 });
-
-    } catch (dbError) {
-      console.error("🚨 Prisma Database Error! Delete error for propertyId:", id);
-      console.error("🚨 Exact Prisma Error:", dbError);
-      return NextResponse.json({ error: "Database deletion failed. Check terminal." }, { status: 500 });
-    }
-
+    const data = await backendResponse.json();
+    return NextResponse.json(data, { status: backendResponse.status });
   } catch (error) {
-    console.error("🚨 Fatal Server Error in Property DELETE:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error('Error proxying DELETE to backend:', error);
+    return NextResponse.json({ error: 'Failed to delete property' }, { status: 500 });
   }
 }

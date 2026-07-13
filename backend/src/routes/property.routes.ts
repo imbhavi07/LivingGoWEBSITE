@@ -27,12 +27,30 @@ propertyRouter.get("/featured", propertyController.getFeaturedProperty);
 // Get current user's properties (owner/dashboard route)
 propertyRouter.get("/my-properties", clerkAuthenticate, authorize("owner"), propertyController.getOwnerProperties);
 
+// === ACTION ROUTES (placed above GET/:id to avoid interception) ===
+// Toggle property status (PATCH /:id/status)
+propertyRouter.patch(
+  "/:id/status",
+  clerkAuthenticate,
+  authorize("owner", "admin"),
+  propertyController.togglePropertyStatus
+);
+
+// Delete property (DELETE /:id)
+propertyRouter.delete(
+  "/:id",
+  clerkAuthenticate,
+  authorize("owner", "admin"),
+  validate(propertyIdSchema),
+  propertyController.deleteProperty
+);
+
+// Get single property by ID (GET /:id)
 propertyRouter.get("/:id", validate(propertyIdSchema), propertyController.getPropertyById);
 
 // Owner / admin routes
 propertyRouter.post("/", clerkAuthenticate, authorize("owner", "admin"), uploadImages, validate(createPropertySchema), propertyController.createProperty);
 propertyRouter.put("/:id", clerkAuthenticate, authorize("owner", "admin"), validate(updatePropertySchema), propertyController.updateProperty);
-propertyRouter.delete("/:id", clerkAuthenticate, authorize("owner", "admin"), validate(propertyIdSchema), propertyController.deleteProperty);
 
 // Student routes
 propertyRouter.post(
