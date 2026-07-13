@@ -50,11 +50,16 @@ exports.propertyRouter.get("/list", propertyController.getApprovedPropertyList);
 exports.propertyRouter.get("/featured", propertyController.getFeaturedProperty);
 // Get current user's properties (owner/dashboard route)
 exports.propertyRouter.get("/my-properties", auth_middleware_1.clerkAuthenticate, (0, auth_middleware_1.authorize)("owner"), propertyController.getOwnerProperties);
+// === ACTION ROUTES (placed above GET/:id to avoid interception) ===
+// Toggle property status (PATCH /:id/status)
+exports.propertyRouter.patch("/:id/status", auth_middleware_1.clerkAuthenticate, (0, auth_middleware_1.authorize)("owner", "admin"), propertyController.togglePropertyStatus);
+// Delete property (DELETE /:id)
+exports.propertyRouter.delete("/:id", auth_middleware_1.clerkAuthenticate, (0, auth_middleware_1.authorize)("owner", "admin"), (0, validate_middleware_1.validate)(property_validation_1.propertyIdSchema), propertyController.deleteProperty);
+// Get single property by ID (GET /:id)
 exports.propertyRouter.get("/:id", (0, validate_middleware_1.validate)(property_validation_1.propertyIdSchema), propertyController.getPropertyById);
 // Owner / admin routes
 exports.propertyRouter.post("/", auth_middleware_1.clerkAuthenticate, (0, auth_middleware_1.authorize)("owner", "admin"), upload_middleware_1.uploadImages, (0, validate_middleware_1.validate)(property_validation_1.createPropertySchema), propertyController.createProperty);
 exports.propertyRouter.put("/:id", auth_middleware_1.clerkAuthenticate, (0, auth_middleware_1.authorize)("owner", "admin"), (0, validate_middleware_1.validate)(property_validation_1.updatePropertySchema), propertyController.updateProperty);
-exports.propertyRouter.delete("/:id", auth_middleware_1.clerkAuthenticate, (0, auth_middleware_1.authorize)("owner", "admin"), (0, validate_middleware_1.validate)(property_validation_1.propertyIdSchema), propertyController.deleteProperty);
 // Student routes
 exports.propertyRouter.post("/:id/review", auth_middleware_1.clerkAuthenticate, (0, auth_middleware_1.authorize)("student"), (0, validate_middleware_1.validate)(property_validation_1.createReviewSchema), propertyController.createReview);
 exports.propertyRouter.post("/:id/residence", auth_middleware_1.clerkAuthenticate, (0, auth_middleware_1.authorize)("student"), (0, validate_middleware_1.validate)(property_validation_1.markResidenceSchema), propertyController.markResidence);

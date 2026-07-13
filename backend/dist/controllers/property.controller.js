@@ -51,9 +51,16 @@ function requireUser(request) {
 exports.createProperty = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);
     // Verify user exists in Prisma database (protect against Clerk-Prisma desync)
-    const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
-    if (!internalUser) {
-        console.error(`🚨 Sync Error: Prisma user with clerkId ${user.id} not found in database.`);
+    const dbUser = await db.user.findFirst({
+        where: {
+            OR: [
+                { id: user.id },
+                { clerkId: user.id }
+            ]
+        }
+    });
+    if (!dbUser) {
+        console.error("Failed to map Clerk ID:", user.id);
         return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
     }
     if (user.role === "owner" && user.verificationStatus !== "approved") {
@@ -88,7 +95,7 @@ exports.createProperty = (0, async_handler_1.asyncHandler)(async (request, respo
     console.log("USER", user.id);
     // Wrap database operation in try/catch to prevent unhandled rejections
     try {
-        const property = await propertyService.createProperty(internalUser.id, // Use the internal user id (CUID)
+        const property = await propertyService.createProperty(dbUser.id, // Use the internal user id (CUID)
         request.body, uploads.map((upload, index) => ({
             url: upload.secure_url,
             publicId: upload.public_id,
@@ -126,8 +133,9 @@ exports.getPropertyById = (0, async_handler_1.asyncHandler)(async (request, resp
     const propertyId = String(request.params.id);
     let internalUserId;
     if (request.user?.id) {
-        const user = await db.user.findUnique({ where: { clerkId: request.user.id } });
+        const user = await db.user.findUnique({ where: { id: request.user.id } });
         if (!user) {
+            console.error("Failed to map Clerk ID:", request.user.id);
             return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
         }
         internalUserId = user.id;
