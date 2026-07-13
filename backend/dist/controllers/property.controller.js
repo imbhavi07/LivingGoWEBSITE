@@ -43,8 +43,7 @@ const client_1 = require("@prisma/client");
 const db = new client_1.PrismaClient();
 function requireUser(request) {
     if (!request.user) {
-        if (!request.user)
-            throw new app_error_1.AppError("Authentication required");
+        throw new app_error_1.AppError("Authentication required");
     }
     return request.user;
 }
@@ -79,7 +78,6 @@ exports.createProperty = (0, async_handler_1.asyncHandler)(async (request, respo
     const uploads = await (0, cloudinary_service_1.uploadMany)(files);
     console.log("UPLOADS COMPLETED:", uploads.length);
     // Extract room-type mappings from request body
-    // Expect format: roomTypeMappings=[{"index":0,"roomType":"Bedroom 1"},{"index":1,"roomType":"Bedroom 2"},{"index":1,"roomType":"Bedroom 2"},...]
     let roomTypeMappings = [];
     try {
         roomTypeMappings = request.body.roomTypeMappings
@@ -108,7 +106,6 @@ exports.createProperty = (0, async_handler_1.asyncHandler)(async (request, respo
         return response.status(500).json({ error: "Failed to create property. Please try again." });
     }
 });
-// backend/src/controllers/property.controller.ts
 exports.getProperties = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const result = await propertyService.getProperties(request.query, request.user?.role);
     // Map the items to ensure the 'images' key exists and convert HEIC URLs
@@ -146,11 +143,9 @@ exports.getPropertyById = (0, async_handler_1.asyncHandler)(async (request, resp
         ...property,
         images: property.images?.map((image) => {
             let url = image.url;
-            // Cloudinary auto-format injection for HEIC images
             if (url.includes('/upload/')) {
                 url = url.replace('/upload/', '/upload/f_auto,q_auto/');
             }
-            // Fallback extension replacement for HEIC
             url = url.replace(/\.heic$/i, '.jpg');
             return { ...image, url };
         }) || []
@@ -281,9 +276,9 @@ exports.getOwnerProperties = (0, async_handler_1.asyncHandler)(async (request, r
         return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
     }
     const result = await propertyService.getOwnerProperties(internalUser.id, request.query);
-    // Map the items to ensure the 'images' key exists and convert HEIC URLs
+    // If result has items, map them into a NEW object to avoid mutating Prisma's strict types
     if (result && typeof result === 'object' && 'items' in result && Array.isArray(result.items)) {
-        result.items = result.items.map((item) => ({
+        const mappedItems = result.items.map((item) => ({
             ...item,
             images: item.images?.map((image) => {
                 let url = image.url;
@@ -296,6 +291,12 @@ exports.getOwnerProperties = (0, async_handler_1.asyncHandler)(async (request, r
                 return { ...image, url };
             }) || []
         }));
+        // Send the new combined payload directly
+        return response.json({
+            ...result,
+            items: mappedItems
+        });
     }
-    response.json(result);
+    // Fallback if no items array exists
+    return response.json(result);
 });

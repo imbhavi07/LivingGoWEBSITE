@@ -162,7 +162,14 @@ export const getApprovedPropertyList = asyncHandler(async (_request: Request, re
 
 export const getStudentResidence = asyncHandler(async (request: Request, response: Response) => {
   const user = requireUser(request);
-  const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
+  const internalUser = await db.user.findFirst({
+    where: {
+      OR: [
+        { id: user.id },
+        { clerkId: user.id }
+      ]
+    }
+  });
   if (!internalUser) {
     return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
   }
@@ -172,7 +179,14 @@ export const getStudentResidence = asyncHandler(async (request: Request, respons
 
 export const updateProperty = asyncHandler(async (request: Request, response: Response) => {
   const user = requireUser(request);
-  const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
+  const internalUser = await db.user.findFirst({
+    where: {
+      OR: [
+        { id: user.id },
+        { clerkId: user.id }
+      ]
+    }
+  });
   if (!internalUser) {
     return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
   }
@@ -226,7 +240,14 @@ export const updateProperty = asyncHandler(async (request: Request, response: Re
 
 export const deleteProperty = asyncHandler(async (request: Request, response: Response) => {
   const user = requireUser(request);
-  const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
+  const internalUser = await db.user.findFirst({
+    where: {
+      OR: [
+        { id: user.id },
+        { clerkId: user.id }
+      ]
+    }
+  });
   if (!internalUser) {
     return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
   }
@@ -237,7 +258,14 @@ export const deleteProperty = asyncHandler(async (request: Request, response: Re
 
 export const togglePropertyStatus = asyncHandler(async (request: Request, response: Response) => {
   const user = requireUser(request);
-  const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
+  const internalUser = await db.user.findFirst({
+    where: {
+      OR: [
+        { id: user.id },
+        { clerkId: user.id }
+      ]
+    }
+  });
   if (!internalUser) {
     return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
   }
@@ -251,7 +279,14 @@ export const togglePropertyStatus = asyncHandler(async (request: Request, respon
 
 export const createReview = asyncHandler(async (request: Request, response: Response) => {
   const user = requireUser(request);
-  const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
+  const internalUser = await db.user.findFirst({
+    where: {
+      OR: [
+        { id: user.id },
+        { clerkId: user.id }
+      ]
+    }
+  });
   if (!internalUser) {
     return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
   }
@@ -264,7 +299,14 @@ export const markResidence = asyncHandler(async (request: Request, response: Res
   const user = requireUser(request);
   const propertyId = String(request.params.id);
 
-  const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
+  const internalUser = await db.user.findFirst({
+    where: {
+      OR: [
+        { id: user.id },
+        { clerkId: user.id }
+      ]
+    }
+  });
   if (!internalUser) {
     return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
   }
@@ -291,7 +333,14 @@ export const getFeaturedProperty = asyncHandler(async (_request: Request, respon
 
 export const getOwnerStats = asyncHandler(async (request: Request, response: Response) => {
   const user = requireUser(request);
-  const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
+  const internalUser = await db.user.findFirst({
+    where: {
+      OR: [
+        { id: user.id },
+        { clerkId: user.id }
+      ]
+    }
+  });
   if (!internalUser) {
     return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
   }
@@ -301,12 +350,18 @@ export const getOwnerStats = asyncHandler(async (request: Request, response: Res
 
 export const getOwnerProperties = asyncHandler(async (request: Request, response: Response) => {
   const user = requireUser(request);
-  const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
-  
+  const internalUser = await db.user.findFirst({
+    where: {
+      OR: [
+        { id: user.id },
+        { clerkId: user.id }
+      ]
+    }
+  });
   if (!internalUser) {
     return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
   }
-  
+
   const result = await propertyService.getOwnerProperties(internalUser.id, request.query);
 
   // If result has items, map them into a NEW object to avoid mutating Prisma's strict types
@@ -315,7 +370,7 @@ export const getOwnerProperties = asyncHandler(async (request: Request, response
       ...item,
       images: item.images?.map((image: ImageWithUrl) => {
         let url = image.url;
-        
+
         // Cloudinary auto-format injection for HEIC images
         if (url.includes('/upload/')) {
           url = url.replace('/upload/', '/upload/f_auto,q_auto/');
