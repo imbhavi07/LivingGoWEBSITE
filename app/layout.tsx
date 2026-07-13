@@ -12,6 +12,7 @@ import "./globals.css";
 import ServiceWorkerRegistry from "@/components/ServiceWorkerRegistry"; 
 import IntroOverlay from "@/components/IntroOverlay";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
+import ClerkSessionWrapper from "@/components/ClerkSessionWrapper";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -38,7 +39,11 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         <ClerkProvider afterSignOutUrl="/">
           <ToastProvider>
             <AuthProvider>
-              <ClerkSessionSync />
+              <AuthProvider>
+                <ClerkSessionWrapper />
+                <ServiceWorkerRegistry />
+                <AppChrome>{children}</AppChrome>
+              </AuthProvider>
               <ServiceWorkerRegistry />
               <AppChrome>{children}</AppChrome>
             </AuthProvider>
