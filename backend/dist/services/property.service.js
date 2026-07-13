@@ -51,16 +51,26 @@ const propertyInclude = {
 };
 function getLocationCode(location) {
     const value = location.toLowerCase();
-    if (value.includes("vijay nagar")) return "VN";
-    if (value.includes("mp nagar")) return "MP";
-    if (value.includes("arera")) return "AR";
-    if (value.includes("indrapuri")) return "IN";
-    if (value.includes("kolar")) return "KO";
-    if (value.includes("malka ganj")) return "MG";
-    if (value.includes("shakti nagar")) return "SN";
-    if (value.includes("roop nagar")) return "RN";
-    if (value.includes("kamla nagar")) return "KM";
-    if (value.includes("nehru nagar")) return "NN";
+    if (value.includes("vijay nagar"))
+        return "VN";
+    if (value.includes("mp nagar"))
+        return "MP";
+    if (value.includes("arera"))
+        return "AR";
+    if (value.includes("indrapuri"))
+        return "IN";
+    if (value.includes("kolar"))
+        return "KO";
+    if (value.includes("malka ganj"))
+        return "MG";
+    if (value.includes("shakti nagar"))
+        return "SN";
+    if (value.includes("roop nagar"))
+        return "RN";
+    if (value.includes("kamla nagar"))
+        return "KM";
+    if (value.includes("nehru nagar"))
+        return "NN";
     return "OT";
 }
 function getPreferenceCode(preference) {
@@ -245,12 +255,24 @@ async function getProperties(query, viewerRole) {
     }
     return result;
 }
-async function getPropertyById(id, viewerRole) {
+async function getPropertyById(id, viewerRole, internalUserId) {
+    const where = { id };
+    if (viewerRole === "admin") {
+        // No additional conditions for admin
+    }
+    else if (internalUserId) {
+        // For non-admin, logged-in user: show if approved OR owned by the user
+        where.OR = [
+            { status: "approved" },
+            { ownerId: internalUserId }
+        ];
+    }
+    else {
+        // Not logged in and not admin: only show approved
+        where.status = "approved";
+    }
     const property = await prisma_1.prisma.property.findFirst({
-        where: {
-            id,
-            ...(viewerRole === "admin" ? {} : { status: "approved" })
-        },
+        where,
         include: propertyInclude
     });
     if (!property)

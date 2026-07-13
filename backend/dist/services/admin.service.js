@@ -11,6 +11,8 @@ exports.updateListingByAdmin = updateListingByAdmin;
 exports.getUserProperties = getUserProperties;
 exports.addImagesToProperty = addImagesToProperty;
 exports.deletePropertyImage = deletePropertyImage;
+exports.getAllProperties = getAllProperties;
+exports.getPropertyManagement = getPropertyManagement;
 exports.replacePropertyImage = replacePropertyImage;
 const prisma_1 = require("../config/prisma");
 const app_error_1 = require("../utils/app-error");
@@ -218,6 +220,83 @@ async function deletePropertyImage(imageId) {
     }
     return prisma_1.prisma.propertyImage.delete({
         where: { id: imageId }
+    });
+}
+async function getAllProperties(query) {
+    const search = query.search ? String(query.search) : "";
+    return prisma_1.prisma.property.findMany({
+        where: search
+            ? {
+                OR: [
+                    {
+                        propertyCode: {
+                            contains: search,
+                            mode: "insensitive",
+                        },
+                    },
+                    {
+                        title: {
+                            contains: search,
+                            mode: "insensitive",
+                        },
+                    },
+                    {
+                        location: {
+                            contains: search,
+                            mode: "insensitive",
+                        },
+                    },
+                    {
+                        owner: {
+                            name: {
+                                contains: search,
+                                mode: "insensitive",
+                            },
+                        },
+                    },
+                ],
+            }
+            : {},
+        include: {
+            owner: true,
+            images: true,
+            _count: {
+                select: {
+                    tenants: true,
+                    reviews: true,
+                    wishlistedBy: true,
+                },
+            },
+        },
+        orderBy: {
+            createdAt: "desc",
+        },
+    });
+}
+async function getPropertyManagement(id) {
+    return prisma_1.prisma.property.findUnique({
+        where: { id },
+        include: {
+            owner: true,
+            images: true,
+            panoramas: true,
+            reviews: {
+                include: {
+                    student: true,
+                },
+            },
+            wishlistedBy: true,
+            tenants: {
+                include: {
+                    student: true,
+                },
+            },
+            tokenPayments: {
+                include: {
+                    student: true,
+                },
+            },
+        },
     });
 }
 async function replacePropertyImage(imageId, url, publicId) {

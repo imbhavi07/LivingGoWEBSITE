@@ -1,3 +1,5 @@
+"use client";
+
 import type { OwnerPropertyPayload, OwnerStats } from "@/types/owner";
 import { apiClient } from "@/lib/api/client";
 import { toOwnerProperty, toProperty, type ApiProperty } from "@/lib/api/types";
@@ -42,7 +44,7 @@ export function toPropertyFormData(payload: OwnerPropertyPayload) {
 
 export async function createOwnerProperty(payload: OwnerPropertyPayload) {
   const formData = toPropertyFormData(payload);
-  
+
   // Hit the internal Next.js route natively. No external URL or manual Bearer token needed!
   const res = await fetch("/api/owner/properties", {
     method: 'POST',
@@ -50,29 +52,45 @@ export async function createOwnerProperty(payload: OwnerPropertyPayload) {
   });
 
   if (!res.ok) {
-    console.warn(`Failed to create property: ${res.statusText}`);
-    throw new Error(`Failed to create property: ${res.statusText}`);
+    let errorMessage = res.statusText;
+    try {
+      const errorData = await res.json();
+      if (errorData.error) {
+        errorMessage = errorData.error;
+      }
+    } catch (e) {
+      // ignore, use statusText
+    }
+    throw new Error(errorMessage);
   }
-  
+
   const data = await res.json();
-  return toProperty(data);
+  return toOwnerProperty(data);
 }
 
 export async function updateOwnerProperty(id: string, payload: OwnerPropertyPayload) {
   const formData = toPropertyFormData(payload);
-  
+
   const res = await fetch(`/api/owner/properties/${id}`, {
     method: 'PUT',
     body: formData
   });
 
   if (!res.ok) {
-    console.warn(`Failed to update property: ${res.statusText}`);
-    throw new Error(`Failed to update property: ${res.statusText}`);
+    let errorMessage = res.statusText;
+    try {
+      const errorData = await res.json();
+      if (errorData.error) {
+        errorMessage = errorData.error;
+      }
+    } catch (e) {
+      // ignore, use statusText
+    }
+    throw new Error(errorMessage);
   }
-  
+
   const data = await res.json();
-  return toProperty(data);
+  return toOwnerProperty(data);
 }
 
 // 🔥 COMPLETELY RED-SCREEN PROOFED 🔥
@@ -83,12 +101,12 @@ export async function getOwnerStats(token?: string) {
         ...(token && { "Authorization": `Bearer ${token}` })
       }
     });
-    
+
     if (!response.ok) {
       console.warn(`Stats fetch failed with status: ${response.status}`);
       return { data: { totalListings: 0, activeListings: 0, pendingListings: 0 } };
     }
-    
+
     const data = await response.json();
     return { data };
   } catch (error) {
@@ -124,29 +142,57 @@ export async function getOwnerProperties() {
   }
 }
 
+// UPDATED: Proxy to Next.js API routes instead of direct backend calls
 export async function deleteOwnerProperty(id: string, token?: string) {
-  await apiClient.delete(`/properties/${id}`, {
+  const res = await fetch(`/api/owner/properties/${id}`, {
+    method: 'DELETE',
     headers: {
-      "Authorization": `Bearer ${token}`
+      ...(token && { "Authorization": `Bearer ${token}` }),
     },
   });
+
+  if (!res.ok) {
+    // Optionally, you can throw an error or handle it as needed.
+    // For now, we'll just log and let the caller handle the response status.
+    const errorText = await res.text();
+    console.error(`Failed to delete property ${id}:`, res.status, errorText);
+    throw new Error(`Failed to delete property: ${res.status}`);
+  }
+  // No need to return anything; the caller will update optimistically.
 }
 
+// UPDATED: Proxy to Next.js API routes instead of direct backend calls
 export async function toggleOwnerPropertyStatus(id: string, isActive: boolean, token?: string) {
-  const { data } = await apiClient.patch<ApiProperty>(`/properties/${id}/status`, { isActive }, {
+  const res = await fetch(`/api/owner/properties/${id}/status`, {
+    method: 'PATCH',
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`
+      ...(token && { "Authorization": `Bearer ${token}` }),
     },
+    body: JSON.stringify({ isActive }),
   });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`Failed to toggle property status: ${res.status} - ${errorText}`);
+  }
+
+  const data = await res.json();
   return toOwnerProperty(data);
 }
 
 export async function getOwnerProperty(id: string, token?: string) {
-  const { data } = await apiClient.get<ApiProperty>(`/properties/${id}`, {
+  const res = await fetch(`/api/owner/properties/${id}`, {
     headers: {
-      "Authorization": `Bearer ${token}`
+      ...(token && { "Authorization": `Bearer ${token}` }),
     },
   });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`Failed to fetch property ${id}: ${res.status} - ${errorText}`);
+  }
+
+  const data = await res.json();
   return toOwnerProperty(data);
 }

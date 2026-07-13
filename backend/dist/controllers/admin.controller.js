@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.replacePropertyImage = exports.deletePropertyImage = exports.addPropertyImages = exports.updateListing = exports.rejectOwner = exports.approveOwner = exports.getUserProperties = exports.getOwnerApprovalById = exports.getOwnerApprovals = exports.deleteUser = exports.suspendUser = exports.getUsers = exports.removeListing = exports.rejectListing = exports.approveListing = exports.getListingDetails = exports.getListings = exports.getStats = void 0;
+exports.getAllProperties = exports.updateListing = exports.rejectOwner = exports.approveOwner = exports.getPropertyManagement = exports.getUserProperties = exports.getOwnerApprovalById = exports.getOwnerApprovals = exports.deleteUser = exports.suspendUser = exports.getUsers = exports.removeListing = exports.rejectListing = exports.approveListing = exports.getListingDetails = exports.getListings = exports.getStats = void 0;
 const async_handler_1 = require("../utils/async-handler");
 const adminService = __importStar(require("../services/admin.service"));
 const property_service_1 = require("../services/property.service");
@@ -42,7 +42,6 @@ const backend_1 = require("@clerk/backend");
 const prisma_1 = require("../config/prisma");
 const app_error_1 = require("../utils/app-error");
 const property_service_2 = require("../services/property.service");
-const cloudinary_service_1 = require("../services/cloudinary.service");
 const clerkClient = (0, backend_1.createClerkClient)({
     secretKey: process.env.CLERK_SECRET_KEY,
 });
@@ -82,7 +81,7 @@ exports.getOwnerApprovalById = (0, async_handler_1.asyncHandler)(async (request,
     response.json(await ownerVerificationService.getPendingOwnerApprovalById(String(request.params.id)));
 });
 exports.getUserProperties = (0, async_handler_1.asyncHandler)(async (request, response) => {
-    const id = String(request.params.id);
+    const id = String(request.params.id); // ← was request.params (bug fix from earlier)
     const user = await prisma_1.prisma.user.findUnique({
         where: { id },
         select: {
@@ -114,7 +113,6 @@ exports.getUserProperties = (0, async_handler_1.asyncHandler)(async (request, re
     });
     if (!user)
         throw new app_error_1.AppError("User not found", 404);
-    // Attach ratings to each property
     const propertiesWithRatings = await Promise.all(user.properties.map(async (property) => {
         const rating = await (0, property_service_2.getPropertyRating)(property.id);
         const totalBeds = (property.bedsSingle ?? 0) +
@@ -129,16 +127,21 @@ exports.getUserProperties = (0, async_handler_1.asyncHandler)(async (request, re
     }));
     response.json({ user, properties: propertiesWithRatings });
 });
+// ← NEW: full property management detail
+exports.getPropertyManagement = (0, async_handler_1.asyncHandler)(async (request, response) => {
+    const id = String(request.params.id);
+    const property = await adminService.getPropertyManagement(id);
+    if (!property)
+        throw new app_error_1.AppError("Property not found", 404);
+    response.json(property);
+});
 exports.approveOwner = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const id = String(request.params.id);
-    // 1. Update DB via service
     const result = await ownerVerificationService.reviewOwnerApproval(id, "approved");
-    // 2. Fetch clerkId from DB
     const owner = await prisma_1.prisma.user.findUnique({
         where: { id },
         select: { clerkId: true },
     });
-    // 3. Update Clerk metadata so middleware sees role: "owner"
     if (owner?.clerkId) {
         await clerkClient.users.updateUserMetadata(owner.clerkId, {
             publicMetadata: {
@@ -147,19 +150,15 @@ exports.approveOwner = (0, async_handler_1.asyncHandler)(async (request, respons
             },
         });
     }
-    // 4. Send response
     response.json(result);
 });
 exports.rejectOwner = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const id = String(request.params.id);
-    // 1. Update DB via service
     const result = await ownerVerificationService.reviewOwnerApproval(id, "rejected");
-    // 2. Fetch clerkId from DB
     const owner = await prisma_1.prisma.user.findUnique({
         where: { id },
         select: { clerkId: true },
     });
-    // 3. Update Clerk metadata on rejection too
     if (owner?.clerkId) {
         await clerkClient.users.updateUserMetadata(owner.clerkId, {
             publicMetadata: {
@@ -168,7 +167,6 @@ exports.rejectOwner = (0, async_handler_1.asyncHandler)(async (request, response
             },
         });
     }
-    // 4. Send response
     response.json(result);
 });
 exports.updateListing = (0, async_handler_1.asyncHandler)(async (request, response) => {
@@ -176,31 +174,6 @@ exports.updateListing = (0, async_handler_1.asyncHandler)(async (request, respon
     const result = await adminService.updateListingByAdmin(id, request.body);
     response.json(result);
 });
-exports.addPropertyImages = (0, async_handler_1.asyncHandler)(async (request, response) => {
-    const propertyId = String(request.params.id);
-    const files = request.files ?? [];
-    const uploads = await (0, cloudinary_service_1.uploadMany)(files);
-    const result = await adminService.addImagesToProperty(propertyId, uploads.map((u) => ({
-        url: u.secure_url,
-        publicId: u.public_id,
-    })));
-    response.json(result);
-});
-exports.deletePropertyImage = (0, async_handler_1.asyncHandler)(async (request, response) => {
-    const imageId = String(request.params.imageId);
-    await adminService.deletePropertyImage(imageId);
-    response.json({
-        success: true
-    });
-});
-exports.replacePropertyImage = (0, async_handler_1.asyncHandler)(async (request, response) => {
-    const imageId = String(request.params.imageId);
-    const file = request.files?.[0];
-    if (!file) {
-        throw new app_error_1.AppError("Image is required", 400);
-    }
-    const uploads = await (0, cloudinary_service_1.uploadMany)([file]);
-    const upload = uploads[0];
-    const result = await adminService.replacePropertyImage(imageId, upload.secure_url, upload.public_id);
-    response.json(result);
+exports.getAllProperties = (0, async_handler_1.asyncHandler)(async (request, response) => {
+    response.json(await adminService.getAllProperties(request.query));
 });

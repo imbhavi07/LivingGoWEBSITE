@@ -17,8 +17,14 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
+        // Handle /api/owner/* routes with Next.js (no proxy)
+        source: '/api/owner/:path*',
+        destination: '/api/owner/:path*',
+      },
+      {
+        // Proxy all other /api/* routes to the backend
         source: '/api/:path*',
-        destination: 'http://localhost:5000/api/:path*', // Proxy to Backend
+        destination: 'http://localhost:5000/api/$1',
       },
     ];
   },

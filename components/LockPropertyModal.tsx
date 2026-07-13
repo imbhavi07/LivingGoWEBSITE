@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, CheckCircle, Loader2, AlertCircle, ShieldCheck, QrCode } from "lucide-react";
+import { X, CheckCircle, Loader2, AlertCircle, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import QRCode from "react-qr-code";
 import confetti from 'canvas-confetti';

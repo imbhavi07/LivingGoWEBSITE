@@ -142,13 +142,71 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
       return;
     }
 
-    if (!hasSingle && !hasDouble && !hasTriple) {
-      setError("Please select at least one room type (Single, Double, or Triple).");
+    if (!locality.trim() || !exactAddress.trim()) {
+      setError("Please provide both the Exact Address and the Locality.");
       return;
     }
 
-    if (!locality.trim() || !exactAddress.trim()) {
-      setError("Please provide both the Exact Address and the Locality.");
+    // Validate and parse room type prices and beds
+    let priceSingle: number | undefined;
+    let bedsSingle: number | undefined;
+    let priceDouble: number | undefined;
+    let bedsDouble: number | undefined;
+    let priceTriple: number | undefined;
+    let bedsTriple: number | undefined;
+
+    if (hasSingle) {
+      const priceStr = String(formData.get("priceSingle") || "");
+      const bedsStr = String(formData.get("bedsSingle") || "");
+      const p = parseFloat(priceStr);
+      const b = parseInt(bedsStr, 10);
+      if (isNaN(p) || p <= 0) {
+        setError("Please provide a valid price for Single room.");
+        return;
+      }
+      if (isNaN(b) || b <= 0) {
+        setError("Please provide a valid number of beds for Single room.");
+        return;
+      }
+      priceSingle = p;
+      bedsSingle = b;
+    }
+    if (hasDouble) {
+      const priceStr = String(formData.get("priceDouble") || "");
+      const bedsStr = String(formData.get("bedsDouble") || "");
+      const p = parseFloat(priceStr);
+      const b = parseInt(bedsStr, 10);
+      if (isNaN(p) || p <= 0) {
+        setError("Please provide a valid price for Double room.");
+        return;
+      }
+      if (isNaN(b) || b <= 0) {
+        setError("Please provide a valid number of beds for Double room.");
+        return;
+      }
+      priceDouble = p;
+      bedsDouble = b;
+    }
+    if (hasTriple) {
+      const priceStr = String(formData.get("priceTriple") || "");
+      const bedsStr = String(formData.get("bedsTriple") || "");
+      const p = parseFloat(priceStr);
+      const b = parseInt(bedsStr, 10);
+      if (isNaN(p) || p <= 0) {
+        setError("Please provide a valid price for Triple room.");
+        return;
+      }
+      if (isNaN(b) || b <= 0) {
+        setError("Please provide a valid number of beds for Triple room.");
+        return;
+      }
+      priceTriple = p;
+      bedsTriple = b;
+    }
+
+    // Ensure at least one room type is selected (though we validate above, but double-check)
+    if (!hasSingle && !hasDouble && !hasTriple) {
+      setError("Please select at least one room type (Single, Double, or Triple).");
       return;
     }
 
@@ -158,31 +216,26 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
           roomCategory: category.toLowerCase(),
         }))
     );
-    
+
     const allImageUrls = Object.values(categorizedImages).flat();
     const allFiles = Object.values(categorizedFiles).flat();
 
     const roomType = hasSingle ? "Single" : "Shared";
-    const prices = [
-      hasSingle ? Number(formData.get("priceSingle")) : undefined,
-      hasDouble ? Number(formData.get("priceDouble")) : undefined,
-      hasTriple ? Number(formData.get("priceTriple")) : undefined,
-    ].filter((value): value is number => value !== undefined && value > 0);
-
-    const price = Math.min(...prices);
 
     const parsed = ownerPropertySchema.safeParse({
         title: formData.get("title"),
         description: formData.get("description"),
-        price,
-        priceSingle: formData.get("priceSingle") || undefined,
-        bedsSingle: formData.get("bedsSingle") || undefined,
-        priceDouble: formData.get("priceDouble") || undefined,
-        bedsDouble: formData.get("bedsDouble") || undefined,
-        priceTriple: formData.get("priceTriple") || undefined,
-        bedsTriple: formData.get("bedsTriple") || undefined,
-        location: locality, 
-        exactAddress: exactAddress, 
+        price: Math.min(
+          ...[priceSingle, priceDouble, priceTriple].filter((p): p is number => p !== undefined)
+        ),
+        priceSingle,
+        bedsSingle,
+        priceDouble,
+        bedsDouble,
+        priceTriple,
+        bedsTriple,
+        location: locality,
+        exactAddress: exactAddress,
         roomType,
         sharedType: hasDouble ? "Double" : hasTriple ? "Triple" : undefined,
         preference: formData.get("preference"),
@@ -223,9 +276,10 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
         showToast("Property submitted for admin moderation.", "success");
       }
       router.push("/owner/properties");
-    } catch {
-      setError("Could not save property. Please try again.");
-      showToast("Could not save property.", "error");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "An unexpected error occurred.";
+      setError(message);
+      showToast(message, "error");
     } finally {
       setIsSubmitting(false);
     }
