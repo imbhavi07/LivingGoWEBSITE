@@ -37,51 +37,28 @@ exports.adminRouter = void 0;
 const express_1 = require("express");
 const adminController = __importStar(require("../controllers/admin.controller"));
 const authController = __importStar(require("../controllers/auth.controller"));
-const couponController = __importStar(require("../controllers/coupon.controller"));
 const auth_middleware_1 = require("../middleware/auth.middleware");
 const security_middleware_1 = require("../middleware/security.middleware");
 const validate_middleware_1 = require("../middleware/validate.middleware");
 const admin_validation_1 = require("../validations/admin.validation");
 const auth_validation_1 = require("../validations/auth.validation");
-const upload_middleware_1 = require("../middleware/upload.middleware");
 exports.adminRouter = (0, express_1.Router)();
 exports.adminRouter.post("/auth/login", security_middleware_1.authLimiter, (0, validate_middleware_1.validate)(auth_validation_1.loginSchema), authController.adminLogin);
-// Protect all routes after this middleware
 exports.adminRouter.use(auth_middleware_1.authenticate, (0, auth_middleware_1.authorize)("admin"));
-// Additional restriction for super admins only (for coupon management)
-const superAdminCheck = (req, res, next) => {
-    const allowedEmails = ["semwalb3@gmail.com", "rctaccommodations@gmail.com"];
-    // Use optional chaining to safely check user payload shape
-    if (!req.user || !req.user.email || !allowedEmails.includes(req.user.email)) {
-        res.status(403).json({ message: "Access denied. Super admin only." });
-        return;
-    }
-    next();
-};
-// Coupon management routes (super admin only)
-exports.adminRouter.route("/coupons")
-    .get(couponController.getCoupons)
-    .post(superAdminCheck, couponController.createCoupon);
-exports.adminRouter.route("/coupons/:id")
-    .get(couponController.getCouponById)
-    .put(superAdminCheck, couponController.updateCoupon)
-    .delete(superAdminCheck, couponController.deleteCoupon);
-// Existing admin routes
 exports.adminRouter.get("/dashboard/stats", adminController.getStats);
 exports.adminRouter.get("/listings", (0, validate_middleware_1.validate)(admin_validation_1.adminListSchema), adminController.getListings);
 exports.adminRouter.get("/listings/:id", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.getListingDetails);
 exports.adminRouter.patch("/listings/:id/approve", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.approveListing);
 exports.adminRouter.patch("/listings/:id/reject", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.rejectListing);
 exports.adminRouter.delete("/listings/:id", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.removeListing);
+exports.adminRouter.patch("/listings/:id", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.updateListing);
 exports.adminRouter.get("/users", (0, validate_middleware_1.validate)(admin_validation_1.adminUserListSchema), adminController.getUsers);
 exports.adminRouter.patch("/users/:id/suspend", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.suspendUser);
 exports.adminRouter.delete("/users/:id", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.deleteUser);
+exports.adminRouter.get("/users/:id/properties", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.getUserProperties);
 exports.adminRouter.get("/approvals", adminController.getOwnerApprovals);
 exports.adminRouter.get("/approvals/:id", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.getOwnerApprovalById);
 exports.adminRouter.patch("/approvals/:id/approve", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.approveOwner);
 exports.adminRouter.patch("/approvals/:id/reject", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.rejectOwner);
-exports.adminRouter.patch("/listings/:id", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.updateListing);
-exports.adminRouter.get("/users/:id/properties", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.getUserProperties);
-exports.adminRouter.post("/listings/:id/images", upload_middleware_1.uploadImages, adminController.addPropertyImages);
-exports.adminRouter.delete("/listings/:id/images/:imageId", adminController.deletePropertyImage);
-exports.adminRouter.put("/listings/:id/images/:imageId", upload_middleware_1.uploadImages, adminController.replacePropertyImage);
+exports.adminRouter.get("/properties", adminController.getAllProperties);
+exports.adminRouter.get("/properties/:id/manage", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.getPropertyManagement);

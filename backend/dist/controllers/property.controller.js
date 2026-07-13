@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getFeaturedProperty = exports.markResidence = exports.createReview = exports.togglePropertyStatus = exports.deleteProperty = exports.updateProperty = exports.getOwnerStats = exports.getOwnerProperties = exports.getStudentResidence = exports.getApprovedPropertyList = exports.getPropertyById = exports.getProperties = exports.createProperty = void 0;
+exports.getOwnerProperties = exports.getOwnerStats = exports.getFeaturedProperty = exports.markResidence = exports.createReview = exports.togglePropertyStatus = exports.deleteProperty = exports.updateProperty = exports.getStudentResidence = exports.getApprovedPropertyList = exports.getPropertyById = exports.getProperties = exports.createProperty = void 0;
 const async_handler_1 = require("../utils/async-handler");
 const app_error_1 = require("../utils/app-error");
 const cloudinary_service_1 = require("../services/cloudinary.service");
@@ -42,16 +42,18 @@ const client_1 = require("@prisma/client");
 // Create a Prisma client instance for DB operations in this controller
 const db = new client_1.PrismaClient();
 function requireUser(request) {
-    if (!request.user)
-        throw new app_error_1.AppError("Authentication required", 401);
+    if (!request.user) {
+        if (!request.user)
+            throw new app_error_1.AppError("Authentication required");
+    }
     return request.user;
 }
 exports.createProperty = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);
     // Verify user exists in Prisma database (protect against Clerk-Prisma desync)
-    const internalUser = await db.user.findUnique({ where: { id: user.id } });
+    const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
     if (!internalUser) {
-        console.error(`🚨 Sync Error: Prisma user ${user.id} not found in database.`);
+        console.error(`🚨 Sync Error: Prisma user with clerkId ${user.id} not found in database.`);
         return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
     }
     if (user.role === "owner" && user.verificationStatus !== "approved") {
@@ -59,7 +61,7 @@ exports.createProperty = (0, async_handler_1.asyncHandler)(async (request, respo
             not_required: "Please complete your KYC verification before listing properties.",
             pending_email_verification: "Please verify your email before listing properties.",
             pending_approval: "Your KYC is under review. You can list properties once approved.",
-            rejected: "Your KYC verification was rejected. Please contact support.",
+            rejected: "Your KYC validation was rejected. Please contact support.",
         };
         const message = statusMessages[user.verificationStatus] ?? "KYC verification required.";
         throw new app_error_1.AppError(message, 403);
@@ -70,7 +72,7 @@ exports.createProperty = (0, async_handler_1.asyncHandler)(async (request, respo
     const uploads = await (0, cloudinary_service_1.uploadMany)(files);
     console.log("UPLOADS COMPLETED:", uploads.length);
     // Extract room-type mappings from request body
-    // Expect format: roomTypeMappings=[{"index":0,"roomType":"Bedroom 1"},{"index":1,"roomType":"Bedroom 2"},...]
+    // Expect format: roomTypeMappings=[{"index":0,"roomType":"Bedroom 1"},{"index":1,"roomType":"Bedroom 2"},{"index":1,"roomType":"Bedroom 2"},...]
     let roomTypeMappings = [];
     try {
         roomTypeMappings = request.body.roomTypeMappings
@@ -86,7 +88,8 @@ exports.createProperty = (0, async_handler_1.asyncHandler)(async (request, respo
     console.log("USER", user.id);
     // Wrap database operation in try/catch to prevent unhandled rejections
     try {
-        const property = await propertyService.createProperty(user.id, request.body, uploads.map((upload, index) => ({
+        const property = await propertyService.createProperty(internalUser.id, // Use the internal user id (CUID)
+        request.body, uploads.map((upload, index) => ({
             url: upload.secure_url,
             publicId: upload.public_id,
             roomCategory: roomTypeMappings[index]?.roomCategory ?? "common",
@@ -101,15 +104,54 @@ exports.createProperty = (0, async_handler_1.asyncHandler)(async (request, respo
 // backend/src/controllers/property.controller.ts
 exports.getProperties = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const result = await propertyService.getProperties(request.query, request.user?.role);
+    // Map the items to ensure the 'images' key exists and convert HEIC URLs
+    if (result && typeof result === 'object' && 'items' in result && Array.isArray(result.items)) {
+        result.items = result.items.map((item) => ({
+            ...item,
+            images: item.images?.map((image) => {
+                let url = image.url;
+                // Cloudinary auto-format injection for HEIC images
+                if (url.includes('/upload/')) {
+                    url = url.replace('/upload/', '/upload/f_auto,q_auto/');
+                }
+                // Fallback extension replacement for HEIC
+                url = url.replace(/\.heic$/i, '.jpg');
+                return { ...image, url };
+            }) || []
+        }));
+    }
     response.json(result);
 });
 exports.getPropertyById = (0, async_handler_1.asyncHandler)(async (request, response) => {
-    const property = await propertyService.getPropertyById(String(request.params.id), request.user?.role);
+    const propertyId = String(request.params.id);
+    let internalUserId;
+    if (request.user?.id) {
+        const user = await db.user.findUnique({ where: { clerkId: request.user.id } });
+        if (!user) {
+            return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
+        }
+        internalUserId = user.id;
+    }
+    const property = await propertyService.getPropertyById(propertyId, request.user?.role, internalUserId);
+    // Map the property to ensure the 'images' key exists and convert HEIC URLs
+    const mappedProperty = {
+        ...property,
+        images: property.images?.map((image) => {
+            let url = image.url;
+            // Cloudinary auto-format injection for HEIC images
+            if (url.includes('/upload/')) {
+                url = url.replace('/upload/', '/upload/f_auto,q_auto/');
+            }
+            // Fallback extension replacement for HEIC
+            url = url.replace(/\.heic$/i, '.jpg');
+            return { ...image, url };
+        }) || []
+    };
     const [rating, reviews] = await Promise.all([
-        propertyService.getPropertyRating(String(request.params.id)),
-        propertyService.getPropertyReviews(String(request.params.id)),
+        propertyService.getPropertyRating(propertyId),
+        propertyService.getPropertyReviews(propertyId),
     ]);
-    response.json({ ...property, rating, reviews });
+    response.json({ ...mappedProperty, rating, reviews });
 });
 exports.getApprovedPropertyList = (0, async_handler_1.asyncHandler)(async (_request, response) => {
     const properties = await propertyService.getApprovedPropertyList();
@@ -117,37 +159,23 @@ exports.getApprovedPropertyList = (0, async_handler_1.asyncHandler)(async (_requ
 });
 exports.getStudentResidence = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);
-    const residence = await propertyService.getStudentResidence(user.id);
-    response.json(residence ?? null);
-});
-exports.getOwnerProperties = (0, async_handler_1.asyncHandler)(async (request, response) => {
-    const user = requireUser(request);
-    // Verify user exists in Prisma database (protect against Clerk-Prisma desync)
-    const internalUser = await db.user.findUnique({ where: { id: user.id } });
+    const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
     if (!internalUser) {
-        console.error(`🚨 Sync Error: Prisma user ${user.id} not found in database.`);
         return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
     }
-    // Wrap database operation in try/catch to prevent unhandled rejections
-    try {
-        const result = await propertyService.getOwnerProperties(user.id, request.query);
-        response.json(result);
-    }
-    catch (error) {
-        console.error("Get Owner Properties Error:", error);
-        return response.status(500).json({ error: "Failed to retrieve properties. Please try again." });
-    }
-});
-exports.getOwnerStats = (0, async_handler_1.asyncHandler)(async (request, response) => {
-    const user = requireUser(request);
-    response.json(await propertyService.getOwnerStats(user.id));
+    const residence = await propertyService.getStudentResidence(internalUser.id);
+    response.json(residence ?? null);
 });
 exports.updateProperty = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);
-    const property = await propertyService.getPropertyById(String(request.params.id), request.user?.role);
+    const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
+    if (!internalUser) {
+        return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
+    }
+    const property = await propertyService.getPropertyById(String(request.params.id), request.user?.role, internalUser.id);
     if (!property)
         throw new app_error_1.AppError("Property not found", 404);
-    if (user.role !== "admin" && property.ownerId !== user.id)
+    if (user.role !== "admin" && property.ownerId !== internalUser.id)
         throw new app_error_1.AppError("Forbidden", 403);
     // Process image uploads if any new files were provided
     let roomTypeMappings = [];
@@ -165,7 +193,7 @@ exports.updateProperty = (0, async_handler_1.asyncHandler)(async (request, respo
             ? JSON.parse(request.body.roomTypeMappings)
             : [];
     }
-    const updatedProperty = await propertyService.updateProperty(String(request.params.id), user.id, user.role, {
+    const updatedProperty = await propertyService.updateProperty(String(request.params.id), internalUser.id, user.role, {
         ...request.body,
         // Include uploads and mappings if new files were provided
         ...(images.length > 0 ? {
@@ -177,29 +205,45 @@ exports.updateProperty = (0, async_handler_1.asyncHandler)(async (request, respo
 });
 exports.deleteProperty = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);
-    await propertyService.deleteProperty(String(request.params.id), user.id, user.role);
+    const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
+    if (!internalUser) {
+        return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
+    }
+    await propertyService.deleteProperty(String(request.params.id), internalUser.id, user.role);
     response.status(204).send();
 });
 exports.togglePropertyStatus = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);
-    const property = await propertyService.getPropertyById(String(request.params.id), user.role);
+    const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
+    if (!internalUser) {
+        return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
+    }
+    const property = await propertyService.getPropertyById(String(request.params.id), user.role, internalUser.id);
     if (!property)
         throw new app_error_1.AppError("Property not found", 404);
-    if (property.ownerId !== user.id)
+    if (property.ownerId !== internalUser.id)
         throw new app_error_1.AppError("Forbidden", 403);
-    return propertyService.togglePropertyStatus(String(request.params.id), user.id, Boolean(request.body.isActive));
+    return propertyService.togglePropertyStatus(String(request.params.id), internalUser.id, Boolean(request.body.isActive));
 });
 exports.createReview = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);
+    const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
+    if (!internalUser) {
+        return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
+    }
     const propertyId = String(request.params.id);
-    const review = await propertyService.createReview(user.id, propertyId, request.body);
+    const review = await propertyService.createReview(internalUser.id, propertyId, request.body);
     response.status(201).json(review);
 });
 exports.markResidence = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);
     const propertyId = String(request.params.id);
-    const result = await propertyService.markResidence(user.id, propertyId);
-    response.json({ success: true, ...result });
+    const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
+    if (!internalUser) {
+        return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
+    }
+    const result = await propertyService.markResidence(internalUser.id, propertyId);
+    return response.json({ success: true, ...result });
 });
 exports.getFeaturedProperty = (0, async_handler_1.asyncHandler)(async (_request, response) => {
     const property = await propertyService.getFeaturedProperty();
@@ -211,5 +255,39 @@ exports.getFeaturedProperty = (0, async_handler_1.asyncHandler)(async (_request,
         propertyService.getPropertyRating(property.id),
         propertyService.getPropertyReviews(property.id),
     ]);
-    response.json({ ...property, rating, reviews });
+    return response.json({ ...property, rating, reviews });
+});
+exports.getOwnerStats = (0, async_handler_1.asyncHandler)(async (request, response) => {
+    const user = requireUser(request);
+    const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
+    if (!internalUser) {
+        return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
+    }
+    const stats = await propertyService.getOwnerStats(internalUser.id);
+    response.json(stats);
+});
+exports.getOwnerProperties = (0, async_handler_1.asyncHandler)(async (request, response) => {
+    const user = requireUser(request);
+    const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
+    if (!internalUser) {
+        return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
+    }
+    const result = await propertyService.getOwnerProperties(internalUser.id, request.query);
+    // Map the items to ensure the 'images' key exists and convert HEIC URLs
+    if (result && typeof result === 'object' && 'items' in result && Array.isArray(result.items)) {
+        result.items = result.items.map((item) => ({
+            ...item,
+            images: item.images?.map((image) => {
+                let url = image.url;
+                // Cloudinary auto-format injection for HEIC images
+                if (url.includes('/upload/')) {
+                    url = url.replace('/upload/', '/upload/f_auto,q_auto/');
+                }
+                // Fallback extension replacement for HEIC
+                url = url.replace(/\.heic$/i, '.jpg');
+                return { ...image, url };
+            }) || []
+        }));
+    }
+    response.json(result);
 });
