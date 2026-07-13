@@ -39,11 +39,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
         <ClerkProvider afterSignOutUrl="/">
           <ToastProvider>
             <AuthProvider>
-              <AuthProvider>
-                <ClerkSessionWrapper />
-                <ServiceWorkerRegistry />
-                <AppChrome>{children}</AppChrome>
-              </AuthProvider>
+              <ClerkSessionWrapper />
               <ServiceWorkerRegistry />
               <AppChrome>{children}</AppChrome>
             </AuthProvider>
