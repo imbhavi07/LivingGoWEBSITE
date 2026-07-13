@@ -12,7 +12,7 @@ export const uploadImages = multer({
 
     callback(null, true);
   }
-}).array("images", 8);
+}).array("images", 50);
 
 export const upload = multer({
   storage: multer.memoryStorage(),
