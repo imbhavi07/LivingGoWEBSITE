@@ -7,6 +7,7 @@ import { createClerkClient } from "@clerk/backend";
 import { prisma } from "../config/prisma";
 import { AppError } from "../utils/app-error";
 import { getPropertyRating } from "../services/property.service";
+import { uploadImage, deleteCloudinaryImage } from "../services/cloudinary.service";
 
 const clerkClient = createClerkClient({
   secretKey: process.env.CLERK_SECRET_KEY!,
@@ -170,4 +171,78 @@ export const updateListing = asyncHandler(async (request: Request, response: Res
 
 export const getAllProperties = asyncHandler(async (request: Request, response: Response) => {
   response.json(await adminService.getAllProperties(request.query));
+});
+
+export const addPropertyImages = asyncHandler(async (req: Request, res: Response) => {
+  const propertyId = String(req.params.id);
+
+  const files = (req.files as Express.Multer.File[]) ?? [];
+
+  if (!files.length) {
+    throw new AppError("No images uploaded", 400);
+  }
+
+  const uploads = await Promise.all(files.map(uploadImage));
+
+  const result = await adminService.addImagesToProperty(
+    propertyId,
+    uploads.map((u) => ({
+      url: u.secure_url,
+      publicId: u.public_id,
+    }))
+  );
+
+  res.json(result);
+});
+
+export const replacePropertyImage = asyncHandler(async (req: Request, res: Response) => {
+  const imageId = String(req.params.imageId);
+
+  const file = (req.files as Express.Multer.File[])?.[0];
+
+  if (!file) {
+    throw new AppError("Image required", 400);
+  }
+
+  const existing = await prisma.propertyImage.findUnique({
+    where: { id: imageId },
+  });
+
+  if (!existing) {
+    throw new AppError("Image not found", 404);
+  }
+
+  const uploaded = await uploadImage(file);
+
+  if (existing.publicId) {
+    await deleteCloudinaryImage(existing.publicId);
+  }
+
+  const result = await adminService.replacePropertyImage(
+    imageId,
+    uploaded.secure_url,
+    uploaded.public_id
+  );
+
+  res.json(result);
+});
+
+export const deletePropertyImage = asyncHandler(async (req: Request, res: Response) => {
+  const imageId = String(req.params.imageId);
+
+  const image = await prisma.propertyImage.findUnique({
+    where: { id: imageId },
+  });
+
+  if (!image) {
+    throw new AppError("Image not found", 404);
+  }
+
+  if (image.publicId) {
+    await deleteCloudinaryImage(image.publicId);
+  }
+
+  await adminService.deletePropertyImage(imageId);
+
+  res.status(204).send();
 });

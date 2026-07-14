@@ -122,7 +122,7 @@ export async function addPropertyImages(
   );
 
   compressedFiles.forEach((file) => {
-    formData.append("image", file);
+     formData.append("images", file);
   });
 
   const { data } = await apiClient.post(
@@ -157,7 +157,7 @@ export async function replacePropertyImage(
   const options = { maxSizeMB: 3.5, maxWidthOrHeight: 4096, useWebWorker: true };
   const compressedFile = await imageCompression(file, options);
 
-  formData.append('image', compressedFile); 
+  formData.append('images', compressedFile); 
 
   const { data } = await apiClient.put(
     `/admin/listings/${propertyId}/images/${imageId}`,
