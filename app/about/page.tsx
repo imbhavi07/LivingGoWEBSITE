@@ -871,7 +871,7 @@ export default function AboutPage() {
                 can communicate with property owners through the platform.
               </p>
             </div>
-
+            
             <div className="rounded-2xl border border-oat p-8">
               <h3 className="text-xl font-bold">
                 Does LivingGo own the listed properties?
@@ -881,49 +881,32 @@ export default function AboutPage() {
                 with independent property owners.
               </p>
             </div>
-
           </div>
-
         </div>
-
       </section>
-
       {/* Contact */}
-
       <section className="py-28">
-
         <div className="mx-auto max-w-5xl rounded-[40px] bg-clay px-10 py-20 text-center text-white">
-
           <h2 className="text-5xl font-black">
             Get In Touch
           </h2>
-
           <p className="mx-auto mt-6 max-w-2xl text-lg text-white/90">
             Have questions, suggestions or need assistance? Our team is
             always ready to help you.
           </p>
-
           <div className="mt-10 space-y-3 text-lg">
-
             <p>📧 support@livinggo.in</p>
-
             <p>🌐 www.livinggo.in</p>
-
           </div>
-
           <div className="mt-12">
-
             <Link
               href="/listings"
               className="inline-block rounded-xl bg-white px-10 py-4 font-bold text-clay transition hover:scale-105"
             >
               Explore Listings
             </Link>
-
           </div>
-
         </div>
-
       </section>
 
     </main>
