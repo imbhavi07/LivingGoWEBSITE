@@ -9,9 +9,13 @@ type TokenPayload = {
 };
 
 export function signJwt(payload: TokenPayload) {
-  return jwt.sign(payload, env.JWT_SECRET as Secret, {
-    expiresIn: env.JWT_EXPIRES_IN
-  } as SignOptions);
+  // With token expiry
+  // return jwt.sign(payload, env.JWT_SECRET as Secret, {
+  //   expiresIn: env.JWT_EXPIRES_IN,
+  // } as SignOptions);
+
+  // Without token expiry
+  return jwt.sign(payload, env.JWT_SECRET as Secret);
 }
 
 export function verifyJwt(token: string) {
