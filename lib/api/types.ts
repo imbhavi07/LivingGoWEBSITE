@@ -342,7 +342,20 @@ export function toVisit(visit: ApiVisit) {
   };
 }
 
-export function toAdminCoupon(coupon: any) {
+export type ApiCoupon = {
+  id: string;
+  partner?: {
+    id?: string;
+    name?: string;
+  } | null;
+  code: string;
+  isActive: boolean;
+  totalVisits?: number | null;
+  totalConvertedBookings?: number | null;
+  createdAt: string;
+};
+
+export function toAdminCoupon(coupon: ApiCoupon) {
   return {
     id: coupon.id,
     partnerName: coupon.partner?.name ?? "Unknown Partner",
