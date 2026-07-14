@@ -42,6 +42,7 @@ const security_middleware_1 = require("../middleware/security.middleware");
 const validate_middleware_1 = require("../middleware/validate.middleware");
 const admin_validation_1 = require("../validations/admin.validation");
 const auth_validation_1 = require("../validations/auth.validation");
+const property_validation_1 = require("../validations/property.validation");
 exports.adminRouter = (0, express_1.Router)();
 exports.adminRouter.post("/auth/login", security_middleware_1.authLimiter, (0, validate_middleware_1.validate)(auth_validation_1.loginSchema), authController.adminLogin);
 exports.adminRouter.use(auth_middleware_1.authenticate, (0, auth_middleware_1.authorize)("admin"));
@@ -62,4 +63,6 @@ exports.adminRouter.patch("/approvals/:id/approve", (0, validate_middleware_1.va
 exports.adminRouter.patch("/approvals/:id/reject", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.rejectOwner);
 exports.adminRouter.get("/properties", adminController.getAllProperties);
 exports.adminRouter.get("/properties/:id/manage", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.getPropertyManagement);
-exports.adminRouter.get("/coupons", adminController.getAdminCoupons);
+// NEW: Admin review endpoints
+exports.adminRouter.post("/properties/:id/reviews", (0, validate_middleware_1.validate)(property_validation_1.propertyIdSchema), adminController.createAdminReview);
+exports.adminRouter.delete("/reviews/:id", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.deleteAdminReview);

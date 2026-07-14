@@ -47,7 +47,7 @@ exports.propertyRouter.get("/", (0, validate_middleware_1.validate)(property_val
 // ← NEW: dropdown list for "existing tenant" selector (no auth needed)
 exports.propertyRouter.get("/list", propertyController.getApprovedPropertyList);
 // 🔥 NEW: Featured route (Must be above /:id)
-exports.propertyRouter.get("/featured", propertyController.getFeaturedProperty);
+exports.propertyRouter.get("/featured", propertyController.getFeaturedProperties);
 // Get current user's properties (owner/dashboard route)
 exports.propertyRouter.get("/my-properties", auth_middleware_1.clerkAuthenticate, (0, auth_middleware_1.authorize)("owner"), propertyController.getOwnerProperties);
 // === ACTION ROUTES (placed above GET/:id to avoid interception) ===

@@ -8,9 +8,21 @@ import { prisma } from "../config/prisma";
 import { AppError } from "../utils/app-error";
 import { getPropertyRating } from "../services/property.service";
 import { uploadImage, deleteCloudinaryImage } from "../services/cloudinary.service";
+import { z } from "zod";
+import type { Prisma } from "@prisma/client";
+import { VisitStatus } from "@prisma/client";
 
 const clerkClient = createClerkClient({
   secretKey: process.env.CLERK_SECRET_KEY!,
+});
+
+// Validation schema for admin-created review
+const createAdminReviewSchema = z.object({
+  body: z.object({
+    studentName: z.string().min(1).max(100),
+    rating: z.number().min(1).max(5),
+    content: z.string().min(1).max(2000)
+  })
 });
 
 export const getStats = asyncHandler(async (_request: Request, response: Response) => {
@@ -203,12 +215,12 @@ export const getAdminCoupons = asyncHandler(async (_request: Request, response: 
         }
       });
 
-      // Count converted bookings (visits with leadStatus VISIT_COMPLETED or FULLY_BOOKED)
+      // Count converted bookings (visits with leadStatus FULLY_BOOKED)
       const convertedBookingsCount = await prisma.visit.count({
         where: {
           couponCode: coupon.code,
           leadStatus: {
-            in: ["VISIT_COMPLETED", "FULLY_BOOKED"]
+            equals: "FULLY_BOOKED" as VisitStatus
           }
         }
       });
@@ -298,4 +310,57 @@ export const deletePropertyImage = asyncHandler(async (req: Request, res: Respon
   await adminService.deletePropertyImage(imageId);
 
   res.status(204).send();
+});
+
+// NEW: Admin review creation endpoint
+export const createAdminReview = asyncHandler(async (req: Request, res: Response) => {
+  const propertyId = String(req.params.propertyId); // Ensure propertyId comes from params if your route is /:propertyId/reviews
+  const { studentName, rating, content } = req.body;
+
+  const property = await prisma.property.findUnique({
+    where: { id: propertyId }
+  });
+
+  if (!property) {
+    throw new AppError("Property not found", 404);
+  }
+
+  // Create admin-generated review mapping to your exact schema
+  const review = await prisma.review.create({
+    // Cast to any because the generated Prisma type may differ from
+    // the runtime shape we want to persist for admin-generated reviews.
+    data: {
+      propertyId,
+      studentName,
+      isAdminGenerated: true,
+      content: content,
+      cleanliness: Number(rating),
+      food: Number(rating),
+      security: Number(rating),
+      management: Number(rating),
+      location: Number(rating),
+    } as unknown as Prisma.ReviewUncheckedCreateInput,
+  });
+
+  res.status(201).json(review);
+});
+
+// NEW: Admin review deletion endpoint
+export const deleteAdminReview = asyncHandler(async (request: Request, response: Response) => {
+  const reviewId = String(request.params.id);
+
+  // Verify review exists
+  const review = await prisma.review.findUnique({
+    where: { id: reviewId }
+  });
+
+  if (!review) {
+    throw new AppError("Review not found", 404);
+  }
+
+  await prisma.review.delete({
+    where: { id: reviewId }
+  });
+
+  response.status(204).send();
 });
