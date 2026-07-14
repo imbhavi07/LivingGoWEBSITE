@@ -192,17 +192,17 @@ export default function HomePage() {
           >
             {[...Array(2)].map((_, i) => (
               <div key={i} className="flex flex-nowrap gap-12 px-6 text-sm md:text-base font-black uppercase tracking-widest text-[#f9e7d3]">
-                <span className="whitespace-nowrap">✨ No Brokerage</span>
+                <span className="whitespace-nowrap">No Brokerage</span>
                 <span className="whitespace-nowrap opacity-50">•</span>
-                <span className="whitespace-nowrap">🛡️ DigiLocker Verified</span>
+                <span className="whitespace-nowrap">DigiLocker Verified</span>
                 <span className="whitespace-nowrap opacity-50">•</span>
-                <span className="whitespace-nowrap">🌐 360 Virtual Tour</span>
+                <span className="whitespace-nowrap">360 Virtual Tour</span>
                 <span className="whitespace-nowrap opacity-50">•</span>
-                <span className="whitespace-nowrap">✨ No Brokerage</span>
+                <span className="whitespace-nowrap">No Brokerage</span>
                 <span className="whitespace-nowrap opacity-50">•</span>
-                <span className="whitespace-nowrap">🛡️ DigiLocker Verified</span>
+                <span className="whitespace-nowrap">DigiLocker Verified</span>
                 <span className="whitespace-nowrap opacity-50">•</span>
-                <span className="whitespace-nowrap">🌐 360 Virtual Tour</span>
+                <span className="whitespace-nowrap">360 Virtual Tour</span>
                 <span className="whitespace-nowrap opacity-50">•</span>
               </div>
             ))}
