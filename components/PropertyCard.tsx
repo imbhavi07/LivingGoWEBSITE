@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { Heart, MapPin, BedDouble, Phone } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
@@ -38,7 +37,9 @@ export function PropertyCard({ property, saved, onSave, priority = false }: Prop
 
   const { isSignedIn } = useUser();
   const router = useRouter();
-
+  const openProperty = () => {
+    router.push(`/properties/${property.id}`);
+  };
   function handleSave() {
     if (!isSignedIn) {
       router.push("/login");
@@ -111,8 +112,10 @@ export function PropertyCard({ property, saved, onSave, priority = false }: Prop
     ?.trim() || "North Campus";
 
   return (
-    <article className="group flex-shrink-0 h-auto min-h-[fit-content] overflow-hidden rounded-3xl bg-white shadow-2xl transition-all duration-300 hover:-translate-y-3 hover:shadow-lift mb-4">
-      <Link href={`/properties/${property.id}`} className="block">
+    <article
+      onClick={openProperty}
+      className="group flex-shrink-0 h-auto min-h-[fit-content] cursor-pointer overflow-hidden rounded-3xl bg-white shadow-2xl transition-all duration-300 hover:-translate-y-3 hover:shadow-lift mb-4"
+    >
         <div className="relative aspect-[4/3] overflow-hidden">
           <Image
             src={optimizeImageUrl(property.images[0]?.url)}
@@ -132,7 +135,6 @@ export function PropertyCard({ property, saved, onSave, priority = false }: Prop
             </span>
           )}
         </div>
-      </Link>
       <div className="space-y-4 p-5">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
@@ -172,7 +174,10 @@ export function PropertyCard({ property, saved, onSave, priority = false }: Prop
             </a>
 
             <button
-              onClick={handleSave}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSave();
+              }}
               className="rounded-full bg-linen p-2.5 text-ink transition hover:bg-oat"
               aria-label={saved ? "Remove from wishlist" : "Save property"}
               title={!isSignedIn ? "Login to save" : saved ? "Remove from wishlist" : "Save property"}
@@ -196,9 +201,27 @@ export function PropertyCard({ property, saved, onSave, priority = false }: Prop
           ))}
         </div>
 
-        <Button variant="secondary" className="w-full" onClick={() => window.location.assign(`/properties/${property.id}`)}>
-          View details
-        </Button>
+        <div className="grid grid-cols-2 gap-3">
+          <Button
+            className="w-full rounded-2xl bg-clay text-white hover:bg-clay/90"
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/properties/${property.id}`);
+            }}
+          >
+            Pre-Book
+          </Button>
+          
+          <Button
+            className="w-full rounded-2xl bg-clay text-white hover:bg-clay/90"
+            onClick={(e) => {
+              e.stopPropagation();
+              router.push(`/properties/${property.id}?scheduleVisit=true`);
+            }}
+          >
+            Schedule Visit
+          </Button>
+        </div>
       </div>
     </article>
   );
