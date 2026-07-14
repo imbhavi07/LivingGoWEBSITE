@@ -18,8 +18,8 @@ exports.app.use(security_middleware_1.corsMiddleware); // Assuming this is a cus
 exports.app.use(security_middleware_1.helmetMiddleware);
 exports.app.use(security_middleware_1.compressionMiddleware);
 exports.app.use(security_middleware_1.apiLimiter);
-exports.app.use(express_1.default.json({ limit: "100mb" }));
-exports.app.use(express_1.default.urlencoded({ extended: true, limit: "100mb" }));
+exports.app.use(express_1.default.json({ limit: "50mb" }));
+exports.app.use(express_1.default.urlencoded({ extended: true, limit: "50mb" }));
 exports.app.use('/api/earn', earn_routes_1.default);
 exports.app.use("/api/panoramas", panorama_routes_1.panoramaRouter);
 exports.app.use("/api", routes_1.apiRouter);

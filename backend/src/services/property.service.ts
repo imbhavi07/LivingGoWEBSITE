@@ -243,7 +243,22 @@ const propertyCardSelect = {
 } satisfies Prisma.PropertySelect;
 
 export async function getProperties(query: Record<string, unknown>, viewerRole?: Role) {
-  const { page, limit, skip } = getPagination(query);
+  // Check for infinite scroll flag
+  const infiniteScroll = query.infiniteScroll === "true";
+
+  let page: number, limit: number, skip: number;
+  if (!infiniteScroll) {
+    const pagination = getPagination(query);
+    page = pagination.page;
+    limit = pagination.limit;
+    skip = pagination.skip;
+  } else {
+    // For infinite scroll, we want all results (use a reasonable upper bound)
+    page = 1;
+    limit = 10000; // Large enough to get all approved properties
+    skip = 0;
+  }
+
   const status = query.status as PropertyStatus | undefined;
   const search = String(query.location ?? "").trim();
   const where: Prisma.PropertyWhereInput = {
@@ -276,7 +291,8 @@ export async function getProperties(query: Record<string, unknown>, viewerRole?:
     preference: query.preference as GenderPreference | undefined,
   };
 
-  const cacheKey = `properties:${JSON.stringify({ status: where.status, search, roomType: where.roomType, preference: where.preference, page, limit })}`;
+  // Include infiniteScroll in cache key to avoid mixing cached results
+  const cacheKey = `properties:${JSON.stringify({ status: where.status, search, roomType: where.roomType, preference: where.preference, page, limit, infiniteScroll })}`;
   if (!viewerRole) {
     const cachedEntry = cache.get(cacheKey);
     if (cachedEntry && Date.now() - cachedEntry.timestamp < CACHE_TTL_MS) {
@@ -297,6 +313,8 @@ export async function getProperties(query: Record<string, unknown>, viewerRole?:
     prisma.property.count({ where }),
   ]);
 
+  // For infinite scroll, we don't need pagination metadata in the same way
+  // But we keep the same structure for compatibility with frontend
   const result = {
     items,
     meta: {
@@ -307,9 +325,7 @@ export async function getProperties(query: Record<string, unknown>, viewerRole?:
     }
   };
 
-  if (!viewerRole) {
-    cache.set(cacheKey, { value: result, timestamp: Date.now() });
-  }
+ cache.set(cacheKey, { value: result, timestamp: Date.now() });
 
   return result;
 }
