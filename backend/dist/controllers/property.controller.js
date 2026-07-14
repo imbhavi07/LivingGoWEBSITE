@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getOwnerProperties = exports.getOwnerStats = exports.getFeaturedProperty = exports.markResidence = exports.createReview = exports.togglePropertyStatus = exports.deleteProperty = exports.updateProperty = exports.getStudentResidence = exports.getApprovedPropertyList = exports.getPropertyById = exports.getProperties = exports.createProperty = void 0;
+exports.getOwnerProperties = exports.getOwnerStats = exports.getFeaturedProperties = exports.markResidence = exports.createReview = exports.togglePropertyStatus = exports.deleteProperty = exports.updateProperty = exports.getStudentResidence = exports.getApprovedPropertyList = exports.getPropertyById = exports.getProperties = exports.createProperty = void 0;
 const async_handler_1 = require("../utils/async-handler");
 const app_error_1 = require("../utils/app-error");
 const cloudinary_service_1 = require("../services/cloudinary.service");
@@ -62,6 +62,7 @@ exports.createProperty = (0, async_handler_1.asyncHandler)(async (request, respo
         console.error("Failed to map Clerk ID:", user.id);
         return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
     }
+    // For owners, check verification status
     if (user.role === "owner" && user.verificationStatus !== "approved") {
         const statusMessages = {
             not_required: "Please complete your KYC verification before listing properties.",
@@ -91,10 +92,26 @@ exports.createProperty = (0, async_handler_1.asyncHandler)(async (request, respo
     console.log("BODY", request.body);
     console.log("FILES", files.length);
     console.log("USER", user.id);
+    // Determine ownerId and source based on user role and input
+    let ownerIdToUse;
+    let sourceToUse;
+    if (user.role === 'admin' && request.body.ownerId === undefined) {
+        // Admin creating a property without specifying an owner -> LISTED property
+        ownerIdToUse = null;
+        sourceToUse = 'LISTED';
+    }
+    else {
+        // Owner creating property, or admin specifying an owner explicitly
+        ownerIdToUse = dbUser.id;
+        sourceToUse = 'ONBOARDED';
+    }
     // Wrap database operation in try/catch to prevent unhandled rejections
     try {
-        const property = await propertyService.createProperty(dbUser.id, // Use the internal user id (CUID)
-        request.body, uploads.map((upload, index) => ({
+        const property = await propertyService.createProperty(ownerIdToUse, // Use the determined ownerId (null for admin-created LISTED properties)
+        {
+            ...request.body,
+            source: sourceToUse // Override source based on creation context
+        }, uploads.map((upload, index) => ({
             url: upload.secure_url,
             publicId: upload.public_id,
             roomCategory: roomTypeMappings[index]?.roomCategory ?? "common",
@@ -290,17 +307,22 @@ exports.markResidence = (0, async_handler_1.asyncHandler)(async (request, respon
     const result = await propertyService.markResidence(internalUser.id, propertyId);
     return response.json({ success: true, ...result });
 });
-exports.getFeaturedProperty = (0, async_handler_1.asyncHandler)(async (_request, response) => {
-    const property = await propertyService.getFeaturedProperty();
-    if (!property) {
-        throw new app_error_1.AppError("No featured property found", 404);
+exports.getFeaturedProperties = (0, async_handler_1.asyncHandler)(async (_request, response) => {
+    const properties = await propertyService.getFeaturedProperties();
+    // If no featured properties found, return empty array instead of 404
+    // This allows the frontend to handle gracefully (show skeleton loaders, etc.)
+    if (!properties || properties.length === 0) {
+        return response.json([]);
     }
-    // Fetch rating and reviews so the featured card can display them
-    const [rating, reviews] = await Promise.all([
-        propertyService.getPropertyRating(property.id),
-        propertyService.getPropertyReviews(property.id),
-    ]);
-    return response.json({ ...property, rating, reviews });
+    // Fetch ratings and reviews for all featured properties in parallel
+    const propertiesWithRatings = await Promise.all(properties.map(async (property) => {
+        const [rating, reviews] = await Promise.all([
+            propertyService.getPropertyRating(property.id),
+            propertyService.getPropertyReviews(property.id),
+        ]);
+        return { ...property, rating, reviews };
+    }));
+    return response.json(propertiesWithRatings);
 });
 exports.getOwnerStats = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);

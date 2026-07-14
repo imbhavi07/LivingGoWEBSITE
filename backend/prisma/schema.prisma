@@ -157,7 +157,9 @@ model Review {
   id            String   @id @default(cuid())
   propertyId    String
   property      Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  studentName   String
+  studentId        String?  // <-- Add the question mark to make this optional
+  studentName      String?  // <-- Add this for admin proxy names
+  isAdminGenerated Boolean  @default(false) // <-- Add this flag
   rating        Int
   content       String   @db.Text
   isAdminGenerated Boolean @default(false)

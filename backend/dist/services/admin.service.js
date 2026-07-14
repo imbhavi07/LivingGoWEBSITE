@@ -280,11 +280,7 @@ async function getPropertyManagement(id) {
             owner: true,
             images: true,
             panoramas: true,
-            reviews: {
-                include: {
-                    student: true,
-                },
-            },
+            reviews: true,
             wishlistedBy: true,
             tenants: {
                 include: {

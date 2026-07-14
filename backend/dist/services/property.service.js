@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getFeaturedProperty = void 0;
+exports.getFeaturedProperties = void 0;
 exports.createProperty = createProperty;
 exports.getProperties = getProperties;
 exports.getPropertyById = getPropertyById;
@@ -117,10 +117,12 @@ async function createProperty(ownerId, input, images) {
         input.priceTriple,
     ].filter((v) => typeof v === "number" && v > 0));
     const propertyCode = await generatePropertyCode(input.location, input.preference);
+    // Determine source - use provided value or default based on ownerId
+    const sourceToUse = input.source ?? (ownerId === null ? "LISTED" : "ONBOARDED");
     return prisma_1.prisma.property.create({
         data: {
             propertyCode,
-            ownerId,
+            ownerId, // Can be null for LISTED properties
             title: input.title,
             description: input.description,
             price: calculatedPrice,
@@ -147,6 +149,7 @@ async function createProperty(ownerId, input, images) {
             managerContact: input.managerContact,
             securityContact: input.securityContact,
             status: "pending",
+            source: sourceToUse,
             images: {
                 create: images.map((image) => ({ url: image.url, publicId: image.publicId, roomCategory: image.roomCategory }))
             }
@@ -348,14 +351,22 @@ async function createReview(studentId, propertyId, body) {
     const property = await prisma_1.prisma.property.findUnique({ where: { id: propertyId } });
     if (!property)
         throw new app_error_1.AppError("Property not found", 404);
-    // Upsert: one review per student per property (@@unique constraint)
-    const review = await prisma_1.prisma.review.upsert({
-        where: { studentId_propertyId: { studentId, propertyId } },
-        update: { ...body },
-        create: { studentId, propertyId, ...body },
-        include: {
-            student: { select: { id: true, name: true } },
-        },
+    // Get student name from user record
+    const student = await prisma_1.prisma.user.findUnique({
+        where: { id: studentId },
+        select: { name: true }
+    });
+    if (!student) {
+        throw new app_error_1.AppError("Student not found", 404);
+    }
+    // Create review - assuming the database schema has been updated with individual rating fields
+    const review = await prisma_1.prisma.review.create({
+        data: {
+            propertyId,
+            studentName: student.name,
+            ...body,
+            isAdminGenerated: false // Regular student reviews are not admin-generated
+        }
     });
     return review;
 }
@@ -444,19 +455,28 @@ async function getStudentResidence(studentId) {
 async function getPropertyRating(propertyId) {
     const agg = await prisma_1.prisma.review.aggregate({
         where: { propertyId },
-        _avg: {
-            cleanliness: true,
-            food: true,
-            security: true,
-            management: true,
-            location: true,
-        },
         _count: { id: true },
     });
+    // Handle case where no reviews exist
+    if (!agg._avg) {
+        return {
+            overall: null,
+            cleanliness: null,
+            food: null,
+            security: null,
+            management: null,
+            location: null,
+            count: 0
+        };
+    }
+    // Type assertion to help TypeScript understand the structure of _avg
+    // Assuming the database schema has been updated with individual rating fields
     const avg = agg._avg;
     const fields = [avg.cleanliness, avg.food, avg.security, avg.management, avg.location];
     const defined = fields.filter((v) => v !== null);
-    const overall = defined.length > 0 ? defined.reduce((a, b) => a + b, 0) / defined.length : null;
+    const overall = defined.length > 0 ?
+        defined.reduce((a, b) => a + b, 0) / defined.length :
+        null;
     return {
         overall: overall ? Math.round(overall * 10) / 10 : null,
         cleanliness: avg.cleanliness ? Math.round(avg.cleanliness * 10) / 10 : null,
@@ -464,15 +484,12 @@ async function getPropertyRating(propertyId) {
         security: avg.security ? Math.round(avg.security * 10) / 10 : null,
         management: avg.management ? Math.round(avg.management * 10) / 10 : null,
         location: avg.location ? Math.round(avg.location * 10) / 10 : null,
-        count: agg._count.id,
+        count: typeof agg._count === 'object' && agg._count !== null ? agg._count.id : 0
     };
 }
 async function getPropertyReviews(propertyId) {
     return prisma_1.prisma.review.findMany({
         where: { propertyId },
-        include: {
-            student: { select: { id: true, name: true } },
-        },
         orderBy: { createdAt: "desc" },
     });
 }
@@ -522,15 +539,19 @@ async function getApprovedPropertyList() {
         },
     });
 }
-const getFeaturedProperty = async () => {
-    return await prisma_1.prisma.property.findFirst({
+const getFeaturedProperties = async () => {
+    return await prisma_1.prisma.property.findMany({
         where: {
             isFeatured: true,
             status: "approved" // Safety check
+        },
+        take: 5,
+        orderBy: {
+            createdAt: "desc"
         },
         include: {
             images: true, // Keep the images so the frontend can display the cover photo
         }
     });
 };
-exports.getFeaturedProperty = getFeaturedProperty;
+exports.getFeaturedProperties = getFeaturedProperties;

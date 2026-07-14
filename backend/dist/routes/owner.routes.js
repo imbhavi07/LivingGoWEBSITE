@@ -45,6 +45,7 @@ exports.ownerRouter = (0, express_1.Router)();
 exports.ownerRouter.use(auth_middleware_1.clerkAuthenticate, (0, auth_middleware_1.authorize)("owner", "admin"));
 exports.ownerRouter.get("/dashboard/stats", propertyController.getOwnerStats);
 exports.ownerRouter.get("/properties", propertyController.getOwnerProperties);
+exports.ownerRouter.get("/properties/:id", (0, validate_middleware_1.validate)(property_validation_1.propertyIdSchema), propertyController.getPropertyById);
 exports.ownerRouter.post("/properties", upload_middleware_1.uploadImages, (0, validate_middleware_1.validate)(property_validation_1.createPropertySchema), propertyController.createProperty);
 exports.ownerRouter.put("/properties/:id", (0, validate_middleware_1.validate)(property_validation_1.updatePropertySchema), propertyController.updateProperty);
 exports.ownerRouter.delete("/properties/:id", (0, validate_middleware_1.validate)(property_validation_1.propertyIdSchema), propertyController.deleteProperty);
