@@ -1,4 +1,4 @@
-import type { GenderPreference, Prisma, PropertyStatus, Role, RoomType } from "@prisma/client";
+import type { GenderPreference, ListingSource, Prisma, PropertyStatus, Role, RoomType } from "@prisma/client";
 import { prisma } from "../config/prisma";
 import { AppError } from "../utils/app-error";
 import { getPagination } from "../utils/Pagination";
@@ -37,6 +37,7 @@ type PropertyInput = {
   facilities: string[];
   managerContact?: string;
   securityContact?: string;
+  source?: ListingSource; // Make source optional to allow override
 };
 
 type ImageInput = {
@@ -130,7 +131,7 @@ async function generatePropertyCode(
   }
 }
 
-export async function createProperty(ownerId: string, input: PropertyInput, images: ImageInput[]) {
+export async function createProperty(ownerId: string | null, input: PropertyInput, images: ImageInput[]) {
   // Calculate nearby places if coordinates provided
   let nearbyPlaces = undefined;
   if (input.lat && input.lng) {
@@ -159,10 +160,14 @@ export async function createProperty(ownerId: string, input: PropertyInput, imag
     input.location,
     input.preference
   );
+
+  // Determine source - use provided value or default based on ownerId
+  const sourceToUse = input.source ?? (ownerId === null ? "LISTED" : "ONBOARDED");
+
   return prisma.property.create({
     data: {
       propertyCode,
-      ownerId,
+      ownerId, // Can be null for LISTED properties
       title: input.title,
       description: input.description,
       price: calculatedPrice,
@@ -189,6 +194,7 @@ export async function createProperty(ownerId: string, input: PropertyInput, imag
       managerContact: input.managerContact,
       securityContact: input.securityContact,
       status: "pending",
+      source: sourceToUse,
       images: {
         create: images.map((image) => ({ url: image.url, publicId: image.publicId, roomCategory: image.roomCategory }))
       }
@@ -429,13 +435,28 @@ export async function createReview(
   const property = await prisma.property.findUnique({ where: { id: propertyId } });
   if (!property) throw new AppError("Property not found", 404);
 
-  // Upsert: one review per student per property (@@unique constraint)
-  const review = await prisma.review.upsert({
-    where: { studentId_propertyId: { studentId, propertyId } },
-    update: { ...body },
-    create: { studentId, propertyId, ...body },
+  // Get student name from user record
+  const student = await prisma.user.findUnique({
+    where: { id: studentId },
+    select: { name: true }
+  });
+
+  if (!student) {
+    throw new AppError("Student not found", 404);
+  }
+
+  // Create review - since there's no unique constraint preventing duplicate reviews,
+  // we'll just create a new one (in a real app, you might want to prevent duplicates)
+  const review = await prisma.review.create({
+    data: {
+      propertyId,
+      studentName: student.name,
+      ...body,
+      isAdminGenerated: false // Regular student reviews are not admin-generated
+    },
     include: {
-      student: { select: { id: true, name: true } },
+      // Note: Review doesn't have a direct relation to Student in the schema,
+      // so we can't include student data directly. We'll return the studentName we already fetched.
     },
   });
 
@@ -546,10 +567,33 @@ export async function getPropertyRating(propertyId: string) {
     _count: { id: true },
   });
 
-  const avg = agg._avg;
+  // Handle case where no reviews exist
+  if (!agg._avg) {
+    return {
+      overall: null,
+      cleanliness: null,
+      food: null,
+      security: null,
+      management: null,
+      location: null,
+      count: 0
+    };
+  }
+
+  // Type assertion to help TypeScript understand the structure of _avg
+  const avg = agg._avg as {
+    cleanliness: number | null;
+    food: number | null;
+    security: number | null;
+    management: number | null;
+    location: number | null;
+  };
+
   const fields = [avg.cleanliness, avg.food, avg.security, avg.management, avg.location];
   const defined = fields.filter((v) => v !== null) as number[];
-  const overall = defined.length > 0 ? defined.reduce((a, b) => a + b, 0) / defined.length : null;
+  const overall = defined.length > 0 ?
+    defined.reduce((a, b) => a + b, 0) / defined.length :
+    null;
 
   return {
     overall: overall ? Math.round(overall * 10) / 10 : null,
@@ -558,7 +602,7 @@ export async function getPropertyRating(propertyId: string) {
     security: avg.security ? Math.round(avg.security * 10) / 10 : null,
     management: avg.management ? Math.round(avg.management * 10) / 10 : null,
     location: avg.location ? Math.round(avg.location * 10) / 10 : null,
-    count: agg._count.id,
+    count: agg._count ? agg._count.id : 0
   };
 }
 
@@ -624,11 +668,15 @@ export async function getApprovedPropertyList() {
   });
 }
 
-export const getFeaturedProperty = async () => {
-  return await prisma.property.findFirst({
+export const getFeaturedProperties = async () => {
+  return await prisma.property.findMany({
     where: {
       isFeatured: true,
       status: "approved" // Safety check
+    },
+    take: 5,
+    orderBy: {
+      createdAt: "desc"
     },
     include: {
       images: true, // Keep the images so the frontend can display the cover photo

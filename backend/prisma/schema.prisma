@@ -37,7 +37,6 @@ model User {
   emergencyContact   String?
   properties         Property[]         @relation("OwnerProperties")
   referral           Referral?
-  reviews            Review[]
   tenantResidence    TenantResidence?
   tokenPayments      TokenPayment[]     @relation("StudentTokenPayments")
   wishlist           Wishlist[]
@@ -66,7 +65,7 @@ model EmailOtp {
 
 model Property {
   id                    String             @id @default(cuid())
-  ownerId               String
+  ownerId               String?
   title                 String
   description           String
   price                 Int
@@ -75,6 +74,7 @@ model Property {
   preference            GenderPreference
   facilities            String[]
   status                PropertyStatus     @default(pending)
+  source                ListingSource      @default(ONBOARDED)
   createdAt             DateTime           @default(now())
   updatedAt             DateTime           @updatedAt
   priceSingle           Int?
@@ -98,7 +98,7 @@ model Property {
   securityContact       String?            @db.VarChar(255)
   isFeatured            Boolean            @default(false)
   propertyCode          String?            @unique
-  owner                 User               @relation("OwnerProperties", fields: [ownerId], references: [id], onDelete: Cascade)
+  owner                 User?              @relation("OwnerProperties", fields: [ownerId], references: [id], onDelete: Cascade)
   images                PropertyImage[]
   panoramas             PropertyPanorama[]
   reviews               Review[]
@@ -154,22 +154,15 @@ model Wishlist {
 }
 
 model Review {
-  id          String   @id @default(cuid())
-  studentId   String
-  propertyId  String
-  cleanliness Int
-  food        Int
-  security    Int
-  management  Int
-  location    Int
-  comment     String?
-  createdAt   DateTime @default(now())
-  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  student     User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@unique([studentId, propertyId])
-  @@index([studentId])
-  @@index([propertyId])
+  id            String   @id @default(cuid())
+  propertyId    String
+  property      Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  studentName   String
+  rating        Int
+  content       String   @db.Text
+  isAdminGenerated Boolean @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model TenantResidence {
@@ -333,4 +326,9 @@ enum ReferralStatus {
   CANCELLED
   APPROVED
   REJECTED
+}
+
+enum ListingSource {
+  ONBOARDED
+  LISTED
 }

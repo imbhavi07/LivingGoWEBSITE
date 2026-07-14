@@ -296,11 +296,7 @@ export async function getPropertyManagement(id: string) {
 
       panoramas: true,
 
-      reviews: {
-        include: {
-          student: true,  
-        },
-      },
+      reviews: true,
 
       wishlistedBy: true,
 

@@ -2,7 +2,6 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, ShieldCheck, Search, Phone } from "lucide-react";
-import { buttonClasses } from "@/components/Button";
 import { FeaturedPropertyCard } from "@/components/FeaturedPropertyCard";
 import { useWishlist } from "@/hooks/useWishlist";
 import type { Property } from "@/types/property";
@@ -220,23 +219,28 @@ export default function HomePage() {
 
 function PropertyPreview() {
   const wishlist = useWishlist();
-  const [property, setProperty] = useState<Property | null>(null);
+  const [properties, setProperties] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function fetchFeatured() {
       try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/properties/featured`, {
-          cache: "no-store" 
+          cache: "no-store"
         });
-        
+
         if (res.ok) {
           const rawData = await res.json();
-          const transformedProperty = toProperty(rawData);
-          setProperty(transformedProperty);
+          // Ensure it's an array before mapping
+          if (Array.isArray(rawData)) {
+            setProperties(rawData.map(toProperty));
+          } else if (rawData && typeof rawData === 'object') {
+            // Fallback just in case the backend wraps it in { data: [...] }
+            setProperties((rawData.data || [rawData]).map(toProperty));
+          }
         }
       } catch (error) {
-        console.error("Failed to fetch featured property:", error);
+        console.error("Failed to fetch featured properties:", error);
       } finally {
         setIsLoading(false);
       }
@@ -246,11 +250,19 @@ function PropertyPreview() {
   }, []);
 
   if (isLoading) return <div className="h-[280px] w-full animate-pulse rounded-xl bg-gray-200/50"></div>;
-  if (!property) return null;
+  if (properties.length === 0) return null;
 
   return (
-    <div className="[&>article]:drop-shadow-xl">
-      <FeaturedPropertyCard property={property} saved={wishlist.isSaved(property.id)} onSave={wishlist.toggle} />
+    <div className="w-full flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      {properties.map((property) => (
+        <div key={property.id} className="snap-center shrink-0 w-full [&>article]:drop-shadow-xl">
+          <FeaturedPropertyCard
+            property={property}
+            saved={wishlist.isSaved(property.id)}
+            onSave={wishlist.toggle}
+          />
+        </div>
+      ))}
     </div>
   );
 }

@@ -36,6 +36,7 @@ export const createProperty = asyncHandler(async (request: Request, response: Re
     return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
   }
 
+  // For owners, check verification status
   if (user.role === "owner" && user.verificationStatus !== "approved") {
     const statusMessages: Record<string, string> = {
       not_required:             "Please complete your KYC verification before listing properties.",
@@ -69,11 +70,28 @@ export const createProperty = asyncHandler(async (request: Request, response: Re
   console.log("FILES", files.length);
   console.log("USER", user.id);
 
+  // Determine ownerId and source based on user role and input
+  let ownerIdToUse: string | null;
+  let sourceToUse: 'ONBOARDED' | 'LISTED';
+
+  if (user.role === 'admin' && request.body.ownerId === undefined) {
+    // Admin creating a property without specifying an owner -> LISTED property
+    ownerIdToUse = null;
+    sourceToUse = 'LISTED';
+  } else {
+    // Owner creating property, or admin specifying an owner explicitly
+    ownerIdToUse = dbUser.id;
+    sourceToUse = 'ONBOARDED';
+  }
+
   // Wrap database operation in try/catch to prevent unhandled rejections
   try {
     const property = await propertyService.createProperty(
-      dbUser.id, // Use the internal user id (CUID)
-      request.body,
+      ownerIdToUse, // Use the determined ownerId (null for admin-created LISTED properties)
+      {
+        ...request.body,
+        source: sourceToUse // Override source based on creation context
+      },
       uploads.map((upload, index) => ({
         url: upload.secure_url,
         publicId: upload.public_id,
@@ -315,20 +333,27 @@ export const markResidence = asyncHandler(async (request: Request, response: Res
   return response.json({ success: true, ...result });
 });
 
-export const getFeaturedProperty = asyncHandler(async (_request: Request, response: Response) => {
-  const property = await propertyService.getFeaturedProperty();
+export const getFeaturedProperties = asyncHandler(async (_request: Request, response: Response) => {
+  const properties = await propertyService.getFeaturedProperties();
 
-  if (!property) {
-    throw new AppError("No featured property found", 404);
+  // If no featured properties found, return empty array instead of 404
+  // This allows the frontend to handle gracefully (show skeleton loaders, etc.)
+  if (!properties || properties.length === 0) {
+    return response.json([]);
   }
 
-  // Fetch rating and reviews so the featured card can display them
-  const [rating, reviews] = await Promise.all([
-    propertyService.getPropertyRating(property.id),
-    propertyService.getPropertyReviews(property.id),
-  ]);
+  // Fetch ratings and reviews for all featured properties in parallel
+  const propertiesWithRatings = await Promise.all(
+    properties.map(async (property) => {
+      const [rating, reviews] = await Promise.all([
+        propertyService.getPropertyRating(property.id),
+        propertyService.getPropertyReviews(property.id),
+      ]);
+      return { ...property, rating, reviews };
+    })
+  );
 
-  return response.json({ ...property, rating, reviews });
+  return response.json(propertiesWithRatings);
 });
 
 export const getOwnerStats = asyncHandler(async (request: Request, response: Response) => {

@@ -29,7 +29,7 @@ export const createPropertySchema = z.object({
     priceTriple: z.coerce.number().int().nonnegative().optional(),
     bedsTriple: z.coerce.number().int().positive().optional(),
     securityDepositMonths: z.string().optional(),
-    location: z.string().min(2).max(120),  
+    location: z.string().min(2).max(120),
     exactAddress: z.string().min(2).max(200).optional(), // Optional field for exact address
     lat: z.coerce.number().optional(),
     lng: z.coerce.number().optional(),
@@ -58,7 +58,8 @@ export const createPropertySchema = z.object({
       } catch {
         return value.split(",").map((item) => item.trim()).filter(Boolean);
       }
-    })
+    }),
+    ownerId: z.string().optional() // Optional owner ID for admin-created properties
   })
 });
 
