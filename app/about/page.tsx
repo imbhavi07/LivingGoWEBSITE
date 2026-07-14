@@ -914,10 +914,10 @@ export default function AboutPage() {
           <div className="mt-12">
 
             <Link
-              href="/properties"
+              href="/listings"
               className="inline-block rounded-xl bg-white px-10 py-4 font-bold text-clay transition hover:scale-105"
             >
-              Explore Properties
+              Explore Listings
             </Link>
 
           </div>

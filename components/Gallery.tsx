@@ -18,6 +18,7 @@ export function Gallery({
   title,
 }: GalleryProps) {
   const [showAll, setShowAll] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   if (images.length === 0) return null;
 
@@ -29,7 +30,13 @@ export function Gallery({
         <div className="grid gap-2 md:grid-cols-[2fr_1fr] overflow-hidden rounded-3xl">
           
           {/* Main Hero Image - Largest LCP Element */}
-          <div className="relative min-h-[420px]">
+          <div
+            className="relative min-h-[420px] cursor-pointer"
+            onClick={() => {
+              setSelectedIndex(0);
+              setShowAll(true);
+            }}
+          >
             <Image
               src={images[0].url}
               alt={title}
@@ -47,7 +54,11 @@ export function Gallery({
             {visibleImages.slice(1, 5).map((image, index) => (
               <div
                 key={image.url}
-                className="relative min-h-[205px]"
+                className="relative min-h-[205px] cursor-pointer"
+                onClick={() => {
+                  setSelectedIndex(index + 1);
+                  setShowAll(true);
+                }}
               >
                 <Image
                   src={image.url}
@@ -87,29 +98,43 @@ export function Gallery({
 
               <button
                 onClick={() => setShowAll(false)}
-                className="rounded-xl bg-white px-6 py-2 font-bold text-black transition-transform hover:scale-105"
+                             className="rounded-xl bg-white px-6 py-2 font-bold text-black transition-transform hover:scale-105"
               >
                 Close
               </button>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              {images.map((image, index) => (
-                <div
-                  key={image.url}
-                  className="relative h-[400px] md:h-[600px] overflow-hidden rounded-2xl"
-                >
-                  <Image
-                    src={image.url}
-                    alt={`${title} ${index + 1}`}
-                    fill
-                    loading="lazy" // Strictly forces the browser NOT to download these until the modal opens
-                    // THE FIX: Sizes for the expanded modal view
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 600px"
-                    className="object-cover" unoptimized
-                  />
-                </div>
-              ))}
+            <div className="flex justify-center">
+              <button
+                onClick={() =>
+                  setSelectedIndex((selectedIndex - 1 + images.length) % images.length)
+                }
+                className="absolute left-6 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white p-4 shadow-xl hover:scale-110"
+              >
+                ←
+              </button>
+              
+              <button
+                onClick={() =>
+                  setSelectedIndex((selectedIndex + 1) % images.length)
+                }
+                className="absolute right-6 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white p-4 shadow-xl hover:scale-110"
+              >
+                →
+              </button>
+              <div className="relative h-[75vh] w-full max-w-6xl overflow-hidden rounded-3xl">
+                <Image
+                  src={images[selectedIndex].url}
+                  alt={`${title} ${selectedIndex + 1}`}
+                  fill
+                  className="object-contain"
+                  sizes="100vw"
+                  unoptimized
+                />
+              </div>
+              <div className="mt-6 text-center text-white font-bold">
+                {selectedIndex + 1} / {images.length}
+              </div>
             </div>
           </div>
         </div>
