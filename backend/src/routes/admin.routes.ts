@@ -7,6 +7,7 @@ import { validate } from "../middleware/validate.middleware";
 import { adminIdSchema, adminListSchema, adminUserListSchema } from "../validations/admin.validation";
 import { loginSchema } from "../validations/auth.validation";
 import { uploadImages } from "../middleware/upload.middleware";
+import { propertyIdSchema } from "../validations/property.validation";
 
 export const adminRouter = Router();
 
@@ -30,3 +31,7 @@ adminRouter.patch("/approvals/:id/approve", validate(adminIdSchema), adminContro
 adminRouter.patch("/approvals/:id/reject", validate(adminIdSchema), adminController.rejectOwner);
 adminRouter.get("/properties", adminController.getAllProperties);
 adminRouter.get("/properties/:id/manage", validate(adminIdSchema), adminController.getPropertyManagement);
+
+// NEW: Admin review endpoints
+adminRouter.post("/properties/:id/reviews", validate(propertyIdSchema), adminController.createAdminReview);
+adminRouter.delete("/reviews/:id", validate(adminIdSchema), adminController.deleteAdminReview);

@@ -22,7 +22,7 @@ propertyRouter.get("/", validate(listPropertiesSchema), propertyController.getPr
 propertyRouter.get("/list", propertyController.getApprovedPropertyList);
 
 // 🔥 NEW: Featured route (Must be above /:id)
-propertyRouter.get("/featured", propertyController.getFeaturedProperty);
+propertyRouter.get("/featured", propertyController.getFeaturedProperties);
 
 // Get current user's properties (owner/dashboard route)
 propertyRouter.get("/my-properties", clerkAuthenticate, authorize("owner"), propertyController.getOwnerProperties);

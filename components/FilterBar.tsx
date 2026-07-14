@@ -64,6 +64,8 @@ export function FilterBar() {
     </span>
   </div>
   
+
+  
   <input
     type="range"
     name="budget"

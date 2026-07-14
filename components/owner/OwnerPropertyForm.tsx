@@ -38,8 +38,10 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
   const [preference, setPreference] = useState<"Girls" | "Boys" | "Any">(
     (property?.preference as "Girls" | "Boys" | "Any") ?? "Any"
   );
-  const [categorizedImages, setCategorizedImages] = useState<Record<string, string[]>>({ Common: property?.images ?? [] });
-  const [categorizedFiles, setCategorizedFiles] = useState<Record<string, File[]>>({});
+  
+  // Unified image state
+  const [images, setImages] = useState<string[]>(property?.images ?? []);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
   
   const [selectedFacilities, setSelectedFacilities] = useState<string[]>(property?.facilities ?? []);
   const [customFacility, setCustomFacility] = useState(""); 
@@ -204,21 +206,11 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
       bedsTriple = b;
     }
 
-    // Ensure at least one room type is selected (though we validate above, but double-check)
+    // Ensure at least one room type is selected
     if (!hasSingle && !hasDouble && !hasTriple) {
       setError("Please select at least one room type (Single, Double, or Triple).");
       return;
     }
-
-    const roomTypeMappings = Object.entries(categorizedFiles).flatMap(
-      ([category, files]) =>
-        files.map(() => ({
-          roomCategory: category.toLowerCase(),
-        }))
-    );
-
-    const allImageUrls = Object.values(categorizedImages).flat();
-    const allFiles = Object.values(categorizedFiles).flat();
 
     const roomType = hasSingle ? "Single" : "Shared";
 
@@ -246,7 +238,7 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
         rulesStrictness: formData.get("rulesStrictness"),
         securityDepositMonths: formData.get("securityDepositMonths") || undefined,
         facilities: selectedFacilities,
-        images: allImageUrls,
+        images: images,
         managerContact: formData.get("managerContact") || undefined,
         securityContact: formData.get("securityContact") || undefined
       });
@@ -261,8 +253,8 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
 
     const payload: OwnerPropertyPayload = {
       ...parsed.data,
-      imageFiles: allFiles,
-      roomTypeMappings,
+      imageFiles: imageFiles,
+      roomTypeMappings: [], 
       lat: pickedLocation.lat,
       lng: pickedLocation.lng,
     };
@@ -321,7 +313,7 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
               />
             </label>
 
-            {/* RESTORED: Manager and Security Contact Fields */}
+            {/* Manager and Security Contact Fields */}
             <label className="block space-y-2 mt-4">
               <span className="text-sm font-bold text-ink">Manager&apos;s Contact Number <span className="text-xs font-normal text-muted">(Optional)</span></span>
               <input
@@ -653,43 +645,13 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
             <p className="text-sm font-bold text-ink">Property Images</p>
             <div className="space-y-6">
               <div className="space-y-2">
-                <span className="text-sm font-bold text-ink">Common Areas (Kitchen, Washroom, etc.)</span>
+                <span className="text-sm font-bold text-ink">All Property Photos</span>
                 <ImageUploader
-                  images={categorizedImages['Common'] || []}
-                  onChange={(imgs) => setCategorizedImages(prev => ({...prev, Common: imgs}))}
-                  onFilesChange={(files) => setCategorizedFiles(prev => ({...prev, Common: files}))}
+                  images={images}
+                  onChange={setImages}
+                  onFilesChange={setImageFiles}
                 />
               </div>
-              {hasSingle && (
-                <div className="space-y-2">
-                  <span className="text-sm font-bold text-ink">Single Room Photos</span>
-                  <ImageUploader
-                    images={categorizedImages['Single'] || []}
-                    onChange={(imgs) => setCategorizedImages(prev => ({...prev, Single: imgs}))}
-                    onFilesChange={(files) => setCategorizedFiles(prev => ({...prev, Single: files}))}
-                  />
-                </div>
-              )}
-              {hasDouble && (
-                <div className="space-y-2">
-                  <span className="text-sm font-bold text-ink">Double Room Photos</span>
-                  <ImageUploader
-                    images={categorizedImages['Double'] || []}
-                    onChange={(imgs) => setCategorizedImages(prev => ({...prev, Double: imgs}))}
-                    onFilesChange={(files) => setCategorizedFiles(prev => ({...prev, Double: files}))}
-                  />
-                </div>
-              )}
-              {hasTriple && (
-                <div className="space-y-2">
-                  <span className="text-sm font-bold text-ink">Triple Room Photos</span>
-                  <ImageUploader
-                    images={categorizedImages['Triple'] || []}
-                    onChange={(imgs) => setCategorizedImages(prev => ({...prev, Triple: imgs}))}
-                    onFilesChange={(files) => setCategorizedFiles(prev => ({...prev, Triple: files}))}
-                  />
-                </div>
-              )}
             </div>
 
             <div className="space-y-3 rounded-3xl border border-black/10 bg-linen p-4">
