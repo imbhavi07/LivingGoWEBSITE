@@ -83,7 +83,7 @@ export default function HomePage() {
               Find a calm, well-managed PG/flat near campus with transparent pricing, real facilities, and virtual tours before you visit.
             </p>
             <a
-              href="tel:+916200232083"
+              href="tel:+916200232083" //number
               className="mt-4 inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3 text-xl font-bold text-white shadow-lift transition hover:opacity-90 w-fit"
             >
               Call Us

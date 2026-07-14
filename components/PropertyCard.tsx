@@ -163,7 +163,7 @@ export function PropertyCard({ property, saved, onSave, priority = false }: Prop
           
           <div className="flex items-center gap-2">
             <a
-              href="tel:+919068902886"
+              href="tel:+916200232083"
               className="flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-2.5 text-sm font-bold text-green-700 transition hover:bg-green-200"
               onClick={(e) => e.stopPropagation()} 
             >
