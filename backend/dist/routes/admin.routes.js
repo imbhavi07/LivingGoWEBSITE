@@ -62,3 +62,4 @@ exports.adminRouter.patch("/approvals/:id/approve", (0, validate_middleware_1.va
 exports.adminRouter.patch("/approvals/:id/reject", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.rejectOwner);
 exports.adminRouter.get("/properties", adminController.getAllProperties);
 exports.adminRouter.get("/properties/:id/manage", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.getPropertyManagement);
+exports.adminRouter.get("/coupons", adminController.getAdminCoupons);
