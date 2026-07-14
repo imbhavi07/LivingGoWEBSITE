@@ -284,3 +284,73 @@ export function unwrapItems<T>(
 ): T[] {
   return Array.isArray(data) ? data : data.items;
 }
+
+export type VisitStatus = string;
+
+export type ApiVisit = {
+  id: string;
+  tokenId: string;
+  studentId: string;
+  propertyId: string;
+  visitDate: string; // ISO date string
+  timeSlot: string;
+  couponCode: string | null;
+  leadStatus: VisitStatus;
+  createdAt: string;
+  updatedAt: string;
+  student?: {
+    id: string;
+    name: string;
+    email?: string;
+    imageUrl?: string;
+  };
+  property?: {
+    id: string;
+    title: string;
+    propertyCode?: string;
+  };
+};
+
+export function toVisit(visit: ApiVisit) {
+  return {
+    id: visit.id,
+    tokenId: visit.tokenId,
+    studentId: visit.studentId,
+    propertyId: visit.propertyId,
+    visitDate: visit.visitDate,
+    timeSlot: visit.timeSlot,
+    couponCode: visit.couponCode,
+    leadStatus: visit.leadStatus,
+    createdAt: visit.createdAt,
+    updatedAt: visit.updatedAt,
+    student: visit.student
+      ? {
+          id: visit.student.id,
+          name: visit.student.name,
+          email: visit.student.email,
+          imageUrl: visit.student.imageUrl,
+        }
+      : undefined,
+
+    property: visit.property
+      ? {
+          id: visit.property.id,
+          title: visit.property.title,
+          propertyCode: visit.property.propertyCode,
+        }
+      : undefined,
+  };
+}
+
+export function toAdminCoupon(coupon: any) {
+  return {
+    id: coupon.id,
+    partnerName: coupon.partner?.name ?? "Unknown Partner",
+    partnerId: coupon.partner?.id,
+    couponCode: coupon.code,
+    isActive: coupon.isActive,
+    totalVisits: coupon.totalVisits ?? 0,
+    totalConvertedBookings: coupon.totalConvertedBookings ?? 0,
+    createdAt: coupon.createdAt,
+  };
+}

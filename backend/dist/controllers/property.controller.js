@@ -162,7 +162,14 @@ exports.getApprovedPropertyList = (0, async_handler_1.asyncHandler)(async (_requ
 });
 exports.getStudentResidence = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);
-    const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
+    const internalUser = await db.user.findFirst({
+        where: {
+            OR: [
+                { id: user.id },
+                { clerkId: user.id }
+            ]
+        }
+    });
     if (!internalUser) {
         return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
     }
@@ -171,7 +178,14 @@ exports.getStudentResidence = (0, async_handler_1.asyncHandler)(async (request, 
 });
 exports.updateProperty = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);
-    const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
+    const internalUser = await db.user.findFirst({
+        where: {
+            OR: [
+                { id: user.id },
+                { clerkId: user.id }
+            ]
+        }
+    });
     if (!internalUser) {
         return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
     }
@@ -208,7 +222,14 @@ exports.updateProperty = (0, async_handler_1.asyncHandler)(async (request, respo
 });
 exports.deleteProperty = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);
-    const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
+    const internalUser = await db.user.findFirst({
+        where: {
+            OR: [
+                { id: user.id },
+                { clerkId: user.id }
+            ]
+        }
+    });
     if (!internalUser) {
         return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
     }
@@ -217,7 +238,14 @@ exports.deleteProperty = (0, async_handler_1.asyncHandler)(async (request, respo
 });
 exports.togglePropertyStatus = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);
-    const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
+    const internalUser = await db.user.findFirst({
+        where: {
+            OR: [
+                { id: user.id },
+                { clerkId: user.id }
+            ]
+        }
+    });
     if (!internalUser) {
         return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
     }
@@ -230,7 +258,14 @@ exports.togglePropertyStatus = (0, async_handler_1.asyncHandler)(async (request,
 });
 exports.createReview = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);
-    const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
+    const internalUser = await db.user.findFirst({
+        where: {
+            OR: [
+                { id: user.id },
+                { clerkId: user.id }
+            ]
+        }
+    });
     if (!internalUser) {
         return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
     }
@@ -241,7 +276,14 @@ exports.createReview = (0, async_handler_1.asyncHandler)(async (request, respons
 exports.markResidence = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);
     const propertyId = String(request.params.id);
-    const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
+    const internalUser = await db.user.findFirst({
+        where: {
+            OR: [
+                { id: user.id },
+                { clerkId: user.id }
+            ]
+        }
+    });
     if (!internalUser) {
         return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
     }
@@ -262,7 +304,14 @@ exports.getFeaturedProperty = (0, async_handler_1.asyncHandler)(async (_request,
 });
 exports.getOwnerStats = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);
-    const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
+    const internalUser = await db.user.findFirst({
+        where: {
+            OR: [
+                { id: user.id },
+                { clerkId: user.id }
+            ]
+        }
+    });
     if (!internalUser) {
         return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
     }
@@ -271,7 +320,14 @@ exports.getOwnerStats = (0, async_handler_1.asyncHandler)(async (request, respon
 });
 exports.getOwnerProperties = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const user = requireUser(request);
-    const internalUser = await db.user.findUnique({ where: { clerkId: user.id } });
+    const internalUser = await db.user.findFirst({
+        where: {
+            OR: [
+                { id: user.id },
+                { clerkId: user.id }
+            ]
+        }
+    });
     if (!internalUser) {
         return response.status(404).json({ error: "User profile missing from database. Please re-authenticate." });
     }

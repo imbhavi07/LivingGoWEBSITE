@@ -190,7 +190,21 @@ const propertyCardSelect = {
     },
 };
 async function getProperties(query, viewerRole) {
-    const { page, limit, skip } = (0, Pagination_1.getPagination)(query);
+    // Check for infinite scroll flag
+    const infiniteScroll = query.infiniteScroll === "true";
+    let page, limit, skip;
+    if (!infiniteScroll) {
+        const pagination = (0, Pagination_1.getPagination)(query);
+        page = pagination.page;
+        limit = pagination.limit;
+        skip = pagination.skip;
+    }
+    else {
+        // For infinite scroll, we want all results (use a reasonable upper bound)
+        page = 1;
+        limit = 10000; // Large enough to get all approved properties
+        skip = 0;
+    }
     const status = query.status;
     const search = String(query.location ?? "").trim();
     const where = {
@@ -222,7 +236,8 @@ async function getProperties(query, viewerRole) {
         roomType: query.roomType,
         preference: query.preference,
     };
-    const cacheKey = `properties:${JSON.stringify({ status: where.status, search, roomType: where.roomType, preference: where.preference, page, limit })}`;
+    // Include infiniteScroll in cache key to avoid mixing cached results
+    const cacheKey = `properties:${JSON.stringify({ status: where.status, search, roomType: where.roomType, preference: where.preference, page, limit, infiniteScroll })}`;
     if (!viewerRole) {
         const cachedEntry = cache.get(cacheKey);
         if (cachedEntry && Date.now() - cachedEntry.timestamp < CACHE_TTL_MS) {
@@ -241,6 +256,8 @@ async function getProperties(query, viewerRole) {
         }),
         prisma_1.prisma.property.count({ where }),
     ]);
+    // For infinite scroll, we don't need pagination metadata in the same way
+    // But we keep the same structure for compatibility with frontend
     const result = {
         items,
         meta: {
@@ -250,9 +267,7 @@ async function getProperties(query, viewerRole) {
             pages: Math.ceil(total / limit)
         }
     };
-    if (!viewerRole) {
-        cache.set(cacheKey, { value: result, timestamp: Date.now() });
-    }
+    cache.set(cacheKey, { value: result, timestamp: Date.now() });
     return result;
 }
 async function getPropertyById(id, viewerRole, internalUserId) {

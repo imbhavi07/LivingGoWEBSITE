@@ -11,19 +11,29 @@ import type { PropertyFilters } from "@/types/property";
 export async function getProperties(
   filters?: PropertyFilters,
   page = 1,
-  limit = 12
+  limit = 12,
+  infiniteScroll = false
 ) {
   try {
+    const params: Record<string, unknown> = {
+      ...(filters?.location && { location: filters.location }),
+      ...(filters?.roomType && { roomType: filters.roomType }),
+      ...(filters?.preference && { preference: filters.preference }),
+    };
+
+    // Only add pagination params if not infinite scroll
+    if (!infiniteScroll) {
+      params.page = page;
+      params.limit = limit;
+    } else {
+      // For infinite scroll, we still need to tell backend to return all
+      params.infiniteScroll = "true";
+    }
+
     const { data } = await apiClient.get<
       PaginatedResponse<ApiProperty>
     >("/properties", {
-      params: {
-        page,
-        limit,
-        location: filters?.location,
-        roomType: filters?.roomType,
-        preference: filters?.preference,
-      },
+      params,
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
@@ -33,13 +43,14 @@ export async function getProperties(
 
     const properties = data.items.map((p, i) => toProperty(p, i));
 
+    const filteredProperties = filters?.budget
+      ? properties.filter(
+          (property) => property.price <= Number(filters.budget)
+        )
+      : properties;
+
     return {
-      properties:
-        filters?.budget
-          ? properties.filter(
-              (property) => property.price <= Number(filters.budget)
-            )
-          : properties,
+      properties: filteredProperties,
       meta: data.meta,
     };
   } catch (error) {

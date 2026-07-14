@@ -3,7 +3,6 @@ import { FilterBar } from "@/components/FilterBar";
 import { ClientPropertyGrid } from "./ClientPropertyGrid";
 import { getProperties } from "@/lib/api/properties";
 import type { PropertyFilters } from "@/types/property";
-import Pagination from "@/components/Pagination"; //bc sahi toh hai
 
 interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -21,9 +20,7 @@ export default async function ListingsPage(props: PageProps) {
     preference: searchParams.preference as PropertyFilters["preference"],
   };
 
-  const currentPage = Number(searchParams.page ?? 1);
-
-  const { properties, meta } = await getProperties(filters, currentPage, 12);
+  const { properties } = await getProperties(filters, undefined, undefined, true);
 
   return (
     <main className="relative w-full bg-[#f9e7d3] min-h-screen overflow-hidden">
@@ -38,11 +35,6 @@ export default async function ListingsPage(props: PageProps) {
         <FilterBar />
 
         <ClientPropertyGrid properties={properties} />
-
-        <Pagination
-          current={currentPage}
-          total={meta.pages}
-        />
 
       </div>
     </main>

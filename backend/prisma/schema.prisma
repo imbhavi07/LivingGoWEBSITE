@@ -41,6 +41,7 @@ model User {
   tenantResidence    TenantResidence?
   tokenPayments      TokenPayment[]     @relation("StudentTokenPayments")
   wishlist           Wishlist[]
+  visits             Visit[]            @relation("UserVisits")
 
   @@index([clerkId])
   @@index([role])
@@ -104,6 +105,7 @@ model Property {
   tenants               TenantResidence[]
   tokenPayments         TokenPayment[]
   wishlistedBy          Wishlist[]
+  visits                Visit[]            @relation("PropertyVisits")
 
   @@index([ownerId])
   @@index([status])
@@ -240,6 +242,37 @@ model Referral {
   upiId      String?
   name       String?
   user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Visit {
+  id          String   @id @default(cuid())
+  tokenId     String   @unique
+  studentId   String
+  propertyId  String
+  visitDate   DateTime
+  timeSlot    String
+  couponCode  String?
+  leadStatus  VisitStatus @default(SCHEDULED)
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  student     User      @relation("UserVisits", fields: [studentId], references: [id])
+  property    Property  @relation("PropertyVisits", fields: [propertyId], references: [id])
+
+  @@index([studentId])
+  @@index([propertyId])
+  @@index([tokenId])
+  @@index([leadStatus])
+}
+
+enum VisitStatus {
+  SCHEDULED
+  VISIT_COMPLETED
+  PRE_BOOKED
+  FULLY_BOOKED
+  CONVERTED_OTHER_PROPERTY
+  LOST
 }
 
 enum Role {
