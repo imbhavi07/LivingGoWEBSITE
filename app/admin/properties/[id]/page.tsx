@@ -254,11 +254,11 @@ export default function PropertyManagementPage() {
                   <textarea
                     value={reviewForm.content}
                     onChange={(e) => setReviewForm(prev => ({ ...prev, content: e.target.value }))}
-                    rows="4"
+                    rows={4}
                     placeholder="Share your experience about this property..."
                     className="textarea textarea-bordered w-full"
                     required
-                    maxLength="1000"
+                    maxLength={1000}
                   />
                 </div>
 

@@ -86,7 +86,6 @@ export function FilterBar() {
         <label className="space-y-2">
           <span className="text-xs font-semibold uppercase text-muted">Room</span>
           <select name="roomType" defaultValue={searchParams.get("roomType") ?? ""} onChange={update} className="input">
-            <option value="">Any room</option>
             <option value="Single">Single</option>
             <option value="Shared">Double</option>
             <option value="Shared">Triple</option>

@@ -7,6 +7,7 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { useCreateProperty } from "@/hooks/useAdmin";
 import { useToast } from "@/contexts/ToastContext";
 import { CreatePropertyModal } from "./CreatePropertyModal";
+import { getAdminProperties } from "@/lib/api/admin-properties";
 
 export default function AdminPropertiesPage() {
   const [search, setSearch] = useState("");

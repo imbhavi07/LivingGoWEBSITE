@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { Button } from "@/components/Button";
+// Make sure this Button import path is correct for your project
+import { Button } from "@/components/Button"; 
 
 interface CreatePropertyModalProps {
   isOpen: boolean;
@@ -51,7 +52,6 @@ export function CreatePropertyModal({
       [name]: value
     }));
 
-    // Also update FormData
     if (value !== "") {
       formData.append(name, value);
     } else {
@@ -81,7 +81,6 @@ export function CreatePropertyModal({
 
     setLoading(true);
     try {
-      // Add all form fields to FormData
       Object.keys(formFields).forEach(key => {
         const value = formFields[key as keyof typeof formFields];
         if (value !== "") {
@@ -116,6 +115,7 @@ export function CreatePropertyModal({
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
+            
             <div>
               <label className="text-sm font-medium text-muted mb-2">Property Title*</label>
               <input
@@ -133,7 +133,7 @@ export function CreatePropertyModal({
               <textarea
                 value={formFields.description}
                 onChange={(e) => handleInputChange("description", e.target.value)}
-                rows="4"
+                rows={4}
                 placeholder="Describe the property, amenities, etc."
                 className="textarea textarea-bordered w-full"
                 required
@@ -217,86 +217,58 @@ export function CreatePropertyModal({
                   min="0"
                   className="input input-bordered w-full"
                 />
-              }
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-muted mb-2">Beds for Double Sharing</label>
+                <input
+                  type="number"
+                  value={formFields.bedsDouble}
+                  onChange={(e) => handleInputChange("bedsDouble", e.target.value)}
+                  min="0"
+                  className="input input-bordered w-full"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-muted mb-2">Beds for Triple Sharing</label>
+                <input
+                  type="number"
+                  value={formFields.bedsTriple}
+                  onChange={(e) => handleInputChange("bedsTriple", e.target.value)}
+                  min="0"
+                  className="input input-bordered w-full"
+                />
+              </div>
             </div>
 
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-ink mb-3">Additional Details (Optional)</h3>
-
+              <h3 className="text-lg font-semibold text-ink mb-3">Contact Information (Optional)</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-muted mb-2">Price for Single Sharing</label>
+                  <label className="text-sm font-medium text-muted mb-2">Manager Contact</label>
                   <input
-                    type="number"
-                    value={formFields.priceSingle}
-                    onChange={(e) => handleInputChange("priceSingle", e.target.value)}
-                    min="0"
+                    type="tel"
+                    value={formFields.managerContact}
+                    onChange={(e) => handleInputChange("managerContact", e.target.value)}
+                    placeholder="Phone number"
                     className="input input-bordered w-full"
                   />
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-muted mb-2">Price for Double Sharing</label>
+                  <label className="text-sm font-medium text-muted mb-2">Security Contact</label>
                   <input
-                    type="number"
-                    value={formFields.priceDouble}
-                    onChange={(e) => handleInputChange("priceDouble", e.target.value)}
-                    min="0"
+                    type="tel"
+                    value={formFields.securityContact}
+                    onChange={(e) => handleInputChange("securityContact", e.target.value)}
+                    placeholder="Phone number"
                     className="input input-bordered w-full"
                   />
                 </div>
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-muted mb-2">Beds for Double Sharing</label>
-                  <input
-                    type="number"
-                    value={formFields.bedsDouble}
-                    onChange={(e) => handleInputChange("bedsDouble", e.target.value)}
-                    min="0"
-                    className="input input-bordered w-full"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-muted mb-2">Beds for Triple Sharing</label>
-                  <input
-                    type="number"
-                    value={formFields.bedsTriple}
-                    onChange={(e) => handleInputChange("bedsTriple", e.target.value)}
-                    min="0"
-                    className="input input-bordered w-full"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-ink mb-3">Contact Information (Optional)</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium text-muted mb-2">Manager Contact</label>
-                    <input
-                      type="tel"
-                      value={formFields.managerContact}
-                      onChange={(e) => handleInputChange("managerContact", e.target.value)}
-                      placeholder="Phone number"
-                      className="input input-bordered w-full"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-muted mb-2">Security Contact</label>
-                    <input
-                      type="tel"
-                      value={formFields.securityContact}
-                      onChange={(e) => handleInputChange("securityContact", e.target.value)}
-                      placeholder="Phone number"
-                      className="input input-bordered w-full"
-                    />
-                    </div>
-                  </div>
-                </div>
 
               <div className="pt-4">
                 <button
@@ -307,9 +279,10 @@ export function CreatePropertyModal({
                   {loading ? "Creating..." : "Create Property"}
                 </button>
               </div>
-            </form>
+            </div>
           </div>
-        </div>
+        </form>
       </div>
-    );
+    </div>
+  );
 }

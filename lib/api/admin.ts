@@ -1,7 +1,6 @@
 import { apiClient } from "@/lib/api/client";
-import { toAdminListing, toAdminUser, toOwnerApproval, unwrapItems, type ApiOwnerApproval, type ApiProperty, type ApiUser, type PaginatedResponse } from "@/lib/api/types";
+import { toAdminListing, toAdminUser, toOwnerApproval, unwrapItems, type ApiOwnerApproval, type ApiProperty, type ApiUser, type ApiReview, type PaginatedResponse } from "@/lib/api/types";
 import type { AdminStats } from "@/types/admin";
-import imageCompression from 'browser-image-compression';
 
 export async function getAdminStats() {
   const { data } = await apiClient.get<AdminStats>("/admin/dashboard/stats");
@@ -127,7 +126,10 @@ export async function addPropertyImages(
   files: File[]
 ) {
   const formData = new FormData();
-  
+
+  // Dynamically import to avoid server-side issues
+  const imageCompression = (await import('browser-image-compression')).default;
+
   // Options to keep files safely under the proxy ceiling (~3MB max)
   const options = { maxSizeMB: 3.5, maxWidthOrHeight: 4096, useWebWorker: true };
 
@@ -169,6 +171,8 @@ export async function replacePropertyImage(
 ) {
   const formData = new FormData();
   
+  // Dynamically import to avoid server-side issues
+  const imageCompression = (await import('browser-image-compression')).default;
   const options = { maxSizeMB: 3.5, maxWidthOrHeight: 4096, useWebWorker: true };
   const compressedFile = await imageCompression(file, options);
 
@@ -187,19 +191,6 @@ export async function replacePropertyImage(
   return data;
 }
 
-export async function createProperty(data: FormData) {
-  const { data: responseData } = await apiClient.post<ApiProperty>(
-    `/admin/properties`,
-    data,
-    {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      }
-    }
-  );
-
-  return responseData;
-}
 
 export async function createAdminReview(
   propertyId: string,
