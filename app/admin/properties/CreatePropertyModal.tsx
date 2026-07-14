@@ -268,8 +268,8 @@ export function CreatePropertyModal({
                     min="0"
                     className="input input-bordered w-full"
                   />
-                }
-              }
+                </div>
+              </div>
 
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-ink mb-3">Contact Information (Optional)</h3>
@@ -294,9 +294,9 @@ export function CreatePropertyModal({
                       placeholder="Phone number"
                       className="input input-bordered w-full"
                     />
-                  }
-                }
-              }
+                    </div>
+                  </div>
+                </div>
 
               <div className="pt-4">
                 <button
@@ -305,12 +305,11 @@ export function CreatePropertyModal({
                   className={`btn-primary w-full ${loading ? "opacity-50" : ""}`}
                 >
                   {loading ? "Creating..." : "Create Property"}
-                }
-              }
+                </button>
+              </div>
             </form>
           </div>
-        }
-      }
-    }
-  );
+        </div>
+      </div>
+    );
 }

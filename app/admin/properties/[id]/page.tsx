@@ -236,7 +236,7 @@ export default function PropertyManagementPage() {
                       {[1, 2, 3, 4, 5].map(r => (
                         <option key={r} value={r}>
                           {r} Star{r === 1 ? "" : "s"}
-                        >
+                        </option>
                       ))}
                     </select>
                   </div>
