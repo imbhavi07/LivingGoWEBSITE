@@ -123,7 +123,7 @@ export default function AdminListingDetailsPage() {
                     />
                   </div>
                               
-                  <div className="flex gap-2 p-2">
+                  <div className="flex flex-col gap-2 p-2">
                     <label>Replace Image</label>
                     <input
                       type="file"

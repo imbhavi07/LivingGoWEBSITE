@@ -18,6 +18,11 @@ ownerRouter.use(clerkAuthenticate, authorize("owner", "admin"));
 
 ownerRouter.get("/dashboard/stats", propertyController.getOwnerStats);
 ownerRouter.get("/properties", propertyController.getOwnerProperties);
+ownerRouter.get(
+  "/properties/:id",
+  validate(propertyIdSchema),
+  propertyController.getPropertyById
+);
 ownerRouter.post("/properties", uploadImages, validate(createPropertySchema), propertyController.createProperty);
 ownerRouter.put("/properties/:id", validate(updatePropertySchema), propertyController.updateProperty);
 ownerRouter.delete("/properties/:id", validate(propertyIdSchema), propertyController.deleteProperty);

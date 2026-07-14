@@ -478,7 +478,11 @@ export default function PropertyClient({ property }: { property: any }) {
                   {property.noticePeriod && (
                     <div className="rounded-2xl bg-white p-4 shadow-soft">
                       <p className="text-xs font-bold uppercase text-muted">Lock-In Period</p>
-                      <p className="mt-1 font-black text-ink">{property.noticePeriod}</p>
+                      <p className="mt-1 font-black text-ink">{"11 Months"}</p>
+                      <p className="mt-2 text-xs font-semibold text-red-600 leading-relaxed">
+                        If you vacate the room within the lock-in period, your security deposit
+                        will be forfeited.
+                      </p>
                     </div>
                   )}
                   {property.rulesStrictness && (
