@@ -11,8 +11,8 @@ import type { PropertyFilters } from "@/types/property";
 export async function getProperties(
   filters?: PropertyFilters,
   page = 1,
-  limit = 12,
-  infiniteScroll = false
+  limit = 1000000000,
+  infiniteScroll = true
 ) {
   try {
     const params: Record<string, unknown> = {
