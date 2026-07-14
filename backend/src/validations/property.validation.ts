@@ -59,7 +59,8 @@ export const createPropertySchema = z.object({
         return value.split(",").map((item) => item.trim()).filter(Boolean);
       }
     }),
-    ownerId: z.string().optional() // Optional owner ID for admin-created properties
+    ownerId: z.string().optional(), // Optional owner ID for admin-created properties
+    manualOwnerName: z.string().optional().optional() // Optional manual owner name for SUPER_ADMIN created properties
   })
 });
 

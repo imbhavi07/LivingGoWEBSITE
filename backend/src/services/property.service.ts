@@ -39,6 +39,7 @@ type PropertyInput = {
   managerContact?: string;
   securityContact?: string;
   source?: ListingSource; // Make source optional to allow override
+  manualOwnerName?: string; // For manually listed properties
 };
 
 type ImageInput = {
@@ -196,6 +197,7 @@ export async function createProperty(ownerId: string | null, input: PropertyInpu
       securityContact: input.securityContact,
       status: "pending",
       source: sourceToUse,
+      manualOwnerName: input.manualOwnerName,
       images: {
         create: images.map((image) => ({ url: image.url, publicId: image.publicId, roomCategory: image.roomCategory }))
       }

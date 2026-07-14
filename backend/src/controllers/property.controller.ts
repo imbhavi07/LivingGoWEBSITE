@@ -74,12 +74,12 @@ export const createProperty = asyncHandler(async (request: Request, response: Re
   let ownerIdToUse: string | null;
   let sourceToUse: 'ONBOARDED' | 'LISTED';
 
-  if (user.role === 'admin' && request.body.ownerId === undefined) {
-    // Admin creating a property without specifying an owner -> LISTED property
+  if ((user.role === 'admin' || user.role === 'SUPER_ADMIN') && request.body.ownerId === undefined) {
+    // Admin/SUPER_ADMIN creating a property without specifying an owner -> LISTED property
     ownerIdToUse = null;
     sourceToUse = 'LISTED';
   } else {
-    // Owner creating property, or admin specifying an owner explicitly
+    // Owner creating property, or admin/SUPER_ADMIN specifying an owner explicitly
     ownerIdToUse = dbUser.id;
     sourceToUse = 'ONBOARDED';
   }

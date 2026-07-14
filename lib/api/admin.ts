@@ -8,6 +8,21 @@ export async function getAdminStats() {
   return data;
 }
 
+export async function createProperty(
+  data: FormData
+) {
+  const { data: responseData } = await apiClient.post<ApiProperty>(
+    "/admin/properties",
+    data,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      }
+    }
+  );
+  return toAdminListing(responseData);
+}
+
 export async function getAdminListings(search?: string) {
   const { data } = await apiClient.get<PaginatedResponse<ApiProperty> | ApiProperty[]>("/admin/listings", { params: { search } });
   return unwrapItems(data).map(toAdminListing);
@@ -170,5 +185,35 @@ export async function replacePropertyImage(
   );
 
   return data;
+}
+
+export async function createProperty(data: FormData) {
+  const { data: responseData } = await apiClient.post<ApiProperty>(
+    `/admin/properties`,
+    data,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      }
+    }
+  );
+
+  return responseData;
+}
+
+export async function createAdminReview(
+  propertyId: string,
+  data: {
+    studentName: string;
+    rating: number;
+    content: string;
+  }
+) {
+  const { data: responseData } = await apiClient.post<ApiReview>(
+    `/admin/properties/${propertyId}/reviews`,
+    data
+  );
+
+  return responseData;
 }
 
