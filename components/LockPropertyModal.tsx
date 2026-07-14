@@ -18,14 +18,14 @@ function triggerConfetti() {
 
 type LockPropertyModalProps = {
   propertyId: string;
-  propertyTitle: string;
+  propertyCode: string;
   monthlyRent: number;
   onClose: () => void;
 };
 
 type Step = "info" | "payment" | "loading" | "success" | "error";
 
-export function LockPropertyModal({ propertyId, propertyTitle, monthlyRent, onClose }: LockPropertyModalProps) {
+export function LockPropertyModal({ propertyId, propertyCode, monthlyRent, onClose }: LockPropertyModalProps) {
   const tokenAmount = Math.ceil(monthlyRent / 2);
   const router = useRouter();
 
@@ -58,8 +58,8 @@ export function LockPropertyModal({ propertyId, propertyTitle, monthlyRent, onCl
     const final = tokenAmount - discountAmount;
     setFinalAmount(final);
     // Dynamically generate the precise UPI string for the QR code
-    setUpiIntentString(`upi://pay?pa=${COMPANY_UPI_ID}&pn=${encodeURIComponent(COMPANY_NAME)}&am=${final}&cu=INR&tn=Token%20for%20${encodeURIComponent(propertyTitle.substring(0,20))}`);
-  }, [tokenAmount, discountAmount, propertyTitle]);
+    setUpiIntentString(`upi://pay?pa=${COMPANY_UPI_ID}&pn=${encodeURIComponent(COMPANY_NAME)}&am=${final}&cu=INR&tn=Token%20for%20${encodeURIComponent(propertyCode.substring(0,20))}`);
+  }, [tokenAmount, discountAmount, propertyCode]);
 
   const applyCoupon = async () => {
     if (!couponCode.trim()) {
@@ -153,7 +153,7 @@ export function LockPropertyModal({ propertyId, propertyTitle, monthlyRent, onCl
               <div className="rounded-2xl bg-linen p-4 space-y-3">
                 <div className="flex justify-between">
                   <span className="text-sm text-muted">Property</span>
-                  <span className="text-sm font-bold text-ink text-right max-w-[60%] truncate">{propertyTitle}</span>
+                  <span className="text-sm font-bold text-ink text-right max-w-[60%] truncate">{propertyCode}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted">Monthly Rent</span>
@@ -190,10 +190,10 @@ export function LockPropertyModal({ propertyId, propertyTitle, monthlyRent, onCl
                     </button>
                   </div>
                   {discountAmount > 0 && (
-                    <div className="mt-2 p-3 bg-moss/10 rounded-xl border border-moss/20">
+                    <div className="mt-2 rounded-xl border border-green-200 bg-green-50 p-3">
                       <div className="flex justify-between text-sm mt-1">
-                        <span className="font-semibold text-moss">Discount Applied:</span>
-                        <span className="font-bold text-moss">-₹{discountAmount.toLocaleString("en-IN")}</span>
+                        <span className="font-semibold text-green-700">Discount Applied:</span>
+                        <span className="font-bold text-green-700">-₹{discountAmount.toLocaleString("en-IN")}</span>
                       </div>
                     </div>
                   )}

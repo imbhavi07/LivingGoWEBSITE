@@ -597,7 +597,7 @@ export default function PropertyClient({ property }: { property: any }) {
       {showLockModal && (
         <LockPropertyModal
           propertyId={property?.id}
-          propertyTitle={property?.title}
+          propertyCode={property?.propertyCode}
           monthlyRent={displayedPrice}
           onClose={() => setShowLockModal(false)}
         />
