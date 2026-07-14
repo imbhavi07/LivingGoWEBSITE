@@ -43,7 +43,7 @@ export async function getAdminUsers(
       params: {
         search,
         page,
-        limit: 12,
+        limit: 120000,
       },
     });
 
