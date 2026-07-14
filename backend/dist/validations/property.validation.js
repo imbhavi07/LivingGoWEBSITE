@@ -64,7 +64,8 @@ exports.createPropertySchema = zod_1.z.object({
                 return value.split(",").map((item) => item.trim()).filter(Boolean);
             }
         }),
-        ownerId: zod_1.z.string().optional() // Optional owner ID for admin-created properties
+        ownerId: zod_1.z.string().optional(), // Optional owner ID for admin-created properties
+        manualOwnerName: zod_1.z.string().optional().optional() // Optional manual owner name for SUPER_ADMIN created properties
     })
 });
 exports.updatePropertySchema = zod_1.z.object({

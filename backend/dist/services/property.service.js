@@ -150,6 +150,7 @@ async function createProperty(ownerId, input, images) {
             securityContact: input.securityContact,
             status: "pending",
             source: sourceToUse,
+            manualOwnerName: input.manualOwnerName,
             images: {
                 create: images.map((image) => ({ url: image.url, publicId: image.publicId, roomCategory: image.roomCategory }))
             }

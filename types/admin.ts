@@ -60,3 +60,11 @@ export type OwnerApproval = {
   verificationStatus: OwnerApprovalStatus;
   createdAt: string;
 };
+
+export type Review = {
+  id: string;
+  studentName: string;
+  rating: number;
+  content: string;
+  createdAt: string;
+};

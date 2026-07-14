@@ -1,4 +1,4 @@
-import type { AdminListing, AdminUser } from "@/types/admin";
+import type { AdminListing, AdminUser, Review } from "@/types/admin";
 import type { OwnerApproval } from "@/types/admin";
 import type { OwnerProperty } from "@/types/owner";
 import type { Property } from "@/types/property";
@@ -113,6 +113,15 @@ export type ApiOwnerApproval = {
   aadhaarFrontUrl: string;
   legalAcceptedAt: string;
   verificationStatus: OwnerApproval["verificationStatus"];
+  createdAt: string;
+};
+
+export type ApiReview = {
+  id: string;
+  propertyId: string;
+  studentName: string;
+  rating: number;
+  content: string;
   createdAt: string;
 };
 
@@ -276,6 +285,16 @@ export function toOwnerApproval(approval: ApiOwnerApproval): OwnerApproval {
     legalAcceptedAt: approval.legalAcceptedAt,
     verificationStatus: approval.verificationStatus,
     createdAt: approval.createdAt
+  };
+}
+
+export function toReview(review: ApiReview): Review {
+  return {
+    id: review.id,
+    studentName: review.studentName,
+    rating: review.rating,
+    content: review.content,
+    createdAt: review.createdAt
   };
 }
 
