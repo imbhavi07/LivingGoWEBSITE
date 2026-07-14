@@ -37,7 +37,7 @@ export default function EarnPage() {
   const [trackError, setTrackError] = useState<string | null>(null);
   const [trackResults, setTrackResults] = useState<TrackResponse | null>(null);
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
-
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const handleGenerate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -76,6 +76,7 @@ export default function EarnPage() {
 
       setGeneratedCode(data.referralCode);
       setGenerateSuccess('Referral code generated successfully!');
+      setShowSuccessPopup(true);
       triggerConfetti();
       form.reset();
     } catch (err: unknown) {
@@ -231,6 +232,24 @@ export default function EarnPage() {
                 )}
               </button>
             </form>
+            {generatedCode && (
+  <div className="mt-6 rounded-2xl border border-green-300 bg-green-50 p-5">
+    <p className="text-sm text-gray-600">
+      Your Referral Code
+    </p>
+
+    <p className="mt-2 text-2xl font-black tracking-widest text-green-700">
+      {generatedCode}
+    </p>
+
+    <button
+      className="mt-4 rounded-lg bg-green-600 px-4 py-2 text-white"
+      onClick={() => navigator.clipboard.writeText(generatedCode)}
+    >
+      Copy Code
+    </button>
+  </div>
+)}
           </div>
 
           {/* Track Earnings */}
@@ -333,6 +352,40 @@ export default function EarnPage() {
           </div>
         </div>
       </div>
+      {showSuccessPopup && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="w-[90%] max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+      <h2 className="text-2xl font-bold text-green-600 text-center">
+        🎉 Referral Code Created Successfully!
+      </h2>
+
+      <p className="mt-4 text-center text-gray-600">
+        Your referral code is
+      </p>
+
+      <div className="mt-4 rounded-xl border-2 border-dashed border-green-500 bg-green-50 p-4 text-center">
+        <p className="text-3xl font-black tracking-widest">
+          {generatedCode}
+        </p>
+      </div>
+<div className="mt-6 flex gap-3">
+       <button
+    className="flex-1 rounded-xl bg-green-600 py-3 font-bold text-white"
+    onClick={() => navigator.clipboard.writeText(generatedCode ?? "")}
+  >
+    Copy Code
+  </button>
+
+  <button
+    className="flex-1 rounded-xl bg-black py-3 font-bold text-white"
+    onClick={() => setShowSuccessPopup(false)}
+  >
+    OK
+  </button>
+  </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }
