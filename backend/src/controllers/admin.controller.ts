@@ -173,6 +173,59 @@ export const getAllProperties = asyncHandler(async (request: Request, response: 
   response.json(await adminService.getAllProperties(request.query));
 });
 
+
+export const getAdminCoupons = asyncHandler(async (_request: Request, response: Response) => {
+  // Get all coupons with basic info and affiliateId
+  const coupons = await prisma.coupon.findMany({
+    select: {
+      id: true,
+      code: true,
+      affiliateId: true,
+    }
+  });
+
+  // For each coupon, get the partner name and count visits
+  const couponsWithStats = await Promise.all(
+    coupons.map(async (coupon) => {
+      let partnerName = "Unknown";
+      if (coupon.affiliateId) {
+        const partner = await prisma.user.findUnique({
+          where: { id: coupon.affiliateId },
+          select: { name: true }
+        });
+        partnerName = partner?.name || "Unknown";
+      }
+
+      // Count total visits for this coupon
+      const totalVisits = await prisma.visit.count({
+        where: {
+          couponCode: coupon.code
+        }
+      });
+
+      // Count converted bookings (visits with leadStatus VISIT_COMPLETED or FULLY_BOOKED)
+      const convertedBookingsCount = await prisma.visit.count({
+        where: {
+          couponCode: coupon.code,
+          leadStatus: {
+            in: ["VISIT_COMPLETED", "FULLY_BOOKED"]
+          }
+        }
+      });
+
+      return {
+        id: coupon.id,
+        partnerName,
+        couponCode: coupon.code,
+        totalVisits,
+        totalConvertedBookings: convertedBookingsCount
+      };
+    })
+  );
+
+  response.json(couponsWithStats);
+});
+
 export const addPropertyImages = asyncHandler(async (req: Request, res: Response) => {
   const propertyId = String(req.params.id);
 

@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllProperties = exports.updateListing = exports.rejectOwner = exports.approveOwner = exports.getPropertyManagement = exports.getUserProperties = exports.getOwnerApprovalById = exports.getOwnerApprovals = exports.deleteUser = exports.suspendUser = exports.getUsers = exports.removeListing = exports.rejectListing = exports.approveListing = exports.getListingDetails = exports.getListings = exports.getStats = void 0;
+exports.getAdminCoupons = exports.getAllProperties = exports.updateListing = exports.rejectOwner = exports.approveOwner = exports.getPropertyManagement = exports.getUserProperties = exports.getOwnerApprovalById = exports.getOwnerApprovals = exports.deleteUser = exports.suspendUser = exports.getUsers = exports.removeListing = exports.rejectListing = exports.approveListing = exports.getListingDetails = exports.getListings = exports.getStats = void 0;
 const async_handler_1 = require("../utils/async-handler");
 const adminService = __importStar(require("../services/admin.service"));
 const property_service_1 = require("../services/property.service");
@@ -176,4 +176,48 @@ exports.updateListing = (0, async_handler_1.asyncHandler)(async (request, respon
 });
 exports.getAllProperties = (0, async_handler_1.asyncHandler)(async (request, response) => {
     response.json(await adminService.getAllProperties(request.query));
+});
+exports.getAdminCoupons = (0, async_handler_1.asyncHandler)(async (_request, response) => {
+    // Get all coupons with basic info and affiliateId
+    const coupons = await prisma_1.prisma.coupon.findMany({
+        select: {
+            id: true,
+            code: true,
+            affiliateId: true,
+        }
+    });
+    // For each coupon, get the partner name and count visits
+    const couponsWithStats = await Promise.all(coupons.map(async (coupon) => {
+        let partnerName = "Unknown";
+        if (coupon.affiliateId) {
+            const partner = await prisma_1.prisma.user.findUnique({
+                where: { id: coupon.affiliateId },
+                select: { name: true }
+            });
+            partnerName = partner?.name || "Unknown";
+        }
+        // Count total visits for this coupon
+        const totalVisits = await prisma_1.prisma.visit.count({
+            where: {
+                couponCode: coupon.code
+            }
+        });
+        // Count converted bookings (visits with leadStatus VISIT_COMPLETED or FULLY_BOOKED)
+        const convertedBookingsCount = await prisma_1.prisma.visit.count({
+            where: {
+                couponCode: coupon.code,
+                leadStatus: {
+                    in: ["VISIT_COMPLETED", "FULLY_BOOKED"]
+                }
+            }
+        });
+        return {
+            id: coupon.id,
+            partnerName,
+            couponCode: coupon.code,
+            totalVisits,
+            totalConvertedBookings: convertedBookingsCount
+        };
+    }));
+    response.json(couponsWithStats);
 });
