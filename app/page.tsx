@@ -75,7 +75,7 @@ export default function HomePage() {
               height={597}
               className="ml-[-50px] md:ml-[15px] mt-[-40px] md:mt-5 h-auto w-auto scale-75 md:scale-100 drop-shadow-[0_4px_3px_rgba(0,0,0,0.3)]"
             />
-            <p className="mt-[-30px] md:mt-5 max-w-xl md:text-2xl text-xl leading-7 md:leading-8 md:text-ink text-brown [-webkit-text-stroke:0.1px_#000] drop-shadow-md" style={EBGaramond.style}>
+            <p className="mt-[-30px] md:mt-5 max-w-xl md:text-2xl text-xl leading-7 md:leading-8 md:text-ink text-brown [-webkit-text-stroke:0.1px_#000] drop-shadow-md font-black" style={EBGaramond.style}>
               A Government of India approved, and verified platform.
             </p>
 
@@ -135,7 +135,7 @@ export default function HomePage() {
           </motion.div>
 
           {/* Animated Featured Card */}
-          <motion.div variants={slideUp} className="mt-[-50px] md:mt-[1px] relative mx-auto w-full max-w-[510px]">
+          <motion.div variants={slideUp} className="mt-[-10px] md:mt-[1px] relative mx-auto w-full max-w-[510px]">
             <Image
               src="/assets/ui-panel.png"
               alt="Featured Property Panel"
@@ -209,7 +209,8 @@ export default function HomePage() {
           </motion.div>
         </div>
 
-        <div className="mt-[-20px] relative z-10 pt-[40px]">
+        {/* Replace the old absolute wrapper with a clean block flow */}
+        <div className="relative z-10 w-full bg-[#f9e7d3]">
           <FeaturesSection />
         </div>
       </section>

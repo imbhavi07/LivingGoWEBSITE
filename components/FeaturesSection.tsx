@@ -89,54 +89,42 @@ export function FeaturesSection() {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  // We track the scroll progress of THIS specific section naturally in the DOM.
+  // The cards start dealing when the top of this section is 85% down the viewport,
+  // and finish dealing when the top hits 15% of the viewport.
   const { scrollYProgress } = useScroll({
     target: containerRef,
-    offset: ["start start", "end end"],
+    offset: ["start 85%", "start 15%"],
   });
 
-  const containerY = useTransform(
-    scrollYProgress, 
-    [0.6, 1], 
-    ["0px", isMobile ? "-550px" : "-500px"]
-  );
-
   return (
-    <section className="relative w-full">
+    // NO MORE 400vh! This section flows perfectly with the rest of the page.
+    <section ref={containerRef} className="relative w-full py-16 md:py-24">
       <div className="absolute inset-0 pointer-events-none -z-10">
-        <div className="absolute top-0 left-0 w-full h-[800px] bg-gradient-to-b from-[#563611]/15 via-transparent to-transparent blur-3xl" />
-        <div className="absolute top-40 inset-x-0 bottom-0 bg-gradient-to-b from-transparent via-[#f9e7d3] to-[#f9e7d3]" />
+        <div className="absolute top-0 left-0 w-full h-[800px] bg-gradient-to-b from-[#563611]/10 via-transparent to-transparent blur-3xl" />
       </div>
 
-      <div ref={containerRef} className="relative h-[400vh] w-full">
-        <div className="sticky top-0 h-screen w-full flex justify-center overflow-hidden px-4 pt-24 md:pt-32">
-          
-          <motion.div 
-            style={{ y: containerY }}
-            className="w-full max-w-4xl flex flex-col items-center"
-          >
-            <div className="text-center mb-10 md:mb-16 shrink-0 px-2">
-              <h2 className="text-3xl md:text-5xl font-black text-ink mb-4 tracking-tight">
-                Everything You Need, Built Right In
-              </h2>
-              <p className="text-ink/80 text-base md:text-lg font-bold" style={EBGaramond.style}>
-                We stripped away the chaos of student house hunting. No hidden fees, no shady landlords: just a seamless, modern living experience.
-              </p>
-            </div>
+      <div className="relative w-full max-w-4xl mx-auto flex flex-col items-center px-4">
+        <div className="text-center mb-12 md:mb-16 shrink-0">
+          <h2 className="text-3xl md:text-5xl font-black text-ink mb-4 tracking-tight">
+            Everything You Need, Built Right In
+          </h2>
+          <p className="text-ink/80 text-base md:text-lg font-bold max-w-2xl mx-auto" style={EBGaramond.style}>
+            We stripped away the chaos of student house hunting. No hidden fees, no shady landlords: just a seamless, modern living experience.
+          </p>
+        </div>
 
-            {/* Set wrapper to 1100px to perfectly accommodate the fixed math below */}
-            <div className="relative w-full h-[1100px]">
-              {problemSolutions.map((item, idx) => (
-                <CapsuleCard 
-                  key={idx} 
-                  item={item} 
-                  idx={idx} 
-                  isMobile={isMobile}
-                  scrollYProgress={scrollYProgress} 
-                />
-              ))}
-            </div>
-          </motion.div>
-
+        {/* Exactly 1150px height reserves perfect space for all 6 expanded cards. Zero gaps! */}
+        <div className="relative w-full h-[1150px]">
+          {problemSolutions.map((item, idx) => (
+            <CapsuleCard 
+              key={idx} 
+              item={item} 
+              idx={idx} 
+              isMobile={isMobile}
+              scrollYProgress={scrollYProgress} 
+            />
+          ))}
         </div>
       </div>
     </section>
@@ -155,22 +143,19 @@ function CapsuleCard({
   scrollYProgress: MotionValue<number>; 
 }) {
   const zIndex = idx;
-  const initialY = idx * (isMobile ? 35 : 30);
   
-  // THE FIX: 
-  // Mobile Card Height is exactly 170px.
-  // Desired Gap is exactly 16px.
-  // 170 + 16 = 186px translation spacing.
-  // Desktop is slightly smaller height (160px) because wider screens have less text wrap.
+  // Start slightly staggered so it looks like a deck of cards
+  const initialY = idx * 15;
+  
+  // Mobile Card Height is ~170px. Gap is ~16px. Total = 186px.
   const finalY = idx * (isMobile ? 186 : 184); 
 
-  const y = useTransform(scrollYProgress, [0, 0.4], [initialY, finalY]);
+  // Smooth interpolation from stacked to spread out as user scrolls
+  const y = useTransform(scrollYProgress, [0, 1], [initialY, finalY]);
 
   return (
     <motion.div
       style={{ y, zIndex }}
-      // THE FIX: Enforced a snug, uniform height (170px on mobile, 160px on desktop)
-      // This prevents tall cards from eating into the gap below them.
       className="absolute top-0 left-0 w-full h-[170px] md:h-[160px] rounded-[2.5rem] py-6 px-5 md:py-8 md:px-10 flex flex-row items-center justify-between gap-4 md:gap-6 shadow-[0_10px_20px_rgba(92,64,51,0.5)] border border-white/5"
       initial={{ backgroundColor: item.bgColor, color: item.textColor }}
     >
