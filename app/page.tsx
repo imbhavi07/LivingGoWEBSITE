@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowRight, ShieldCheck, Search, Phone } from "lucide-react";
 import { buttonClasses } from "@/components/Button";
 import { FeaturedPropertyCard } from "@/components/FeaturedPropertyCard";
 import { useWishlist } from "@/hooks/useWishlist";
@@ -11,7 +12,6 @@ import Image from "next/image";
 import logo from "@/assets/logo.png";
 import { FeaturesSection } from "@/components/FeaturesSection";
 import { toProperty } from "@/lib/api/types";
-// THE FIX: Imported useAnimation hook
 import { motion, Variants, useAnimation } from "framer-motion";
 import { EB_Garamond } from "next/font/google";
 
@@ -32,19 +32,16 @@ const slideUp: Variants = {
 };
 
 export default function HomePage() {
-  // THE FIX: Replacing useState with Framer Motion's direct animation controller
   const controls = useAnimation();
+  const router = useRouter();
 
   useEffect(() => {
-    // Function to physically force the animation to play
     const fireAnimation = () => {
       controls.start("visible");
     };
 
-    // Listen for the intro to finish
     window.addEventListener("introAnimationComplete", fireAnimation);
     
-    // If they already skipped it in a previous session, fire it instantly
     if (sessionStorage.getItem("intro_skipped") === "true") {
       fireAnimation();
     }
@@ -56,12 +53,11 @@ export default function HomePage() {
 
   return (
     <main className="bg-[#f9e7d3] min-h-screen flex flex-col">
-      <section className="relative w-full">
+      <section className="relative w-full overflow-hidden">
 
         <motion.div 
           variants={containerVariants}
           initial="hidden"
-          // THE FIX: Attached the direct controls hook here
           animate={controls}
           className="relative z-10 mx-auto grid max-w-7xl gap-10 px-4 pb-12 pt-8 sm:px-6 md:grid-cols-[1fr_1.08fr] md:items-center md:pt-16 lg:px-8"
         >
@@ -69,7 +65,7 @@ export default function HomePage() {
           <motion.div variants={slideUp}>
             <LiquidGlass className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-bold text-white shadow-soft">
               <p className="flex items-center text-ink gap-2 drop-shadow-[0_2px_2px_rgba(0,0,0,0.2)]">
-                  Verified Student Homes
+                Govt. Approved Platform
               </p>
             </LiquidGlass>
             <Image
@@ -80,21 +76,60 @@ export default function HomePage() {
               className="ml-[-50px] md:ml-[15px] mt-[-40px] md:mt-5 h-auto w-auto scale-75 md:scale-100 drop-shadow-[0_4px_3px_rgba(0,0,0,0.3)]"
             />
             <p className="mt-[-30px] md:mt-5 max-w-xl md:text-2xl text-xl leading-7 md:leading-8 md:text-ink text-brown [-webkit-text-stroke:0.1px_#000] drop-shadow-md" style={EBGaramond.style}>
-              Find a calm, well-managed PG/flat near campus with transparent pricing, real facilities, and virtual tours before you visit.
+              A Government of India approved, and verified platform.
             </p>
-            <a
-              href="tel:+916200232083" //number
-              className="mt-4 inline-flex items-center gap-2 rounded-full bg-ink px-5 py-3 text-xl font-bold text-white shadow-lift transition hover:opacity-90 w-fit"
+
+            {/* INSTANT REDIRECT SEARCH BAR */}
+            <button 
+              onClick={() => router.push('/listings')}
+              className="mt-6 flex w-full max-w-lg items-center gap-2 rounded-full bg-white p-2 shadow-xl ring-2 ring-black/5 transition-all hover:ring-ink/20 text-left group"
             >
-              Call Us
+              <div className="flex pl-4">
+                <Search className="h-6 w-6 text-gray-400 group-hover:text-ink transition-colors" />
+              </div>
+              <span className="w-full bg-transparent px-2 py-3 text-lg font-medium text-gray-400">
+                Search PGs...
+              </span>
+              <span className="rounded-full bg-ink px-8 py-3 text-lg font-black text-white transition-transform group-hover:scale-105 group-hover:bg-ink/90">
+                Search
+              </span>
+            </button>
+
+            {/* GIANT CALL BUTTON WITH EMERALD-950 OUTLINE */}
+            <a
+              href="tel:+916200232083"
+              className="mt-8 inline-flex items-center justify-center gap-3 rounded-full bg-[#7F9D75] border-2 border-emerald-950 px-10 py-5 text-2xl font-black text-white shadow-[0_8px_25px_rgba(127,157,117,0.4)] transition-all duration-300 hover:scale-105 hover:bg-[#6b8b5f] w-full sm:w-auto"
+            >
+              <Phone className="h-6 w-6" /> Call Us <sup className="text-sm font-bold">24x7</sup>
             </a>
 
-            <div className="hidden mt-6 gap-3 sm:flex sm:flex-row">
-              <Link href="/listings" className={buttonClasses("primary", undefined, "w-full sm:w-auto")}>
-                Find PGs <ArrowRight className="h-4 w-4" aria-hidden />
+            {/* SUPERSIZED AND BALANCED SECONDARY BUTTONS */}
+            <div className="hidden mt-8 gap-4 sm:flex sm:flex-row items-stretch">
+              {/* FIND PGs WITH WHITE OUTLINE & SYNCED SIZING */}
+              <Link 
+                href="/listings" 
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-ink border-2 border-white px-9 py-4 text-xl font-black text-white shadow-xl transition-all hover:scale-105 hover:shadow-2xl hover:bg-ink/90 min-w-[220px]"
+              >
+                Find PGs <ArrowRight className="h-6 w-6" aria-hidden />
               </Link>
-              <Link href="/earn" className={buttonClasses("secondary", undefined, "w-full sm:w-auto")}>
-                Refer & Earn <ArrowRight className="h-4 w-4" aria-hidden />
+              
+              {/* REFER & EARN WITH SPINNING 3D RUPEE LOGO */}
+              <Link 
+                href="/earn" 
+                className="inline-flex items-center justify-center gap-3 rounded-full bg-white border-2 border-ink px-9 py-4 text-xl font-black text-ink shadow-lg transition-all hover:scale-105 hover:bg-linen min-w-[220px]"
+              >
+                <div style={{ perspective: 400 }} className="flex items-center justify-center">
+                  <motion.span
+                    className="inline-block text-2xl drop-shadow-[0_2px_3px_rgba(0,0,0,0.15)] origin-center text-amber-600 font-bold"
+                    animate={{ rotateY: 360 }}
+                    transition={{ repeat: Infinity, duration: 2.5, ease: "linear" }}
+                    style={{ transformStyle: "preserve-3d" }}
+                  >
+                    ₹
+                  </motion.span>
+                </div>
+                <span>Refer & Earn</span>
+                <ArrowRight className="h-6 w-6" aria-hidden />
               </Link>
             </div>
           </motion.div>
@@ -106,31 +141,76 @@ export default function HomePage() {
               alt="Featured Property Panel"
               width={510}
               height={650}
-              className="block h-auto w-full drop-shadow-[0_8px_6px_rgba(0,0,0,0.3)]"
-          />
+              className="block h-auto w-full drop-shadow-[0_10px_15px_#FF9152]"
+            />
             <div className="absolute inset-0 px-[10%] pb-[5%] pt-[28%] sm:pt-[30%] flex flex-col items-center">
               <div className="mb-3 flex items-center gap-2 font-bold text-ink -translate-x-[10px] text-[15.5px]">
                 <ShieldCheck className="h-4 w-4 text-ink" aria-hidden />
                 Featured this week
               </div>
               <div className="w-[85%] max-w-[280px] mx-auto mt-2">
-                 <PropertyPreview />
+                <PropertyPreview />
               </div>
             </div>
           </motion.div>
-          <div className="md:hidden mt-6 gap-3 sm:flex sm:flex-row">
-              <Link href="/listings" className={buttonClasses("primary", undefined, "w-full sm:w-auto")}>
-                Find PGs <ArrowRight className="h-4 w-4" aria-hidden />
-              </Link>
-            </div>
-             <div className="md:hidden mt-[-25px] sm:flex sm:flex-row">
-            <Link href="/earn" className={buttonClasses("secondary", undefined, "w-full sm:w-auto")}>
-                Refer & Earn <ArrowRight className="h-4 w-4" aria-hidden />
-              </Link>
-            </div>
+
+          {/* MOBILE BUTTON LAYOUT */}
+          <div className="md:hidden mt-6 flex flex-col gap-4 w-full">
+            <Link 
+              href="/listings" 
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-ink border-2 border-white px-8 py-5 text-xl font-black text-white shadow-xl transition-transform hover:scale-105 w-full"
+            >
+              Find PGs <ArrowRight className="h-6 w-6" aria-hidden />
+            </Link>
+            
+            <Link 
+              href="/earn" 
+              className="inline-flex items-center justify-center gap-3 rounded-full bg-white border-2 border-ink px-8 py-5 text-xl font-black text-ink shadow-lg transition-transform hover:scale-105 w-full"
+            >
+              <div style={{ perspective: 400 }} className="flex items-center justify-center">
+                <motion.span
+                  className="inline-block text-2xl drop-shadow-[0_2px_3px_rgba(0,0,0,0.15)] origin-center text-amber-600 font-bold"
+                  animate={{ rotateY: 360 }}
+                  transition={{ repeat: Infinity, duration: 2.5, ease: "linear" }}
+                  style={{ transformStyle: "preserve-3d" }}
+                >
+                  ₹
+                </motion.span>
+              </div>
+              <span>Refer & Earn</span>
+              <ArrowRight className="h-6 w-6" aria-hidden />
+            </Link>
+          </div>
         </motion.div>
-        <div className="mt-[-100px] md:mt-[-50px]">
-        <FeaturesSection />
+        
+        {/* 🔥 INFINITE MARQUEE TICKER 🔥 */}
+        <div className="relative z-30 flex w-full overflow-hidden bg-ink py-4 shadow-xl md:mt-4">
+          <motion.div
+            className="flex w-max flex-nowrap items-center"
+            animate={{ x: ["0%", "-50%"] }}
+            transition={{ ease: "linear", duration: 12, repeat: Infinity }}
+          >
+            {[...Array(2)].map((_, i) => (
+              <div key={i} className="flex flex-nowrap gap-12 px-6 text-sm md:text-base font-black uppercase tracking-widest text-[#f9e7d3]">
+                <span className="whitespace-nowrap">✨ No Brokerage</span>
+                <span className="whitespace-nowrap opacity-50">•</span>
+                <span className="whitespace-nowrap">🛡️ DigiLocker Verified</span>
+                <span className="whitespace-nowrap opacity-50">•</span>
+                <span className="whitespace-nowrap">🌐 360 Virtual Tour</span>
+                <span className="whitespace-nowrap opacity-50">•</span>
+                <span className="whitespace-nowrap">✨ No Brokerage</span>
+                <span className="whitespace-nowrap opacity-50">•</span>
+                <span className="whitespace-nowrap">🛡️ DigiLocker Verified</span>
+                <span className="whitespace-nowrap opacity-50">•</span>
+                <span className="whitespace-nowrap">🌐 360 Virtual Tour</span>
+                <span className="whitespace-nowrap opacity-50">•</span>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+
+        <div className="mt-[-20px] relative z-10 pt-[40px]">
+          <FeaturesSection />
         </div>
       </section>
     </main>

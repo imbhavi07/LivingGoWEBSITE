@@ -1,14 +1,15 @@
 "use client";
 
-import type { ChangeEvent } from "react";
+import type { ChangeEvent, PointerEvent } from "react";
 import { Search } from "lucide-react";
+import { useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { SlidersHorizontal } from "lucide-react";
 
 export function FilterBar() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [budgetValue, setBudgetValue] = useState(searchParams.get("budget") ?? "45000");
 
   function update(event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     // Create a new URLSearchParams object based on the current URL
@@ -22,6 +23,10 @@ export function FilterBar() {
     
     // Update the URL without reloading the page, preserving scroll state
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  }
+
+  function handlePointerUp(event: PointerEvent<HTMLInputElement>) {
+    update({ target: event.currentTarget } as ChangeEvent<HTMLInputElement>);
   }
 
   return (
@@ -41,43 +46,67 @@ export function FilterBar() {
         name="location"
         defaultValue={searchParams.get("location") ?? ""}
         onChange={update}
-        placeholder="Search by Property ID, Property Name or Locality..."
+        placeholder="Search by Area, Property ID..."
         className="input w-full pl-10"
       />
     </div>
   </label>
 </div>
-        <SlidersHorizontal className="h-4 w-4" aria-hidden />
-        Filters
       </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <label className="space-y-2">
-          <span className="text-xs font-semibold uppercase text-muted">Budget</span>
-          <select name="budget" defaultValue={searchParams.get("budget") ?? ""} onChange={update} className="input">
-            <option value="">Any budget</option>
-            <option value="10000">Under ₹10,000</option>
-            <option value="15000">Under ₹15,000</option>
-            <option value="20000">Under ₹20,000</option>
-            <option value="25000">Under ₹25,000</option>
-            <option value="30000">Under ₹30,000</option>
-            <option value="35000">Under ₹35,000</option>
-          </select>
-        </label>
+        <label className="space-y-3 flex flex-col w-full">
+  <div className="flex items-center justify-between">
+    <span className="text-xs font-semibold uppercase text-muted">Max Budget</span>
+    <span className="text-sm font-bold text-ink">
+      {Number(budgetValue) >= 45000 
+        ? "Any budget" 
+        : `Under ₹${Number(budgetValue).toLocaleString()}/mo`}
+    </span>
+  </div>
+  
+  <input
+    type="range"
+    name="budget"
+    min="5000"
+    max="45000"
+    step="1000"
+    value={budgetValue}
+    onChange={(e) => setBudgetValue(e.target.value)}
+    onPointerUp={handlePointerUp} // Fires your search update only when they release the slider
+    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-ink"
+  />
+  
+  <div className="flex justify-between text-[10px] font-bold text-muted uppercase">
+    <span>₹5,000</span>
+    <span>₹45,000+</span>
+  </div>
+</label>
         <label className="space-y-2">
           <span className="text-xs font-semibold uppercase text-muted">Room</span>
           <select name="roomType" defaultValue={searchParams.get("roomType") ?? ""} onChange={update} className="input">
             <option value="">Any room</option>
             <option value="Single">Single</option>
-            <option value="Shared">Shared</option>
+            <option value="Shared">Double</option>
+            <option value="Shared">Triple</option>
           </select>
         </label>
         <label className="space-y-2">
-          <span className="text-xs font-semibold uppercase text-muted">Preference</span>
+          <span className="text-xs font-semibold uppercase text-muted">Gender Preference</span>
           <select name="preference" defaultValue={searchParams.get("preference") ?? ""} onChange={update} className="input">
-            <option value="">Any preference</option>
             <option value="Boys">Boys</option>
             <option value="Girls">Girls</option>
-            <option value="Any">Any</option>
+            <option value="Any">N/A</option>
+          </select>
+        </label>
+        <label className="space-y-2">
+          <span className="text-xs font-semibold uppercase text-muted">Area</span>
+          <select name="location" defaultValue={searchParams.get("location") ?? ""} onChange={update} className="input">
+            <option value="Kamla Nagar">Kamla Nagar</option>
+            <option value="Vijay Nagar">Vijay Nagar</option>
+            <option value="Shakti Nagar">Shakti Nagar</option>
+            <option value="Malka Ganj">Malka Ganj</option>
+            <option value="Roop Nagar">Roop Nagar</option>
+            <option value="GTB Nagar">GTB Nagar</option>
           </select>
         </label>
       </div>
