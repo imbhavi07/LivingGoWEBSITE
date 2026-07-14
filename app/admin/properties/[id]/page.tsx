@@ -1,20 +1,34 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { getAdminProperty } from "@/lib/api/admin-properties";
 import { StatCard } from "@/components/admin/StatCard";
 import { BadgeCheck, Copy, ExternalLink, MapPinned } from "lucide-react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useCreateReview } from "@/hooks/useAdmin";
+import { useToast } from "@/contexts/ToastContext";
 
 export default function PropertyManagementPage() {
   const { id } = useParams<{ id: string }>();
   const [property, setProperty] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [reviewForm, setReviewForm] = useState({
+    studentName: "",
+    rating: 5,
+    content: ""
+  });
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const { user } = useAuthContext();
+  const isSuperAdmin = user?.role === "SUPER_ADMIN";
+  const { create: createReview } = useCreateReview();
+  const { showToast } = useToast();
 
   useEffect(() => {
     async function load() {
       try {
+        setLoading(true);
         const data = await getAdminProperty(id);
         setProperty(data);
       } finally {
@@ -52,6 +66,41 @@ export default function PropertyManagementPage() {
     (sum, p) => sum + (p.amount ?? 0),
     0
   );
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!reviewForm.studentName.trim() || !reviewForm.content.trim()) {
+      showToast("Please fill in all fields", "error");
+      return;
+    }
+
+    setReviewLoading(true);
+    try {
+      await createReview(id, {
+        studentName: reviewForm.studentName,
+        rating: reviewForm.rating,
+        content: reviewForm.content
+      });
+
+      // Reset form
+      setReviewForm({
+        studentName: "",
+        rating: 5,
+        content: ""
+      });
+
+      // Refresh property data to show new review
+      const updatedProperty = await getAdminProperty(id);
+      setProperty(updatedProperty);
+
+      showToast("Review added successfully!", "success");
+    } catch (error) {
+      showToast("Failed to add review. Please try again.", "error");
+    } finally {
+      setReviewLoading(false);
+    }
+  };
 
   return (
     <AdminShell>
@@ -159,6 +208,73 @@ export default function PropertyManagementPage() {
           </div>
         </div>
 
+        {isSuperAdmin && (
+          <div className="mt-8">
+            <div className="rounded-3xl border border-black/5 bg-white p-6">
+              <h2 className="text-xl font-black mb-4">Add Review (SUPER_ADMIN Only)</h2>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium text-muted mb-2">Student Name*</label>
+                  <input
+                    type="text"
+                    value={reviewForm.studentName}
+                    onChange={(e) => setReviewForm(prev => ({ ...prev, studentName: e.target.value }))}
+                    placeholder="Enter student name for this review"
+                    className="input input-bordered w-full"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-muted mb-2">Rating (1-5)*</label>
+                    <select
+                      value={reviewForm.rating}
+                      onChange={(e) => setReviewForm(prev => ({ ...prev, rating: parseInt(e.target.value) }))}
+                      className="select select-bordered w-full"
+                    >
+                      {[1, 2, 3, 4, 5].map(r => (
+                        <option key={r} value={r}>
+                          {r} Star{r === 1 ? "" : "s"}
+                        >
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-muted mb-2">Review Length</label>
+                    <span className="text-sm text-muted">
+                      {reviewForm.content.length}/1000 characters
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-muted mb-2">Review Content*</label>
+                  <textarea
+                    value={reviewForm.content}
+                    onChange={(e) => setReviewForm(prev => ({ ...prev, content: e.target.value }))}
+                    rows="4"
+                    placeholder="Share your experience about this property..."
+                    className="textarea textarea-bordered w-full"
+                    required
+                    maxLength="1000"
+                  />
+                </div>
+
+                <div className="pt-4">
+                  <button
+                    type="submit"
+                    disabled={reviewLoading}
+                    className={`btn-primary w-full ${reviewLoading ? "opacity-50" : ""}`}
+                  >
+                    {reviewLoading ? "Adding Review..." : "Add Review"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </main>
     </AdminShell>
   );

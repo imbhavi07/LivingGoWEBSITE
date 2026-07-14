@@ -98,6 +98,7 @@ model Property {
   securityContact       String?            @db.VarChar(255)
   isFeatured            Boolean            @default(false)
   propertyCode          String?            @unique
+  manualOwnerName       String?            // For manually listed properties (SUPER_ADMIN)
   owner                 User?              @relation("OwnerProperties", fields: [ownerId], references: [id], onDelete: Cascade)
   images                PropertyImage[]
   panoramas             PropertyPanorama[]

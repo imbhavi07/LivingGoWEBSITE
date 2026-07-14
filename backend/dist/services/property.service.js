@@ -359,13 +359,13 @@ async function createReview(studentId, propertyId, body) {
     if (!student) {
         throw new app_error_1.AppError("Student not found", 404);
     }
-    // Create review - assuming the database schema has been updated with individual rating fields
+    // Create review - safely cast the data object to bypass strict shape mismatches without explicit 'any'
     const review = await prisma_1.prisma.review.create({
         data: {
             propertyId,
             studentName: student.name,
             ...body,
-            isAdminGenerated: false // Regular student reviews are not admin-generated
+            isAdminGenerated: false
         }
     });
     return review;
@@ -453,10 +453,17 @@ async function getStudentResidence(studentId) {
     };
 }
 async function getPropertyRating(propertyId) {
-    const agg = await prisma_1.prisma.review.aggregate({
+    const agg = (await prisma_1.prisma.review.aggregate({
         where: { propertyId },
         _count: { id: true },
-    });
+        _avg: {
+            cleanliness: true,
+            food: true,
+            security: true,
+            management: true,
+            location: true,
+        }
+    }));
     // Handle case where no reviews exist
     if (!agg._avg) {
         return {
@@ -469,14 +476,18 @@ async function getPropertyRating(propertyId) {
             count: 0
         };
     }
-    // Type assertion to help TypeScript understand the structure of _avg
-    // Assuming the database schema has been updated with individual rating fields
     const avg = agg._avg;
     const fields = [avg.cleanliness, avg.food, avg.security, avg.management, avg.location];
     const defined = fields.filter((v) => v !== null);
-    const overall = defined.length > 0 ?
-        defined.reduce((a, b) => a + b, 0) / defined.length :
-        null;
+    const overall = defined.length > 0 ? defined.reduce((a, b) => a + b, 0) / defined.length : null;
+    // Safely extract count without 'any'
+    let count = 0;
+    if (typeof agg._count === 'object' && agg._count !== null && 'id' in agg._count) {
+        count = Number(agg._count.id);
+    }
+    else if (typeof agg._count === 'number') {
+        count = agg._count;
+    }
     return {
         overall: overall ? Math.round(overall * 10) / 10 : null,
         cleanliness: avg.cleanliness ? Math.round(avg.cleanliness * 10) / 10 : null,
@@ -484,7 +495,7 @@ async function getPropertyRating(propertyId) {
         security: avg.security ? Math.round(avg.security * 10) / 10 : null,
         management: avg.management ? Math.round(avg.management * 10) / 10 : null,
         location: avg.location ? Math.round(avg.location * 10) / 10 : null,
-        count: typeof agg._count === 'object' && agg._count !== null ? agg._count.id : 0
+        count
     };
 }
 async function getPropertyReviews(propertyId) {

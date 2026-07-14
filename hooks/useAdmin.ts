@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import {
   approveListing,
   approveOwner,
+  createProperty,
+  createAdminReview,
   deleteListing,
   deleteUser,
   getAdminListing,
@@ -17,7 +19,7 @@ import {
   suspendUser
 } from "@/lib/api/admin";
 import { useToast } from "@/contexts/ToastContext";
-import type { AdminListing, AdminStats, AdminUser, OwnerApproval } from "@/types/admin";
+import type { AdminListing, AdminStats, AdminUser, OwnerApproval, Review } from "@/types/admin";
 
 export function useAdminStats() {
   const [stats, setStats] = useState<AdminStats | null>(null);
@@ -201,4 +203,42 @@ export function useOwnerApproval(id: string) {
   }, [id]);
 
   return { approval, isLoading };
+}
+
+export function useCreateProperty() {
+  const { showToast } = useToast();
+
+  const create = useCallback(async (data: FormData) => {
+    try {
+      const property = await createProperty(data);
+      showToast("Property created successfully!", "success");
+      return property;
+    } catch (error) {
+      showToast("Failed to create property. Please try again.", "error");
+      throw error;
+    }
+  }, [showToast]);
+
+  return { create };
+}
+
+export function useCreateReview() {
+  const { showToast } = useToast();
+
+  const create = useCallback(async (propertyId: string, data: {
+    studentName: string;
+    rating: number;
+    content: string;
+  }) => {
+    try {
+      const review = await createAdminReview(propertyId, data);
+      showToast("Review added successfully!", "success");
+      return review;
+    } catch (error) {
+      showToast("Failed to add review. Please try again.", "error");
+      throw error;
+    }
+  }, [showToast]);
+
+  return { create };
 }
