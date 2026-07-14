@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/Button";
 
@@ -43,6 +43,11 @@ type Props = {
 
 export function PropertyEditForm({ initialData, onSave, onCancel, isSaving }: Props) {
   const [form, setForm] = useState<PropertyEditPayload>(initialData);
+
+  // Update form state when initialData changes (e.g., when property data loads)
+  useEffect(() => {
+    setForm(initialData);
+  }, [initialData]);
 
   function set<K extends keyof PropertyEditPayload>(key: K, value: PropertyEditPayload[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
