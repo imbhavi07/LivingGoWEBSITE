@@ -8,7 +8,7 @@ import { authLimiter } from "../middleware/security.middleware";
 import { validate } from "../middleware/validate.middleware";
 import { adminIdSchema, adminListSchema, adminUserListSchema } from "../validations/admin.validation";
 import { loginSchema } from "../validations/auth.validation";
-import { uploadImages } from "../middleware/upload.middleware";
+import { uploadImages, upload } from "../middleware/upload.middleware";
 import { propertyIdSchema } from "../validations/property.validation";
 import { createPropertySchema } from "../validations/property.validation";
 
@@ -48,3 +48,9 @@ adminRouter.patch("/properties/:id", uploadImages, validate(adminIdSchema), admi
 adminRouter.post("/properties/:id/images", uploadImages, adminController.addPropertyImages);
 adminRouter.put("/properties/:id/images/:imageId", uploadImages, adminController.replacePropertyImage);
 adminRouter.delete("/properties/:id/images/:imageId", validate(adminIdSchema), adminController.deletePropertyImage);
+
+// Panorama routes
+adminRouter.post("/properties/:id/panoramas", upload.single('file'), adminController.addPanoramaController);
+adminRouter.put("/properties/panoramas/:panoramaId", adminController.updatePanorama);
+adminRouter.delete("/properties/panoramas/:panoramaId", adminController.deletePanorama);
+adminRouter.put("/properties/panoramas/:panoramaId/image", upload.single('file'), adminController.replacePanoramaImage);

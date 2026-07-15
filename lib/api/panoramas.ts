@@ -40,7 +40,7 @@ export async function uploadPanorama(
   }
 
   const { data } = await apiClient.post(
-    `/panoramas/admin/properties/${propertyId}/panoramas`,
+    `/api/admin/properties/${propertyId}/panoramas`,
     formData,
     {
       headers: {
@@ -60,7 +60,7 @@ export async function updatePanorama(
   }
 ) {
   const response = await apiClient.put(
-    `/panoramas/admin/panoramas/${panoramaId}`,
+    `/api/admin/properties/panoramas/${panoramaId}`,
     data
   );
 
@@ -71,7 +71,7 @@ export async function deletePanorama(
   panoramaId: string
 ) {
   await apiClient.delete(
-    `/panoramas/admin/panoramas/${panoramaId}`
+    `/api/admin/properties/panoramas/${panoramaId}`
   );
 }
 
@@ -87,7 +87,7 @@ export async function replacePanoramaImage(
   formData.append("image", compressedImage);
 
   const { data } = await apiClient.put(
-    `/panoramas/admin/panoramas/${panoramaId}/image`,
+    `/api/admin/properties/panoramas/${panoramaId}/image`,
     formData,
     {
       headers: {

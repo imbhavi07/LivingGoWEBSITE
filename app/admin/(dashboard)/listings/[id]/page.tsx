@@ -34,7 +34,10 @@ export default function AdminListingDetailsPage() {
   const [editingPanoramaId, setEditingPanoramaId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
   const [editingSortOrder, setEditingSortOrder] = useState(0);
-
+  const [deleteImageId, setDeleteImageId] = useState<string | null>(null);
+  const [isDeletingImage, setIsDeletingImage] = useState(false);
+  const [deleteListingId, setDeleteListingId] = useState<string | null>(null);
+  const [isDeletingListing, setIsDeletingListing] = useState(false);
   async function handleSave(data: FormData) {
     setIsSaving(true);
     try {
@@ -53,6 +56,49 @@ export default function AdminListingDetailsPage() {
       showToast(message, "error");
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function handleDeleteImageConfirm() {
+    if (!deleteImageId || !listing) return;
+    setIsDeletingImage(true);
+    try {
+      await deletePropertyImage(listing.id, deleteImageId);
+      await mutate();
+      showToast("Image deleted successfully", "success");
+    } catch (err) {
+      let message = "Failed to delete image.";
+      if (isAxiosError(err)) {
+        const serverMsg = err.response?.data?.message;
+        if (typeof serverMsg === "string" && serverMsg.trim()) {
+          message = serverMsg;
+        }
+      }
+      showToast(message, "error");
+    } finally {
+      setIsDeletingImage(false);
+      setDeleteImageId(null);
+    }
+  }
+
+  async function handleDeleteListingConfirm() {
+    if (!deleteListingId) return;
+    setIsDeletingListing(true);
+    try {
+      await deleteListing(deleteListingId);
+      showToast("Listing deleted successfully", "success");
+    } catch (err) {
+      let message = "Failed to delete listing.";
+      if (isAxiosError(err)) {
+        const serverMsg = err.response?.data?.message;
+        if (typeof serverMsg === "string" && serverMsg.trim()) {
+          message = serverMsg;
+        }
+      }
+      showToast(message, "error");
+    } finally {
+      setIsDeletingListing(false);
+      setDeleteListingId(null);
     }
   }
 
@@ -171,21 +217,8 @@ export default function AdminListingDetailsPage() {
                     <Button
                       variant="ghost"
                       className="text-red-600"
-                      onClick={async () => {
-                        if (
-                          !confirm(
-                            "Delete this image?"
-                          )
-                        ) {
-                          return;
-                        }
-                      
-                        await deletePropertyImage(
-                          listing.id,
-                          image.id
-                        );
-                      
-                        await mutate();
+                      onClick={() => {
+                        setDeleteImageId(image.id);
                       }}
                     >
                       Delete
@@ -403,7 +436,7 @@ export default function AdminListingDetailsPage() {
                 <Button variant="secondary" onClick={() => void rejectListing(listing.id)}>
                   <X className="h-4 w-4" aria-hidden />Reject listing
                 </Button>
-                <Button variant="ghost" className="text-red-700" onClick={() => void deleteListing(listing.id)}>
+                <Button variant="ghost" className="text-red-700" onClick={() => { setDeleteListingId(listing.id); }}>
                   <Trash2 className="h-4 w-4" aria-hidden />Delete fake listing
                 </Button>
               </div>
