@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
 import { AlertTriangle, Crosshair, Loader2, MapPin, Save, Plus } from "lucide-react";
@@ -50,6 +50,16 @@ export function AdminPropertyForm({ initialData, onSave, onCancel }: AdminProper
   const [mealPlan, setMealPlan] = useState<string>(initialData?.mealPlan ?? "Not Included");
   const [managerContact, setManagerContact] = useState(initialData?.managerContact ?? "");
   const [securityContact, setSecurityContact] = useState(initialData?.securityContact ?? "");
+  const [priceSingle, setPriceSingle] = useState<string | number>("");
+  const [bedsSingle, setBedsSingle] = useState<string | number>("");
+  const [priceDouble, setPriceDouble] = useState<string | number>("");
+  const [bedsDouble, setBedsDouble] = useState<string | number>("");
+  const [priceTriple, setPriceTriple] = useState<string | number>("");
+  const [bedsTriple, setBedsTriple] = useState<string | number>("");
+  const [securityDepositAmount, setSecurityDepositAmount] = useState<string | number>("");
+  const [curfewTimeState, setCurfewTimeState] = useState<string>("No Curfew");
+  const [noticePeriodState, setNoticePeriodState] = useState<string>("11 Month");
+  const [rulesStrictnessState, setRulesStrictnessState] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -62,6 +72,49 @@ export function AdminPropertyForm({ initialData, onSave, onCancel }: AdminProper
       ? { lat: initialData.lat, lng: initialData.lng, address: initialData.location }
       : null
   );
+
+  // Sync form state with initialData when it changes (for edit mode)
+  useEffect(() => {
+    if (initialData) {
+      setPreference(initialData?.preference ?? "Any");
+      setImages(initialData?.images ?? []);
+      setSelectedFacilities(initialData?.facilities ?? []);
+      setSelectedMealTimes(initialData?.mealTimes ?? []);
+      setHasSingle(!!initialData?.priceSingle);
+      setHasDouble(!!initialData?.priceDouble);
+      setHasTriple(!!initialData?.priceTriple);
+      setHasDeposit(!!initialData?.securityDepositMonths);
+      setManagerContact(initialData?.managerContact ?? "");
+      setSecurityContact(initialData?.securityContact ?? "");
+
+      // Map price and beds fields for room types
+      setPriceSingle(initialData?.priceSingle ?? "");
+      setBedsSingle(initialData?.bedsSingle ?? "");
+      setPriceDouble(initialData?.priceDouble ?? "");
+      setBedsDouble(initialData?.bedsDouble ?? "");
+      setPriceTriple(initialData?.priceTriple ?? "");
+      setBedsTriple(initialData?.bedsTriple ?? "");
+
+      // Map security deposit amount
+      setSecurityDepositAmount(initialData?.securityDepositMonths ?? "");
+
+      // Map meal plan, curfew time, lock-in period, and rules strictness
+      setMealPlan(initialData?.mealPlan ?? "Not Included");
+      setCurfewTimeState(initialData?.curfewTime ?? "No Curfew");
+      setNoticePeriodState(initialData?.noticePeriod ?? "11 Month");
+      setRulesStrictnessState(initialData?.rulesStrictness ?? "");
+
+      // @ts-expect-error - Assuming exactAddress might not be fully typed in OwnerProperty yet
+      setExactAddress(initialData?.exactAddress ?? initialData?.location ?? "");
+      setLocality(initialData?.location ?? "");
+
+      setPickedLocation(
+        initialData?.lat && initialData?.lng
+          ? { lat: initialData.lat, lng: initialData.lng, address: initialData.location }
+          : null
+      );
+    }
+  }, [initialData]);
   const [showMapPicker, setShowMapPicker] = useState(false);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
 
@@ -496,11 +549,11 @@ export function AdminPropertyForm({ initialData, onSave, onCancel }: AdminProper
                 <div className="gap-4 sm:grid-cols-2 animate-in fade-in slide-in-from-top-2 duration-300">
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-ink">Monthly Rent (₹)</span>
-                    <input name="priceSingle" type="number" min={1} defaultValue={initialData?.priceSingle} className="input" placeholder="15000" />
+                    <input name="priceSingle" type="number" min={1} value={priceSingle} onChange={(e) => setPriceSingle(e.target.value)} className="input" placeholder="15000" />
                   </label>
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-ink">Total Beds Available</span>
-                    <input name="bedsSingle" type="number" min={1} defaultValue={initialData?.bedsSingle} className="input" placeholder="4" />
+                    <input name="bedsSingle" type="number" min={1} value={bedsSingle} onChange={(e) => setBedsSingle(e.target.value)} className="input" placeholder="4" />
                   </label>
                 </div>
               )}
@@ -515,11 +568,11 @@ export function AdminPropertyForm({ initialData, onSave, onCancel }: AdminProper
                 <div className="gap-4 sm:grid-cols-2 animate-in fade-in slide-in-from-top-2 duration-300">
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-ink">Monthly Rent (₹)</span>
-                    <input name="priceDouble" type="number" min={1} defaultValue={initialData?.priceDouble} className="input" placeholder="12000" />
+                    <input name="priceDouble" type="number" min={1} value={priceDouble} onChange={(e) => setPriceDouble(e.target.value)} className="input" placeholder="12000" />
                   </label>
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-ink">Total Beds Available</span>
-                    <input name="bedsDouble" type="number" min={1} defaultValue={initialData?.bedsDouble} className="input" placeholder="12" />
+                    <input name="bedsDouble" type="number" min={1} value={bedsDouble} onChange={(e) => setBedsDouble(e.target.value)} className="input" placeholder="12" />
                   </label>
                 </div>
               )}
@@ -534,11 +587,11 @@ export function AdminPropertyForm({ initialData, onSave, onCancel }: AdminProper
                 <div className="gap-4 sm:grid-cols-2 animate-in fade-in slide-in-from-top-2 duration-300">
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-ink">Monthly Rent (₹)</span>
-                    <input name="priceTriple" type="number" min={1} defaultValue={initialData?.priceTriple} className="input" placeholder="9000" />
+                    <input name="priceTriple" type="number" min={1} value={priceTriple} onChange={(e) => setPriceTriple(e.target.value)} className="input" placeholder="9000" />
                   </label>
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-ink">Total Beds Available</span>
-                    <input name="bedsTriple" type="number" min={1} defaultValue={initialData?.bedsTriple} className="input" placeholder="15" />
+                    <input name="bedsTriple" type="number" min={1} value={bedsTriple} onChange={(e) => setBedsTriple(e.target.value)} className="input" placeholder="15" />
                   </label>
                 </div>
               )}
@@ -553,7 +606,7 @@ export function AdminPropertyForm({ initialData, onSave, onCancel }: AdminProper
                 <div className="space-y-2">
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-ink">Months of Rent</span>
-                    <input name="securityDepositMonths" type="number" min={1} defaultValue={initialData?.securityDepositMonths} className="input" placeholder="2" />
+                    <input name="securityDepositMonths" type="number" min={1} value={securityDepositAmount} onChange={(e) => setSecurityDepositAmount(e.target.value)} className="input" placeholder="2" />
                   </label>
                 </div>
               )}
@@ -588,7 +641,7 @@ export function AdminPropertyForm({ initialData, onSave, onCancel }: AdminProper
             <div className="space-y-4 rounded-3xl border border-black/5 bg-linen p-4">
               <label className="flex cursor-pointer items-center gap-3">
                 <span className="text-sm font-semibold text-ink">Curfew Time</span>
-                <select name="curfewTime" defaultValue={initialData?.curfewTime ?? "No Curfew"} className="input">
+                <select name="curfewTime" value={curfewTimeState} onChange={(e) => setCurfewTimeState(e.target.value)} className="input">
                   <option value="No Curfew">No Curfew</option>
                   <option value="9 PM">9 PM</option>
                   <option value="10 PM">10 PM</option>
@@ -601,7 +654,7 @@ export function AdminPropertyForm({ initialData, onSave, onCancel }: AdminProper
             <div className="space-y-4 rounded-3xl border border-black/5 bg-linen p-4">
               <label className="flex cursor-pointer items-center gap-3">
                 <span className="text-sm font-semibold text-ink">Lock-in Period</span>
-                <select name="noticePeriod" defaultValue={initialData?.noticePeriod ?? "11 Month"} className="input">
+                <select name="noticePeriod" value={noticePeriodState} onChange={(e) => setNoticePeriodState(e.target.value)} className="input">
                   <option value="15 Days">6 Months</option>
                   <option value="1 Month">9 Months</option>
                   <option value="2 Months">11 Months</option>
@@ -612,7 +665,7 @@ export function AdminPropertyForm({ initialData, onSave, onCancel }: AdminProper
             <div className="space-y-4 rounded-3xl border border-black/5 bg-linen p-4">
               <label className="flex cursor-pointer items-center gap-3">
                 <span className="text-sm font-semibold text-ink">Rules Strictness</span>
-                <select name="rulesStrictness" defaultValue={initialData?.rulesStrictness} className="select w-full">
+                <select name="rulesStrictness" value={rulesStrictnessState} onChange={(e) => setRulesStrictnessState(e.target.value)} className="select w-full">
                   <option value="Strict">Strict</option>
                   <option value="Lenient">Lenient</option>
                 </select>
