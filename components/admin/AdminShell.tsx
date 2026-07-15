@@ -36,7 +36,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   
   return (
     <div className="min-h-screen bg-[#F6F7F8]">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 border-r border-black/10 bg-[#111315] p-5 text-white lg:block">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 border-r border-black/10 bg-[#111315] p-5 text-white lg:block">
         <AdminSidebar onSignOut={auth.signOut} isSuperAdmin={isSuperAdmin} />
       </aside>
       <header className="sticky top-0 z-30 border-b border-black/10 bg-white/90 px-4 py-4 backdrop-blur lg:hidden">
@@ -77,7 +77,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           </aside>
         </div>
       ) : null}
-      <main className="px-4 py-6 sm:px-6 lg:ml-72 lg:px-8">{children}</main>
+      <main className="px-4 py-6 sm:px-6 lg:pl-64 lg:px-8">{children}</main>
     </div>
   );
 }

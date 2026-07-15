@@ -23,27 +23,27 @@ export async function createProperty(
 }
 
 export async function getAdminListings(search?: string) {
-  const { data } = await apiClient.get<PaginatedResponse<ApiProperty> | ApiProperty[]>("/admin/listings", { params: { search } });
+  const { data } = await apiClient.get<PaginatedResponse<ApiProperty> | ApiProperty[]>("/admin/properties", { params: { search } });
   return unwrapItems(data).map(toAdminListing);
 }
 
 export async function getAdminListing(id: string) {
-  const { data } = await apiClient.get<ApiProperty>(`/admin/listings/${id}`);
+  const { data } = await apiClient.get<ApiProperty>(`/admin/properties/${id}`);
   return toAdminListing(data);
 }
 
 export async function approveListing(id: string) {
-  const { data } = await apiClient.patch<ApiProperty>(`/admin/listings/${id}/approve`);
+  const { data } = await apiClient.patch<ApiProperty>(`/admin/properties/${id}/approve`);
   return toAdminListing(data);
 }
 
 export async function rejectListing(id: string) {
-  const { data } = await apiClient.patch<ApiProperty>(`/admin/listings/${id}/reject`);
+  const { data } = await apiClient.patch<ApiProperty>(`/admin/properties/${id}/reject`);
   return toAdminListing(data);
 }
 
 export async function deleteListing(id: string) {
-  await apiClient.delete(`/admin/listings/${id}`);
+  await apiClient.delete(`/admin/properties/${id}`);
 }
 
 export async function getAdminUsers(
