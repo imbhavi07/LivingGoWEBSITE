@@ -315,10 +315,11 @@ export const replacePropertyImage = asyncHandler(async (req: Request, res: Respo
 });
 
 export const deletePropertyImage = asyncHandler(async (req: Request, res: Response) => {
+  const propertyId = String(req.params.id);
   const imageId = String(req.params.imageId);
 
   const image = await prisma.propertyImage.findUnique({
-    where: { id: imageId },
+    where: { id: imageId, propertyId },
   });
 
   if (!image) {
@@ -387,4 +388,108 @@ export const deleteAdminReview = asyncHandler(async (request: Request, response:
   });
 
   response.status(204).send();
+});
+
+// Panorama controllers
+export const addPanoramaController = asyncHandler(async (req: Request, res: Response) => {
+  const propertyId = String(req.params.id);
+  const file = req.file as Express.Multer.File;
+
+  if (!file) {
+    throw new AppError("Panorama image is required", 400);
+  }
+
+  // Upload the panorama image to Cloudinary
+  const uploaded = await uploadImage(file);
+
+  const { title, sortOrder } = req.body;
+
+  const panorama = await prisma.propertyPanorama.create({
+    data: {
+      propertyId,
+      title,
+      imageUrl: uploaded.secure_url,
+      publicId: uploaded.public_id,
+      sortOrder: sortOrder ? Number(sortOrder) : 0,
+    },
+  });
+
+  res.status(201).json(panorama);
+});
+
+export const updatePanorama = asyncHandler(async (req: Request, res: Response) => {
+  const panoramaId = String(req.params.panoramaId);
+  const { title, sortOrder } = req.body;
+
+  const panorama = await prisma.propertyPanorama.update({
+    where: { id: panoramaId },
+    data: {
+      title,
+      sortOrder: sortOrder ? Number(sortOrder) : undefined,
+    },
+  });
+
+  res.json(panorama);
+});
+
+export const deletePanorama = asyncHandler(async (req: Request, res: Response) => {
+  const panoramaId = String(req.params.panoramaId);
+
+  // First, get the panorama to get the publicId for Cloudinary cleanup
+  const panorama = await prisma.propertyPanorama.findUnique({
+    where: { id: panoramaId },
+  });
+
+  if (!panorama) {
+    throw new AppError("Panorama not found", 404);
+  }
+
+  // Delete from Cloudinary if publicId exists
+  if (panorama.publicId) {
+    await deleteCloudinaryImage(panorama.publicId);
+  }
+
+  // Delete the panorama record
+  await prisma.propertyPanorama.delete({
+    where: { id: panoramaId },
+  });
+
+  res.status(204).send();
+});
+
+export const replacePanoramaImage = asyncHandler(async (req: Request, res: Response) => {
+  const panoramaId = String(req.params.panoramaId);
+  const file = req.file as Express.Multer.File;
+
+  if (!file) {
+    throw new AppError("Panorama image is required", 400);
+  }
+
+  // Get the existing panorama
+  const panorama = await prisma.propertyPanorama.findUnique({
+    where: { id: panoramaId },
+  });
+
+  if (!panorama) {
+    throw new AppError("Panorama not found", 404);
+  }
+
+  // Upload new image
+  const uploaded = await uploadImage(file);
+
+  // Delete old image from Cloudinary if exists
+  if (panorama.publicId) {
+    await deleteCloudinaryImage(panorama.publicId);
+  }
+
+  // Update the panorama record
+  const updatedPanorama = await prisma.propertyPanorama.update({
+    where: { id: panoramaId },
+    data: {
+      imageUrl: uploaded.secure_url,
+      publicId: uploaded.public_id,
+    },
+  });
+
+  res.json(updatedPanorama);
 });

@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteAdminReview = exports.createAdminReview = exports.deletePropertyImage = exports.replacePropertyImage = exports.addPropertyImages = exports.getAdminCoupons = exports.getAllProperties = exports.updateListing = exports.rejectOwner = exports.approveOwner = exports.getPropertyManagement = exports.getUserProperties = exports.getOwnerApprovalById = exports.getOwnerApprovals = exports.deleteUser = exports.suspendUser = exports.getUsers = exports.removeListing = exports.rejectListing = exports.approveListing = exports.getAdminPropertyByIdController = exports.getListings = exports.getStats = void 0;
+exports.replacePanoramaImage = exports.deletePanorama = exports.updatePanorama = exports.addPanoramaController = exports.deleteAdminReview = exports.createAdminReview = exports.deletePropertyImage = exports.replacePropertyImage = exports.addPropertyImages = exports.getAdminCoupons = exports.getAllProperties = exports.updateListing = exports.rejectOwner = exports.approveOwner = exports.getPropertyManagement = exports.getUserProperties = exports.getOwnerApprovalById = exports.getOwnerApprovals = exports.deleteUser = exports.suspendUser = exports.getUsers = exports.removeListing = exports.rejectListing = exports.approveListing = exports.getAdminPropertyByIdController = exports.getListings = exports.getStats = void 0;
 const async_handler_1 = require("../utils/async-handler");
 const adminService = __importStar(require("../services/admin.service"));
 const property_service_1 = require("../services/property.service");
@@ -283,9 +283,10 @@ exports.replacePropertyImage = (0, async_handler_1.asyncHandler)(async (req, res
     res.json(result);
 });
 exports.deletePropertyImage = (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const propertyId = String(req.params.id);
     const imageId = String(req.params.imageId);
     const image = await prisma_1.prisma.propertyImage.findUnique({
-        where: { id: imageId },
+        where: { id: imageId, propertyId },
     });
     if (!image) {
         throw new app_error_1.AppError("Image not found", 404);
@@ -340,4 +341,85 @@ exports.deleteAdminReview = (0, async_handler_1.asyncHandler)(async (request, re
         where: { id: reviewId }
     });
     response.status(204).send();
+});
+// Panorama controllers
+exports.addPanoramaController = (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const propertyId = String(req.params.id);
+    const file = req.file;
+    if (!file) {
+        throw new app_error_1.AppError("Panorama image is required", 400);
+    }
+    // Upload the panorama image to Cloudinary
+    const uploaded = await (0, cloudinary_service_1.uploadImage)(file);
+    const { title, sortOrder } = req.body;
+    const panorama = await prisma_1.prisma.propertyPanorama.create({
+        data: {
+            propertyId,
+            title,
+            imageUrl: uploaded.secure_url,
+            publicId: uploaded.public_id,
+            sortOrder: sortOrder ? Number(sortOrder) : 0,
+        },
+    });
+    res.status(201).json(panorama);
+});
+exports.updatePanorama = (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const panoramaId = String(req.params.panoramaId);
+    const { title, sortOrder } = req.body;
+    const panorama = await prisma_1.prisma.propertyPanorama.update({
+        where: { id: panoramaId },
+        data: {
+            title,
+            sortOrder: sortOrder ? Number(sortOrder) : undefined,
+        },
+    });
+    res.json(panorama);
+});
+exports.deletePanorama = (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const panoramaId = String(req.params.panoramaId);
+    // First, get the panorama to get the publicId for Cloudinary cleanup
+    const panorama = await prisma_1.prisma.propertyPanorama.findUnique({
+        where: { id: panoramaId },
+    });
+    if (!panorama) {
+        throw new app_error_1.AppError("Panorama not found", 404);
+    }
+    // Delete from Cloudinary if publicId exists
+    if (panorama.publicId) {
+        await (0, cloudinary_service_1.deleteCloudinaryImage)(panorama.publicId);
+    }
+    // Delete the panorama record
+    await prisma_1.prisma.propertyPanorama.delete({
+        where: { id: panoramaId },
+    });
+    res.status(204).send();
+});
+exports.replacePanoramaImage = (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const panoramaId = String(req.params.panoramaId);
+    const file = req.file;
+    if (!file) {
+        throw new app_error_1.AppError("Panorama image is required", 400);
+    }
+    // Get the existing panorama
+    const panorama = await prisma_1.prisma.propertyPanorama.findUnique({
+        where: { id: panoramaId },
+    });
+    if (!panorama) {
+        throw new app_error_1.AppError("Panorama not found", 404);
+    }
+    // Upload new image
+    const uploaded = await (0, cloudinary_service_1.uploadImage)(file);
+    // Delete old image from Cloudinary if exists
+    if (panorama.publicId) {
+        await (0, cloudinary_service_1.deleteCloudinaryImage)(panorama.publicId);
+    }
+    // Update the panorama record
+    const updatedPanorama = await prisma_1.prisma.propertyPanorama.update({
+        where: { id: panoramaId },
+        data: {
+            imageUrl: uploaded.secure_url,
+            publicId: uploaded.public_id,
+        },
+    });
+    res.json(updatedPanorama);
 });

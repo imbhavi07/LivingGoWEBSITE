@@ -79,3 +79,8 @@ exports.adminRouter.patch("/properties/:id", upload_middleware_1.uploadImages, (
 exports.adminRouter.post("/properties/:id/images", upload_middleware_1.uploadImages, adminController.addPropertyImages);
 exports.adminRouter.put("/properties/:id/images/:imageId", upload_middleware_1.uploadImages, adminController.replacePropertyImage);
 exports.adminRouter.delete("/properties/:id/images/:imageId", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.deletePropertyImage);
+// Panorama routes
+exports.adminRouter.post("/properties/:id/panoramas", upload_middleware_1.upload.single('file'), adminController.addPanoramaController);
+exports.adminRouter.put("/properties/panoramas/:panoramaId", adminController.updatePanorama);
+exports.adminRouter.delete("/properties/panoramas/:panoramaId", adminController.deletePanorama);
+exports.adminRouter.put("/properties/panoramas/:panoramaId/image", upload_middleware_1.upload.single('file'), adminController.replacePanoramaImage);
