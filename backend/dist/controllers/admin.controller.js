@@ -181,8 +181,27 @@ exports.rejectOwner = (0, async_handler_1.asyncHandler)(async (request, response
 });
 exports.updateListing = (0, async_handler_1.asyncHandler)(async (request, response) => {
     const id = String(request.params.id);
-    const result = await adminService.updateListingByAdmin(id, request.body);
-    response.json(result);
+    // The uploadImages middleware will populate request.files
+    const files = request.files ?? [];
+    // The non-file fields are in request.body
+    const data = request.body;
+    // Update the property with the non-file fields
+    const updated = await adminService.updateListingByAdmin(id, data);
+    // If there are new files, upload them and add to the property
+    if (files.length) {
+        const uploads = await Promise.all(files.map(cloudinary_service_1.uploadImage));
+        const imagesToAdd = uploads.map(u => ({
+            url: u.secure_url,
+            publicId: u.public_id
+        }));
+        await adminService.addImagesToProperty(id, imagesToAdd);
+        // Refetch the property to get the updated images
+        const refreshed = await (0, property_service_1.getPropertyById)(id);
+        response.json(refreshed);
+    }
+    else {
+        response.json(updated);
+    }
 });
 exports.getAllProperties = (0, async_handler_1.asyncHandler)(async (request, response) => {
     response.json(await adminService.getAllProperties(request.query));
