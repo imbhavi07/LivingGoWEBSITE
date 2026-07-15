@@ -5,3 +5,4 @@ const client_1 = require("@prisma/client");
 exports.prisma = new client_1.PrismaClient({
     log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"]
 });
+console.log("DATABASE_URL =", process.env.DATABASE_URL);

@@ -197,6 +197,7 @@ export function PropertyEditForm({ initialData, onSave, onCancel, isSaving }: Pr
         </div>
       </div>
 
+      
       {/* Room Details */}
       <div className="rounded-3xl bg-white p-6 shadow-soft ring-1 ring-black/5">
         <h2 className="mb-4 text-lg font-black text-ink">Room Details</h2>

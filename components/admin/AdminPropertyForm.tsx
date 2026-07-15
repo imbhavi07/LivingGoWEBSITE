@@ -21,45 +21,45 @@ const facilities = [
 const mealTimeOptions = ["Breakfast", "Lunch", "Dinner", "Snacks"];
 
 type AdminPropertyFormProps = {
-  property?: OwnerProperty;
-  onSubmit: (formData: FormData) => Promise<void>;
+  initialData?: OwnerProperty;
+  onSave: (formData: FormData) => Promise<void>;
   onCancel: () => void;
 };
 
-export function AdminPropertyForm({ property, onSubmit, onCancel }: AdminPropertyFormProps) {
+export function AdminPropertyForm({ initialData, onSave, onCancel }: AdminPropertyFormProps) {
   const router = useRouter();
   const { showToast } = useToast();
   const { getToken, isLoaded, isSignedIn } = useAuth();
 
   const [preference, setPreference] = useState<"Girls" | "Boys" | "Any">(
-    (property?.preference as "Girls" | "Boys" | "Any") ?? "Any"
+    (initialData?.preference as "Girls" | "Boys" | "Any") ?? "Any"
   );
 
   // Unified image state
-  const [images, setImages] = useState<string[]>(property?.images ?? []);
+  const [images, setImages] = useState<string[]>(initialData?.images ?? []);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
 
-  const [selectedFacilities, setSelectedFacilities] = useState<string[]>(property?.facilities ?? []);
+  const [selectedFacilities, setSelectedFacilities] = useState<string[]>(initialData?.facilities ?? []);
   const [customFacility, setCustomFacility] = useState("");
 
-  const [selectedMealTimes, setSelectedMealTimes] = useState<string[]>(property?.mealTimes ?? []);
-  const [hasSingle, setHasSingle] = useState(!!property?.priceSingle);
-  const [hasDouble, setHasDouble] = useState(!!property?.priceDouble);
-  const [hasTriple, setHasTriple] = useState(!!property?.priceTriple);
-  const [hasDeposit, setHasDeposit] = useState(!!property?.securityDepositMonths);
-  const [mealPlan, setMealPlan] = useState<string>(property?.mealPlan ?? "Not Included");
-  const [managerContact, setManagerContact] = useState(property?.managerContact ?? "");
-  const [securityContact, setSecurityContact] = useState(property?.securityContact ?? "");
+  const [selectedMealTimes, setSelectedMealTimes] = useState<string[]>(initialData?.mealTimes ?? []);
+  const [hasSingle, setHasSingle] = useState(!!initialData?.priceSingle);
+  const [hasDouble, setHasDouble] = useState(!!initialData?.priceDouble);
+  const [hasTriple, setHasTriple] = useState(!!initialData?.priceTriple);
+  const [hasDeposit, setHasDeposit] = useState(!!initialData?.securityDepositMonths);
+  const [mealPlan, setMealPlan] = useState<string>(initialData?.mealPlan ?? "Not Included");
+  const [managerContact, setManagerContact] = useState(initialData?.managerContact ?? "");
+  const [securityContact, setSecurityContact] = useState(initialData?.securityContact ?? "");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // @ts-expect-error - Assuming exactAddress might not be fully typed in OwnerProperty yet
-  const [exactAddress, setExactAddress] = useState(property?.exactAddress ?? property?.location ?? "");
-  const [locality, setLocality] = useState(property?.location ?? "");
+  const [exactAddress, setExactAddress] = useState(initialData?.exactAddress ?? initialData?.location ?? "");
+  const [locality, setLocality] = useState(initialData?.location ?? "");
 
   const [pickedLocation, setPickedLocation] = useState<{ lat: number; lng: number; address: string } | null>(
-    property?.lat && property?.lng
-      ? { lat: property.lat, lng: property.lng, address: property.location }
+    initialData?.lat && initialData?.lng
+      ? { lat: initialData.lat, lng: initialData.lng, address: initialData.location }
       : null
   );
   const [showMapPicker, setShowMapPicker] = useState(false);
@@ -300,7 +300,7 @@ export function AdminPropertyForm({ property, onSubmit, onCancel }: AdminPropert
         formData.append("manualOwnerName", manualOwnerName.trim());
       }
 
-      await onSubmit(formData);
+      await onSave(formData);
       showToast("Property saved successfully!", "success");
       onCancel();
     } catch (err) {
@@ -335,13 +335,13 @@ export function AdminPropertyForm({ property, onSubmit, onCancel }: AdminPropert
             <p className="text-xs font-black uppercase text-clay">Basic Information</p>
             <label className="block space-y-2">
               <span className="text-sm font-bold text-ink">Property title</span>
-              <input name="title" defaultValue={property?.title} className="input" placeholder="Aster House PG for Girls" />
+              <input name="title" defaultValue={initialData?.title} className="input" placeholder="Aster House PG for Girls" />
             </label>
             <label className="block space-y-2">
               <span className="text-sm font-bold text-ink">Description</span>
               <textarea
                 name="description"
-                defaultValue={property?.description}
+                defaultValue={initialData?.description}
                 className="input min-h-36 py-4"
                 placeholder="Describe rooms, building, rules, meals, commute, and nearby colleges."
               />
@@ -496,11 +496,11 @@ export function AdminPropertyForm({ property, onSubmit, onCancel }: AdminPropert
                 <div className="gap-4 sm:grid-cols-2 animate-in fade-in slide-in-from-top-2 duration-300">
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-ink">Monthly Rent (₹)</span>
-                    <input name="priceSingle" type="number" min={1} defaultValue={property?.priceSingle} className="input" placeholder="15000" />
+                    <input name="priceSingle" type="number" min={1} defaultValue={initialData?.priceSingle} className="input" placeholder="15000" />
                   </label>
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-ink">Total Beds Available</span>
-                    <input name="bedsSingle" type="number" min={1} defaultValue={property?.bedsSingle} className="input" placeholder="4" />
+                    <input name="bedsSingle" type="number" min={1} defaultValue={initialData?.bedsSingle} className="input" placeholder="4" />
                   </label>
                 </div>
               )}
@@ -515,11 +515,11 @@ export function AdminPropertyForm({ property, onSubmit, onCancel }: AdminPropert
                 <div className="gap-4 sm:grid-cols-2 animate-in fade-in slide-in-from-top-2 duration-300">
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-ink">Monthly Rent (₹)</span>
-                    <input name="priceDouble" type="number" min={1} defaultValue={property?.priceDouble} className="input" placeholder="12000" />
+                    <input name="priceDouble" type="number" min={1} defaultValue={initialData?.priceDouble} className="input" placeholder="12000" />
                   </label>
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-ink">Total Beds Available</span>
-                    <input name="bedsDouble" type="number" min={1} defaultValue={property?.bedsDouble} className="input" placeholder="12" />
+                    <input name="bedsDouble" type="number" min={1} defaultValue={initialData?.bedsDouble} className="input" placeholder="12" />
                   </label>
                 </div>
               )}
@@ -534,11 +534,11 @@ export function AdminPropertyForm({ property, onSubmit, onCancel }: AdminPropert
                 <div className="gap-4 sm:grid-cols-2 animate-in fade-in slide-in-from-top-2 duration-300">
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-ink">Monthly Rent (₹)</span>
-                    <input name="priceTriple" type="number" min={1} defaultValue={property?.priceTriple} className="input" placeholder="9000" />
+                    <input name="priceTriple" type="number" min={1} defaultValue={initialData?.priceTriple} className="input" placeholder="9000" />
                   </label>
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-ink">Total Beds Available</span>
-                    <input name="bedsTriple" type="number" min={1} defaultValue={property?.bedsTriple} className="input" placeholder="15" />
+                    <input name="bedsTriple" type="number" min={1} defaultValue={initialData?.bedsTriple} className="input" placeholder="15" />
                   </label>
                 </div>
               )}
@@ -553,7 +553,7 @@ export function AdminPropertyForm({ property, onSubmit, onCancel }: AdminPropert
                 <div className="space-y-2">
                   <label className="block space-y-2">
                     <span className="text-sm font-semibold text-ink">Months of Rent</span>
-                    <input name="securityDepositMonths" type="number" min={1} defaultValue={property?.securityDepositMonths} className="input" placeholder="2" />
+                    <input name="securityDepositMonths" type="number" min={1} defaultValue={initialData?.securityDepositMonths} className="input" placeholder="2" />
                   </label>
                 </div>
               )}
@@ -588,7 +588,7 @@ export function AdminPropertyForm({ property, onSubmit, onCancel }: AdminPropert
             <div className="space-y-4 rounded-3xl border border-black/5 bg-linen p-4">
               <label className="flex cursor-pointer items-center gap-3">
                 <span className="text-sm font-semibold text-ink">Curfew Time</span>
-                <select name="curfewTime" defaultValue={property?.curfewTime ?? "No Curfew"} className="input">
+                <select name="curfewTime" defaultValue={initialData?.curfewTime ?? "No Curfew"} className="input">
                   <option value="No Curfew">No Curfew</option>
                   <option value="9 PM">9 PM</option>
                   <option value="10 PM">10 PM</option>
@@ -601,7 +601,7 @@ export function AdminPropertyForm({ property, onSubmit, onCancel }: AdminPropert
             <div className="space-y-4 rounded-3xl border border-black/5 bg-linen p-4">
               <label className="flex cursor-pointer items-center gap-3">
                 <span className="text-sm font-semibold text-ink">Lock-in Period</span>
-                <select name="noticePeriod" defaultValue={property?.noticePeriod ?? "11 Month"} className="input">
+                <select name="noticePeriod" defaultValue={initialData?.noticePeriod ?? "11 Month"} className="input">
                   <option value="15 Days">6 Months</option>
                   <option value="1 Month">9 Months</option>
                   <option value="2 Months">11 Months</option>
@@ -612,7 +612,7 @@ export function AdminPropertyForm({ property, onSubmit, onCancel }: AdminPropert
             <div className="space-y-4 rounded-3xl border border-black/5 bg-linen p-4">
               <label className="flex cursor-pointer items-center gap-3">
                 <span className="text-sm font-semibold text-ink">Rules Strictness</span>
-                <select name="rulesStrictness" defaultValue={property?.rulesStrictness} className="select w-full">
+                <select name="rulesStrictness" defaultValue={initialData?.rulesStrictness} className="select w-full">
                   <option value="Strict">Strict</option>
                   <option value="Moderate">Moderate</option>
                   <option value="Lenient">Lenient</option>

@@ -10,7 +10,9 @@ import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { PropertyEditForm, type PropertyEditPayload } from "@/components/PropertyEditForm";
-import { approveListing, deleteListing, rejectListing, updateListing } from "@/lib/api/admin";
+import { AdminPropertyForm } from "@/components/admin/AdminPropertyForm";
+import { approveListing, deleteListing, rejectListing, updateListing, updateListingWithFormData } from "@/lib/api/admin";
+import { OwnerListingStatus } from "@/types/owner";
 import { useAdminListing } from "@/hooks/useAdmin";
 import { useToast } from "@/contexts/ToastContext";
 import { formatPrice } from "@/lib/utils";
@@ -33,10 +35,10 @@ export default function AdminListingDetailsPage() {
   const [editingTitle, setEditingTitle] = useState("");
   const [editingSortOrder, setEditingSortOrder] = useState(0);
 
-  async function handleSave(payload: PropertyEditPayload) {
+  async function handleSave(data: FormData) {
     setIsSaving(true);
     try {
-      await updateListing(params.id, payload);
+      await updateListingWithFormData(params.id, data);
       await mutate();
       setEditing(false);
       showToast("Listing updated successfully!", "success");
@@ -70,19 +72,22 @@ export default function AdminListingDetailsPage() {
                 <X className="h-4 w-4" aria-hidden /> Cancel
               </Button>
             </div>
-            <PropertyEditForm
+            <AdminPropertyForm
               initialData={{
+                id: listing.id,
                 title: listing.title,
-                description: listing.description,
+                description: listing.description || "",
                 price: listing.price,
                 location: listing.location,
                 roomType: listing.roomType,
                 preference: listing.preference,
                 facilities: listing.facilities,
+                images: listing.images.map((img) => img.url),
+                status: (listing.status as unknown) as OwnerListingStatus,
+                createdAt: listing.submittedAt || new Date().toISOString(),
               }}
               onSave={handleSave}
               onCancel={() => setEditing(false)}
-              isSaving={isSaving}
             />
           </div>
         ) : (

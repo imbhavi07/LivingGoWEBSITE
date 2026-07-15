@@ -117,8 +117,21 @@ export async function updateListing(id: string, payload: Partial<{
   rulesStrictness: string;
   facilities: string[];
 }>) {
-  const { data } = await apiClient.patch<ApiProperty>(`/admin/listings/${id}`, payload);
+  const { data } = await apiClient.patch<ApiProperty>(`/admin/properties/${id}`, payload);
   return toAdminListing(data);
+}
+
+export async function updateListingWithFormData(id: string, data: FormData) {
+  const { data: responseData } = await apiClient.patch<ApiProperty>(
+    `/admin/properties/${id}`,
+    data,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      }
+    }
+  );
+  return toAdminListing(responseData);
 }
 
 export async function addPropertyImages(
@@ -143,7 +156,7 @@ export async function addPropertyImages(
   });
 
   const { data } = await apiClient.post(
-    `/admin/listings/${propertyId}/images`,
+    `/admin/properties/${propertyId}/images`,
     formData,
     {
       headers: {
@@ -160,7 +173,7 @@ export async function deletePropertyImage(
   imageId: string
 ) {
   await apiClient.delete(
-    `/admin/listings/${propertyId}/images/${imageId}`
+    `/admin/properties/${propertyId}/images/${imageId}`
   );
 }
 
@@ -170,16 +183,16 @@ export async function replacePropertyImage(
   file: File
 ) {
   const formData = new FormData();
-  
+
   // Dynamically import to avoid server-side issues
   const imageCompression = (await import('browser-image-compression')).default;
   const options = { maxSizeMB: 3.5, maxWidthOrHeight: 4096, useWebWorker: true };
   const compressedFile = await imageCompression(file, options);
 
-  formData.append('images', compressedFile); 
+  formData.append('images', compressedFile);
 
   const { data } = await apiClient.put(
-    `/admin/listings/${propertyId}/images/${imageId}`,
+    `/admin/properties/${propertyId}/images/${imageId}`,
     formData,
     {
       headers: {
