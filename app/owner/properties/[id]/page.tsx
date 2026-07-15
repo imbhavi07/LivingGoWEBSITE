@@ -152,23 +152,16 @@ export default function PropertyDashboardPage() {
                 <PropertyEditForm
                   initialData={{
                     ...property,
-                                    
                     title: property.title,
                     description: property.description,
-                                    
                     price: property.price,
-                                    
                     priceSingle: property.priceSingle,
                     bedsSingle: property.bedsSingle ?? undefined,
-                                    
                     priceDouble: property.priceDouble,
                     bedsDouble: property.bedsDouble ?? undefined,
-                                    
                     priceTriple: property.priceTriple,
                     bedsTriple: property.bedsTriple ?? undefined,
-                                    
-                    securityDepositMonths: property.securityDepositMonths ?? undefined,
-                                    
+                    securityDepositMonths: Number(property.securityDepositMonths) || undefined,
                     location: property.location,
                     lat: property.lat ?? undefined,
                     lng: property.lng ?? undefined,
