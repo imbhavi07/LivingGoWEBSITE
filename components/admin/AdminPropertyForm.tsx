@@ -127,9 +127,10 @@ export function AdminPropertyForm({ property, onSubmit, onCancel }: AdminPropert
 
   async function handleFormSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setError("");
 
-    if (!isLoaded || !isSignedIn) {
-      setError("You must be signed in to save a property.");
+    if (!isLoaded) {
+      setError("Please wait for authentication to load.");
       return;
     }
 
@@ -334,7 +335,7 @@ export function AdminPropertyForm({ property, onSubmit, onCancel }: AdminPropert
             <p className="text-xs font-black uppercase text-clay">Basic Information</p>
             <label className="block space-y-2">
               <span className="text-sm font-bold text-ink">Property title</span>
-              <input name="title" defaultValue={property?.title} className="input" placeholder="Aster House PG for Girls" required />
+              <input name="title" defaultValue={property?.title} className="input" placeholder="Aster House PG for Girls" />
             </label>
             <label className="block space-y-2">
               <span className="text-sm font-bold text-ink">Description</span>
@@ -343,7 +344,6 @@ export function AdminPropertyForm({ property, onSubmit, onCancel }: AdminPropert
                 defaultValue={property?.description}
                 className="input min-h-36 py-4"
                 placeholder="Describe rooms, building, rules, meals, commute, and nearby colleges."
-                required
               />
             </label>
             <label className="block space-y-2 mt-4 pt-4 border-t border-linen">
@@ -467,7 +467,6 @@ export function AdminPropertyForm({ property, onSubmit, onCancel }: AdminPropert
                 onChange={(e) => setExactAddress(e.target.value)}
                 className="input"
                 placeholder="E.g., House 12, Block B, Floor 2, Phase 1..."
-                required
               />
             </label>
 
@@ -479,7 +478,6 @@ export function AdminPropertyForm({ property, onSubmit, onCancel }: AdminPropert
                 onChange={(e) => setLocality(e.target.value)}
                 className="input"
                 placeholder="E.g., Kamla Nagar"
-                required
               />
             </label>
 
@@ -561,50 +559,53 @@ export function AdminPropertyForm({ property, onSubmit, onCancel }: AdminPropert
               )}
             </div>
 
-            <div className="space-y-4 rounded-3xl border border-black/5 bg-linen p-4">
-              <label className="flex cursor-pointer items-center gap-3">
-                <span className="text-sm font-semibold text-ink">Meal Plan</span>
-                <select name="mealPlan" defaultValue={mealPlan} className="select w-full">
-                  <option value="Not Included">Not Included</option>
-                  <option value="Included">Included</option>
-                  <option value="Optional">Optional</option>
-                </select>
-              </label>
-              {mealPlan !== "Not Included" && (
-                <div className="space-y-2">
-                  <span className="text-sm font-semibold text-ink">Meal Times</span>
-                  <div className="flex flex-wrap gap-2">
-                    {mealTimeOptions.map((time) => (
-                      <label key={time} className={`flex items-center gap-2 rounded-xl border border-black/10 bg-linen px-3 py-2 text-sm font-medium ${
-                        selectedMealTimes.includes(time) ? "bg-white shadow-soft text-ink" : "text-muted hover:text-ink"
-                      }`}>
-                        <input
-                          type="checkbox"
-                          name="mealTime"
-                          value={time}
-                          checked={selectedMealTimes.includes(time)}
-                          onChange={() => toggleMealTime(time)}
-                          className="sr-only"
-                        />
-                        {time}
-                      </label>
-                    ))}
-                  </div>
+            <section className="space-y-5 rounded-3xl bg-white p-5 shadow-soft sm:p-6">
+            <p className="text-xs font-black uppercase text-clay">Meals</p>
+            <label className="block space-y-2">
+              <span className="text-sm font-bold text-ink">Meal plan</span>
+              <select name="mealPlan" value={mealPlan} onChange={(e) => setMealPlan(e.target.value)} className="input">
+                <option value="Not Included">Meals Not Included</option>
+                <option value="Veg Only">Veg Only</option>
+                <option value="Veg + Non-Veg">Veg + Non-Veg</option>
+                <option value="Snacks Only">Snacks Only</option>
+              </select>
+            </label>
+            {mealPlan !== "Not Included" && mealPlan !== "Snacks Only" && (
+              <div>
+                <p className="text-sm font-bold text-ink">Meal times included</p>
+                <div className="mt-3 flex flex-wrap gap-3">
+                  {mealTimeOptions.map((time) => (
+                    <label key={time} className="flex cursor-pointer items-center gap-2 rounded-2xl bg-linen px-4 py-2 text-sm font-semibold text-ink">
+                      <input type="checkbox" checked={selectedMealTimes.includes(time)} onChange={() => toggleMealTime(time)} className="h-4 w-4 accent-ink" />
+                      {time}
+                    </label>
+                  ))}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+          </section>
 
             <div className="space-y-4 rounded-3xl border border-black/5 bg-linen p-4">
               <label className="flex cursor-pointer items-center gap-3">
                 <span className="text-sm font-semibold text-ink">Curfew Time</span>
-                <input name="curfewTime" type="time" defaultValue={property?.curfewTime} className="input" />
+                <select name="curfewTime" defaultValue={property?.curfewTime ?? "No Curfew"} className="input">
+                  <option value="No Curfew">No Curfew</option>
+                  <option value="9 PM">9 PM</option>
+                  <option value="10 PM">10 PM</option>
+                  <option value="11 PM">11 PM</option>
+                  <option value="12 AM">12 AM</option>
+                </select>
               </label>
             </div>
 
             <div className="space-y-4 rounded-3xl border border-black/5 bg-linen p-4">
               <label className="flex cursor-pointer items-center gap-3">
-                <span className="text-sm font-semibold text-ink">Notice Period</span>
-                <input name="noticePeriod" type="number" min={0} defaultValue={property?.noticePeriod} className="input" placeholder="30" />
+                <span className="text-sm font-semibold text-ink">Lock-in Period</span>
+                <select name="noticePeriod" defaultValue={property?.noticePeriod ?? "11 Month"} className="input">
+                  <option value="15 Days">6 Months</option>
+                  <option value="1 Month">9 Months</option>
+                  <option value="2 Months">11 Months</option>
+                </select>
               </label>
             </div>
 
@@ -621,6 +622,51 @@ export function AdminPropertyForm({ property, onSubmit, onCancel }: AdminPropert
 
           </section>
 
+          {/* Facilities (Includes Custom Additions) */}
+                    <section className="space-y-5 rounded-3xl bg-white p-5 shadow-soft sm:p-6">
+                      <p className="text-xs font-black uppercase text-clay">Facilities & Amenities</p>
+                      
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {facilities.map((facility) => (
+                          <label key={facility} className="flex cursor-pointer items-center gap-3 rounded-2xl bg-linen p-3 text-sm font-semibold text-ink transition hover:bg-oat">
+                            <input type="checkbox" checked={selectedFacilities.includes(facility)} onChange={() => toggleFacility(facility)} className="h-4 w-4 accent-ink" />
+                            {facility}
+                          </label>
+                        ))}
+          
+                        {/* Render User-Added Custom Facilities */}
+                        {selectedFacilities.filter(f => !facilities.includes(f)).map((facility) => (
+                          <label key={facility} className="flex cursor-pointer items-center gap-3 rounded-2xl bg-amber-50 border border-amber-200 p-3 text-sm font-semibold text-amber-900 transition hover:bg-amber-100">
+                            <input type="checkbox" checked onChange={() => toggleFacility(facility)} className="h-4 w-4 accent-amber-700" />
+                            {facility}
+                          </label>
+                        ))}
+                      </div>
+          
+                      {/* Custom Facility Input */}
+                      <div className="mt-4 pt-4 border-t border-linen">
+                        <span className="text-sm font-bold text-ink">Have a facility not listed above?</span>
+                        <div className="mt-2 flex items-center gap-2 rounded-xl bg-linen p-1.5 pl-4 focus-within:ring-2 focus-within:ring-ink">
+                          <input 
+                            type="text" 
+                            value={customFacility}
+                            onChange={(e) => setCustomFacility(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleAddCustomFacility();
+                              }
+                            }}
+                            placeholder="e.g. PlayStation 5, Pool Table..."
+                            className="flex-1 bg-transparent text-sm font-semibold text-ink outline-none placeholder:text-muted"
+                          />
+                          <Button type="button" variant="secondary" onClick={handleAddCustomFacility} className="h-9 px-4 py-0 text-xs">
+                            <Plus className="h-4 w-4" /> Add
+                          </Button>
+                        </div>
+                      </div>
+                    </section>
+
           {/* Images */}
           <section className="space-y-5 rounded-3xl bg-white p-5 shadow-soft sm:p-6">
             <p className="text-xs font-black uppercase text-clay">Images</p>
@@ -633,20 +679,7 @@ export function AdminPropertyForm({ property, onSubmit, onCancel }: AdminPropert
             </div>
           </section>
 
-          {/* Map Preview */}
-          {pickedLocation && (
-            <section className="space-y-5 rounded-3xl bg-white p-5 shadow-soft sm:p-6">
-              <p className="text-xs font-black uppercase text-clay">Map Preview</p>
-              <MapPicker
-                mode="preview"
-                initialLat={pickedLocation?.lat}
-                initialLng={pickedLocation?.lng}
-                onConfirm={() => {}}
-                onClose={() => {}}
-              />
-            </section>
-          )}
-
+          {error ? <p className="rounded-2xl bg-red-50 p-3 text-sm font-semibold text-red-600 mb-4">{error}</p> : null}
           {/* Actions */}
           <div className="flex items-center justify-between pt-4">
             <Button
@@ -658,12 +691,7 @@ export function AdminPropertyForm({ property, onSubmit, onCancel }: AdminPropert
             </Button>
             <Button
               variant="primary"
-              onClick={(e) => {
-                e.preventDefault();
-                // Trigger form submission via the form's onSubmit handler
-                const form = e.currentTarget.closest('form');
-                if (form) form.requestSubmit();
-              }}
+              type="submit"
               className="w-full md:w-auto"
               disabled={isSubmitting}
             >

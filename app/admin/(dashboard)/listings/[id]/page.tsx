@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { Check, Pencil, Trash2, X } from "lucide-react";
+import { isAxiosError } from "axios"; // ✅ FIXED: Imported directly from axios
 import { AdminShell } from "@/components/admin/AdminShell";
 import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { Button } from "@/components/Button";
@@ -11,6 +12,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { PropertyEditForm, type PropertyEditPayload } from "@/components/PropertyEditForm";
 import { approveListing, deleteListing, rejectListing, updateListing } from "@/lib/api/admin";
 import { useAdminListing } from "@/hooks/useAdmin";
+import { useToast } from "@/contexts/ToastContext";
 import { formatPrice } from "@/lib/utils";
 import { PanoramaUploadModal } from "@/components/admin/PanoramaUploadModal";
 import { updatePanorama, deletePanorama, replacePanoramaImage} from "@/lib/api/panoramas";
@@ -23,18 +25,30 @@ import {
 export default function AdminListingDetailsPage() {
   const params = useParams<{ id: string }>();
   const { listing, isLoading, mutate } = useAdminListing(params.id);
+  const { showToast } = useToast();
   const [editing, setEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showPanoramaModal, setShowPanoramaModal] = useState(false);
   const [editingPanoramaId, setEditingPanoramaId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
   const [editingSortOrder, setEditingSortOrder] = useState(0);
+
   async function handleSave(payload: PropertyEditPayload) {
     setIsSaving(true);
     try {
       await updateListing(params.id, payload);
       await mutate();
       setEditing(false);
+      showToast("Listing updated successfully!", "success");
+    } catch (err) {
+      let message = "Failed to update listing.";
+      if (isAxiosError(err)) {
+        const serverMsg = err.response?.data?.message;
+        if (typeof serverMsg === "string" && serverMsg.trim()) {
+          message = serverMsg;
+        }
+      }
+      showToast(message, "error");
     } finally {
       setIsSaving(false);
     }

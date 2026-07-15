@@ -7,25 +7,35 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { AdminPropertyForm } from "@/components/admin/AdminPropertyForm";
 import { getAdminProperties } from "@/lib/api/admin-properties";
 
+// Define the exact shape of the data coming back from your API
+type AdminProperty = {
+  id: string;
+  propertyCode: string | null;
+  title: string;
+  location: string;
+  manualOwnerName: string | null;
+  owner: { name: string } | null;
+  _count: { tenants: number };
+};
+
 export default function AdminPropertiesPage() {
   const [search, setSearch] = useState("");
-
-  type Property = {
-    id: string | number;
-    propertyCode: string;
-    title: string;
-    owner: { name: string };
-    location?: string;
-    _count: { tenants: number };
-  };
-
-  const [properties, setProperties] = useState<Property[]>([]);
-  const { user } = useAuthContext();
+  const [properties, setProperties] = useState<AdminProperty[]>([]);
+  const { user, isLoading } = useAuthContext();
   const isSuperAdmin = user?.role === "SUPER_ADMIN";
 
   useEffect(() => {
+    if (isLoading || !user) return;
     getAdminProperties(search).then(setProperties);
-  }, [search]);
+  }, [search, isLoading, user]);
+
+  if (isLoading || !user) {
+    return (
+      <div className="flex h-[calc(100vh-64px)] items-center justify-center">
+        <p className="text-xl text-muted">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -72,14 +82,14 @@ export default function AdminPropertiesPage() {
                     {property.propertyCode}
                   </div>
                   <h2 className="text-2xl font-bold">
-                    {property.title}
-                  </h2>
-                  <p>
-                    {property.owner.name}
-                  </p>
-                  <p>
-                    {property.location}
-                  </p>
+                  {property.title}
+                </h2>
+                <p className="font-medium text-ink/80">
+                  {property.owner?.name || property.manualOwnerName || "Admin Listed"}
+                </p>
+                <p className="text-muted">
+                  {property.location}
+                </p>
                 </div>
                 <div className="text-right">
                   <div>
