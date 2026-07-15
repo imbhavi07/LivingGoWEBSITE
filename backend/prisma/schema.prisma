@@ -41,6 +41,7 @@ model User {
   tokenPayments      TokenPayment[]     @relation("StudentTokenPayments")
   wishlist           Wishlist[]
   visits             Visit[]            @relation("UserVisits")
+  reviews            Review[]           @relation("StudentReviews") // Relation added for studentId
 
   @@index([clerkId])
   @@index([role])
@@ -102,7 +103,7 @@ model Property {
   owner                 User?              @relation("OwnerProperties", fields: [ownerId], references: [id], onDelete: Cascade)
   images                PropertyImage[]
   panoramas             PropertyPanorama[]
-  reviews               Review[]
+  reviews               Review[]           @relation("PropertyReviews")
   tenants               TenantResidence[]
   tokenPayments         TokenPayment[]
   wishlistedBy          Wishlist[]
@@ -155,16 +156,25 @@ model Wishlist {
 }
 
 model Review {
-  id            String   @id @default(cuid())
-  propertyId    String
-  property      Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  studentId        String?  // <-- Add the question mark to make this optional
-  studentName      String?  // <-- Add this for admin proxy names
-  isAdminGenerated Boolean  @default(false) // <-- Add this flag
-  rating        Int
-  content       String   @db.Text
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id               String   @id @default(cuid())
+  propertyId       String
+  studentId        String?  // Made optional so Admin proxy reviews don't crash
+  studentName      String?  // For admin proxy names
+  isAdminGenerated Boolean  @default(false)
+  cleanliness      Int      @default(0) // Mapped from actual schema needs
+  food             Int      @default(0)
+  security         Int      @default(0)
+  management       Int      @default(0)
+  location         Int      @default(0)
+  comment          String?  @db.Text
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  property         Property @relation("PropertyReviews", fields: [propertyId], references: [id], onDelete: Cascade)
+  student          User?    @relation("StudentReviews", fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@index([studentId])
 }
 
 model TenantResidence {
@@ -240,20 +250,20 @@ model Referral {
 }
 
 model Visit {
-  id          String   @id @default(cuid())
-  tokenId     String   @unique
-  studentId   String
-  propertyId  String
-  visitDate   DateTime
-  timeSlot    String
-  couponCode  String?
-  leadStatus  VisitStatus @default(SCHEDULED)
-  notes       String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id         String      @id @default(cuid())
+  tokenId    String      @unique
+  studentId  String
+  propertyId String
+  visitDate  DateTime
+  timeSlot   String
+  couponCode String?
+  leadStatus VisitStatus @default(SCHEDULED)
+  notes      String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
 
-  student     User      @relation("UserVisits", fields: [studentId], references: [id])
-  property    Property  @relation("PropertyVisits", fields: [propertyId], references: [id])
+  student    User        @relation("UserVisits", fields: [studentId], references: [id])
+  property   Property    @relation("PropertyVisits", fields: [propertyId], references: [id])
 
   @@index([studentId])
   @@index([propertyId])
