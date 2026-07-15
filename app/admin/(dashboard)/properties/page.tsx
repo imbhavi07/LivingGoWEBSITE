@@ -15,6 +15,7 @@ export default function AdminPropertiesPage() {
     propertyCode: string;
     title: string;
     owner: { name: string };
+    manualOwnerName?: string;
     location?: string;
     _count: { tenants: number };
   };
@@ -72,14 +73,15 @@ export default function AdminPropertiesPage() {
                     {property.propertyCode}
                   </div>
                   <h2 className="text-2xl font-bold">
-                    {property.title}
-                  </h2>
-                  <p>
-                    {property.owner.name}
-                  </p>
-                  <p>
-                    {property.location}
-                  </p>
+                  {property.title}
+                </h2>
+                <p className="font-medium text-ink/80">
+                  {/* Safely check for owner, fallback to manual name, then fallback to generic text */}
+                  {property.owner?.name || property.manualOwnerName || "Admin Listed"}
+                </p>
+                <p className="text-muted">
+                  {property.location}
+                </p>
                 </div>
                 <div className="text-right">
                   <div>

@@ -622,6 +622,51 @@ export function AdminPropertyForm({ property, onSubmit, onCancel }: AdminPropert
 
           </section>
 
+          {/* Facilities (Includes Custom Additions) */}
+                    <section className="space-y-5 rounded-3xl bg-white p-5 shadow-soft sm:p-6">
+                      <p className="text-xs font-black uppercase text-clay">Facilities & Amenities</p>
+                      
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {facilities.map((facility) => (
+                          <label key={facility} className="flex cursor-pointer items-center gap-3 rounded-2xl bg-linen p-3 text-sm font-semibold text-ink transition hover:bg-oat">
+                            <input type="checkbox" checked={selectedFacilities.includes(facility)} onChange={() => toggleFacility(facility)} className="h-4 w-4 accent-ink" />
+                            {facility}
+                          </label>
+                        ))}
+          
+                        {/* Render User-Added Custom Facilities */}
+                        {selectedFacilities.filter(f => !facilities.includes(f)).map((facility) => (
+                          <label key={facility} className="flex cursor-pointer items-center gap-3 rounded-2xl bg-amber-50 border border-amber-200 p-3 text-sm font-semibold text-amber-900 transition hover:bg-amber-100">
+                            <input type="checkbox" checked onChange={() => toggleFacility(facility)} className="h-4 w-4 accent-amber-700" />
+                            {facility}
+                          </label>
+                        ))}
+                      </div>
+          
+                      {/* Custom Facility Input */}
+                      <div className="mt-4 pt-4 border-t border-linen">
+                        <span className="text-sm font-bold text-ink">Have a facility not listed above?</span>
+                        <div className="mt-2 flex items-center gap-2 rounded-xl bg-linen p-1.5 pl-4 focus-within:ring-2 focus-within:ring-ink">
+                          <input 
+                            type="text" 
+                            value={customFacility}
+                            onChange={(e) => setCustomFacility(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleAddCustomFacility();
+                              }
+                            }}
+                            placeholder="e.g. PlayStation 5, Pool Table..."
+                            className="flex-1 bg-transparent text-sm font-semibold text-ink outline-none placeholder:text-muted"
+                          />
+                          <Button type="button" variant="secondary" onClick={handleAddCustomFacility} className="h-9 px-4 py-0 text-xs">
+                            <Plus className="h-4 w-4" /> Add
+                          </Button>
+                        </div>
+                      </div>
+                    </section>
+
           {/* Images */}
           <section className="space-y-5 rounded-3xl bg-white p-5 shadow-soft sm:p-6">
             <p className="text-xs font-black uppercase text-clay">Images</p>
