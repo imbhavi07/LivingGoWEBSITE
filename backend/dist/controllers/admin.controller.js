@@ -259,7 +259,7 @@ exports.addPropertyImages = (0, async_handler_1.asyncHandler)(async (req, res) =
     const uploads = await Promise.all(files.map(cloudinary_service_1.uploadImage));
     const result = await adminService.addImagesToProperty(propertyId, uploads.map((u) => ({
         url: u.secure_url,
-        publicId: u.public_id,
+        publicId: u.public_id
     })));
     res.json(result);
 });
@@ -343,26 +343,33 @@ exports.deleteAdminReview = (0, async_handler_1.asyncHandler)(async (request, re
     response.status(204).send();
 });
 // Panorama controllers
-exports.addPanoramaController = (0, async_handler_1.asyncHandler)(async (req, res) => {
-    const propertyId = String(req.params.id);
-    const file = req.file;
-    if (!file) {
-        throw new app_error_1.AppError("Panorama image is required", 400);
+const addPanoramaController = async (req, res) => {
+    try {
+        const propertyId = String(req.params.id);
+        const file = req.file;
+        if (!file) {
+            return res.status(400).json({ success: false, message: "Panorama image is required" });
+        }
+        // Upload the panorama image to Cloudinary
+        const uploaded = await (0, cloudinary_service_1.uploadImage)(file);
+        const { title, sortOrder } = req.body;
+        const panorama = await prisma_1.prisma.propertyPanorama.create({
+            data: {
+                propertyId,
+                title,
+                imageUrl: uploaded.secure_url,
+                publicId: uploaded.public_id,
+                sortOrder: sortOrder ? Number(sortOrder) : 0,
+            },
+        });
+        return res.status(201).json({ success: true, data: panorama });
     }
-    // Upload the panorama image to Cloudinary
-    const uploaded = await (0, cloudinary_service_1.uploadImage)(file);
-    const { title, sortOrder } = req.body;
-    const panorama = await prisma_1.prisma.propertyPanorama.create({
-        data: {
-            propertyId,
-            title,
-            imageUrl: uploaded.secure_url,
-            publicId: uploaded.public_id,
-            sortOrder: sortOrder ? Number(sortOrder) : 0,
-        },
-    });
-    res.status(201).json(panorama);
-});
+    catch (error) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        return res.status(500).json({ success: false, message: "Upload failed", error: message });
+    }
+};
+exports.addPanoramaController = addPanoramaController;
 exports.updatePanorama = (0, async_handler_1.asyncHandler)(async (req, res) => {
     const panoramaId = String(req.params.panoramaId);
     const { title, sortOrder } = req.body;

@@ -13,6 +13,8 @@ import { propertyIdSchema } from "../validations/property.validation";
 import { createPropertySchema } from "../validations/property.validation";
 
 export const adminRouter = Router();
+const adminAuth = [authenticate, authorize("admin")];
+adminRouter.post('/properties/:id/panoramas', ...adminAuth, upload.single('image'), adminController.addPanoramaController);
 
 adminRouter.post("/auth/login", authLimiter, validate(loginSchema), authController.adminLogin);
 
@@ -50,7 +52,6 @@ adminRouter.put("/properties/:id/images/:imageId", uploadImages, adminController
 adminRouter.delete("/properties/:id/images/:imageId", validate(adminIdSchema), adminController.deletePropertyImage);
 
 // Panorama routes
-adminRouter.post("/properties/:id/panoramas", upload.single('file'), adminController.addPanoramaController);
 adminRouter.put("/properties/panoramas/:panoramaId", adminController.updatePanorama);
 adminRouter.delete("/properties/panoramas/:panoramaId", adminController.deletePanorama);
-adminRouter.put("/properties/panoramas/:panoramaId/image", upload.single('file'), adminController.replacePanoramaImage);
+adminRouter.put("/properties/panoramas/:panoramaId/image", upload.single('image'), adminController.replacePanoramaImage);
