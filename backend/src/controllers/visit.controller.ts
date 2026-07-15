@@ -401,55 +401,49 @@ export const getAllVisits = asyncHandler(
   async (_request: Request, response: Response) => {
 
     const visits = await prisma.visit.findMany({
+  where: {
+    leadStatus: {
+      in: ["SCHEDULED", "ASSIGNED"],
+    },
+  },
 
-      include: {
+  include: {
+    student: {
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+      },
+    },
 
-        student: {
+    property: {
+      select: {
+        id: true,
+        propertyCode: true,
+        title: true,
+        location: true,
+        price: true,
+
+        owner: {
           select: {
-            id: true,
             name: true,
-            email: true,
             phone: true,
           },
         },
-
-        property: {
-
-          select: {
-
-            id: true,
-
-            propertyCode: true,
-
-            title: true,
-
-            location: true,
-
-            price: true,
-
-            owner: {
-              select: {
-                name: true,
-                phone: true,
-              },
-            },
-
-          },
-
-        },
-
       },
+    },
+  },
 
-      orderBy: [
-        {
-          visitDate: "asc",
-        },
-        {
-          timeSlot: "asc",
-        },
-      ],
-
-    });
+  orderBy: [
+    {
+      visitDate: "asc",
+    },
+    {
+      timeSlot: "asc",
+    },
+  ],
+});
 
     response.json({
       success: true,
@@ -459,3 +453,169 @@ export const getAllVisits = asyncHandler(
 
   }
 );
+
+export const assignLead = async (
+  req: Request<{ visitId: string }>,
+  res: Response
+) => {
+  try {
+    const { visitId } = req.params;
+
+    const visit = await prisma.visit.findUnique({
+      where: {
+        id: visitId,
+      },
+      include: {
+        property: {
+          include: {
+            owner: true,
+          },
+        },
+        student: true,
+      },
+    });
+
+    if (!visit) {
+      return res.status(404).json({
+        success: false,
+        message: "Visit not found",
+      });
+    }
+
+    if (visit.leadStatus !== "SCHEDULED") {
+      return res.status(400).json({
+        success: false,
+        message: "Lead already assigned.",
+      });
+    }
+
+    const { internId, meetingPointId } = req.body;
+
+const updatedVisit = await prisma.visit.update({
+  where: {
+    id: visitId,
+  },
+  data: {
+    leadStatus: "ASSIGNED",
+
+    assignedLeadId: internId,
+
+    meetingPointId
+  },
+});
+
+    return res.json({
+      success: true,
+      message: "Lead assigned successfully.",
+      visit: updatedVisit,
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+
+  }
+};
+
+export const getInterns = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+
+    const supervisorId = req.user!.id;
+
+    const interns = await prisma.intern.findMany({
+      where: {
+        supervisorId,
+        active: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
+
+    return res.json({
+      success: true,
+      interns,
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+
+  }
+};
+
+export const createIntern = async (
+  req: Request,
+  res: Response
+) => {
+
+  try {
+
+    const supervisorId = req.user!.id;
+
+    const {
+      name,
+      phone,password
+    } = req.body;
+
+    const username =
+      `INT${Date.now().toString().slice(-6)}`;
+
+    const passwordHash =
+      await bcrypt.hash(password, 10);
+
+    const intern =
+      await prisma.intern.create({
+
+        data: {
+
+          supervisorId,
+
+          name,
+
+          phone,
+
+          username,
+
+          passwordHash,
+
+        },
+
+      });
+
+    return res.json({
+
+      success: true,
+
+      intern
+
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    return res.status(500).json({
+
+      success: false,
+
+      message: "Internal server error",
+
+    });
+
+  }
+
+};

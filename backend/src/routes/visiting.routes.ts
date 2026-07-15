@@ -6,12 +6,6 @@ import { supervisorAuthenticate } from "../middleware/supervisor.middleware";
 
 export const visitingRouter = Router();
 
-/*
-|--------------------------------------------------------------------------
-| PUBLIC
-|--------------------------------------------------------------------------
-*/
-
 visitingRouter.post(
   "/send-otp",
   visitController.sendSupervisorOtp
@@ -22,15 +16,30 @@ visitingRouter.post(
   visitController.verifySupervisorOtp
 );
 
-/*
-|--------------------------------------------------------------------------
-| PROTECTED
-|--------------------------------------------------------------------------
-*/
-
 visitingRouter.use(supervisorAuthenticate);
 
 visitingRouter.get(
   "/dashboard",
   visitController.getAllVisits
+);
+
+visitingRouter.post(
+  "/:visitId/assign-lead",
+  visitController.assignLead
+);
+
+visitingRouter.post(
+  "/interns",
+  visitController.createIntern
+);
+
+visitingRouter.get(
+  "/interns",
+  visitController.getInterns
+);
+
+visitingRouter.post(
+  "/interns",
+  supervisorAuthenticate,
+  visitController.createIntern
 );
