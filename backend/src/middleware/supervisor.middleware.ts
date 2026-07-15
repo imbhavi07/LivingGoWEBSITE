@@ -46,8 +46,9 @@ export function supervisorAuthenticate(
     const payload =
       verifyJwt(token);
 
-    (request as SupervisorRequest)
-      .supervisor = payload;
+    (request as any).user = payload;
+    console.log("JWT Payload:", payload);
+    console.log("Request User:", (request as any).user);
 
     next();
 

@@ -16,6 +16,7 @@ model User {
   phone              String?
   passwordHash       String
   role               Role
+  interns            Intern[]           @relation("SupervisorInterns")
   status             UserStatus         @default(active)
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
@@ -254,28 +255,19 @@ model Visit {
   tokenId         String      @unique
   studentId       String
   propertyId      String
-
+  assignedLeadId  String?
+  intern Intern? @relation(fields: [assignedLeadId], references: [id])
+  meetingPointId  String?
   visitDate       DateTime
   timeSlot        String
-
   visitOtp        String
-
   couponCode      String?
-
   leadStatus      VisitStatus @default(SCHEDULED)
-
-  assignedLeadId  String?
-
-  meetingPointId  String?
-
   notes           String?
-
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
-
   student         User        @relation("UserVisits", fields: [studentId], references: [id])
   property        Property    @relation("PropertyVisits", fields: [propertyId], references: [id])
-
   @@index([studentId])
   @@index([propertyId])
   @@index([tokenId])
@@ -298,6 +290,8 @@ enum Role {
   admin
   SUPER_ADMIN
   PARTNER
+  SUPERVISOR
+  INTERN
 }
 
 enum UserStatus {
@@ -354,4 +348,29 @@ enum ReferralStatus {
 enum ListingSource {
   ONBOARDED
   LISTED
+}
+
+model Intern {
+
+  id String @id @default(cuid())
+
+  supervisorId String
+
+  supervisor User @relation("SupervisorInterns", fields: [supervisorId], references: [id])
+
+  name String
+
+  phone String
+
+  username String @unique
+
+  passwordHash String
+
+  active Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  visits Visit[]
 }
