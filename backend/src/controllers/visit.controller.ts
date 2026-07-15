@@ -108,7 +108,9 @@ export const scheduleVisit = asyncHandler(
     const validatedData = scheduleVisitSchema.parse(request.body);
 
     const { visitDate, timeSlot, propertyId, couponCode } = validatedData;
-
+    console.log("========== SCHEDULE VISIT ==========");
+    console.log(request.body);
+    console.log("USER:", request.user);
     // Get user ID from request (set by clerkAuthenticate middleware)
     const userId = request.user?.id;
 
@@ -186,44 +188,45 @@ export const scheduleVisit = asyncHandler(
       );
     }
     const visit = await prisma.visit.create({
-  data: {
-    tokenId,
-    studentId: userId,
-    propertyId,
-    visitDate: new Date(visitDate),
-    timeSlot,
-    visitOtp: generateVisitOtp(),
-    couponCode: couponCode?.toUpperCase().trim() || null,
-  },
+      data: {
+        tokenId,
+        studentId: userId,
+        propertyId,
+        visitDate: new Date(visitDate),
+        timeSlot,
+        visitOtp: generateVisitOtp(),
+        couponCode: couponCode?.toUpperCase().trim() || null,
+        },
 
-  include: {
-    student: {
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-      },
-    },
-
-    property: {
-      select: {
-        id: true,
-        propertyCode: true,
-        title: true,
-        location: true,
-        price: true,
-
-        owner: {
+        include: {
+          student: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              phone: true,
+            },
+        },
+        property: {
           select: {
-            name: true,
-            phone: true,
+            id: true,
+            propertyCode: true,
+            title: true,
+            location: true,
+            price: true,
+          
+            owner: {
+              select: {
+                name: true,
+                phone: true,
+              },
+            },
           },
         },
       },
-    },
-  },
-});
+    });
+    console.log("VISIT CREATED");
+    console.log(visit);
 
     // If a valid coupon code was provided, increment its usage count
     if (couponCode) {
@@ -233,7 +236,7 @@ export const scheduleVisit = asyncHandler(
         data: { currentUses: { increment: 1 } },
       });
     }
-
+console.log("RETURNING SUCCESS");
 response.status(201).json({
   success: true,
 
