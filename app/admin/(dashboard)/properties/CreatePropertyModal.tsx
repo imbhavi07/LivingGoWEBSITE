@@ -394,13 +394,12 @@ export function CreatePropertyModal({
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Notice Period</label>
-                    <input
-                      value={formFields.noticePeriod}
-                      onChange={(e) => handleInputChange('noticePeriod', e.target.value)}
-                      placeholder="e.g., 1 month"
-                      className="input input-bordered w-full"
-                    />
+                    <label className="block text-sm font-medium mb-1">Lock-in Period</label>
+                    <select name="noticePeriod" defaultValue={formFields?.noticePeriod ?? "11 Month"} className="input">
+                  <option value="15 Days">6 Months</option>
+                  <option value="1 Month">9 Months</option>
+                  <option value="2 Months">11 Months</option>
+                </select>
                   </div>
                 </div>
 
