@@ -4,11 +4,21 @@ import { AppError } from "../utils/app-error";
 import { z } from "zod";
 import { asyncHandler } from "../utils/async-handler";
 import crypto from "crypto";
+import bcrypt from "bcryptjs";
+import { Resend } from "resend";
+import { signJwt } from "../utils/jwt";
+import { VISIT_CONFIG } from "../config/visit.config";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+const SUPERVISOR_EMAILS = [
+  "mffalit@gmail.com",
+];
 
 // Validation schema for visit scheduling
 const scheduleVisitSchema = z.object({
   visitDate: z.string().datetime(),
-  timeSlot: z.string(),
+  timeSlot: z.string().min(1, "Time slot is required"),
   propertyId: z.string().min(1, "Property ID is required"),
   couponCode: z.string().optional().nullable(),
 });
@@ -18,6 +28,10 @@ function generateTokenId(): string {
   const randomBytes = crypto.randomBytes(3);
   const hexString = randomBytes.toString("hex").toUpperCase();
   return `VISIT-${hexString}`;
+}
+
+function generateVisitOtp(): string {
+  return Math.floor(1000 + Math.random() * 9000).toString();
 }
 
 // Helper function to validate time slot format and range
@@ -154,19 +168,62 @@ export const scheduleVisit = asyncHandler(
       }
     }
 
-    // Create the visit record
-    const visit = await prisma.visit.create({
-      data: {
-        tokenId,
+    const existingVisit = await prisma.visit.findFirst({
+      where: {
         studentId: userId,
-        propertyId: propertyId,
+        propertyId,
         visitDate: new Date(visitDate),
         timeSlot,
-        couponCode: couponCode?.toUpperCase().trim() || null,
-        // leadStatus defaults to SCHEDULED via schema
-        // createdAt and updatedAt are set automatically
       },
     });
+
+    if (existingVisit) {
+      return next(
+        new AppError(
+          "You have already scheduled this visit.",
+          400
+        )
+      );
+    }
+    const visit = await prisma.visit.create({
+  data: {
+    tokenId,
+    studentId: userId,
+    propertyId,
+    visitDate: new Date(visitDate),
+    timeSlot,
+    visitOtp: generateVisitOtp(),
+    couponCode: couponCode?.toUpperCase().trim() || null,
+  },
+
+  include: {
+    student: {
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+      },
+    },
+
+    property: {
+      select: {
+        id: true,
+        propertyCode: true,
+        title: true,
+        location: true,
+        price: true,
+
+        owner: {
+          select: {
+            name: true,
+            phone: true,
+          },
+        },
+      },
+    },
+  },
+});
 
     // If a valid coupon code was provided, increment its usage count
     if (couponCode) {
@@ -177,16 +234,225 @@ export const scheduleVisit = asyncHandler(
       });
     }
 
-    response.status(201).json({
-      success: true,
+response.status(201).json({
+  success: true,
+
+  data: {
+    visitId: visit.id,
+
+    tokenId: visit.tokenId,
+
+    visitOtp: visit.visitOtp,
+
+    visitDate: visit.visitDate,
+
+    timeSlot: visit.timeSlot,
+
+    couponCode: visit.couponCode,
+
+    status: visit.leadStatus,
+
+    supervisor: VISIT_CONFIG.supervisor,
+
+    student: visit.student,
+
+    property: visit.property,
+  },
+});
+  }
+);
+
+export const sendSupervisorOtp = asyncHandler(
+  async (request: Request, response: Response) => {
+
+    const { email } = request.body as { email: string };
+
+    if (!SUPERVISOR_EMAILS.includes(email.toLowerCase())) {
+      throw new AppError(
+        "Unauthorized supervisor email.",
+        403
+      );
+    }
+
+    const otp = crypto
+      .randomInt(100000, 999999)
+      .toString();
+
+    const otpHash = await bcrypt.hash(
+      otp,
+      10
+    );
+
+    const expiresAt = new Date(
+      Date.now() + 10 * 60 * 1000
+    );
+
+    await prisma.emailOtp.create({
       data: {
-        visitId: visit.id,
-        tokenId: visit.tokenId,
-        visitDate: visit.visitDate,
-        timeSlot: visit.timeSlot,
-        couponCode: visit.couponCode,
-        status: visit.leadStatus,
+        email,
+        codeHash: otpHash,
+        purpose: "visiting_supervisor_login",
+        expiresAt,
       },
     });
+
+    await resend.emails.send({
+      from: process.env.EMAIL_FROM!,
+      to: email,
+      subject: "LivingGo Visiting Supervisor OTP",
+
+      html: `
+      <div style="font-family:sans-serif">
+
+      <h2>LivingGo Visiting Portal</h2>
+
+      <p>Your OTP is</p>
+
+      <h1>${otp}</h1>
+
+      <p>
+      Valid for 10 minutes.
+      </p>
+
+      </div>
+      `,
+    });
+
+    response.json({
+      success: true,
+    });
+
+  }
+);
+
+export const verifySupervisorOtp = asyncHandler(
+  async (request: Request, response: Response) => {
+
+    const { email, otp } = request.body;
+
+    if (!SUPERVISOR_EMAILS.includes(email.toLowerCase())) {
+      throw new AppError(
+        "Unauthorized supervisor.",
+        403
+      );
+    }
+
+    const otpRecord =
+      await prisma.emailOtp.findFirst({
+        where: {
+          email,
+          purpose:
+            "visiting_supervisor_login",
+          usedAt: null,
+          expiresAt: {
+            gt: new Date(),
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+    if (!otpRecord) {
+      throw new AppError(
+        "OTP expired.",
+        400
+      );
+    }
+
+    const valid =
+      await bcrypt.compare(
+        otp,
+        otpRecord.codeHash
+      );
+
+    if (!valid) {
+      throw new AppError(
+        "Invalid OTP.",
+        400
+      );
+    }
+
+    await prisma.emailOtp.update({
+      where: {
+        id: otpRecord.id,
+      },
+      data: {
+        usedAt: new Date(),
+      },
+    });
+
+    const token = signJwt({
+      id: "SUPERVISOR",
+      email,
+      role: "admin",
+    });
+    response.json({
+      success: true,
+      token,
+    });
+  }
+);
+
+export const getAllVisits = asyncHandler(
+  async (_request: Request, response: Response) => {
+
+    const visits = await prisma.visit.findMany({
+
+      include: {
+
+        student: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
+
+        property: {
+
+          select: {
+
+            id: true,
+
+            propertyCode: true,
+
+            title: true,
+
+            location: true,
+
+            price: true,
+
+            owner: {
+              select: {
+                name: true,
+                phone: true,
+              },
+            },
+
+          },
+
+        },
+
+      },
+
+      orderBy: [
+        {
+          visitDate: "asc",
+        },
+        {
+          timeSlot: "asc",
+        },
+      ],
+
+    });
+
+    response.json({
+      success: true,
+      visits,
+      total: visits.length,
+    });
+
   }
 );

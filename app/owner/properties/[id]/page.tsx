@@ -151,24 +151,44 @@ export default function PropertyDashboardPage() {
                 )}
                 <PropertyEditForm
                   initialData={{
+                    ...property,
+                                    
                     title: property.title,
                     description: property.description,
+                                    
                     price: property.price,
+                                    
                     priceSingle: property.priceSingle,
                     bedsSingle: property.bedsSingle ?? undefined,
+                                    
                     priceDouble: property.priceDouble,
                     bedsDouble: property.bedsDouble ?? undefined,
+                                    
                     priceTriple: property.priceTriple,
                     bedsTriple: property.bedsTriple ?? undefined,
+                                    
+                    securityDepositMonths: property.securityDepositMonths ?? undefined,
+                                    
                     location: property.location,
-                    roomType: property.roomType ?? "PG",
-                    preference: property.preference ?? "Any",
+                    lat: property.lat ?? undefined,
+                    lng: property.lng ?? undefined,
+                                    
+                    roomType: property.roomType,
+                    preference: property.preference,
+                                    
+                    sharedType: property.sharedType ?? undefined,
+                                    
                     mealPlan: property.mealPlan ?? undefined,
-                    mealTimes: property.mealTimes,
+                    mealTimes: property.mealTimes ?? [],
+                                    
                     curfewTime: property.curfewTime ?? undefined,
                     noticePeriod: property.noticePeriod ?? undefined,
                     rulesStrictness: property.rulesStrictness ?? undefined,
-                    facilities: property.facilities,
+                                    
+                    managerContact: property.managerContact ?? "",
+                    securityContact: property.securityContact ?? "",
+                                    
+                    facilities: property.facilities ?? [],
                   }}
                   onSave={handleSave}
                   onCancel={() => setActiveTab("Overview")}

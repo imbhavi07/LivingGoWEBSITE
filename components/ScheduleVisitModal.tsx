@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { X, CheckCircle, Loader2, AlertCircle, Calendar, Clock } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { apiClient, getApiErrorMessage } from "@/lib/api/client";
 
 type ScheduleVisitModalProps = {
   propertyId: string;
@@ -19,19 +19,18 @@ export function ScheduleVisitModal({ propertyId, propertyCode, onClose }: Schedu
   const [timeSlot, setTimeSlot] = useState<string>("");
   const [couponCode, setCouponCode] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-  const [tokenId, setTokenId] = useState<string>("");
-
-  // Generate a mock token ID for display (in real app, this comes from server)
-  const generateMockTokenId = () => {
-    const randomBytes = crypto.getRandomValues(new Uint8Array(3));
-    let hexString = "";
-    for (let i = 0; i < randomBytes.length; i++) {
-      hexString += randomBytes[i].toString(16).padStart(2, "0");
-    }
-    return `VISIT-${hexString.toUpperCase().substring(0, 6)}`;
+  const [visitDetails, setVisitDetails] = useState<{
+  tokenId: string;
+  visitOtp: string;
+  visitDate: string;
+  timeSlot: string;
+  property?: {
+    propertyCode?: string | null;
+    title?: string;
+    location?: string;
   };
+} | null>(null);
 
-  // Validate date is not in the past
   const isValidDate = (dateString: string): boolean => {
     if (!dateString) return false;
     const selectedDate = new Date(dateString);
@@ -114,31 +113,30 @@ export function ScheduleVisitModal({ propertyId, propertyCode, onClose }: Schedu
     setErrorMessage(null);
 
     try {
-      // In a real implementation, this would make an API call to the backend
-      // For now, we'll simulate the API call and generate a mock token ID
-      // The actual implementation would use the apiClient from lib/api/client
+      
+      const response = await apiClient.post("/visits/schedule", {
+        propertyId,
+        visitDate: new Date(visitDate).toISOString(),
+        timeSlot,
+        couponCode: couponCode || null,
+      });
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Generate token ID (would come from backend response in real implementation)
-      const generatedTokenId = generateMockTokenId();
-      setTokenId(generatedTokenId);
-
-      // In a real app, we would make an actual API call here:
-      // const response = await apiClient.post(`/visits/schedule`, {
-      //   visitDate,
-      //   timeSlot,
-      //   propertyId,
-      //   couponCode: couponCode || undefined
-      // });
-      // setTokenId(response.data.tokenId);
-
+      setVisitDetails(response.data.data);
       setStep("success");
-    } catch (err) {
-      console.error("Failed to schedule visit:", err);
-      setErrorMessage("Failed to schedule visit. Please try again.");
-    } finally {
+    } 
+    catch (err) {
+      console.error(err);
+
+      setErrorMessage(
+        getApiErrorMessage(
+          err,
+          "Failed to schedule visit. Please try again."
+        )
+      );
+
+      setStep("error");
+    }
+    finally {
       setIsSubmitting(false);
     }
   };
@@ -418,13 +416,25 @@ export function ScheduleVisitModal({ propertyId, propertyCode, onClose }: Schedu
                 >
                   Cancel
                 </button>
-                <button
-                  onClick={handleSubmit}
-                  disabled={isSubmitting}
-                  className={`px-4 py-3 bg-ink text-white rounded-xl font-medium text-sm hover:bg-ink/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${isSubmitting ? "opacity-70" : ""}`}
-                >
-                  {isSubmitting ? "Scheduling..." : "Schedule Visit"}
-                </button>
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={isSubmitting || !visitDate || !timeSlot}
+                className={`px-4 py-3 rounded-xl text-sm font-medium text-white transition-all ${
+                  isSubmitting || !visitDate || !timeSlot
+                    ? "cursor-not-allowed bg-gray-400"
+                    : "bg-ink hover:bg-ink/90"
+                }`}
+              >
+                {isSubmitting ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Scheduling...
+                  </div>
+                ) : (
+                  "Schedule Visit"
+                )}
+              </button>
               </div>
             </div>
           )}
@@ -437,22 +447,25 @@ export function ScheduleVisitModal({ propertyId, propertyCode, onClose }: Schedu
                 <div className="text-2xl font-black text-ink">Visit Scheduled!</div>
               </div>
               <p className="text-sm text-muted">
-                Your visit has been successfully scheduled. Use the token ID below for reference.
-              </p>
+                Your visit has been scheduled successfully.
+                Please keep your Visit OTP safe.
+                You must share this OTP with the LivingGo Lead when you meet them.
+                A confirmation WhatsApp message will also be sent to your registered mobile number.
+                </p>
               <div className="mt-4 bg-linen p-4 rounded-xl space-y-3">
                 <p className="font-semibold text-ink">Visit Details</p>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span>Property ID:</span>
-                    <span>{propertyCode}</span>
+                    <span>{visitDetails?.property?.propertyCode ?? propertyCode}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Date:</span>
-                    <span>{new Date(visitDate).toLocaleDateString()}</span>
+                    <span>{visitDetails ? new Date(visitDetails.visitDate).toLocaleDateString(): ""}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Time:</span>
-                    <span>{timeSlot}</span>
+                    <span>{visitDetails?.timeSlot}</span>
                   </div>
                   {couponCode && (
                     <div className="flex justify-between">
@@ -460,9 +473,23 @@ export function ScheduleVisitModal({ propertyId, propertyCode, onClose }: Schedu
                       <span>{couponCode}</span>
                     </div>
                   )}
-                  <div className="flex justify-between pt-2 border-t border-black/10">
-                    <span className="font-bold text-ink">Token ID:</span>
-                    <span className="font-mono text-lg text-ink">{tokenId}</span>
+                  <div className="space-y-2 border-t border-black/10 pt-3">
+                    <div className="flex justify-between">
+                      <span className="font-bold text-ink">
+                        Token ID
+                      </span>
+                      <span className="font-mono">
+                        {visitDetails?.tokenId}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-bold text-ink">
+                        Visit OTP
+                      </span>
+                      <span className="font-mono text-lg">
+                        {visitDetails?.visitOtp}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

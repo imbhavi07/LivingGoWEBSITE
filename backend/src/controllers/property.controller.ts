@@ -215,43 +215,40 @@ export const updateProperty = asyncHandler(async (request: Request, response: Re
   if (user.role !== "admin" && property.ownerId !== internalUser.id) throw new AppError("Forbidden", 403);
 
   // Process image uploads if any new files were provided
-  let roomTypeMappings: { roomCategory: string; }[] = [];
-  let images: {
-    url: string;
-    publicId: string;
-    roomCategory: string;
-  }[] = [];
+  let roomTypeMappings: { roomCategory: string }[] = [];
 
-  if ((request.files as Express.Multer.File[])?.length) {
-    const files = (request.files as Express.Multer.File[]) ?? [];
+try {
+  roomTypeMappings = request.body.roomTypeMappings
+    ? JSON.parse(request.body.roomTypeMappings as string)
+    : [];
+} catch {
+  roomTypeMappings = [];
+}
 
-    const rawUploads = await uploadMany(files);
-    images = rawUploads.map((upload, index) => ({
-      url: upload.secure_url,
-      publicId: upload.public_id,
-      roomCategory:
-        roomTypeMappings[index]?.roomCategory ?? "common",
-    }));
+let images: {
+  url: string;
+  publicId: string;
+  roomCategory: string;
+}[] = [];
 
-    // Extract room-type mappings from request body
-    roomTypeMappings = request.body.roomTypeMappings
-      ? JSON.parse(request.body.roomTypeMappings as string)
-      : [];
-  }
+if ((request.files as Express.Multer.File[])?.length) {
+  const files = (request.files as Express.Multer.File[]) ?? [];
+
+  const rawUploads = await uploadMany(files);
+
+  images = rawUploads.map((upload, index) => ({
+    url: upload.secure_url,
+    publicId: upload.public_id,
+    roomCategory: roomTypeMappings[index]?.roomCategory ?? "common",
+  }));
+}
 
   const updatedProperty = await propertyService.updateProperty(
-    String(request.params.id),
-    internalUser.id,
-    user.role,
-    {
-      ...request.body,
-      // Include uploads and mappings if new files were provided
-      ...(images.length > 0 ? {
-        images: { create: images },
-        roomTypeMappings: roomTypeMappings
-      } : {})
-    }
-  );
+  String(request.params.id),
+  internalUser.id,
+  user.role,
+  request.body
+);
 
   response.json(updatedProperty);
 });

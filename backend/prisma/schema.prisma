@@ -250,20 +250,31 @@ model Referral {
 }
 
 model Visit {
-  id         String      @id @default(cuid())
-  tokenId    String      @unique
-  studentId  String
-  propertyId String
-  visitDate  DateTime
-  timeSlot   String
-  couponCode String?
-  leadStatus VisitStatus @default(SCHEDULED)
-  notes      String?
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  id              String      @id @default(cuid())
+  tokenId         String      @unique
+  studentId       String
+  propertyId      String
 
-  student    User        @relation("UserVisits", fields: [studentId], references: [id])
-  property   Property    @relation("PropertyVisits", fields: [propertyId], references: [id])
+  visitDate       DateTime
+  timeSlot        String
+
+  visitOtp        String
+
+  couponCode      String?
+
+  leadStatus      VisitStatus @default(SCHEDULED)
+
+  assignedLeadId  String?
+
+  meetingPointId  String?
+
+  notes           String?
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  student         User        @relation("UserVisits", fields: [studentId], references: [id])
+  property        Property    @relation("PropertyVisits", fields: [propertyId], references: [id])
 
   @@index([studentId])
   @@index([propertyId])

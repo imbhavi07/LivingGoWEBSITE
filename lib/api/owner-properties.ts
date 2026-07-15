@@ -19,6 +19,8 @@ export function toPropertyFormData(payload: OwnerPropertyPayload) {
   formData.append("location", payload.location);
   if (payload.lat !== undefined) formData.append("lat", String(payload.lat));
   if (payload.lng !== undefined) formData.append("lng", String(payload.lng));
+  if (payload.managerContact !== undefined) { formData.append("managerContact", payload.managerContact); }
+  if (payload.securityContact !== undefined) { formData.append("securityContact", payload.securityContact);}
   formData.append("roomType", payload.roomType);
   if (payload.sharedType !== undefined) formData.append("sharedType", payload.sharedType);
   formData.append("preference", payload.preference);

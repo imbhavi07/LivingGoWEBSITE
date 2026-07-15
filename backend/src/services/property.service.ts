@@ -399,29 +399,53 @@ export async function updateProperty(id: string, actorId: string, actorRole: Rol
 const calculatedPrice =
   prices.length > 0 ? Math.min(...prices) : property.price;
 
-
+console.log("=========== UPDATE ===========");
+console.log(JSON.stringify(input, null, 2));
   return prisma.property.update({
-    where: { id },
-    data: {
-      ...input,
+  where: { id },
+  data: {
+    title: input.title ?? property.title,
+    description: input.description ?? property.description,
 
-      ...(calculatedPrice !== property.price && {
-        price: calculatedPrice,
-      }),
-    
-      ...(nearbyPlaces && {
-        nearbyPlaces,
-      }),
-    
-      status: actorRole === "admin"
-        ? property.status
-        : "pending",
-    
-        managerContact: input.managerContact,
-        securityContact: input.securityContact,
-      },
-          include: propertyInclude
-      });
+    price: calculatedPrice,
+
+    priceSingle: input.priceSingle ?? property.priceSingle,
+    bedsSingle: input.bedsSingle ?? property.bedsSingle,
+
+    priceDouble: input.priceDouble ?? property.priceDouble,
+    bedsDouble: input.bedsDouble ?? property.bedsDouble,
+
+    priceTriple: input.priceTriple ?? property.priceTriple,
+    bedsTriple: input.bedsTriple ?? property.bedsTriple,
+
+    securityDepositMonths:
+      input.securityDepositMonths ?? property.securityDepositMonths,
+
+    location: input.location ?? property.location,
+
+    lat: input.lat ?? property.lat,
+    lng: input.lng ?? property.lng,
+
+    roomType: input.roomType ?? property.roomType,
+    sharedType: input.sharedType ?? property.sharedType,
+    preference: input.preference ?? property.preference,
+
+    mealPlan: input.mealPlan ?? property.mealPlan,
+    mealTimes: input.mealTimes ?? property.mealTimes,
+
+    curfewTime: input.curfewTime ?? property.curfewTime,
+    noticePeriod: input.noticePeriod ?? property.noticePeriod,
+    rulesStrictness: input.rulesStrictness ?? property.rulesStrictness,
+
+    facilities: input.facilities ?? property.facilities,
+
+    managerContact: input.managerContact ?? property.managerContact,
+    securityContact: input.securityContact ?? property.securityContact,
+
+    status: actorRole === "admin" ? property.status : "pending",
+  },
+  include: propertyInclude,
+});
 }
 
 export async function deleteProperty(id: string, actorId: string, actorRole: Role) {

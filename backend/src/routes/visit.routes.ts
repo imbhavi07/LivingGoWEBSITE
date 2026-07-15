@@ -4,6 +4,24 @@ import * as visitController from "../controllers/visit.controller";
 
 export const visitRouter = Router();
 
+visitRouter.post(
+  "/send-otp",
+  visitController.sendSupervisorOtp
+);
+
+visitRouter.post(
+  "/verify-otp",
+  visitController.verifySupervisorOtp
+);
+
 visitRouter.use(clerkAuthenticate);
 
-visitRouter.post("/schedule", visitController.scheduleVisit);
+visitRouter.get(
+  "/all",
+  visitController.getAllVisits
+);
+
+visitRouter.post(
+  "/schedule",
+  visitController.scheduleVisit
+);
