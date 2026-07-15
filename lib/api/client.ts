@@ -49,13 +49,30 @@ export function getApiErrorMessage(error: unknown, fallback: string) {
 apiClient.interceptors.request.use(async (config) => {
   if (typeof window === "undefined") return config;
 
-  const isAdminRequest = window.location.pathname.startsWith("/admin");
+  const pathname = window.location.pathname;
+
+  const isAdminRequest = pathname.startsWith("/admin");
+  const isVisitingRequest = pathname.startsWith("/visiting");
 
   if (isAdminRequest) {
-    const token = localStorage.getItem("LivingGo_token");
-    if (token) config.headers.Authorization = `Bearer ${token}`;
-    return config;
+  const token = localStorage.getItem("LivingGo_token");
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
+
+  return config;
+}
+
+if (isVisitingRequest) {
+  const token = localStorage.getItem("visiting_token");
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+}
 
   try {
     const clerk = await getClerkWithTimeout();
