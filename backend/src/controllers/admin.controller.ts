@@ -177,8 +177,30 @@ export const rejectOwner = asyncHandler(async (request: Request, response: Respo
 
 export const updateListing = asyncHandler(async (request: Request, response: Response) => {
   const id = String(request.params.id);
-  const result = await adminService.updateListingByAdmin(id, request.body);
-  response.json(result);
+
+  // The uploadImages middleware will populate request.files
+  const files = (request.files as Express.Multer.File[]) ?? [];
+
+  // The non-file fields are in request.body
+  const data = request.body;
+
+  // Update the property with the non-file fields
+  const updated = await adminService.updateListingByAdmin(id, data);
+
+  // If there are new files, upload them and add to the property
+  if (files.length) {
+    const uploads = await Promise.all(files.map(uploadImage));
+    const imagesToAdd = uploads.map(u => ({
+      url: u.secure_url,
+      publicId: u.public_id
+    }));
+    await adminService.addImagesToProperty(id, imagesToAdd);
+    // Refetch the property to get the updated images
+    const refreshed = await getPropertyById(id);
+    response.json(refreshed);
+  } else {
+    response.json(updated);
+  }
 });
 
 export const getAllProperties = asyncHandler(async (request: Request, response: Response) => {

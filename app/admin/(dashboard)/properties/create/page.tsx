@@ -67,7 +67,7 @@ export default function CreatePropertyPage() {
         <h1 className="text-3xl font-black text-ink">Create New Property</h1>
       </div>
 
-      <AdminPropertyForm onSubmit={handleSubmit} onCancel={handleCancel} />
+      <AdminPropertyForm onSave={handleSubmit} onCancel={handleCancel} />
     </main>
   );
 }

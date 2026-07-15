@@ -42,3 +42,9 @@ adminRouter.post("/coupons", couponController.createCoupon);
 // NEW: Admin review endpoints
 adminRouter.post("/properties/:id/reviews", validate(propertyIdSchema), adminController.createAdminReview);
 adminRouter.delete("/reviews/:id", validate(adminIdSchema), adminController.deleteAdminReview);
+
+// Image management routes for properties
+adminRouter.patch("/properties/:id", uploadImages, validate(adminIdSchema), adminController.updateListing);
+adminRouter.post("/properties/:id/images", uploadImages, adminController.addPropertyImages);
+adminRouter.put("/properties/:id/images/:imageId", uploadImages, adminController.replacePropertyImage);
+adminRouter.delete("/properties/:id/images/:imageId", validate(adminIdSchema), adminController.deletePropertyImage);

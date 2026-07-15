@@ -33,13 +33,22 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.visitRouter = void 0;
+exports.visitingRouter = void 0;
 const express_1 = require("express");
-const auth_middleware_1 = require("../middleware/auth.middleware");
 const visitController = __importStar(require("../controllers/visit.controller"));
-exports.visitRouter = (0, express_1.Router)();
-exports.visitRouter.post("/send-otp", visitController.sendSupervisorOtp);
-exports.visitRouter.post("/verify-otp", visitController.verifySupervisorOtp);
-exports.visitRouter.use(auth_middleware_1.clerkAuthenticate);
-exports.visitRouter.get("/all", visitController.getAllVisits);
-exports.visitRouter.post("/schedule", visitController.scheduleVisit);
+const supervisor_middleware_1 = require("../middleware/supervisor.middleware");
+exports.visitingRouter = (0, express_1.Router)();
+/*
+|--------------------------------------------------------------------------
+| PUBLIC
+|--------------------------------------------------------------------------
+*/
+exports.visitingRouter.post("/send-otp", visitController.sendSupervisorOtp);
+exports.visitingRouter.post("/verify-otp", visitController.verifySupervisorOtp);
+/*
+|--------------------------------------------------------------------------
+| PROTECTED
+|--------------------------------------------------------------------------
+*/
+exports.visitingRouter.use(supervisor_middleware_1.supervisorAuthenticate);
+exports.visitingRouter.get("/dashboard", visitController.getAllVisits);

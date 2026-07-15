@@ -213,6 +213,14 @@ exports.updateProperty = (0, async_handler_1.asyncHandler)(async (request, respo
         throw new app_error_1.AppError("Forbidden", 403);
     // Process image uploads if any new files were provided
     let roomTypeMappings = [];
+    try {
+        roomTypeMappings = request.body.roomTypeMappings
+            ? JSON.parse(request.body.roomTypeMappings)
+            : [];
+    }
+    catch {
+        roomTypeMappings = [];
+    }
     let images = [];
     if (request.files?.length) {
         const files = request.files ?? [];
@@ -222,19 +230,8 @@ exports.updateProperty = (0, async_handler_1.asyncHandler)(async (request, respo
             publicId: upload.public_id,
             roomCategory: roomTypeMappings[index]?.roomCategory ?? "common",
         }));
-        // Extract room-type mappings from request body
-        roomTypeMappings = request.body.roomTypeMappings
-            ? JSON.parse(request.body.roomTypeMappings)
-            : [];
     }
-    const updatedProperty = await propertyService.updateProperty(String(request.params.id), internalUser.id, user.role, {
-        ...request.body,
-        // Include uploads and mappings if new files were provided
-        ...(images.length > 0 ? {
-            images: { create: images },
-            roomTypeMappings: roomTypeMappings
-        } : {})
-    });
+    const updatedProperty = await propertyService.updateProperty(String(request.params.id), internalUser.id, user.role, request.body);
     response.json(updatedProperty);
 });
 exports.deleteProperty = (0, async_handler_1.asyncHandler)(async (request, response) => {
