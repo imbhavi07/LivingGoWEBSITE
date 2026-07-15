@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteAdminReview = exports.createAdminReview = exports.deletePropertyImage = exports.replacePropertyImage = exports.addPropertyImages = exports.getAdminCoupons = exports.getAllProperties = exports.updateListing = exports.rejectOwner = exports.approveOwner = exports.getPropertyManagement = exports.getUserProperties = exports.getOwnerApprovalById = exports.getOwnerApprovals = exports.deleteUser = exports.suspendUser = exports.getUsers = exports.removeListing = exports.rejectListing = exports.approveListing = exports.getListingDetails = exports.getListings = exports.getStats = void 0;
+exports.deleteAdminReview = exports.createAdminReview = exports.deletePropertyImage = exports.replacePropertyImage = exports.addPropertyImages = exports.getAdminCoupons = exports.getAllProperties = exports.updateListing = exports.rejectOwner = exports.approveOwner = exports.getPropertyManagement = exports.getUserProperties = exports.getOwnerApprovalById = exports.getOwnerApprovals = exports.deleteUser = exports.suspendUser = exports.getUsers = exports.removeListing = exports.rejectListing = exports.approveListing = exports.getAdminPropertyByIdController = exports.getListings = exports.getStats = void 0;
 const async_handler_1 = require("../utils/async-handler");
 const adminService = __importStar(require("../services/admin.service"));
 const property_service_1 = require("../services/property.service");
@@ -61,7 +61,7 @@ exports.getStats = (0, async_handler_1.asyncHandler)(async (_request, response) 
 exports.getListings = (0, async_handler_1.asyncHandler)(async (request, response) => {
     response.json(await adminService.getSubmittedProperties(request.query));
 });
-exports.getListingDetails = (0, async_handler_1.asyncHandler)(async (request, response) => {
+exports.getAdminPropertyByIdController = (0, async_handler_1.asyncHandler)(async (request, response) => {
     response.json(await (0, property_service_1.getPropertyById)(String(request.params.id), "admin"));
 });
 exports.approveListing = (0, async_handler_1.asyncHandler)(async (request, response) => {

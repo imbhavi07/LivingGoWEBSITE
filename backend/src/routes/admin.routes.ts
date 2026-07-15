@@ -19,7 +19,7 @@ adminRouter.post("/auth/login", authLimiter, validate(loginSchema), authControll
 adminRouter.use(authenticate, authorize("admin"));
 adminRouter.get("/dashboard/stats", adminController.getStats);
 adminRouter.get("/listings", validate(adminListSchema), adminController.getListings);
-adminRouter.get("/listings/:id", validate(adminIdSchema), adminController.getListingDetails);
+adminRouter.get("/properties/:id", validate(adminIdSchema), adminController.getAdminPropertyByIdController);
 adminRouter.patch("/listings/:id/approve", validate(adminIdSchema), adminController.approveListing);
 adminRouter.patch("/listings/:id/reject", validate(adminIdSchema), adminController.rejectListing);
 adminRouter.delete("/listings/:id", validate(adminIdSchema), adminController.removeListing);

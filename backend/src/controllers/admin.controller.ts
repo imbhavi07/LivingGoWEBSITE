@@ -33,7 +33,7 @@ export const getListings = asyncHandler(async (request: Request, response: Respo
   response.json(await adminService.getSubmittedProperties(request.query));
 });
 
-export const getListingDetails = asyncHandler(async (request: Request, response: Response) => {
+export const getAdminPropertyByIdController = asyncHandler(async (request: Request, response: Response) => {
   response.json(await getPropertyById(String(request.params.id), "admin"));
 });
 

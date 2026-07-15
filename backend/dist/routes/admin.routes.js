@@ -52,7 +52,7 @@ exports.adminRouter.post("/auth/login", security_middleware_1.authLimiter, (0, v
 exports.adminRouter.use(auth_middleware_1.authenticate, (0, auth_middleware_1.authorize)("admin"));
 exports.adminRouter.get("/dashboard/stats", adminController.getStats);
 exports.adminRouter.get("/listings", (0, validate_middleware_1.validate)(admin_validation_1.adminListSchema), adminController.getListings);
-exports.adminRouter.get("/listings/:id", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.getListingDetails);
+exports.adminRouter.get("/properties/:id", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.getAdminPropertyByIdController);
 exports.adminRouter.patch("/listings/:id/approve", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.approveListing);
 exports.adminRouter.patch("/listings/:id/reject", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.rejectListing);
 exports.adminRouter.delete("/listings/:id", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.removeListing);
