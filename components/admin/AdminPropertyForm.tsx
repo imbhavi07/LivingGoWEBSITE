@@ -614,7 +614,6 @@ export function AdminPropertyForm({ initialData, onSave, onCancel }: AdminProper
                 <span className="text-sm font-semibold text-ink">Rules Strictness</span>
                 <select name="rulesStrictness" defaultValue={initialData?.rulesStrictness} className="select w-full">
                   <option value="Strict">Strict</option>
-                  <option value="Moderate">Moderate</option>
                   <option value="Lenient">Lenient</option>
                 </select>
               </label>
