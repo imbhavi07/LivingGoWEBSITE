@@ -37,7 +37,7 @@ export default function AdminPropertiesPage() {
   };
 
   return (
-    <main className="space-y-6">
+    <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-4xl font-black">
@@ -111,6 +111,6 @@ export default function AdminPropertiesPage() {
           onCreate={handleCreateProperty}
         />
       )}
-    </main>
+    </div>
   );
 }
