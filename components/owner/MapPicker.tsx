@@ -15,9 +15,10 @@ type MapPickerProps = {
   onClose: () => void;
   initialLat?: number;
   initialLng?: number;
+  mode?: "default" | "preview";
 };
 
-export function MapPicker({ onConfirm, onClose, initialLat, initialLng }: MapPickerProps) {
+export function MapPicker({ onConfirm, onClose, initialLat, initialLng, mode = "default" }: MapPickerProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [address, setAddress] = useState<string>("Loading address...");
   const [pickedLat, setPickedLat] = useState<number>(initialLat ?? 28.6139);
@@ -80,30 +81,33 @@ export function MapPicker({ onConfirm, onClose, initialLat, initialLng }: MapPic
         setIsLoading(false);
       });
 
-      // Click on map to move marker
-      map.on("click", async (e: { latlng: { lat: number; lng: number } }) => {
-        const { lat, lng } = e.latlng;
-        marker.setLatLng([lat, lng]);
-        setPickedLat(lat);
-        setPickedLng(lng);
-        setAddress("Loading address...");
-        setIsLoading(true);
-        const addr = await reverseGeocode(lat, lng);
-        setAddress(addr);
-        setIsLoading(false);
-      });
+      // Only add interaction listeners if not in preview mode
+      if (mode !== "preview") {
+        // Click on map to move marker
+        map.on("click", async (e: { latlng: { lat: number; lng: number } }) => {
+          const { lat, lng } = e.latlng;
+          marker.setLatLng([lat, lng]);
+          setPickedLat(lat);
+          setPickedLng(lng);
+          setAddress("Loading address...");
+          setIsLoading(true);
+          const addr = await reverseGeocode(lat, lng);
+          setAddress(addr);
+          setIsLoading(false);
+        });
 
-      // Drag marker
-      marker.on("dragend", async () => {
-        const pos = marker.getLatLng();
-        setPickedLat(pos.lat);
-        setPickedLng(pos.lng);
-        setAddress("Loading address...");
-        setIsLoading(true);
-        const addr = await reverseGeocode(pos.lat, pos.lng);
-        setAddress(addr);
-        setIsLoading(false);
-      });
+        // Drag marker
+        marker.on("dragend", async () => {
+          const pos = marker.getLatLng();
+          setPickedLat(pos.lat);
+          setPickedLng(pos.lng);
+          setAddress("Loading address...");
+          setIsLoading(true);
+          const addr = await reverseGeocode(pos.lat, pos.lng);
+          setAddress(addr);
+          setIsLoading(false);
+        });
+      }
 
       mapInstanceRef.current = map;
       markerRef.current = marker;
@@ -116,14 +120,28 @@ export function MapPicker({ onConfirm, onClose, initialLat, initialLng }: MapPic
         mapInstanceRef.current = null;
       }
     };
-  }, [pickedLat, pickedLng]);
+  }, [pickedLat, pickedLng, mode]);
 
   function handleConfirm() {
     onConfirm({ lat: pickedLat, lng: pickedLng, address });
   }
 
+  // If in preview mode, we don't render the backdrop and modal; we just return the map container
+  if (mode === "preview") {
+    return (
+      <div>
+        {/* Leaflet CSS */}
+        <link
+          rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        />
+        <div ref={mapRef} className="h-[300px] w-full rounded-lg border border-gray-200" />
+      </div>
+    );
+  }
+
   return (
-    <>
+    <div>
       {/* Backdrop */}
       <div
         className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
@@ -139,7 +157,9 @@ export function MapPicker({ onConfirm, onClose, initialLat, initialLng }: MapPic
             <p className="text-xs text-muted">Click on the map or drag the pin to your PG location</p>
           </div>
           <button
-            onClick={onClose} aria-label="Close modal" title="Close"
+            onClick={onClose}
+            aria-label="Close modal"
+            title="Close"
             className="flex h-9 w-9 items-center justify-center rounded-full bg-linen text-ink hover:bg-oat"
           >
             <X className="h-4 w-4" aria-hidden />
@@ -176,6 +196,6 @@ export function MapPicker({ onConfirm, onClose, initialLat, initialLng }: MapPic
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

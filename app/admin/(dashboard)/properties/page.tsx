@@ -4,37 +4,28 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Search, Plus } from "lucide-react";
 import { useAuthContext } from "@/contexts/AuthContext";
-import { useCreateProperty } from "@/hooks/useAdmin";
-import { useToast } from "@/contexts/ToastContext";
-import { CreatePropertyModal } from "./CreatePropertyModal";
+import { AdminPropertyForm } from "@/components/admin/AdminPropertyForm";
 import { getAdminProperties } from "@/lib/api/admin-properties";
 
 export default function AdminPropertiesPage() {
   const [search, setSearch] = useState("");
-  const [properties, setProperties] = useState<any[]>([]);
-  const [isCreating, setIsCreating] = useState(false);
+
+  type Property = {
+    id: string | number;
+    propertyCode: string;
+    title: string;
+    owner: { name: string };
+    location?: string;
+    _count: { tenants: number };
+  };
+
+  const [properties, setProperties] = useState<Property[]>([]);
   const { user } = useAuthContext();
   const isSuperAdmin = user?.role === "SUPER_ADMIN";
-  const { create: createProperty } = useCreateProperty();
-  const { showToast } = useToast();
 
   useEffect(() => {
     getAdminProperties(search).then(setProperties);
   }, [search]);
-
-  const handleCreateProperty = async (formData: FormData) => {
-    setIsCreating(true);
-    try {
-      await createProperty(formData);
-      setIsCreating(false);
-      // Refresh the properties list
-      getAdminProperties(search).then(setProperties);
-      showToast("Property created successfully!", "success");
-    } catch (error) {
-      setIsCreating(false);
-      showToast("Failed to create property. Please try again.", "error");
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -49,13 +40,13 @@ export default function AdminPropertiesPage() {
         </div>
         <div className="flex flex-col sm:flex-row sm:items-end sm:space-x-3 mt-4 sm:mt-0">
           {isSuperAdmin && (
-            <button
-              onClick={() => setIsCreating(true)}
+            <Link 
+              href="/admin/properties/create" 
               className="btn-primary px-6 py-3 flex items-center gap-2"
             >
               <Plus className="h-4 w-4" aria-hidden />
               Create Property
-            </button>
+            </Link>
           )}
           <div className="relative mt-3">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"/>
@@ -103,14 +94,6 @@ export default function AdminPropertiesPage() {
           </Link>
         ))}
       </div>
-
-      {isCreating && (
-        <CreatePropertyModal
-          isOpen={isCreating}
-          onClose={() => setIsCreating(false)}
-          onCreate={handleCreateProperty}
-        />
-      )}
     </div>
   );
 }
