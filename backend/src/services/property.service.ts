@@ -4,6 +4,7 @@ import { AppError } from "../utils/app-error";
 import { getPagination } from "../utils/Pagination";
 import { findNearbyPlaces } from "./nearby.service";
 import { PrismaClientUnknownRequestError } from "@prisma/client/runtime/library";
+import { string } from "zod";
 
 type CacheEntry = {
   // Use unknown to avoid allowing arbitrary operations on cached values
@@ -169,7 +170,7 @@ export async function createProperty(ownerId: string | null, input: PropertyInpu
   return prisma.property.create({
     data: {
       propertyCode,
-      ownerId, // Can be null for LISTED properties
+      ownerId: ownerId as string, // Can be null for LISTED properties
       title: input.title,
       description: input.description,
       price: calculatedPrice,
@@ -384,26 +385,43 @@ export async function updateProperty(id: string, actorId: string, actorRole: Rol
     }
   }
 
-  const calculatedPrice = Math.min(
-    ...[
-      input.priceSingle,
-      input.priceDouble,
-      input.priceTriple,
-    ].filter((v): v is number => typeof v === "number" && v > 0)
-  );
+  const prices = [
+  input.priceSingle ?? property.priceSingle,
+  input.priceDouble ?? property.priceDouble,
+  input.priceTriple ?? property.priceTriple,
+].filter(
+  (v): v is number =>
+    typeof v === "number" &&
+    Number.isFinite(v) &&
+    v > 0
+);
+
+const calculatedPrice =
+  prices.length > 0 ? Math.min(...prices) : property.price;
+
 
   return prisma.property.update({
     where: { id },
     data: {
       ...input,
-      price: calculatedPrice,
-      ...(nearbyPlaces ? { nearbyPlaces } : {}),
-      status: actorRole === "admin" ? property.status : "pending",
-      managerContact: input.managerContact,
-      securityContact: input.securityContact
-    },
-    include: propertyInclude
-  });
+
+      ...(calculatedPrice !== property.price && {
+        price: calculatedPrice,
+      }),
+    
+      ...(nearbyPlaces && {
+        nearbyPlaces,
+      }),
+    
+      status: actorRole === "admin"
+        ? property.status
+        : "pending",
+    
+        managerContact: input.managerContact,
+        securityContact: input.securityContact,
+      },
+          include: propertyInclude
+      });
 }
 
 export async function deleteProperty(id: string, actorId: string, actorRole: Role) {
