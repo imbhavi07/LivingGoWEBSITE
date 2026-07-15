@@ -610,7 +610,7 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
               </label>
               <label className="block space-y-2">
                 <span className="text-sm font-bold text-ink">Lock-In Period</span>
-                <select name="noticePeriod" defaultValue={property?.noticePeriod ?? "1 Month"} className="input">
+                <select name="noticePeriod" defaultValue={property?.noticePeriod ?? "11 Month"} className="input">
                   <option value="15 Days">6 Months</option>
                   <option value="1 Month">9 Months</option>
                   <option value="2 Months">11 Months</option>
