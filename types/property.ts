@@ -41,6 +41,10 @@ export type Property = {
   priceSingle?: number;
   priceDouble?: number;
   priceTriple?: number;
+  securityDepositMonths?: number | null;
+  managerContact?: string;
+  securityContact?: string;
+  status?: string;
   location: string;
   address: string;
   roomType: RoomType;
