@@ -8,6 +8,7 @@ type AuthContextValue = {
   user: AuthUser | null;
   token: string | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   refreshSession: () => void;
   logout: () => Promise<void>;
 };
@@ -16,35 +17,33 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   console.log("AuthProvider mounted");
+
   const [user, setUser] = useState<AuthUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   function refreshSession() {
+    console.log("Loaded user:", user);
+    console.log("Loaded token:", token);
+    console.log("Raw localStorage:", localStorage.getItem("LivingGo_user"));
+    const storedUser = getSessionUser();
+    const storedToken = getToken();
 
-  console.log("Loaded user:", user);
-  console.log("Loaded token:", token);
-  console.log(
-  "Raw localStorage:",
-  localStorage.getItem("LivingGo_user")
-);
-  const storedUser = getSessionUser();
-  const storedToken = getToken();
+    console.log("refreshSession()", {
+      storedUser,
+      storedToken,
+    });
 
- 
-
-  console.log("refreshSession()", {
-    storedUser,
-    storedToken,
-  });
-
-  setUser(() => storedUser);
-  setToken(() => storedToken);
-}
+    setUser(() => storedUser);
+    setToken(() => storedToken);
+    setIsLoading(false);
+  }
 
   async function logout() {
     await clearSession();
     setUser(null);
     setToken(null);
+    setIsLoading(false);
   }
 
   useEffect(() => {
@@ -56,10 +55,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       token,
       isAuthenticated: Boolean(token),
+      isLoading,
       refreshSession,
       logout
     }),
-    [user, token]
+    [user, token, isLoading]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -67,6 +67,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuthContext() {
   const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuthContext must be used inside AuthProvider");
+  if (!context) throw new Error("useAuthContext must be used within an AuthProvider");
   return context;
 }
