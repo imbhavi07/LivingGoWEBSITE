@@ -314,7 +314,8 @@ export const deletePropertyImage = asyncHandler(async (req: Request, res: Respon
 
 // NEW: Admin review creation endpoint
 export const createAdminReview = asyncHandler(async (req: Request, res: Response) => {
-  const propertyId = String(req.params.propertyId); // Ensure propertyId comes from params if your route is /:propertyId/reviews
+  const { id } = req.params;
+  const propertyId = String(id);
   const { studentName, rating, content } = req.body;
 
   const property = await prisma.property.findUnique({
@@ -347,7 +348,8 @@ export const createAdminReview = asyncHandler(async (req: Request, res: Response
 
 // NEW: Admin review deletion endpoint
 export const deleteAdminReview = asyncHandler(async (request: Request, response: Response) => {
-  const reviewId = String(request.params.id);
+  const { id } = request.params;
+  const reviewId = String(id);
 
   // Verify review exists
   const review = await prisma.review.findUnique({

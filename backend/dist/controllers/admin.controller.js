@@ -279,7 +279,8 @@ exports.deletePropertyImage = (0, async_handler_1.asyncHandler)(async (req, res)
 });
 // NEW: Admin review creation endpoint
 exports.createAdminReview = (0, async_handler_1.asyncHandler)(async (req, res) => {
-    const propertyId = String(req.params.propertyId); // Ensure propertyId comes from params if your route is /:propertyId/reviews
+    const { id } = req.params;
+    const propertyId = String(id);
     const { studentName, rating, content } = req.body;
     const property = await prisma_1.prisma.property.findUnique({
         where: { id: propertyId }
@@ -307,7 +308,8 @@ exports.createAdminReview = (0, async_handler_1.asyncHandler)(async (req, res) =
 });
 // NEW: Admin review deletion endpoint
 exports.deleteAdminReview = (0, async_handler_1.asyncHandler)(async (request, response) => {
-    const reviewId = String(request.params.id);
+    const { id } = request.params;
+    const reviewId = String(id);
     // Verify review exists
     const review = await prisma_1.prisma.review.findUnique({
         where: { id: reviewId }

@@ -1,6 +1,8 @@
 import { Router } from "express";
 import * as adminController from "../controllers/admin.controller";
 import * as authController from "../controllers/auth.controller";
+import * as propertyController from "../controllers/property.controller";
+import * as couponController from "../controllers/coupon.controller";
 import { authenticate, authorize } from "../middleware/auth.middleware";
 import { authLimiter } from "../middleware/security.middleware";
 import { validate } from "../middleware/validate.middleware";
@@ -8,6 +10,7 @@ import { adminIdSchema, adminListSchema, adminUserListSchema } from "../validati
 import { loginSchema } from "../validations/auth.validation";
 import { uploadImages } from "../middleware/upload.middleware";
 import { propertyIdSchema } from "../validations/property.validation";
+import { createPropertySchema } from "../validations/property.validation";
 
 export const adminRouter = Router();
 
@@ -31,6 +34,10 @@ adminRouter.patch("/approvals/:id/approve", validate(adminIdSchema), adminContro
 adminRouter.patch("/approvals/:id/reject", validate(adminIdSchema), adminController.rejectOwner);
 adminRouter.get("/properties", adminController.getAllProperties);
 adminRouter.get("/properties/:id/manage", validate(adminIdSchema), adminController.getPropertyManagement);
+// NEW: Admin property creation endpoint
+adminRouter.post("/properties", uploadImages, validate(createPropertySchema), propertyController.createProperty);
+// NEW: Admin coupon creation endpoint
+adminRouter.post("/coupons", couponController.createCoupon);
 
 // NEW: Admin review endpoints
 adminRouter.post("/properties/:id/reviews", validate(propertyIdSchema), adminController.createAdminReview);
