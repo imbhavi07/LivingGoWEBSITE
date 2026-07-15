@@ -275,7 +275,7 @@ export const addPropertyImages = asyncHandler(async (req: Request, res: Response
     propertyId,
     uploads.map((u) => ({
       url: u.secure_url,
-      publicId: u.public_id,
+      publicId: u.public_id
     }))
   );
 
@@ -391,31 +391,36 @@ export const deleteAdminReview = asyncHandler(async (request: Request, response:
 });
 
 // Panorama controllers
-export const addPanoramaController = asyncHandler(async (req: Request, res: Response) => {
-  const propertyId = String(req.params.id);
-  const file = req.file as Express.Multer.File;
+export const addPanoramaController = async (req: Request, res: Response) => {
+  try {
+    const propertyId = String(req.params.id);
+    const file = req.file as Express.Multer.File;
 
-  if (!file) {
-    throw new AppError("Panorama image is required", 400);
+    if (!file) {
+      return res.status(400).json({ success: false, message: "Panorama image is required" });
+    }
+
+    // Upload the panorama image to Cloudinary
+    const uploaded = await uploadImage(file);
+
+    const { title, sortOrder } = req.body;
+
+    const panorama = await prisma.propertyPanorama.create({
+      data: {
+        propertyId,
+        title,
+        imageUrl: uploaded.secure_url,
+        publicId: uploaded.public_id,
+        sortOrder: sortOrder ? Number(sortOrder) : 0,
+      },
+    });
+
+    return res.status(201).json({ success: true, data: panorama });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ success: false, message: "Upload failed", error: message });
   }
-
-  // Upload the panorama image to Cloudinary
-  const uploaded = await uploadImage(file);
-
-  const { title, sortOrder } = req.body;
-
-  const panorama = await prisma.propertyPanorama.create({
-    data: {
-      propertyId,
-      title,
-      imageUrl: uploaded.secure_url,
-      publicId: uploaded.public_id,
-      sortOrder: sortOrder ? Number(sortOrder) : 0,
-    },
-  });
-
-  res.status(201).json(panorama);
-});
+};
 
 export const updatePanorama = asyncHandler(async (req: Request, res: Response) => {
   const panoramaId = String(req.params.panoramaId);
