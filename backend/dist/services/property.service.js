@@ -122,7 +122,7 @@ async function createProperty(ownerId, input, images) {
     return prisma_1.prisma.property.create({
         data: {
             propertyCode,
-            ownerId, // Can be null for LISTED properties
+            ownerId: ownerId, // Can be null for LISTED properties
             title: input.title,
             description: input.description,
             price: calculatedPrice,
@@ -314,20 +314,29 @@ async function updateProperty(id, actorId, actorRole, input) {
             console.error("Nearby places recalculation failed:", err);
         }
     }
-    const calculatedPrice = Math.min(...[
-        input.priceSingle,
-        input.priceDouble,
-        input.priceTriple,
-    ].filter((v) => typeof v === "number" && v > 0));
+    const prices = [
+        input.priceSingle ?? property.priceSingle,
+        input.priceDouble ?? property.priceDouble,
+        input.priceTriple ?? property.priceTriple,
+    ].filter((v) => typeof v === "number" &&
+        Number.isFinite(v) &&
+        v > 0);
+    const calculatedPrice = prices.length > 0 ? Math.min(...prices) : property.price;
     return prisma_1.prisma.property.update({
         where: { id },
         data: {
             ...input,
-            price: calculatedPrice,
-            ...(nearbyPlaces ? { nearbyPlaces } : {}),
-            status: actorRole === "admin" ? property.status : "pending",
+            ...(calculatedPrice !== property.price && {
+                price: calculatedPrice,
+            }),
+            ...(nearbyPlaces && {
+                nearbyPlaces,
+            }),
+            status: actorRole === "admin"
+                ? property.status
+                : "pending",
             managerContact: input.managerContact,
-            securityContact: input.securityContact
+            securityContact: input.securityContact,
         },
         include: propertyInclude
     });

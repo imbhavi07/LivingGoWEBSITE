@@ -70,9 +70,23 @@ apiClient.interceptors.request.use(async (config) => {
   return config;
 });
 
+// Response interceptor to handle 401 Unauthorized
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      // Force logout or redirect to login for admin routes
+      if (window.location.pathname.startsWith("/admin")) {
+        // Remove token and redirect to admin login
+        localStorage.removeItem("LivingGo_token");
+        window.location.href = "/admin/login";
+      } else {
+        // For non-admin routes, you might want to handle Clerk session expiration
+        // For now, just reject the error
+        return Promise.reject(error);
+      }
+    }
     return Promise.reject(error);
   }
 );
+
