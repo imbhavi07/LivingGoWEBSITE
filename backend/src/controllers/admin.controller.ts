@@ -392,18 +392,24 @@ export const deleteAdminReview = asyncHandler(async (request: Request, response:
 
 // Panorama controllers
 export const addPanoramaController = async (req: Request, res: Response) => {
+  console.log("1. Reached addPanoramaController");
   try {
     const propertyId = String(req.params.id);
+    console.log("2. Property ID:", propertyId);
     const file = req.file as Express.Multer.File;
-
+    console.log("3. File received:", file ? { filename: file.originalname, size: file.size, mimetype: file.mimetype } : "undefined");
     if (!file) {
+      console.log("4. No file provided");
       return res.status(400).json({ success: false, message: "Panorama image is required" });
     }
 
+    console.log("5. Starting cloud upload...");
     // Upload the panorama image to Cloudinary
     const uploaded = await uploadImage(file);
+    console.log("6. Cloud upload successful. URL:", uploaded.secure_url);
 
     const { title, sortOrder } = req.body;
+    console.log("7. Request body:", { title, sortOrder });
 
     const panorama = await prisma.propertyPanorama.create({
       data: {
@@ -414,9 +420,12 @@ export const addPanoramaController = async (req: Request, res: Response) => {
         sortOrder: sortOrder ? Number(sortOrder) : 0,
       },
     });
+    console.log("8. Panorama saved to Prisma:", panorama.id);
 
+    console.log("9. Sending success response");
     return res.status(201).json({ success: true, data: panorama });
   } catch (error) {
+    console.error("10. Error in addPanoramaController:", error);
     const message = error instanceof Error ? error.message : 'Unknown error';
     return res.status(500).json({ success: false, message: "Upload failed", error: message });
   }
