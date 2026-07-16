@@ -60,7 +60,7 @@ function LoginForm() {
               {mode === "student" ? "Student access" : "Owner access"}
             </p>
             <h1 className="mt-3 max-w-md text-4xl font-black leading-tight sm:text-5xl">
-              {mode === "student" ? "Rooms, PGs, & flats made easier." : "Your housing business, neatly organized."}
+              {mode === "student" ? "Rooms in PGs made easier." : "Your housing business, neatly organized."}
             </h1>
             <p className="mt-5 max-w-md text-base leading-7 text-white/65">
               {mode === "student"
