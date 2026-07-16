@@ -14,6 +14,8 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 const SUPERVISOR_EMAILS = [
   "mffalit@gmail.com",
+  "semwalb3@gmail.com",
+  "rctaccommodations@gmail.com",
 ];
 
 // Validation schema for visit scheduling
@@ -450,6 +452,14 @@ export const getAllVisits = asyncHandler(
         },
       },
     },
+    intern: {
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        phone: true,
+      },
+    },
   },
 
   orderBy: [
@@ -805,11 +815,13 @@ export const getInternDashboard = async (
         },
       ],
     });
-
+    console.log("Intern Dashboard Visits:");
+    console.log(visits);
     return res.json({
       success: true,
       visits,
     });
+
 
   } catch (err) {
 
@@ -864,6 +876,7 @@ export const updateInternVisitStatus = async (
       },
       data: {
         leadStatus: status,
+        visitVerified: true,
       },
     });
 

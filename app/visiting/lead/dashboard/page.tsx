@@ -151,7 +151,7 @@ export default function LeadDashboard() {
                 "/visiting/lead";
 
             }}
-            className="rounded-xl border bg-white px-6 py-3 font-semibold hover:bg-gray-50"
+            className="rounded-xl border bg-black text-white px-6 py-3 font-semibold hover:bg-gray-800"
           >
             Logout
           </Button>
@@ -176,7 +176,7 @@ export default function LeadDashboard() {
             <div
               key={visit.id}
               className="rounded-3xl bg-white p-6 shadow"
-            >
+              >
 
               <div className="mb-5 flex items-center justify-between">
 
@@ -200,7 +200,7 @@ export default function LeadDashboard() {
 
                   <p>{visit.student.name}</p>
 
-                  <p>{visit.student.phone ?? "-"}</p>
+                  <p>{visit.student.phone}</p>
 
                 </div>
 
