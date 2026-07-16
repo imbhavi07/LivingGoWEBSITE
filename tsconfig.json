@@ -24,7 +24,7 @@
     "plugins": [
       {
         "name": "next"
-      } Game
+      }
     ],
     "paths": {
       "@/*": [

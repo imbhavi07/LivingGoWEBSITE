@@ -13,7 +13,6 @@ const nextConfig: NextConfig = {
       }
     ]
   },
-  allowedDevOrigins: ["192.168.1.7"],
   async rewrites() {
     return [
       {
@@ -24,7 +23,7 @@ const nextConfig: NextConfig = {
       {
         // Proxy all other /api/* routes to the backend
         source: '/api/:path*',
-        destination: 'http://localhost:5000/api/$1',
+        destination: 'http://localhost:5000/api/:path*',
       },
     ];
   },
