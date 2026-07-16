@@ -7,7 +7,7 @@ import { createClerkClient } from "@clerk/backend";
 import { prisma } from "../config/prisma";
 import { AppError } from "../utils/app-error";
 import { getPropertyRating } from "../services/property.service";
-import { uploadImage, deleteCloudinaryImage } from "../services/cloudinary.service";
+import { uploadImage, uploadPanorama, deleteCloudinaryImage } from "../services/cloudinary.service";
 import { z } from "zod";
 import type { Prisma } from "@prisma/client";
 import { VisitStatus } from "@prisma/client";
@@ -378,15 +378,15 @@ export const addPanoramaController = async (req: Request, res: Response) => {
     console.log("2. Property ID:", propertyId);
     const file = req.file as Express.Multer.File;
     console.log("3. File received:", file ? { filename: file.originalname, size: file.size, mimetype: file.mimetype } : "undefined");
-    
+
     if (!file) {
       console.log("4. No file provided");
       return res.status(400).json({ success: false, message: "Panorama image is required" });
     }
 
     console.log("5. Starting cloud upload...");
-    // FIXED: Changed uploadPanorama to uploadImage
-    const uploaded = await uploadImage(file);
+    // FIXED: Changed uploadImage to uploadPanorama
+    const uploaded = await uploadPanorama(file);
     console.log("6. Cloud upload successful. URL:", uploaded.secure_url);
 
     const { title, sortOrder } = req.body;
