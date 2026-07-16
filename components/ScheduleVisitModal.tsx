@@ -17,6 +17,40 @@ export function ScheduleVisitModal({ propertyId, propertyCode, onClose }: Schedu
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [visitDate, setVisitDate] = useState<string>("");
   const [timeSlot, setTimeSlot] = useState<string>("");
+  const generateTimeSlots = () => {
+  const slots: string[] = [];
+
+  let hour = 9;
+  let minute = 0;
+
+  while (hour < 19) {
+    const start = new Date();
+    start.setHours(hour, minute, 0, 0);
+
+    const end = new Date(start);
+    end.setMinutes(end.getMinutes() + 20);
+
+    const format = (date: Date) =>
+      date.toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      });
+
+    slots.push(`${format(start)} - ${format(end)}`);
+
+    minute += 20;
+
+    if (minute >= 60) {
+      minute = 0;
+      hour++;
+    }
+  }
+
+  return slots;
+};
+
+const TIME_SLOTS = generateTimeSlots();
   const [couponCode, setCouponCode] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [visitDetails, setVisitDetails] = useState<{
@@ -165,84 +199,24 @@ export function ScheduleVisitModal({ propertyId, propertyCode, onClose }: Schedu
                       <p className="text-sm text-muted">Select 20-minute window between 8:00 AM and 8:00 PM</p>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    {/* Morning slots */}
-                    <div className="grid grid-cols-2 gap-3">
-                      {[
-                        "08:00 AM - 08:20 AM", "08:20 AM - 08:40 AM", "08:40 AM - 09:00 AM",
-                        "09:00 AM - 09:20 AM", "09:20 AM - 09:40 AM", "09:40 AM - 10:00 AM"
-                      ].map((slot) => (
+                    <div className="space-y-2">
+                      {/* Morning slots */}
+                      <div className="grid grid-cols-2 gap-3">
+                      {TIME_SLOTS.map((slot) => (
                         <button
                           key={slot}
+                          type="button"
                           onClick={() => setTimeSlot(slot)}
-                          className={`px-4 py-3 rounded-xl text-sm font-medium ${timeSlot === slot ? "bg-ink text-white" : "bg-white border border-gray-300 hover:bg-gray-50"}`}
+                          className={`rounded-xl border px-4 py-3 text-sm font-medium transition-all ${
+                            timeSlot === slot
+                              ? "bg-ink text-white border-ink"
+                              : "border-gray-300 bg-white hover:bg-gray-50"
+                          }`}
                         >
                           {slot}
                         </button>
                       ))}
-                    </div>
-                    {/* Mid-day slots */}
-                    <div className="grid grid-cols-2 gap-3 mt-4">
-                      {[
-                        "10:00 AM - 10:20 AM", "10:20 AM - 10:40 AM", "10:40 AM - 11:00 AM",
-                        "11:00 AM - 11:20 AM", "11:20 AM - 11:40 AM", "11:40 AM - 12:00 PM"
-                      ].map((slot) => (
-                        <button
-                          key={slot}
-                          onClick={() => setTimeSlot(slot)}
-                          className={`px-4 py-3 rounded-xl text-sm font-medium ${timeSlot === slot ? "bg-ink text-white" : "bg-white border border-gray-300 hover:bg-gray-50"}`}
-                        >
-                          {slot}
-                        </button>
-                      ))}
-                    </div>
-                    {/* Afternoon slots (Fixed template literals here!) */}
-                    <div className="grid grid-cols-2 gap-3 mt-4">
-                      {[
-                        "12:00 PM - 12:20 PM", "12:20 PM - 12:40 PM", "12:40 PM - 01:00 PM",
-                        "01:00 PM - 01:20 PM", "01:20 PM - 01:40 PM", "01:40 PM - 02:00 PM"
-                      ].map((slot) => (
-                        <button
-                          key={slot}
-                          onClick={() => setTimeSlot(slot)}
-                          className={`px-4 py-3 rounded-xl text-sm font-medium ${timeSlot === slot ? "bg-ink text-white" : "bg-white border border-gray-300 hover:bg-gray-50"}`}
-                        >
-                          {slot}
-                        </button>
-                      ))}
-                    </div>
-                    {/* Late Afternoon slots */}
-                    <div className="grid grid-cols-2 gap-3 mt-4">
-                      {[
-                        "02:00 PM - 02:20 PM", "02:20 PM - 02:40 PM", "02:40 PM - 03:00 PM",
-                        "03:00 PM - 03:20 PM", "03:20 PM - 03:40 PM", "03:40 PM - 04:00 PM"
-                      ].map((slot) => (
-                        <button
-                          key={slot}
-                          onClick={() => setTimeSlot(slot)}
-                          className={`px-4 py-3 rounded-xl text-sm font-medium ${timeSlot === slot ? "bg-ink text-white" : "bg-white border border-gray-300 hover:bg-gray-50"}`}
-                        >
-                          {slot}
-                        </button>
-                      ))}
-                    </div>
-                    {/* Evening slots */}
-                    <div className="grid grid-cols-2 gap-3 mt-4">
-                      {[
-                        "04:00 PM - 04:20 PM", "04:20 PM - 04:40 PM", "04:40 PM - 05:00 PM",
-                        "05:00 PM - 05:20 PM", "05:20 PM - 05:40 PM", "05:40 PM - 06:00 PM",
-                        "06:00 PM - 06:20 PM", "06:20 PM - 06:40 PM", "06:40 PM - 07:00 PM",
-                        "07:00 PM - 07:20 PM", "07:20 PM - 07:40 PM", "07:40 PM - 08:00 PM"
-                      ].map((slot) => (
-                        <button
-                          key={slot}
-                          onClick={() => setTimeSlot(slot)}
-                          className={`px-4 py-3 rounded-xl text-sm font-medium ${timeSlot === slot ? "bg-ink text-white" : "bg-white border border-gray-300 hover:bg-gray-50"}`}
-                        >
-                          {slot}
-                        </button>
-                      ))}
-                    </div>
+                  </div>
                   </div>
                   {errorMessage && <p className="mt-2 text-sm text-red-600">{errorMessage}</p>}
                 </div>
