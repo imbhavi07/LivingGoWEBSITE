@@ -23,6 +23,11 @@ visitingRouter.get(
   visitController.getAllVisits
 );
 
+visitingRouter.get(
+  "/:visitId/available-interns",
+  visitController.getAvailableInterns
+);
+
 visitingRouter.post(
   "/:visitId/assign-lead",
   visitController.assignLead

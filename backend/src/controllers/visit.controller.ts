@@ -403,6 +403,12 @@ const token = signJwt({
     response.json({
       success: true,
       token,
+      supervisor: {
+        id: supervisor.id,
+        name: supervisor.name,
+        email: supervisor.email,
+        role: supervisor.role,
+      },
     });
   }
 );
@@ -558,6 +564,79 @@ export const getInterns = async (
   } catch (error) {
 
     console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+
+  }
+};
+
+export const getAvailableInterns = async (
+  req: Request<{ visitId: string }>,
+  res: Response
+) => {
+  try {
+    const { visitId } = req.params;
+
+    const visit = await prisma.visit.findUnique({
+      where: {
+        id: visitId,
+      },
+      select: {
+        visitDate: true,
+        timeSlot: true,
+      },
+    });
+
+    if (!visit) {
+      return res.status(404).json({
+        success: false,
+        message: "Visit not found",
+      });
+    }
+
+    const busyInterns = await prisma.visit.findMany({
+      where: {
+        visitDate: visit.visitDate,
+        timeSlot: visit.timeSlot,
+        leadStatus: {
+          in: ["ASSIGNED", "MET"],
+        },
+        assignedLeadId: {
+          not: null,
+        },
+      },
+      select: {
+        assignedLeadId: true,
+      },
+    });
+
+    const busyIds = busyInterns
+      .map(v => v.assignedLeadId!)
+      .filter(Boolean);
+
+    const interns = await prisma.intern.findMany({
+      where: {
+        active: true,
+        id: {
+          notIn: busyIds,
+        },
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
+
+    return res.json({
+      success: true,
+      interns,
+    });
+
+  } catch (err) {
+
+    console.error(err);
 
     return res.status(500).json({
       success: false,
