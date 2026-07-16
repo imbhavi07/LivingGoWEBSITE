@@ -1,6 +1,7 @@
 "use client";
-
+import Link from "next/link";
 import { useEffect, useState } from "react";
+
 import { apiClient } from "@/lib/api/client";
 
 type Visit = {
@@ -29,21 +30,19 @@ type Visit = {
 };
 
 export default function VisitingDashboard() {
-
+  const [interns, setInterns] = useState<any[]>([]);
+  const [selectedVisit, setSelectedVisit] = useState<string | null>(null);
+  const [selectedIntern, setSelectedIntern] = useState("");
+  const [pickupPoint, setPickupPoint] = useState("");
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [name, setName] = useState("");
   const [loading, setLoading] = useState(true);
-
   const [visits, setVisits] = useState<Visit[]>([]);
-
   useEffect(() => {
-
     loadVisits();
-
   }, []);
-
   async function loadVisits() {
-
     try {
-
       const response = await apiClient.get(
         "/visiting/dashboard",
         {
@@ -51,159 +50,101 @@ export default function VisitingDashboard() {
           Authorization: `Bearer ${localStorage.getItem(
           "visiting_token"
         )}`,},});
+        const internRes = await apiClient.get("/visiting/interns", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("visiting_token")}`,
+          },
+        });
+        setInterns(internRes.data.interns);
         console.log(response.data);
-
       setVisits(response.data.visits);
-
     } catch (e) {
-
       console.error(e);
-
     } finally {
-
       setLoading(false);
-
     }
-
   }
 
+  const assignLead = (visitId: string) => {
+    setSelectedVisit(visitId);
+    setShowAssignModal(true);
+  };
+const confirmAssignment = async () => {
+  if (!selectedIntern || !pickupPoint) {
+    alert("Select intern and pickup point");
+    return;
+  }
+
+  try {
+    await apiClient.post(
+      `/visiting/${selectedVisit}/assign-lead`,
+      {
+        internId: selectedIntern,
+        pickupPoint,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem(
+            "visiting_token"
+          )}`,
+        },
+      }
+    );
+
+    setShowAssignModal(false);
+    setSelectedIntern("");
+    setPickupPoint("");
+    loadVisits();
+  } catch (err: any) {
+    alert(err.response?.data?.message || "Assignment failed");
+  }
+};
   return (
+  <main className="min-h-screen bg-[#f6f6f6] p-10">
 
-    <main className="min-h-screen bg-gray-100 p-8">
-
-      <h1 className="mb-8 text-4xl font-black">
-
+    <div className="mb-10">
+      <h1 className="text-5xl font-black text-[#5B3416]">
         LivingGo Visiting Dashboard
-
       </h1>
 
-      {loading && (
+      <p className="mt-2 text-gray-500">
+        Manage interns and scheduled student visits.
+      </p>
+    </div>
 
-        <div>
+    <div className="grid gap-8 lg:grid-cols-2">
 
-          Loading...
+      <Link href="/visiting/interns">
+        <div className="rounded-3xl border bg-white p-8 shadow-sm transition hover:shadow-xl cursor-pointer">
+
+          <h2 className="text-3xl font-bold mb-3">
+            Intern Management
+          </h2>
+
+          <p className="text-gray-500">
+            Create intern accounts, generate login IDs and passwords,
+            and manage existing interns.
+          </p>
 
         </div>
+      </Link>
 
-      )}
+      <Link href="/visiting/assignments">
+        <div className="rounded-3xl border bg-white p-8 shadow-sm transition hover:shadow-xl cursor-pointer">
 
-      <div className="space-y-6">
+          <h2 className="text-3xl font-bold mb-3">
+            Scheduled Visits
+          </h2>
 
-        {visits.map((visit) => (
+          <p className="text-gray-500">
+            View scheduled visits, assign interns and select pickup points.
+          </p>
 
-          <div
-            key={visit.id}
-            className="rounded-2xl bg-white p-6 shadow"
-          >
+        </div>
+      </Link>
 
-            <div className="grid grid-cols-2 gap-6">
+    </div>
 
-              <div>
-
-                <h2 className="font-bold">
-
-                  Student
-
-                </h2>
-
-                <p>
-
-                  {visit.student.name}
-
-                </p>
-
-                <p>
-
-                  {visit.student.phone}
-
-                </p>
-
-              </div>
-
-              <div>
-
-                <h2 className="font-bold">
-
-                  Property
-
-                </h2>
-
-                <p>
-
-                  {visit.property.propertyCode}
-
-                </p>
-
-                <p>
-
-                  {visit.property.title}
-
-                </p>
-
-                <p>
-
-                  ₹{visit.property.price}
-
-                </p>
-
-              </div>
-
-              <div>
-
-                <h2 className="font-bold">
-
-                  Visit
-
-                </h2>
-
-                <p>
-
-                  {new Date(
-                    visit.visitDate
-                  ).toLocaleDateString()}
-
-                </p>
-
-                <p>
-
-                  {visit.timeSlot}
-
-                </p>
-
-              </div>
-
-              <div>
-
-                <h2 className="font-bold">
-
-                  Coupon
-
-                </h2>
-
-                <p>
-
-                  {visit.couponCode ?? "-"}
-
-                </p>
-
-              </div>
-
-            </div>
-
-            <button
-              className="mt-6 rounded-xl bg-black px-5 py-3 text-white"
-            >
-              Assign Lead
-            </button>
-
-          </div>
-
-        ))}
-
-      </div>
-
-    </main>
-
-  );
-
+  </main>
+);
 }
