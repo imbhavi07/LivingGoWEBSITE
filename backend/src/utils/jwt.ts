@@ -4,7 +4,8 @@ import { env } from "../config/env";
 
 type TokenPayload = {
   id: string;
-  email: string;
+  email?: string;
+  username?: string;
   role: Role;
 };
 

@@ -1,7 +1,6 @@
 import { Router } from "express";
-
 import * as visitController from "../controllers/visit.controller";
-
+import { internAuthenticate } from "../middleware/intern.middleware";
 import { supervisorAuthenticate } from "../middleware/supervisor.middleware";
 
 export const visitingRouter = Router();
@@ -14,6 +13,29 @@ visitingRouter.post(
 visitingRouter.post(
   "/verify-otp",
   visitController.verifySupervisorOtp
+);
+
+visitingRouter.post(
+  "/lead/login",
+  visitController.internLogin
+);
+
+visitingRouter.get(
+  "/lead/dashboard",
+  internAuthenticate,
+  visitController.getInternDashboard
+);
+
+visitingRouter.patch(
+  "/lead/visit/:id",
+  internAuthenticate,
+  visitController.updateInternVisitStatus
+);
+
+visitingRouter.get(
+  "/lead/dashboard",
+  internAuthenticate,
+  visitController.getInternDashboard
 );
 
 visitingRouter.use(supervisorAuthenticate);
