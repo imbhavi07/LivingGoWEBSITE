@@ -16,7 +16,7 @@ import { Button } from "@/components/Button";
 // yahan pe image optimization daala hai
 const optimizeImageUrl = (url: string | undefined): string => {
   if (!url) return "/placeholder-property.jpg";
-  
+
   if (url.includes("res.cloudinary.com")) {
     let optimizedUrl = url;
     if (!optimizedUrl.includes("f_auto")) {
@@ -24,7 +24,7 @@ const optimizeImageUrl = (url: string | undefined): string => {
     }
     return optimizedUrl.replace(/\.heic$/i, ".webp");
   }
-  
+
   return url;
 };
 
@@ -62,27 +62,43 @@ export default function AdminListingsPage() {
                 <p className="mt-1 text-xs font-semibold text-muted">Listed: {formatIST(listing.submittedAt)}</p>
               </div>
               <div className="flex flex-wrap gap-2 xl:justify-end">
-                <Link href={`/admin/listings/${listing.id}`} className={buttonClasses("secondary", undefined, "px-4")}>
+                {/* View button (kept as a Link, but with visible styling) */}
+                <Link
+                  href={`/admin/listings/${listing.id}`}
+                  className="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-50 border border-gray-200 rounded-full hover:bg-gray-100 transition-colors"
+                >
                   <Eye className="h-4 w-4" aria-hidden />
                   View
                 </Link>
-                <Button className={buttonClasses("secondary", undefined, "px-4 text-moss")} onClick={() => void approve(listing.id)}>
+
+                {/* Approve button */}
+                <button
+                  onClick={() => void approve(listing.id)}
+                  className="px-4 py-2 text-sm font-semibold text-green-700 bg-green-50 border border-green-200 rounded-full hover:bg-green-100 transition-colors"
+                >
                   <Check className="h-4 w-4" aria-hidden />
                   Approve
-                </Button>
-                <Button className={buttonClasses("secondary", undefined, "px-4 text-amber-700")} onClick={() => void reject(listing.id)}>
+                </button>
+
+                {/* Reject button */}
+                <button
+                  onClick={() => void reject(listing.id)}
+                  className="px-4 py-2 text-sm font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-full hover:bg-amber-100 transition-colors"
+                >
                   <X className="h-4 w-4" aria-hidden />
                   Reject
-                </Button>
-                <Button
-                  className={buttonClasses("ghost", undefined, "px-4 text-red-700")}
+                </button>
+
+                {/* Delete button */}
+                <button
                   onClick={() => {
                     if (confirm("Delete this fake or spam listing?")) void remove(listing.id);
                   }}
+                  className="px-4 py-2 text-sm font-semibold text-red-700 bg-red-50 border border-red-200 rounded-full hover:bg-red-100 transition-colors"
                 >
                   <Trash2 className="h-4 w-4" aria-hidden />
                   Delete
-                </Button>
+                </button>
               </div>
             </article>
           ))}
