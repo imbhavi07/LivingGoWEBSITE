@@ -12,8 +12,9 @@ function supervisorAuthenticate(request, _response, next) {
         }
         const token = auth.substring(7);
         const payload = (0, jwt_1.verifyJwt)(token);
-        request
-            .supervisor = payload;
+        request.user = payload;
+        console.log("JWT Payload:", payload);
+        console.log("Request User:", request.user);
         next();
     }
     catch {

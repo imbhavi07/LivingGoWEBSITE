@@ -72,7 +72,7 @@ export const getOwnerApprovalById = asyncHandler(async (request: Request, respon
 });
 
 export const getUserProperties = asyncHandler(async (request: Request, response: Response) => {
-  const id = String(request.params.id); // ← was request.params (bug fix from earlier)
+  const id = String(request.params.id);
 
   const user = await prisma.user.findUnique({
     where: { id },
@@ -125,7 +125,6 @@ export const getUserProperties = asyncHandler(async (request: Request, response:
   response.json({ user, properties: propertiesWithRatings });
 });
 
-// ← NEW: full property management detail
 export const getPropertyManagement = asyncHandler(async (request: Request, response: Response) => {
   const id = String(request.params.id);
   const property = await adminService.getPropertyManagement(id);
@@ -177,17 +176,11 @@ export const rejectOwner = asyncHandler(async (request: Request, response: Respo
 
 export const updateListing = asyncHandler(async (request: Request, response: Response) => {
   const id = String(request.params.id);
-
-  // The uploadImages middleware will populate request.files
   const files = (request.files as Express.Multer.File[]) ?? [];
-
-  // The non-file fields are in request.body
   const data = request.body;
 
-  // Update the property with the non-file fields
   const updated = await adminService.updateListingByAdmin(id, data);
 
-  // If there are new files, upload them and add to the property
   if (files.length) {
     const uploads = await Promise.all(files.map(uploadImage));
     const imagesToAdd = uploads.map(u => ({
@@ -195,7 +188,6 @@ export const updateListing = asyncHandler(async (request: Request, response: Res
       publicId: u.public_id
     }));
     await adminService.addImagesToProperty(id, imagesToAdd);
-    // Refetch the property to get the updated images
     const refreshed = await getPropertyById(id);
     response.json(refreshed);
   } else {
@@ -209,7 +201,6 @@ export const getAllProperties = asyncHandler(async (request: Request, response: 
 
 
 export const getAdminCoupons = asyncHandler(async (_request: Request, response: Response) => {
-  // Get all coupons with basic info and affiliateId
   const coupons = await prisma.coupon.findMany({
     select: {
       id: true,
@@ -218,7 +209,6 @@ export const getAdminCoupons = asyncHandler(async (_request: Request, response: 
     }
   });
 
-  // For each coupon, get the partner name and count visits
   const couponsWithStats = await Promise.all(
     coupons.map(async (coupon) => {
       let partnerName = "Unknown";
@@ -230,14 +220,12 @@ export const getAdminCoupons = asyncHandler(async (_request: Request, response: 
         partnerName = partner?.name || "Unknown";
       }
 
-      // Count total visits for this coupon
       const totalVisits = await prisma.visit.count({
         where: {
           couponCode: coupon.code
         }
       });
 
-      // Count converted bookings (visits with leadStatus FULLY_BOOKED)
       const convertedBookingsCount = await prisma.visit.count({
         where: {
           couponCode: coupon.code,
@@ -262,7 +250,6 @@ export const getAdminCoupons = asyncHandler(async (_request: Request, response: 
 
 export const addPropertyImages = asyncHandler(async (req: Request, res: Response) => {
   const propertyId = String(req.params.id);
-
   const files = (req.files as Express.Multer.File[]) ?? [];
 
   if (!files.length) {
@@ -284,7 +271,6 @@ export const addPropertyImages = asyncHandler(async (req: Request, res: Response
 
 export const replacePropertyImage = asyncHandler(async (req: Request, res: Response) => {
   const imageId = String(req.params.imageId);
-
   const file = (req.files as Express.Multer.File[])?.[0];
 
   if (!file) {
@@ -299,6 +285,7 @@ export const replacePropertyImage = asyncHandler(async (req: Request, res: Respo
     throw new AppError("Image not found", 404);
   }
 
+  // FIXED: Changed uploadPanorama to uploadImage
   const uploaded = await uploadImage(file);
 
   if (existing.publicId) {
@@ -335,7 +322,6 @@ export const deletePropertyImage = asyncHandler(async (req: Request, res: Respon
   res.status(204).send();
 });
 
-// NEW: Admin review creation endpoint
 export const createAdminReview = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const propertyId = String(id);
@@ -349,10 +335,7 @@ export const createAdminReview = asyncHandler(async (req: Request, res: Response
     throw new AppError("Property not found", 404);
   }
 
-  // Create admin-generated review mapping to your exact schema
   const review = await prisma.review.create({
-    // Cast to any because the generated Prisma type may differ from
-    // the runtime shape we want to persist for admin-generated reviews.
     data: {
       propertyId,
       studentName,
@@ -369,12 +352,10 @@ export const createAdminReview = asyncHandler(async (req: Request, res: Response
   res.status(201).json(review);
 });
 
-// NEW: Admin review deletion endpoint
 export const deleteAdminReview = asyncHandler(async (request: Request, response: Response) => {
   const { id } = request.params;
   const reviewId = String(id);
 
-  // Verify review exists
   const review = await prisma.review.findUnique({
     where: { id: reviewId }
   });
@@ -390,7 +371,6 @@ export const deleteAdminReview = asyncHandler(async (request: Request, response:
   response.status(204).send();
 });
 
-// Panorama controllers
 export const addPanoramaController = async (req: Request, res: Response) => {
   console.log("1. Reached addPanoramaController");
   try {
@@ -398,13 +378,14 @@ export const addPanoramaController = async (req: Request, res: Response) => {
     console.log("2. Property ID:", propertyId);
     const file = req.file as Express.Multer.File;
     console.log("3. File received:", file ? { filename: file.originalname, size: file.size, mimetype: file.mimetype } : "undefined");
+    
     if (!file) {
       console.log("4. No file provided");
       return res.status(400).json({ success: false, message: "Panorama image is required" });
     }
 
     console.log("5. Starting cloud upload...");
-    // Upload the panorama image to Cloudinary
+    // FIXED: Changed uploadPanorama to uploadImage
     const uploaded = await uploadImage(file);
     console.log("6. Cloud upload successful. URL:", uploaded.secure_url);
 
@@ -449,7 +430,6 @@ export const updatePanorama = asyncHandler(async (req: Request, res: Response) =
 export const deletePanorama = asyncHandler(async (req: Request, res: Response) => {
   const panoramaId = String(req.params.panoramaId);
 
-  // First, get the panorama to get the publicId for Cloudinary cleanup
   const panorama = await prisma.propertyPanorama.findUnique({
     where: { id: panoramaId },
   });
@@ -458,12 +438,10 @@ export const deletePanorama = asyncHandler(async (req: Request, res: Response) =
     throw new AppError("Panorama not found", 404);
   }
 
-  // Delete from Cloudinary if publicId exists
   if (panorama.publicId) {
     await deleteCloudinaryImage(panorama.publicId);
   }
 
-  // Delete the panorama record
   await prisma.propertyPanorama.delete({
     where: { id: panoramaId },
   });
@@ -479,7 +457,6 @@ export const replacePanoramaImage = asyncHandler(async (req: Request, res: Respo
     throw new AppError("Panorama image is required", 400);
   }
 
-  // Get the existing panorama
   const panorama = await prisma.propertyPanorama.findUnique({
     where: { id: panoramaId },
   });
@@ -491,12 +468,10 @@ export const replacePanoramaImage = asyncHandler(async (req: Request, res: Respo
   // Upload new image
   const uploaded = await uploadImage(file);
 
-  // Delete old image from Cloudinary if exists
   if (panorama.publicId) {
     await deleteCloudinaryImage(panorama.publicId);
   }
 
-  // Update the panorama record
   const updatedPanorama = await prisma.propertyPanorama.update({
     where: { id: panoramaId },
     data: {
@@ -507,3 +482,5 @@ export const replacePanoramaImage = asyncHandler(async (req: Request, res: Respo
 
   res.json(updatedPanorama);
 });
+
+// ✅ FIXED: Removed the fake uploadPanorama function completely!

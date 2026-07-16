@@ -38,17 +38,11 @@ const express_1 = require("express");
 const visitController = __importStar(require("../controllers/visit.controller"));
 const supervisor_middleware_1 = require("../middleware/supervisor.middleware");
 exports.visitingRouter = (0, express_1.Router)();
-/*
-|--------------------------------------------------------------------------
-| PUBLIC
-|--------------------------------------------------------------------------
-*/
 exports.visitingRouter.post("/send-otp", visitController.sendSupervisorOtp);
 exports.visitingRouter.post("/verify-otp", visitController.verifySupervisorOtp);
-/*
-|--------------------------------------------------------------------------
-| PROTECTED
-|--------------------------------------------------------------------------
-*/
 exports.visitingRouter.use(supervisor_middleware_1.supervisorAuthenticate);
 exports.visitingRouter.get("/dashboard", visitController.getAllVisits);
+exports.visitingRouter.post("/:visitId/assign-lead", visitController.assignLead);
+exports.visitingRouter.post("/interns", visitController.createIntern);
+exports.visitingRouter.get("/interns", visitController.getInterns);
+exports.visitingRouter.post("/interns", supervisor_middleware_1.supervisorAuthenticate, visitController.createIntern);
