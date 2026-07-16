@@ -43,6 +43,7 @@
     "node_modules",
     "backend",
     "scripts",
-    "livinggo-visiting-app"
+    "livinggo-visiting-app",
+    "livinggo-main-app"
   ]
 }
