@@ -2,6 +2,8 @@
 import { Button } from "@/components/Button";
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api/client";
+import axios from "axios";
+
 
 type Visit = {
   id: string;
@@ -26,6 +28,13 @@ type Visit = {
       phone?: string | null;
     };
   };
+    intern?: {
+    id: string;
+    name: string;
+    username: string;
+    phone: string;
+  } | null;
+  meetingPointId?: string | null;
 };
 
 export default function VisitingDashboard() {
@@ -33,7 +42,13 @@ export default function VisitingDashboard() {
   const [visits, setVisits] = useState<Visit[]>([]);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedVisit, setSelectedVisit] = useState<Visit | null>(null);
-  const [interns, setInterns] = useState<any[]>([]);
+    type Intern = {
+    id: string;
+    name: string;
+    username: string;
+    phone: string | null;
+  };
+  const [interns, setInterns] = useState<Intern[]>([]);
   const [selectedIntern, setSelectedIntern] = useState("");
   const [meetingPointId, setMeetingPointId] = useState("");
   useEffect(() => {
@@ -77,6 +92,10 @@ export default function VisitingDashboard() {
   if (!selectedVisit || !selectedIntern) return;
 
   try {
+    console.log("Sending assignment:", {
+      internId: selectedIntern,
+      meetingPointId,
+    });
     await apiClient.post(
       `/visiting/${selectedVisit.id}/assign-lead`,
       {
@@ -99,12 +118,18 @@ export default function VisitingDashboard() {
 
     loadVisits();
 
-  } catch (err: any) {
+  } catch (err: unknown) {
   console.error(err);
 
-  console.log(err.response?.data);
+  if (axios.isAxiosError(err)) {
+    console.log(err.response?.data);
 
-  alert(err.response?.data?.message || "Failed to assign intern");
+    alert(
+      err.response?.data?.message || "Failed to assign intern"
+    );
+  } else {
+    alert("Failed to assign intern");
+  }
 }
 }
 
@@ -172,12 +197,84 @@ export default function VisitingDashboard() {
                 </p>
               </div>
             </div>
-            <Button
-              onClick={() => openAssignModal(visit)}
-              className="mt-6 rounded-xl bg-black px-5 py-3 text-white"
-            >
-              Assign Lead
-            </Button>
+            {visit.intern ? (
+              <div className="mt-6 rounded-2xl border border-green-200 bg-green-50 p-5">
+                <h3 className="mb-3 text-lg font-bold text-green-800">
+                  Assigned Lead
+                </h3>
+                <div className="space-y-2">
+                  <p>
+                    <span className="font-semibold">Name:</span>{" "}
+                    {visit.intern.name}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Username:</span>{" "}
+                    {visit.intern.username}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Phone:</span>{" "}
+                    {visit.intern.phone}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Meeting Point:</span>{" "}
+                    {visit.meetingPointId || "-"}
+                  </p>
+                  <div className="mt-6">
+                    <Button
+                      onClick={() => {
+                        if (!visit.student.phone) {
+                          alert("Student phone number is not available.");
+                          return;
+                        }
+                      
+                        const message = encodeURIComponent(
+                          `Hi ${visit.student.name},
+
+                          Your LivingGo property visit has been scheduled.
+
+                          👤 Assigned Lead:
+                          ${visit.intern?.name}
+
+                          📞 Contact:
+                          ${visit.intern?.phone}
+
+                          📍 Meeting Point:
+                          ${visit.meetingPointId}
+
+                          📅 Date:
+                          ${new Date(visit.visitDate).toLocaleDateString()}
+
+                          ⏰ Time:
+                          ${visit.timeSlot}
+
+                          🏠 Property:
+                          ${visit.property.title}
+
+                          Please be available on time.
+
+                          Thank you,
+                          LivingGo`
+                        );
+                        window.open(
+                          `https://wa.me/91${visit.student.phone}?text=${message}`,
+                          "_blank"
+                        );
+                      }}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      Send WhatsApp to Student
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <Button
+                onClick={() => openAssignModal(visit)}
+                className="mt-6 rounded-xl bg-black px-5 py-3 text-white"
+              >
+                Assign Lead
+              </Button>
+            )}
           </div>
         ))}
       </div>
@@ -203,7 +300,7 @@ onChange={(e)=>setSelectedIntern(e.target.value)}
 Select Intern
 </option>
 
-{interns.map((intern:any)=>(
+{interns.map((intern: Intern) => (
 
 <option
 key={intern.id}
@@ -253,4 +350,4 @@ Cancel
     </main>
   );
 
-}
+  }
