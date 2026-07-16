@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 export interface InternRequest extends Request {
   intern?: {
     id: string;
-    username: string;
+    phone: string;
     role: string;
   };
 }
@@ -31,7 +31,7 @@ export function internAuthenticate(
       process.env.JWT_SECRET!
     ) as {
       id: string;
-      username: string;
+      phone: string;
       role: string;
     };
 

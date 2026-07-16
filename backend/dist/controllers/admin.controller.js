@@ -339,8 +339,8 @@ const addPanoramaController = async (req, res) => {
             return res.status(400).json({ success: false, message: "Panorama image is required" });
         }
         console.log("5. Starting cloud upload...");
-        // FIXED: Changed uploadPanorama to uploadImage
-        const uploaded = await (0, cloudinary_service_1.uploadImage)(file);
+        // FIXED: Changed uploadImage to uploadPanorama
+        const uploaded = await (0, cloudinary_service_1.uploadPanorama)(file);
         console.log("6. Cloud upload successful. URL:", uploaded.secure_url);
         const { title, sortOrder } = req.body;
         console.log("7. Request body:", { title, sortOrder });

@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 
 type ClerkInstance = {
   session?: { getToken: () => Promise<string> } | null;
@@ -55,34 +55,34 @@ apiClient.interceptors.request.use(async (config) => {
   const isVisitingRequest = pathname.startsWith("/visiting");
 
   if (isAdminRequest) {
-  const token = localStorage.getItem("LivingGo_token");
+    const token = localStorage.getItem("LivingGo_token");
 
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
   }
 
-  return config;
-}
+  if (window.location.pathname.startsWith("/visiting/lead")) {
+    const token = localStorage.getItem("lead_token");
 
-if (window.location.pathname.startsWith("/visiting/lead")) {
-  const token = localStorage.getItem("lead_token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
 
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    return config;
   }
 
-  return config;
-}
+  if (isVisitingRequest) {
+    const token = localStorage.getItem("visiting_token");
 
-if (isVisitingRequest) {
-  const token = localStorage.getItem("visiting_token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
 
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    return config;
   }
-
-  return config;
-}
 
   try {
     const clerk = await getClerkWithTimeout();
@@ -99,16 +99,29 @@ if (isVisitingRequest) {
 
 // Response interceptor to handle 401 Unauthorized
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response: AxiosResponse) => response, // ✅ FIXED: Explicitly typed as AxiosResponse
   async (error) => {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
-      // Force logout or redirect to login for admin routes
+      // Handle logout for different sections
       if (window.location.pathname.startsWith("/admin")) {
         // Remove token and redirect to admin login
         localStorage.removeItem("LivingGo_token");
         window.location.href = "/admin/login";
+      } else if (
+        window.location.pathname.startsWith("/visiting/lead/dashboard") ||
+        window.location.pathname.startsWith("/visiting/lead/visit/") ||
+        window.location.pathname === "/visiting/interns/leads" ||
+        window.location.pathname.startsWith("/visiting/lead/")
+      ) {
+        // Remove intern token and redirect to login
+        localStorage.removeItem("intern_token");
+        window.location.href = "/visiting/login";
+      } else if (window.location.pathname.startsWith("/visiting")) {
+        // Remove visiting token and redirect to visiting login
+        localStorage.removeItem("visiting_token");
+        window.location.href = "/visiting/login";
       } else {
-        // For non-admin routes, you might want to handle Clerk session expiration
+        // For other routes, you might want to handle Clerk session expiration
         // For now, just reject the error
         return Promise.reject(error);
       }
@@ -116,4 +129,3 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-

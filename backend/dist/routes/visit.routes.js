@@ -41,5 +41,15 @@ exports.visitRouter = (0, express_1.Router)();
 exports.visitRouter.post("/send-otp", visitController.sendSupervisorOtp);
 exports.visitRouter.post("/verify-otp", visitController.verifySupervisorOtp);
 exports.visitRouter.use(auth_middleware_1.clerkAuthenticate);
+exports.visitRouter.get("/interns", visitController.getInterns);
+exports.visitRouter.post("/interns", visitController.createIntern);
+// visitRouter.put(
+//   "/interns/:id/toggle",
+//   visitController.toggleIntern
+// );
+// visitRouter.delete(
+//   "/interns/:id",
+//   visitController.deleteIntern
+// );
 exports.visitRouter.get("/all", visitController.getAllVisits);
 exports.visitRouter.post("/schedule", visitController.scheduleVisit);

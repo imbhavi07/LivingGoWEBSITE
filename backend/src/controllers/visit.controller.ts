@@ -209,25 +209,25 @@ export const scheduleVisit = asyncHandler(
               email: true,
               phone: true,
             },
-        },
-        property: {
-          select: {
-            id: true,
-            propertyCode: true,
-            title: true,
-            location: true,
-            price: true,
-          
-            owner: {
-              select: {
-                name: true,
-                phone: true,
+          },
+          property: {
+            select: {
+              id: true,
+              propertyCode: true,
+              title: true,
+              location: true,
+              price: true,
+
+              owner: {
+                select: {
+                  name: true,
+                  phone: true,
+                },
               },
             },
           },
         },
-      },
-    });
+      });
     console.log("VISIT CREATED");
     console.log(visit);
 
@@ -239,32 +239,32 @@ export const scheduleVisit = asyncHandler(
         data: { currentUses: { increment: 1 } },
       });
     }
-console.log("RETURNING SUCCESS");
-response.status(201).json({
-  success: true,
+  console.log("RETURNING SUCCESS");
+  response.status(201).json({
+    success: true,
 
-  data: {
-    visitId: visit.id,
+    data: {
+      visitId: visit.id,
 
-    tokenId: visit.tokenId,
+      tokenId: visit.tokenId,
 
-    visitOtp: visit.visitOtp,
+      visitOtp: visit.visitOtp,
 
-    visitDate: visit.visitDate,
+      visitDate: visit.visitDate,
 
-    timeSlot: visit.timeSlot,
+      timeSlot: visit.timeSlot,
 
-    couponCode: visit.couponCode,
+      couponCode: visit.couponCode,
 
-    status: visit.leadStatus,
+      status: visit.leadStatus,
 
-    supervisor: VISIT_CONFIG.supervisor,
+      supervisor: VISIT_CONFIG.supervisor,
 
-    student: visit.student,
+      student: visit.student,
 
-    property: visit.property,
-  },
-});
+      property: visit.property,
+    },
+  });
   }
 );
 
@@ -481,418 +481,434 @@ export const getAllVisits = asyncHandler(
   }
 );
 
-export const assignLead = async (
-  req: Request<{ visitId: string }>,
-  res: Response
-) => {
-  try {
-    const { visitId } = req.params;
+export const assignLead = asyncHandler(
+  async (
+    req: Request,
+    res: Response
+  ) => {
+    try {
+      const { visitId } = req.params as { visitId: string };
 
-    const visit = await prisma.visit.findUnique({
-      where: {
-        id: visitId,
-      },
-      include: {
-        property: {
-          include: {
-            owner: true,
+      const visit = await prisma.visit.findUnique({
+        where: {
+          id: visitId,
+        },
+        include: {
+          property: {
+            include: {
+              owner: true,
+            },
           },
+          student: true,
         },
-        student: true,
-      },
-    });
-
-    if (!visit) {
-      return res.status(404).json({
-        success: false,
-        message: "Visit not found",
       });
-    }
 
-    if (visit.leadStatus !== "SCHEDULED") {
-      return res.status(400).json({
-        success: false,
-        message: "Lead already assigned.",
-      });
-    }
+      if (!visit) {
+        return res.status(404).json({
+          success: false,
+          message: "Visit not found",
+        });
+      }
 
-    const { internId, meetingPointId } = req.body;
+      if (visit.leadStatus !== "SCHEDULED") {
+        return res.status(400).json({
+          success: false,
+          message: "Lead already assigned.",
+        });
+      }
 
-const updatedVisit = await prisma.visit.update({
-  where: {
-    id: visitId,
-  },
-  data: {
-    leadStatus: "ASSIGNED",
+      const { internId, meetingPointId } = req.body;
 
-    assignedLeadId: internId,
-
-    meetingPointId
-  },
-});
-
-    return res.json({
-      success: true,
-      message: "Lead assigned successfully.",
-      visit: updatedVisit,
-    });
-
-  } catch (error) {
-
-    console.error(error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-
-  }
-};
-
-export const getInterns = async (
-  req: Request,
-  res: Response
-) => {
-  try {
-
-    const supervisorId = req.user!.id;
-
-    const interns = await prisma.intern.findMany({
-      where: {
-        supervisorId,
-        active: true,
-      },
-      orderBy: {
-        name: "asc",
-      },
-    });
-
-    return res.json({
-      success: true,
-      interns,
-    });
-
-  } catch (error) {
-
-    console.error(error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-
-  }
-};
-
-export const getAvailableInterns = async (
-  req: Request<{ visitId: string }>,
-  res: Response
-) => {
-  try {
-    const { visitId } = req.params;
-
-    const visit = await prisma.visit.findUnique({
-      where: {
-        id: visitId,
-      },
-      select: {
-        visitDate: true,
-        timeSlot: true,
-      },
-    });
-
-    if (!visit) {
-      return res.status(404).json({
-        success: false,
-        message: "Visit not found",
-      });
-    }
-
-    const busyInterns = await prisma.visit.findMany({
-      where: {
-        visitDate: visit.visitDate,
-        timeSlot: visit.timeSlot,
-        leadStatus: {
-          in: ["ASSIGNED", "MET"],
+      const updatedVisit = await prisma.visit.update({
+        where: {
+          id: visitId,
         },
-        assignedLeadId: {
-          not: null,
-        },
-      },
-      select: {
-        assignedLeadId: true,
-      },
-    });
-
-    const busyIds = busyInterns
-      .map(v => v.assignedLeadId!)
-      .filter(Boolean);
-
-    const interns = await prisma.intern.findMany({
-      where: {
-        active: true,
-        id: {
-          notIn: busyIds,
-        },
-      },
-      orderBy: {
-        name: "asc",
-      },
-    });
-
-    return res.json({
-      success: true,
-      interns,
-    });
-
-  } catch (err) {
-
-    console.error(err);
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-
-  }
-};
-
-export const createIntern = async (
-  req: Request,
-  res: Response
-) => {
-
-  try {
-
-    const supervisorId = req.user!.id;
-
-    const {
-      name,
-      phone,password
-    } = req.body;
-
-    const username =
-      `INT${Date.now().toString().slice(-6)}`;
-
-    const passwordHash =
-      await bcrypt.hash(password, 10);
-
-    const intern =
-      await prisma.intern.create({
-
         data: {
+          leadStatus: "ASSIGNED",
+          assignedLeadId: internId,
+          meetingPointId: meetingPointId
+        },
+      });
 
+      return res.json({
+        success: true,
+        message: "Lead assigned successfully.",
+        visit: updatedVisit,
+      });
+
+    } catch (error) {
+
+      console.error(error);
+
+      return res.status(500).json({
+        success: false,
+        message: "Internal server error",
+      });
+
+    }
+  }
+);
+
+export const getInterns = asyncHandler(
+  async (
+    req: Request,
+    res: Response
+  ) => {
+    try {
+
+      const supervisorId = req.user!.id;
+
+      const interns = await prisma.intern.findMany({
+        where: {
           supervisorId,
+          active: true,
+        },
+        orderBy: {
+          name: "asc",
+        },
+      });
 
-          name,
+      return res.json({
+        success: true,
+        interns,
+      });
 
-          phone,
+    } catch (error) {
 
+      console.error(error);
+
+      return res.status(500).json({
+        success: false,
+        message: "Internal server error",
+      });
+
+    }
+  }
+);
+
+export const getAvailableInterns = asyncHandler(
+  async (
+    req: Request,
+    res: Response
+  ) => {
+    try {
+      const visitId = Array.isArray(req.params.visitId) ? req.params.visitId[0] : req.params.visitId;
+
+      const visit = await prisma.visit.findUnique({
+        where: {
+          id: visitId,
+        },
+        select: {
+          visitDate: true,
+          timeSlot: true,
+        },
+      });
+
+      if (!visit) {
+        return res.status(404).json({
+          success: false,
+          message: "Visit not found",
+        });
+      }
+
+      const busyInterns = await prisma.visit.findMany({
+        where: {
+          visitDate: visit.visitDate,
+          timeSlot: visit.timeSlot,
+          leadStatus: {
+            in: ["ASSIGNED", "MET"],
+          },
+          assignedLeadId: {
+            not: null,
+          },
+        },
+        select: {
+          assignedLeadId: true,
+        },
+      });
+
+      const busyIds = busyInterns
+        .map(v => v.assignedLeadId!)
+        .filter(Boolean);
+
+      const interns = await prisma.intern.findMany({
+        where: {
+          active: true,
+          id: {
+            notIn: busyIds,
+          },
+        },
+        orderBy: {
+          name: "asc",
+        },
+      });
+
+      return res.json({
+        success: true,
+        interns,
+      });
+
+    } catch (err) {
+
+      console.error(err);
+
+      return res.status(500).json({
+        success: false,
+        message: "Internal server error",
+      });
+
+    }
+  }
+);
+
+export const createIntern = asyncHandler(
+  async (
+    req: Request,
+    res: Response
+  ) => {
+    try {
+
+      const supervisorId = req.user!.id;
+
+      const {
+        name,
+        phone,
+        password
+      } = req.body;
+
+      const username =
+        `INT${Date.now().toString().slice(-6)}`;
+
+      const passwordHash =
+        await bcrypt.hash(password, 10);
+
+      const intern =
+        await prisma.intern.create({
+
+          data: {
+
+            supervisorId,
+
+            name,
+
+            phone,
+
+            username,
+
+            passwordHash,
+
+          },
+
+        });
+
+      return res.json({
+
+        success: true,
+
+        intern
+
+      });
+
+    } catch (error) {
+
+      console.error(error);
+
+      return res.status(500).json({
+
+        success: false,
+
+        message: "Internal server error",
+
+      });
+
+    }
+
+  }
+);
+
+export const internLogin = asyncHandler(
+  async (
+    req: Request,
+    res: Response
+  ) => {
+    try {
+      const { username, password } = req.body;
+
+      const intern = await prisma.intern.findUnique({
+        where: {
           username,
-
-          passwordHash,
-
         },
-
       });
 
-    return res.json({
+      if (!intern) {
+        return res.status(401).json({
+          success: false,
+          message: "Invalid credentials",
+        });
+      }
 
-      success: true,
+      const valid = await bcrypt.compare(
+        password,
+        intern.passwordHash
+      );
 
-      intern
+      if (!valid) {
+        return res.status(401).json({
+          success: false,
+          message: "Invalid credentials",
+        });
+      }
 
-    });
-
-  } catch (error) {
-
-    console.error(error);
-
-    return res.status(500).json({
-
-      success: false,
-
-      message: "Internal server error",
-
-    });
-
-  }
-
-};
-
-export const internLogin = async (
-  req: Request,
-  res: Response
-) => {
-  try {
-    const { username, password } = req.body;
-
-    const intern = await prisma.intern.findUnique({
-      where: {
-        username,
-      },
-    });
-
-    if (!intern) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials",
-      });
-    }
-
-    const valid = await bcrypt.compare(
-      password,
-      intern.passwordHash
-    );
-
-    if (!valid) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials",
-      });
-    }
-
-    const token = signJwt({
-      id: intern.id,
-      username: intern.username,
-      role: Role.INTERN
-    });
-
-    return res.json({
-      success: true,
-      token,
-      intern: {
+      const token = signJwt({
         id: intern.id,
-        name: intern.name,
         username: intern.username,
-      },
-    });
-  } catch (err) {
-    console.error(err);
+        role: Role.INTERN
+      });
 
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
+      return res.json({
+        success: true,
+        token,
+        intern: {
+          id: intern.id,
+          name: intern.name,
+          username: intern.username,
+        },
+      });
+    } catch (err) {
+      console.error(err);
+
+      return res.status(500).json({
+        success: false,
+        message: "Internal server error",
+      });
+    }
   }
-};
+);
 
-export const getInternDashboard = async (
-  req: InternRequest,
-  res: Response
-) => {
-  try {
-    const internId = req.intern!.id;
+export const getInternDashboard = asyncHandler(
+  async (
+    req: InternRequest,
+    res: Response
+  ) => {
+    try {
+      const internId = req.intern!.id;
 
-    const visits = await prisma.visit.findMany({
-      where: {
-        assignedLeadId: internId,
-      },
+      const visits = await prisma.visit.findMany({
+        where: {
+          assignedLeadId: internId,
+        },
 
-      include: {
-        student: {
-          select: {
-            id: true,
-            name: true,
-            phone: true,
+        include: {
+          student: {
+            select: {
+              id: true,
+              name: true,
+              phone: true,
+            },
+          },
+
+          property: {
+            select: {
+              id: true,
+              propertyCode: true,
+              title: true,
+              location: true,
+              price: true,
+            },
           },
         },
 
-        property: {
-          select: {
-            id: true,
-            propertyCode: true,
-            title: true,
-            location: true,
-            price: true,
+        orderBy: [
+          {
+            visitDate: "asc",
           },
-        },
-      },
-
-      orderBy: [
-        {
-          visitDate: "asc",
-        },
-      ],
-    });
-    console.log("Intern Dashboard Visits:");
-    console.log(visits);
-    return res.json({
-      success: true,
-      visits,
-    });
-
-
-  } catch (err) {
-
-    console.error(err);
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-
-  }
-};
-
-export const updateInternVisitStatus = async (
-  req: InternRequest & Request<{ id: string }>,
-  res: Response
-) => {
-  try {
-
-    const internId = req.intern!.id;
-    const visitId = req.params.id;
-
-    const {
-      otp,
-      status,
-    } = req.body;
-
-    const visit = await prisma.visit.findFirst({
-      where: {
-        id: visitId,
-        assignedLeadId: internId,
-      },
-    });
-
-    if (!visit) {
-      return res.status(404).json({
-        success: false,
-        message: "Visit not found",
+        ],
       });
-    }
-
-    if (visit.visitOtp !== otp) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid OTP",
+      console.log("Intern Dashboard Visits:");
+      console.log(visits);
+      return res.json({
+        success: true,
+        visits,
       });
+
+
+    } catch (err) {
+
+      console.error(err);
+
+      return res.status(500).json({
+        success: false,
+        message: "Internal server error",
+      });
+
     }
-
-    const updated = await prisma.visit.update({
-      where: {
-        id: visit.id,
-      },
-      data: {
-        leadStatus: status,
-        visitVerified: true,
-      },
-    });
-
-    return res.json({
-      success: true,
-      visit: updated,
-    });
-
-  } catch (err) {
-
-    console.error(err);
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-    });
-
   }
-};
+);
+
+export const updateInternVisitStatus = asyncHandler(
+  async (
+    req: Request & InternRequest,
+    res: Response,
+    _next: NextFunction
+  ) => {
+    try {
+
+      const internId = req.intern!.id;
+      const visitId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+
+      const {
+        otp,
+        status,
+      } = req.body;
+
+      const visit = await prisma.visit.findFirst({
+        where: {
+          id: visitId,
+          assignedLeadId: internId,
+        },
+      });
+
+      if (!visit) {
+        return res.status(404).json({
+          success: false,
+          message: "Visit not found",
+        });
+      }
+
+      // Use constant-time comparison to prevent timing attacks
+      const valid = await bcrypt.compare(otp, visit.visitOtp);
+
+      if (!valid) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid OTP",
+        });
+      }
+
+      const updated = await prisma.visit.update({
+        where: {
+          id: visit.id,
+        },
+        data: {
+          leadStatus: status,
+          visitVerified: true,
+        },
+      });
+
+      return res.json({
+        success: true,
+        visit: updated,
+      });
+
+    } catch (err) {
+
+      console.error(err);
+
+      return res.status(500).json({
+        success: false,
+        message: "Internal server error",
+      });
+
+    }
+  }
+);
