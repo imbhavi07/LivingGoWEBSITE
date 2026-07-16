@@ -5,7 +5,7 @@ export default function VisitingApp() {
   return (
     <SafeAreaView style={styles.container}>
       <WebView 
-        source={{ uri: 'https://www.livinggo.in/visiting' }} 
+        source={{ uri: 'https://www.livinggo.in/' }} 
         style={styles.webview}
         javaScriptEnabled={true}
         domStorageEnabled={true}
@@ -19,7 +19,7 @@ export default function VisitingApp() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff', // Matches your web app's background
+    backgroundColor: '#f9e7d3', // Matches your web app's background
   },
   webview: {
     flex: 1,
