@@ -385,11 +385,21 @@ export const verifySupervisorOtp = asyncHandler(
       },
     });
 
-    const token = signJwt({
-      id: "SUPERVISOR",
-      email,
-      role: "admin",
-    });
+    const supervisor = await prisma.user.findUnique({
+  where: {
+    email,
+  },
+});
+
+if (!supervisor) {
+  throw new AppError("Supervisor account not found.", 404);
+}
+
+const token = signJwt({
+  id: supervisor.id,
+  email: supervisor.email,
+  role: supervisor.role,
+});
     response.json({
       success: true,
       token,
