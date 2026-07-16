@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
+import { Button } from "@/components/Button";
 export default function IntroOverlay() {
   const [isVisible, setIsVisible] = useState(true);
 
