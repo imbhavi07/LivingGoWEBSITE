@@ -8,7 +8,8 @@ import bcrypt from "bcryptjs";
 import { Resend } from "resend";
 import { signJwt } from "../utils/jwt";
 import { VISIT_CONFIG } from "../config/visit.config";
-
+import { Role } from "@prisma/client";
+import type { InternRequest } from "../middleware/intern.middleware";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const SUPERVISOR_EMAILS = [
@@ -707,4 +708,178 @@ export const createIntern = async (
 
   }
 
+};
+
+export const internLogin = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { username, password } = req.body;
+
+    const intern = await prisma.intern.findUnique({
+      where: {
+        username,
+      },
+    });
+
+    if (!intern) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
+    const valid = await bcrypt.compare(
+      password,
+      intern.passwordHash
+    );
+
+    if (!valid) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
+    const token = signJwt({
+      id: intern.id,
+      username: intern.username,
+      role: Role.INTERN
+    });
+
+    return res.json({
+      success: true,
+      token,
+      intern: {
+        id: intern.id,
+        name: intern.name,
+        username: intern.username,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};
+
+export const getInternDashboard = async (
+  req: InternRequest,
+  res: Response
+) => {
+  try {
+    const internId = req.intern!.id;
+
+    const visits = await prisma.visit.findMany({
+      where: {
+        assignedLeadId: internId,
+      },
+
+      include: {
+        student: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+          },
+        },
+
+        property: {
+          select: {
+            id: true,
+            propertyCode: true,
+            title: true,
+            location: true,
+            price: true,
+          },
+        },
+      },
+
+      orderBy: [
+        {
+          visitDate: "asc",
+        },
+      ],
+    });
+
+    return res.json({
+      success: true,
+      visits,
+    });
+
+  } catch (err) {
+
+    console.error(err);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+
+  }
+};
+
+export const updateInternVisitStatus = async (
+  req: InternRequest & Request<{ id: string }>,
+  res: Response
+) => {
+  try {
+
+    const internId = req.intern!.id;
+    const visitId = req.params.id;
+
+    const {
+      otp,
+      status,
+    } = req.body;
+
+    const visit = await prisma.visit.findFirst({
+      where: {
+        id: visitId,
+        assignedLeadId: internId,
+      },
+    });
+
+    if (!visit) {
+      return res.status(404).json({
+        success: false,
+        message: "Visit not found",
+      });
+    }
+
+    if (visit.visitOtp !== otp) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP",
+      });
+    }
+
+    const updated = await prisma.visit.update({
+      where: {
+        id: visit.id,
+      },
+      data: {
+        leadStatus: status,
+      },
+    });
+
+    return res.json({
+      success: true,
+      visit: updated,
+    });
+
+  } catch (err) {
+
+    console.error(err);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+
+  }
 };

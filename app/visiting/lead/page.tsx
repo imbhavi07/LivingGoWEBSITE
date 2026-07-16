@@ -19,7 +19,7 @@ export default function LeadLoginPage() {
     try {
       const res = await apiClient.post("/visiting/lead/login", { username, password });
       localStorage.setItem("lead_token", res.data.token);
-      localStorage.setItem("lead_name", res.data.lead.name);
+      localStorage.setItem("lead_name", res.data.intern.name);
       window.location.href = "/visiting/lead/dashboard";
     } catch (err: any) {
       setError(err?.response?.data?.message ?? "Invalid credentials");
