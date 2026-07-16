@@ -53,6 +53,24 @@ export default function HomePage() {
 
   return (
     <main className="bg-[#f9e7d3] min-h-screen flex flex-col">
+      {/* INJECTED PURE CSS FOR HARDWARE-ACCELERATED ANIMATIONS */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes spinY {
+          from { transform: rotateY(0deg); }
+          to { transform: rotateY(360deg); }
+        }
+        .animate-spin-y {
+          animation: spinY 2.5s linear infinite;
+        }
+        @keyframes marquee {
+          from { transform: translateX(0%); }
+          to { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+          animation: marquee 12s linear infinite;
+        }
+      `}} />
+
       <section className="relative w-full overflow-hidden">
 
         <motion.div 
@@ -73,6 +91,7 @@ export default function HomePage() {
               alt="LivingGo Logo"
               width={992}
               height={597}
+              priority
               className="ml-[-50px] md:ml-[15px] mt-[-40px] md:mt-5 h-auto w-auto scale-75 md:scale-100 drop-shadow-[0_4px_3px_rgba(0,0,0,0.3)]"
             />
             <p className="mt-[-30px] md:mt-5 max-w-xl md:text-2xl text-xl leading-7 md:leading-8 md:text-ink text-brown [-webkit-text-stroke:0.1px_#000] drop-shadow-md font-black" style={EBGaramond.style}>
@@ -111,14 +130,13 @@ export default function HomePage() {
                 className="flex-1 flex sm:hidden items-center justify-center gap-1.5 rounded-full bg-white border-2 border-ink px-1 py-4 text-[15px] leading-none font-black text-ink shadow-lg transition-transform hover:scale-105"
               >
                 <div style={{ perspective: 400 }} className="flex items-center justify-center">
-                  <motion.span
-                    className="inline-block text-lg drop-shadow-[0_2px_3px_rgba(0,0,0,0.15)] origin-center text-amber-600 font-bold"
-                    animate={{ rotateY: 360 }}
-                    transition={{ repeat: Infinity, duration: 2.5, ease: "linear" }}
+                  {/* OPTIMIZED TO PURE CSS */}
+                  <span
+                    className="inline-block text-lg drop-shadow-[0_2px_3px_rgba(0,0,0,0.15)] origin-center text-amber-600 font-bold animate-spin-y"
                     style={{ transformStyle: "preserve-3d" }}
                   >
                     ₹
-                  </motion.span>
+                  </span>
                 </div>
                 <span>Refer & Earn</span>
               </Link>
@@ -141,14 +159,13 @@ export default function HomePage() {
                 className="inline-flex items-center justify-center gap-3 rounded-full bg-white border-2 border-ink px-9 py-4 text-xl font-black text-ink shadow-lg transition-all hover:scale-105 hover:bg-linen min-w-[220px]"
               >
                 <div style={{ perspective: 400 }} className="flex items-center justify-center">
-                  <motion.span
-                    className="inline-block text-2xl drop-shadow-[0_2px_3px_rgba(0,0,0,0.15)] origin-center text-amber-600 font-bold"
-                    animate={{ rotateY: 360 }}
-                    transition={{ repeat: Infinity, duration: 2.5, ease: "linear" }}
+                  {/* OPTIMIZED TO PURE CSS */}
+                  <span
+                    className="inline-block text-2xl drop-shadow-[0_2px_3px_rgba(0,0,0,0.15)] origin-center text-amber-600 font-bold animate-spin-y"
                     style={{ transformStyle: "preserve-3d" }}
                   >
                     ₹
-                  </motion.span>
+                  </span>
                 </div>
                 <span>Refer & Earn</span>
                 <ArrowRight className="h-6 w-6" aria-hidden />
@@ -189,11 +206,8 @@ export default function HomePage() {
         
         {/* 🔥 INFINITE MARQUEE TICKER 🔥 */}
         <div className="relative z-30 flex w-full overflow-hidden bg-ink py-4 shadow-xl md:mt-4">
-          <motion.div
-            className="flex w-max flex-nowrap items-center"
-            animate={{ x: ["0%", "-50%"] }}
-            transition={{ ease: "linear", duration: 12, repeat: Infinity }}
-          >
+          {/* OPTIMIZED TO PURE CSS */}
+          <div className="flex w-max flex-nowrap items-center animate-marquee">
             {[...Array(2)].map((_, i) => (
               <div key={i} className="flex flex-nowrap gap-12 px-6 text-sm md:text-base font-black uppercase tracking-widest text-[#f9e7d3]">
                 <span className="whitespace-nowrap">No Brokerage</span>
@@ -210,7 +224,7 @@ export default function HomePage() {
                 <span className="whitespace-nowrap opacity-50">•</span>
               </div>
             ))}
-          </motion.div>
+          </div>
         </div>
 
         <div className="relative z-10 w-full bg-[#f9e7d3]">

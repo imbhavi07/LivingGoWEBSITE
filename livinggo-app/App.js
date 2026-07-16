@@ -1,28 +1,24 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StyleSheet, View, ActivityIndicator, SafeAreaView, StatusBar } from 'react-native';
 import { WebView } from 'react-native-webview';
 
 export default function App() {
-  const [isLoading, setIsLoading] = useState(true);
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#f9e7d3" />
-      
-      {isLoading && (
-        <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color="#000000" />
-        </View>
-      )}
       
       <WebView 
         source={{ uri: 'https://www.livinggo.in/' }} 
         style={styles.webview}
         javaScriptEnabled={true}
         domStorageEnabled={true}
+        /* These two lines trigger the smart native loader */
         startInLoadingState={true}
-        onLoadStart={() => setIsLoading(true)}
-        onLoadEnd={() => setIsLoading(false)}
+        renderLoading={() => (
+          <View style={styles.loadingOverlay}>
+            <ActivityIndicator size="large" color="#f9e7d3" />
+          </View>
+        )}
       />
     </SafeAreaView>
   );
