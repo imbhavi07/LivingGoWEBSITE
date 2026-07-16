@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -50,40 +49,35 @@ const [interns, setInterns] = useState<Intern[]>([]);
     loadVisits();
   }, []);
   async function loadVisits() {
-=======
-const loadVisits = async () => {
-    if (!token) {
-      // Redirect to login if no token
-      if (typeof window !== "undefined") {
-        window.location.href = "/visiting/login";
-      }
-      return;
-    }
-
->>>>>>> b9d7d75e05f47f8ca59188070d70e20f962bf940
     try {
       setLoading(true);
       const response = await apiClient.get(
         "/visiting/dashboard",
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${localStorage.getItem("visiting_token")}`,
           },
         }
       );
 
       setVisits(response.data.visits);
-    } catch (error: any) {
-      console.error("Failed to load visits:", error);
+    } catch (error: unknown) {
+        const err = error as {
+    response?: {
+      data?: {
+        message?: string;
+      };
+    };
+  };
+  console.error(err.response?.data?.message ?? error);   
       // Clear invalid token and redirect to login
       if (typeof window !== "undefined") {
-        localStorage.removeItem("intern_token");
+        localStorage.removeItem("visiting_token");
         window.location.href = "/visiting/login";
       }
     } finally {
       setLoading(false);
     }
-<<<<<<< HEAD
   }
 
   const assignLead = (visitId: string) => {
@@ -186,6 +180,3 @@ const confirmAssignment = async () => {
   </main>
 );
 }
-=======
-  };
->>>>>>> b9d7d75e05f47f8ca59188070d70e20f962bf940
