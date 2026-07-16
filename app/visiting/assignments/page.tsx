@@ -73,6 +73,38 @@ export default function VisitingDashboard() {
     setShowAssignModal(true);
   }
 
+  async function assignIntern() {
+  if (!selectedVisit || !selectedIntern) return;
+
+  try {
+    await apiClient.post(
+      `/visiting/${selectedVisit.id}/assign-lead`,
+      {
+        internId: selectedIntern,
+        meetingPointId,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem(
+            "visiting_token"
+          )}`,
+        },
+      }
+    );
+
+    setShowAssignModal(false);
+
+    setSelectedIntern("");
+    setMeetingPointId("");
+
+    loadVisits();
+
+  } catch (err) {
+    console.error(err);
+    alert("Failed to assign intern");
+  }
+  }
+
   return (
     <main className="min-h-screen bg-gray-100 p-8">
       <h1 className="mb-8 text-4xl font-black">
@@ -192,22 +224,21 @@ onChange={(e)=>setMeetingPointId(e.target.value)}
 
 <div className="flex gap-4">
 
-<button
+<Button
 onClick={()=>setShowAssignModal(false)}
 className="border rounded px-5 py-3"
 >
 
 Cancel
 
-</button>
+</Button>
 
-<button
-className="bg-black text-white rounded px-5 py-3"
+<Button
+  onClick={assignIntern}
+  className="bg-black text-white rounded px-5 py-3"
 >
-
-Assign
-
-</button>
+  Assign
+</Button>
 
 </div>
 

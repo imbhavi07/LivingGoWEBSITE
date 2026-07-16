@@ -7,7 +7,7 @@ import { buttonClasses } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { useOwnerApprovals } from "@/hooks/useAdmin";
 import { formatIST } from "@/lib/utils";
-
+import { Button } from "@/components/Button";
 export default function AdminApprovalsPage() {
   const { approvals, isLoading, approve, reject } = useOwnerApprovals();
 
@@ -38,13 +38,13 @@ export default function AdminApprovalsPage() {
                   <Eye className="h-4 w-4" aria-hidden />
                   Review
                 </Link>
-                <button className={buttonClasses("primary", undefined, "px-4")} onClick={() => void approve(approval.id)}>
+                <Button className={buttonClasses("primary", undefined, "px-4")} onClick={() => void approve(approval.id)}>
                   Approve
-                </button>
-                <button className={buttonClasses("ghost", undefined, "px-4 text-red-700")} onClick={() => void reject(approval.id)}>
+                </Button>
+                <Button className={buttonClasses("ghost", undefined, "px-4 text-red-700")} onClick={() => void reject(approval.id)}>
                   <XCircle className="h-4 w-4" aria-hidden />
                   Reject
-                </button>
+                </Button>
               </div>
             </article>
           ))}

@@ -11,7 +11,7 @@ import { buttonClasses } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { useAdminListings } from "@/hooks/useAdmin";
 import { formatPrice, formatIST } from "@/lib/utils";
-
+import { Button } from "@/components/Button";
 
 // yahan pe image optimization daala hai
 const optimizeImageUrl = (url: string | undefined): string => {
@@ -66,15 +66,15 @@ export default function AdminListingsPage() {
                   <Eye className="h-4 w-4" aria-hidden />
                   View
                 </Link>
-                <button className={buttonClasses("secondary", undefined, "px-4 text-moss")} onClick={() => void approve(listing.id)}>
+                <Button className={buttonClasses("secondary", undefined, "px-4 text-moss")} onClick={() => void approve(listing.id)}>
                   <Check className="h-4 w-4" aria-hidden />
                   Approve
-                </button>
-                <button className={buttonClasses("secondary", undefined, "px-4 text-amber-700")} onClick={() => void reject(listing.id)}>
+                </Button>
+                <Button className={buttonClasses("secondary", undefined, "px-4 text-amber-700")} onClick={() => void reject(listing.id)}>
                   <X className="h-4 w-4" aria-hidden />
                   Reject
-                </button>
-                <button
+                </Button>
+                <Button
                   className={buttonClasses("ghost", undefined, "px-4 text-red-700")}
                   onClick={() => {
                     if (confirm("Delete this fake or spam listing?")) void remove(listing.id);
@@ -82,7 +82,7 @@ export default function AdminListingsPage() {
                 >
                   <Trash2 className="h-4 w-4" aria-hidden />
                   Delete
-                </button>
+                </Button>
               </div>
             </article>
           ))}
