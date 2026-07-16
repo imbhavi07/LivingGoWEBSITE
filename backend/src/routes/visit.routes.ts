@@ -17,6 +17,26 @@ visitRouter.post(
 visitRouter.use(clerkAuthenticate);
 
 visitRouter.get(
+  "/interns",
+  visitController.getInterns
+);
+
+visitRouter.post(
+  "/interns",
+  visitController.createIntern
+);
+
+// visitRouter.put(
+//   "/interns/:id/toggle",
+//   visitController.toggleIntern
+// );
+
+// visitRouter.delete(
+//   "/interns/:id",
+//   visitController.deleteIntern
+// );
+
+visitRouter.get(
   "/all",
   visitController.getAllVisits
 );

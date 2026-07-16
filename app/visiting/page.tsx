@@ -15,52 +15,45 @@ export default function VisitingPage() {
   const sendOtp = async () => {
     try {
       setLoading(true);
-
       await apiClient.post("/visits/send-otp", {
         email,
       });
-
       setOtpSent(true);
-
       alert("OTP sent successfully.");
     } catch (error: any) {
       alert(
         error?.response?.data?.message ??
-          "Failed to send OTP."
+        "Failed to send OTP."
       );
     } finally {
       setLoading(false);
     }
   };
 
-  const verifyOtp = async () => {
-    try {
-      setVerifying(true);
+const verifyOtp = async () => {
+  try {
+    setVerifying(true);
 
-      const response =
-await apiClient.post(
-  "/visits/verify-otp",
-  {
-    email,
-    otp,
+    const response = await apiClient.post("/visits/verify-otp", {
+      email,
+      otp,
+    });
+
+    const { token } = response.data;
+    localStorage.setItem("visiting_token", token);
+    alert("Login successful.");
+    window.location.href = "/visiting/dashboard";
+  } 
+  
+  catch (error: any) {
+    alert(
+      error?.response?.data?.message ??
+      "Invalid OTP."
+    );
+  } finally {
+    setVerifying(false);
   }
-);
-
-localStorage.setItem(
-  "visiting_token",
-  response.data.token
-);
-
-window.location.href =
-"/visiting/dashboard";} catch (error: any) {
-      alert(
-        error?.response?.data?.message ??
-          "Invalid OTP."
-      );
-    } finally {
-      setVerifying(false);
-    }
-  };
+};
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-[#f6f6f6]">
