@@ -9,44 +9,50 @@ import { validate } from "../middleware/validate.middleware";
 import { adminIdSchema, adminListSchema, adminUserListSchema } from "../validations/admin.validation";
 import { loginSchema } from "../validations/auth.validation";
 import { uploadImages, upload } from "../middleware/upload.middleware";
-import { propertyIdSchema } from "../validations/property.validation";
-import { createPropertySchema } from "../validations/property.validation";
+import { propertyIdSchema, createPropertySchema } from "../validations/property.validation";
 
 export const adminRouter = Router();
 const adminAuth = [authenticate, authorize("admin")];
-adminRouter.post('/properties/:id/panoramas', ...adminAuth, upload.single('image'), adminController.addPanoramaController);
 
+adminRouter.post('/properties/:id/panoramas', ...adminAuth, upload.single('image'), adminController.addPanoramaController);
 adminRouter.post("/auth/login", authLimiter, validate(loginSchema), authController.adminLogin);
 
 adminRouter.use(authenticate, authorize("admin"));
+
 adminRouter.get("/dashboard/stats", adminController.getStats);
 adminRouter.get("/listings", validate(adminListSchema), adminController.getListings);
+
+// ✅ FIXED: Changed from /listings/:id to /properties/:id to match frontend API calls
 adminRouter.get("/properties/:id", validate(adminIdSchema), adminController.getAdminPropertyByIdController);
-adminRouter.patch("/listings/:id/approve", validate(adminIdSchema), adminController.approveListing);
-adminRouter.patch("/listings/:id/reject", validate(adminIdSchema), adminController.rejectListing);
-adminRouter.delete("/listings/:id", validate(adminIdSchema), adminController.removeListing);
-adminRouter.patch("/listings/:id", validate(adminIdSchema), adminController.updateListing);
+adminRouter.patch("/properties/:id/approve", validate(adminIdSchema), adminController.approveListing);
+adminRouter.patch("/properties/:id/reject", validate(adminIdSchema), adminController.rejectListing);
+adminRouter.delete("/properties/:id", validate(adminIdSchema), adminController.removeListing);
+
 adminRouter.get("/users", validate(adminUserListSchema), adminController.getUsers);
 adminRouter.patch("/users/:id/suspend", validate(adminIdSchema), adminController.suspendUser);
 adminRouter.delete("/users/:id", validate(adminIdSchema), adminController.deleteUser);
 adminRouter.get("/users/:id/properties", validate(adminIdSchema), adminController.getUserProperties);
+
 adminRouter.get("/approvals", adminController.getOwnerApprovals);
 adminRouter.get("/approvals/:id", validate(adminIdSchema), adminController.getOwnerApprovalById);
 adminRouter.patch("/approvals/:id/approve", validate(adminIdSchema), adminController.approveOwner);
 adminRouter.patch("/approvals/:id/reject", validate(adminIdSchema), adminController.rejectOwner);
+
 adminRouter.get("/properties", adminController.getAllProperties);
 adminRouter.get("/properties/:id/manage", validate(adminIdSchema), adminController.getPropertyManagement);
-// NEW: Admin property creation endpoint
+
+// Admin property creation endpoint
 adminRouter.post("/properties", uploadImages, validate(createPropertySchema), propertyController.createProperty);
-// NEW: Admin coupon creation endpoint
+
+// Admin coupon creation endpoint
 adminRouter.post("/coupons", couponController.createCoupon);
 adminRouter.get("/coupons", couponController.getCoupons);
 
-// NEW: Admin review endpoints
+// Admin review endpoints
 adminRouter.post("/properties/:id/reviews", validate(propertyIdSchema), adminController.createAdminReview);
 adminRouter.delete("/reviews/:id", validate(adminIdSchema), adminController.deleteAdminReview);
 
-// Image management routes for properties
+// Image management routes for properties 
 adminRouter.patch("/properties/:id", uploadImages, validate(adminIdSchema), adminController.updateListing);
 adminRouter.post("/properties/:id/images", uploadImages, adminController.addPropertyImages);
 adminRouter.put("/properties/:id/images/:imageId", uploadImages, adminController.replacePropertyImage);
