@@ -14,6 +14,7 @@ import { toProperty } from "@/lib/api/types";
 import { motion, Variants, useAnimation } from "framer-motion";
 import { EB_Garamond } from "next/font/google";
 import { Button } from "@/components/Button";
+
 const EBGaramond = EB_Garamond({
   subsets: ['latin'],
   variable: '--font-eb_garamond',
@@ -52,6 +53,24 @@ export default function HomePage() {
 
   return (
     <main className="bg-[#f9e7d3] min-h-screen flex flex-col">
+      {/* INJECTED PURE CSS FOR HARDWARE-ACCELERATED ANIMATIONS */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes spinY {
+          from { transform: rotateY(0deg); }
+          to { transform: rotateY(360deg); }
+        }
+        .animate-spin-y {
+          animation: spinY 2.5s linear infinite;
+        }
+        @keyframes marquee {
+          from { transform: translateX(0%); }
+          to { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+          animation: marquee 12s linear infinite;
+        }
+      `}} />
+
       <section className="relative w-full overflow-hidden">
 
         <motion.div 
@@ -72,6 +91,7 @@ export default function HomePage() {
               alt="LivingGo Logo"
               width={992}
               height={597}
+              priority
               className="ml-[-50px] md:ml-[15px] mt-[-40px] md:mt-5 h-auto w-auto scale-75 md:scale-100 drop-shadow-[0_4px_3px_rgba(0,0,0,0.3)]"
             />
             <p className="mt-[-30px] md:mt-5 max-w-xl md:text-2xl text-xl leading-7 md:leading-8 md:text-ink text-brown [-webkit-text-stroke:0.1px_#000] drop-shadow-md font-black" style={EBGaramond.style}>
@@ -94,15 +114,36 @@ export default function HomePage() {
               </span>
             </Button>
 
-            {/* GIANT CALL BUTTON WITH EMERALD-950 OUTLINE */}
-            <a
-              href="tel:+916200232083"
-              className="mt-8 inline-flex items-center justify-center gap-3 rounded-full bg-[#7F9D75] border-2 border-emerald-950 px-10 py-5 text-2xl font-black text-white shadow-[0_8px_25px_rgba(127,157,117,0.4)] transition-all duration-300 hover:scale-105 hover:bg-[#6b8b5f] w-full sm:w-auto"
-            >
-              <Phone className="h-6 w-6" /> Call Us <sup className="text-sm font-bold">24x7</sup>
-            </a>
+            {/* SPLIT MOBILE BUTTONS / DESKTOP CALL BUTTON */}
+            <div className="mt-8 flex w-full gap-3 sm:w-auto sm:inline-flex">
+              <a
+                href="tel:+916200232083"
+                className="flex-1 inline-flex items-center justify-center gap-2 sm:gap-3 rounded-full bg-[#7F9D75] border-2 border-emerald-950 px-2 py-4 sm:px-10 sm:py-5 text-base sm:text-2xl font-black text-white shadow-[0_8px_25px_rgba(127,157,117,0.4)] transition-all duration-300 hover:scale-105 hover:bg-[#6b8b5f] w-full sm:w-auto"
+              >
+                <Phone className="h-5 w-5 sm:h-6 sm:w-6" /> 
+                <span>Call Us <sup className="hidden sm:inline text-sm font-bold">24x7</sup></span>
+              </a>
 
-            {/* SUPERSIZED AND BALANCED SECONDARY BUTTONS */}
+              {/* Refer & Earn - MOBILE ONLY (Hidden on Desktop) */}
+              <Link 
+                href="/earn" 
+                className="flex-1 flex sm:hidden items-center justify-center gap-1.5 rounded-full bg-white border-2 border-ink px-1 py-4 text-[15px] leading-none font-black text-ink shadow-lg transition-transform hover:scale-105"
+              >
+                <div style={{ perspective: 400 }} className="flex items-center justify-center">
+                  {/* OPTIMIZED TO PURE CSS */}
+                  <span
+                    className="inline-block text-lg drop-shadow-[0_2px_3px_rgba(0,0,0,0.15)] origin-center text-amber-600 font-bold animate-spin-y"
+                    style={{ transformStyle: "preserve-3d" }}
+                  >
+                    ₹
+                  </span>
+                </div>
+                <span>Refer & Earn</span>
+              </Link>
+            </div>
+            
+
+            {/* SUPERSIZED AND BALANCED SECONDARY BUTTONS (DESKTOP ONLY) */}
             <div className="hidden mt-8 gap-4 sm:flex sm:flex-row items-stretch">
               {/* FIND PGs WITH WHITE OUTLINE & SYNCED SIZING */}
               <Link 
@@ -118,14 +159,13 @@ export default function HomePage() {
                 className="inline-flex items-center justify-center gap-3 rounded-full bg-white border-2 border-ink px-9 py-4 text-xl font-black text-ink shadow-lg transition-all hover:scale-105 hover:bg-linen min-w-[220px]"
               >
                 <div style={{ perspective: 400 }} className="flex items-center justify-center">
-                  <motion.span
-                    className="inline-block text-2xl drop-shadow-[0_2px_3px_rgba(0,0,0,0.15)] origin-center text-amber-600 font-bold"
-                    animate={{ rotateY: 360 }}
-                    transition={{ repeat: Infinity, duration: 2.5, ease: "linear" }}
+                  {/* OPTIMIZED TO PURE CSS */}
+                  <span
+                    className="inline-block text-2xl drop-shadow-[0_2px_3px_rgba(0,0,0,0.15)] origin-center text-amber-600 font-bold animate-spin-y"
                     style={{ transformStyle: "preserve-3d" }}
                   >
                     ₹
-                  </motion.span>
+                  </span>
                 </div>
                 <span>Refer & Earn</span>
                 <ArrowRight className="h-6 w-6" aria-hidden />
@@ -153,7 +193,7 @@ export default function HomePage() {
             </div>
           </motion.div>
 
-          {/* MOBILE BUTTON LAYOUT */}
+          {/* MOBILE BUTTON LAYOUT (Find PGs Only, Refer is moved up) */}
           <div className="md:hidden mt-6 flex flex-col gap-4 w-full">
             <Link 
               href="/listings" 
@@ -161,34 +201,13 @@ export default function HomePage() {
             >
               Find PGs <ArrowRight className="h-6 w-6" aria-hidden />
             </Link>
-            
-            <Link 
-              href="/earn" 
-              className="inline-flex items-center justify-center gap-3 rounded-full bg-white border-2 border-ink px-8 py-5 text-xl font-black text-ink shadow-lg transition-transform hover:scale-105 w-full"
-            >
-              <div style={{ perspective: 400 }} className="flex items-center justify-center">
-                <motion.span
-                  className="inline-block text-2xl drop-shadow-[0_2px_3px_rgba(0,0,0,0.15)] origin-center text-amber-600 font-bold"
-                  animate={{ rotateY: 360 }}
-                  transition={{ repeat: Infinity, duration: 2.5, ease: "linear" }}
-                  style={{ transformStyle: "preserve-3d" }}
-                >
-                  ₹
-                </motion.span>
-              </div>
-              <span>Refer & Earn</span>
-              <ArrowRight className="h-6 w-6" aria-hidden />
-            </Link>
           </div>
         </motion.div>
         
         {/* 🔥 INFINITE MARQUEE TICKER 🔥 */}
         <div className="relative z-30 flex w-full overflow-hidden bg-ink py-4 shadow-xl md:mt-4">
-          <motion.div
-            className="flex w-max flex-nowrap items-center"
-            animate={{ x: ["0%", "-50%"] }}
-            transition={{ ease: "linear", duration: 12, repeat: Infinity }}
-          >
+          {/* OPTIMIZED TO PURE CSS */}
+          <div className="flex w-max flex-nowrap items-center animate-marquee">
             {[...Array(2)].map((_, i) => (
               <div key={i} className="flex flex-nowrap gap-12 px-6 text-sm md:text-base font-black uppercase tracking-widest text-[#f9e7d3]">
                 <span className="whitespace-nowrap">No Brokerage</span>
@@ -205,10 +224,9 @@ export default function HomePage() {
                 <span className="whitespace-nowrap opacity-50">•</span>
               </div>
             ))}
-          </motion.div>
+          </div>
         </div>
 
-        {/* Replace the old absolute wrapper with a clean block flow */}
         <div className="relative z-10 w-full bg-[#f9e7d3]">
           <FeaturesSection />
         </div>
@@ -231,11 +249,9 @@ function PropertyPreview() {
 
         if (res.ok) {
           const rawData = await res.json();
-          // Ensure it's an array before mapping
           if (Array.isArray(rawData)) {
             setProperties(rawData.map(toProperty));
           } else if (rawData && typeof rawData === 'object') {
-            // Fallback just in case the backend wraps it in { data: [...] }
             setProperties((rawData.data || [rawData]).map(toProperty));
           }
         }

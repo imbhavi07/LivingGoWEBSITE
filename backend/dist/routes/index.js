@@ -51,6 +51,7 @@ const kyc_routes_1 = __importDefault(require("./kyc.routes"));
 const webhook_routes_1 = __importDefault(require("./webhook.routes"));
 const token_payment_routes_1 = require("./token-payment.routes");
 const couponController = __importStar(require("../controllers/coupon.controller"));
+const intern_routes_1 = require("./intern.routes");
 exports.apiRouter = (0, express_1.Router)();
 exports.apiRouter.get("/health", (_request, response) => {
     response.json({ status: "ok", service: "LivingGo-backend" });
@@ -67,5 +68,5 @@ exports.apiRouter.use("/webhooks/clerk", webhook_routes_1.default);
 exports.apiRouter.use("/admin", admin_routes_1.adminRouter);
 exports.apiRouter.use("/uploads", upload_routes_1.uploadRouter);
 exports.apiRouter.use("/token-payments", token_payment_routes_1.tokenPaymentRouter);
-// Public coupon application route
+exports.apiRouter.use("/visiting/lead", intern_routes_1.internRouter);
 exports.apiRouter.post("/coupons/apply", couponController.applyCoupon);

@@ -1,44 +1,42 @@
 import { Router } from "express";
 import * as visitController from "../controllers/visit.controller";
+// ✅ IMPORT THE NEW INTERN CONTROLLER
+import * as internController from "../controllers/intern.controller"; 
 import { internAuthenticate } from "../middleware/intern.middleware";
 import { supervisorAuthenticate } from "../middleware/supervisor.middleware";
 
 export const visitingRouter = Router();
 
-visitingRouter.post(
-  "/send-otp",
-  visitController.sendSupervisorOtp
-);
+// ==========================================
+// 1. PUBLIC / AUTH ROUTES
+// ==========================================
+visitingRouter.post("/send-otp", visitController.sendSupervisorOtp);
+visitingRouter.post("/verify-otp", visitController.verifySupervisorOtp);
 
-visitingRouter.post(
-  "/verify-otp",
-  visitController.verifySupervisorOtp
-);
+// Pointing intern login to the correct intern controller
+visitingRouter.post("/login", internController.internLogin); 
 
-visitingRouter.post(
-  "/lead/login",
-  visitController.internLogin
-);
-
+// ==========================================
+// 2. INTERN PROTECTED ROUTES
+// ==========================================
+// Prefixed with /lead/ to prevent collisions with the supervisor dashboard
 visitingRouter.get(
   "/lead/dashboard",
   internAuthenticate,
-  visitController.getInternDashboard
+  internController.getInternDashboard
 );
 
 visitingRouter.patch(
-  "/lead/visit/:id",
+  "/lead/:id",
   internAuthenticate,
-  visitController.updateInternVisitStatus
+  internController.updateInternVisitStatus
 );
 
-visitingRouter.get(
-  "/lead/dashboard",
-  internAuthenticate,
-  visitController.getInternDashboard
-);
-
-visitingRouter.use(supervisorAuthenticate);
+// ==========================================
+// 3. SUPERVISOR PROTECTED ROUTES
+// ==========================================
+// Everything below this line requires a supervisor token
+visitingRouter.use(supervisorAuthenticate); 
 
 visitingRouter.get(
   "/dashboard",
@@ -52,22 +50,16 @@ visitingRouter.get(
 
 visitingRouter.post(
   "/:visitId/assign-lead",
-  supervisorAuthenticate,
   visitController.assignLead
 );
 
+// Consolidated to a single POST /interns route under supervisor auth
 visitingRouter.post(
   "/interns",
-  visitController.createIntern
+  internController.createIntern
 );
 
 visitingRouter.get(
   "/interns",
-  visitController.getInterns
-);
-
-visitingRouter.post(
-  "/interns",
-  supervisorAuthenticate,
-  visitController.createIntern
+  internController.getInterns
 );
