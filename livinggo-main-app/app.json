@@ -1,29 +1,28 @@
 {
   "expo": {
-    "name": "livinggo-main-app",
+    "name": "LivingGo",
     "slug": "livinggo-main-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icon-512.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#f6e7d3",
+        "foregroundImage": "./assets/icon.png",
+        "backgroundImage": "./assets/icon-512.png",
+        "monochromeImage": "./assets/icon-512.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.rct_accomodations.livinggomainapp"
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
-    "plugins": [
-      "expo-router",
-      "expo-status-bar"
-    ]
+    "extra": {
+      "eas": {
+        "projectId": "8327727d-9aae-4c6e-b843-0db5830a7b25"
+      }
+    }
   }
 }
