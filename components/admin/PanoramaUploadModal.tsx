@@ -72,12 +72,12 @@ export function PanoramaUploadModal({
             Upload 360° Panorama
           </h2>
 
-          <Button
+          <button
             onClick={onClose}
             className="text-lg font-bold"
           >
             ✕
-          </Button>
+          </button>
         </div>
 
         <form
@@ -141,22 +141,22 @@ export function PanoramaUploadModal({
           </div>
 
           <div className="flex justify-end gap-3">
-            <Button
+            <button
               type="button"
               variant="ghost"
               onClick={onClose}
             >
               Cancel
-            </Button>
+            </button>
 
-            <Button
+            <button
               type="submit"
               disabled={isUploading}
             >
               {isUploading
                 ? "Uploading..."
                 : "Upload Panorama"}
-            </Button>
+            </button>
           </div>
         </form>
       </div>

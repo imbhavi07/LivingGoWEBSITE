@@ -50,9 +50,9 @@ export default function SuperAdminCouponsPage() {
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
-        <Button onClick={handleRefresh} variant="outline">
+        <button onClick={handleRefresh} variant="outline">
           <ArrowUpRight className="mr-2 h-4 w-4" /> Refresh
-        </Button>
+        </button>
       </div>
 
       {isLoading ? (
@@ -85,7 +85,7 @@ export default function SuperAdminCouponsPage() {
                   <td className="p-4">{coupon.totalVisits}</td>
                   <td className="p-4">{coupon.totalConvertedBookings}</td>
                   <td className="p-4">
-                    <Button
+                    <button
                       onClick={() => {
                         setSelectedCoupon(coupon);
                         setShowModal(true);
@@ -93,7 +93,7 @@ export default function SuperAdminCouponsPage() {
                       className="text-indigo-600 hover:text-indigo-900 font-medium"
                     >
                       View
-                    </Button>
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -108,9 +108,9 @@ export default function SuperAdminCouponsPage() {
           <div className="relative bg-white rounded-lg px-6 pt-6 pb-4 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
             <div className="flex justify-between items-start mb-4">
               <h2 className="text-2xl font-black text-ink">Coupon Details</h2>
-              <Button onClick={() => setShowModal(false)} className="text-gray-500">
+              <button onClick={() => setShowModal(false)} className="text-gray-500">
                 <X className="h-4 w-4" />
-              </Button>
+              </button>
             </div>
             {/* Modal Body */}
             <div className="space-y-6">

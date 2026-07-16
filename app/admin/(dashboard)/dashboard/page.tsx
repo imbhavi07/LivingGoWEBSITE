@@ -115,7 +115,7 @@ export default function AdminDashboardPage() {
                       />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <Button
+                      <button
                         className="text-indigo-600 hover:text-indigo-900"
                         onClick={() => {
                           // This would open a transfer property dialog
@@ -123,7 +123,7 @@ export default function AdminDashboardPage() {
                         }}
                       >
                         Transfer Property
-                      </Button>
+                      </button>
                     </td>
                   </tr>
                 ))}

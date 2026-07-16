@@ -243,7 +243,7 @@ export default function PartnerDashboardPage() {
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-ink">Referral Code</h3>
                   <div className="flex items-center gap-2">
-                    <Button
+                    <button
                       onClick={() => copyReferralLink(referral.code || '')}
                       disabled={!referral.code}
                       className={`
@@ -258,8 +258,8 @@ export default function PartnerDashboardPage() {
                         <Copy className="h-4 w-4" />
                       )}
                       <span>{copied === referral.code ? 'Copied!' : 'Copy Code'}</span>
-                    </Button>
-                    <Button
+                    </button>
+                    <button
                       onClick={handleRefresh}
                       disabled={loading}
                       className={`ml-2 p-1 rounded-full border border-ink/20 hover:bg-linen/30 transition-colors ${
@@ -267,7 +267,7 @@ export default function PartnerDashboardPage() {
                       }`}
                     >
                       <RefreshCw className="h-4 w-4 text-ink/60" />
-                    </Button>
+                    </button>
                   </div>
                 </div>
 

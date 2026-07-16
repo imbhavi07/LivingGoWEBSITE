@@ -31,7 +31,7 @@ export default function AdminUsersPage() {
       </div>
       <div className="mb-5 flex gap-2">
         {(["all", "student", "owner"] as RoleFilter[]).map((role) => (
-          <Button
+          <button
             key={role}
             onClick={() => setRoleFilter(role)}
             className={cn(
@@ -40,7 +40,7 @@ export default function AdminUsersPage() {
             )}
           >
             {role === "all" ? "All users" : role === "student" ? "Students" : "Owners"}
-          </Button>
+          </button>
         ))}
       </div>
       {isLoading ? <div className="h-96 animate-pulse rounded-3xl bg-white shadow-soft" /> : null}
@@ -75,11 +75,11 @@ export default function AdminUsersPage() {
               <AdminStatusBadge status={user.status} />
               <p className="text-xs font-semibold text-muted">{formatIST(user.joinedAt)}</p>
               <div className="flex flex-wrap gap-2 lg:justify-end">
-                <Button className={buttonClasses("secondary", undefined, "px-4 text-amber-700")} onClick={() => void suspend(user.id)}>
+                <button className={buttonClasses("secondary", undefined, "px-4 text-amber-700")} onClick={() => void suspend(user.id)}>
                   <UserX className="h-4 w-4" aria-hidden />
                   Suspend
-                </Button>
-                <Button
+                </button>
+                <button
                   className={buttonClasses("ghost", undefined, "px-4 text-red-700")}
                   onClick={() => {
                     if (confirm("Delete this spam account?")) void remove(user.id);
@@ -87,7 +87,7 @@ export default function AdminUsersPage() {
                 >
                   <Trash2 className="h-4 w-4" aria-hidden />
                   Delete
-                </Button>
+                </button>
               </div>
             </article>
           ))}
@@ -95,25 +95,25 @@ export default function AdminUsersPage() {
       ) : null}
       <div className="mt-8 flex items-center justify-between">
 
-  <Button
+  <button
     disabled={page === 1}
     onClick={() => setPage(page - 1)}
     className="rounded-xl border px-4 py-2 disabled:opacity-50"
   >
     Previous
-  </Button>
+  </button>
 
   <span>
     Page {meta?.page ?? 1} of {meta?.pages ?? 1}
   </span>
 
-  <Button
+  <button
     disabled={page === meta?.pages}
     onClick={() => setPage(page + 1)}
     className="rounded-xl border px-4 py-2 disabled:opacity-50"
   >
     Next
-  </Button>
+  </button>
 
 </div>
     </AdminShell>

@@ -135,7 +135,7 @@ function KYCContent() {
               <p>✓ Identity is verified against registration details</p>
               <p>✓ You receive access to list properties</p>
             </div>
-            <Button
+            <button
               onClick={async () => {
                 await user?.reload();
                 window.location.href = '/owner/dashboard';
@@ -143,7 +143,7 @@ function KYCContent() {
               className="mt-6 inline-block rounded-full bg-ink px-6 py-3 text-sm font-bold text-white"
             >
               Go to Dashboard
-            </Button>
+            </button>
           </div>
         </div>
       </OwnerShell>
@@ -162,12 +162,12 @@ function KYCContent() {
             <p className="mt-3 text-sm leading-6 text-muted">
               Your identity has been verified. Please sign in again to access your dashboard.
             </p>
-            <Button
+            <button
               onClick={() => void signOut({ redirectUrl: "/owner/dashboard" })}
               className="mt-6 inline-block rounded-full bg-ink px-6 py-3 text-sm font-bold text-white"
             >
               Go To Dashboard →
-            </Button>
+            </button>
           </div>
         </div>
       </OwnerShell>
@@ -186,12 +186,12 @@ function KYCContent() {
             <p className="mt-3 text-sm leading-6 text-muted">
               Please resubmit with correct documents. Make sure your Aadhaar images are clear and match the details entered.
             </p>
-            <Button
+            <button
               onClick={() => setStatus("form")}
               className="mt-6 inline-block rounded-full bg-ink px-6 py-3 text-sm font-bold text-white"
             >
               Resubmit KYC
-            </Button>
+            </button>
           </div>
         </div>
       </OwnerShell>
@@ -286,7 +286,7 @@ function KYCContent() {
 
         {/* Submit Button */}
         <div className="flex flex-col items-center">
-          <Button
+          <button
             type="submit"
             disabled={isLoading || !isAgreed}
             className="w-full px-6 py-3 bg-[#4A3B2C] text-white rounded-xl font-medium hover:bg-[#3A2A1D] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md flex items-center justify-center h-12"
@@ -296,7 +296,7 @@ function KYCContent() {
             ) : (
               "Verify via DigiLocker"
             )}
-          </Button>
+          </button>
           <p className="text-xs text-gray-400 mt-4 text-center max-w-xs leading-relaxed">
             You will be redirected securely to the official portal. Login seamlessly using your registered mobile number.
           </p>

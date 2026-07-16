@@ -122,13 +122,13 @@ export default function PartnerApplyPage() {
             Once approved, you&rquo;ll receive your unique referral code and can start earning rewards.
           </p>
           <div className="mt-8">
-            <Button
+            <button
               variant="outline"
               onClick={() => router.push('/')}
               className="w-full sm:w-auto px-6 py-3"
             >
               Go to Homepage
-            </Button>
+            </button>
           </div>
         </div>
       </div>
@@ -241,7 +241,7 @@ export default function PartnerApplyPage() {
               )}
             </div>
 
-            <Button
+            <button
               type="submit"
               disabled={loading}
               className={`w-full bg-ink text-linen px-6 py-4 rounded-xl font-bold text-lg hover:bg-ink/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
@@ -249,7 +249,7 @@ export default function PartnerApplyPage() {
               }`}
             >
               {loading ? 'Submitting...' : 'Submit Application'}
-            </Button>
+            </button>
           </form>
 
           <div className="mt-10 pt-8 border-t border-ink/5 text-center text-sm text-ink/50">

@@ -89,22 +89,22 @@ function LoginForm() {
             "absolute bottom-1 top-1 left-1 w-[calc(50%-0.5rem)] rounded-full bg-ink shadow-soft transition-transform duration-500 ease-out",
             mode === "owner" && "translate-x-[calc(100%+0.25rem)]"
           )} />
-          <Button
+          <button
             type="button"
             onClick={() => setMode("student")}
             className={cn("relative z-10 flex min-h-12 items-center justify-center gap-2 rounded-full text-sm font-black transition", mode === "student" ? "text-white" : "text-muted")}
           >
             <GraduationCap className="h-4 w-4" aria-hidden />
             Student login
-          </Button>
-          <Button
+          </button>
+          <button
             type="button"
             onClick={() => setMode("owner")}
             className={cn("relative z-10 flex min-h-12 items-center justify-center gap-2 rounded-full text-sm font-black transition", mode === "owner" ? "text-white" : "text-muted")}
           >
             <Building2 className="h-4 w-4" aria-hidden />
             Owner login
-          </Button>
+          </button>
         </div>
 
         <div className="mt-8">

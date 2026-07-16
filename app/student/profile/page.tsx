@@ -312,13 +312,13 @@ export default function StudentProfilePage() {
 
             {/* Submit Button */}
             <div className="pt-4">
-              <Button
+              <button
                 variant="primary"
                 className="w-full py-3"
                 disabled={saving}
               >
                 {saving ? "Saving..." : "Save Changes"}
-              </Button>
+              </button>
             </div>
           </form>
         </div>

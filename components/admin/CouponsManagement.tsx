@@ -238,27 +238,27 @@ export default function CouponManagement() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-ink">Coupon Management</h1>
-        <Button
+        <button
           onClick={() => setShowForm(true)}
           className="px-4 py-2 bg-ink text-linen rounded hover:bg-ink/80 transition-colors"
         >
           Add Coupon
-        </Button>
+        </button>
       </div>
 
       {error && (
         <div className="p-4 bg-clay/10 text-clay rounded-lg flex justify-between items-center">
           <p>{error}</p>
-          <Button onClick={() => setError(null)} className="text-clay hover:text-ink">×</Button>
+          <button onClick={() => setError(null)} className="text-clay hover:text-ink">×</button>
         </div>
       )}
 
       {coupons.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-ink/10 rounded-2xl">
           <p className="text-sm text-ink/50 mb-4">No coupons found.</p>
-          <Button onClick={() => setShowForm(true)} className="px-4 py-2 bg-ink text-linen rounded hover:bg-ink/80">
+          <button onClick={() => setShowForm(true)} className="px-4 py-2 bg-ink text-linen rounded hover:bg-ink/80">
             Create First Coupon
-          </Button>
+          </button>
         </div>
       ) : (
         <div className="overflow-x-auto rounded-2xl border border-ink/10 bg-white shadow-sm">
@@ -304,14 +304,14 @@ export default function CouponManagement() {
                     </label>
                   </td>
                   <td className="px-6 py-4 text-center space-x-2">
-                    <Button
+                    <button
                       onClick={() => handleEditCoupon(coupon)}
                       className="px-3 py-1.5 text-xs font-bold bg-ink/5 text-ink rounded hover:bg-ink/10 transition-colors disabled:opacity-50"
                       disabled={updating || creating}
                     >
                       Edit
-                    </Button>
-                    <Button
+                    </button>
+                    <button
                       onClick={() => {
                         setDeleteCouponId(coupon.id);
                         setShowDeleteConfirm(true);
@@ -319,7 +319,7 @@ export default function CouponManagement() {
                       className={`px-3 py-1.5 text-xs font-bold border border-clay/50 text-clay hover:border-clay/200 hover:bg-clay/50 rounded hover:text-ink transition-colors ${deleting.has(coupon.id) ? "opacity-50 pointer-events-none" : ""}`}
                     >
                       Delete
-                    </Button>
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -333,14 +333,14 @@ export default function CouponManagement() {
           <div className="bg-white rounded-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-lift">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-black text-ink">{editingId ? "Edit Coupon" : "Add Coupon"}</h2>
-              <Button
+              <button
                 onClick={() => {
                   setShowForm(false);
                   setEditingId(null);
                 }}
                 className="text-ink/50 hover:text-ink transition-colors p-2 bg-ink/5 rounded-full"
               >
-              </Button>
+              </button>
             </div>
 
             <form onSubmit={handleFormSubmit} className="space-y-5">
@@ -416,12 +416,12 @@ export default function CouponManagement() {
               </div>
 
               <div className="pt-4 flex justify-end space-x-3 border-t border-ink/10">
-                <Button type="button" onClick={() => setShowForm(false)} className="px-5 py-2.5 font-bold bg-ink/5 text-ink rounded-xl hover:bg-ink/10 transition-colors">
+                <button type="button" onClick={() => setShowForm(false)} className="px-5 py-2.5 font-bold bg-ink/5 text-ink rounded-xl hover:bg-ink/10 transition-colors">
                   Cancel
-                </Button>
-                <Button type="submit" disabled={creating || updating} className="px-6 py-2.5 font-bold bg-ink text-linen rounded-xl hover:bg-ink/90 transition-colors disabled:opacity-50">
+                </button>
+                <button type="submit" disabled={creating || updating} className="px-6 py-2.5 font-bold bg-ink text-linen rounded-xl hover:bg-ink/90 transition-colors disabled:opacity-50">
                   {creating || updating ? "Saving..." : (editingId ? "Update Coupon" : "Create Coupon")}
-                </Button>
+                </button>
               </div>
             </form>
           </div>
@@ -437,12 +437,12 @@ export default function CouponManagement() {
             <h2 className="text-2xl font-black text-ink mb-2">Delete Coupon?</h2>
             <p className="mb-8 text-ink/60">Are you sure you want to delete this coupon? This action cannot be undone.</p>
             <div className="flex justify-center space-x-4">
-              <Button type="button" onClick={() => setShowDeleteConfirm(false)} className="px-6 py-2.5 font-bold bg-ink/5 text-ink rounded-xl hover:bg-ink/10 transition-colors">
+              <button type="button" onClick={() => setShowDeleteConfirm(false)} className="px-6 py-2.5 font-bold bg-ink/5 text-ink rounded-xl hover:bg-ink/10 transition-colors">
                 Cancel
-              </Button>
-              <Button type="button" onClick={() => deleteCouponId && handleDeleteCoupon(deleteCouponId)} className="px-6 py-2.5 font-bold bg-clay text-linen rounded-xl hover:bg-clay/90 transition-colors">
+              </button>
+              <button type="button" onClick={() => deleteCouponId && handleDeleteCoupon(deleteCouponId)} className="px-6 py-2.5 font-bold bg-clay text-linen rounded-xl hover:bg-clay/90 transition-colors">
                 Yes, Delete
-              </Button>
+              </button>
             </div>
           </div>
         </div>

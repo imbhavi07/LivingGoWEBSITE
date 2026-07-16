@@ -157,7 +157,7 @@ function AdminLoginForm() {
             </label>
 
             {/* Send OTP button */}
-            <Button
+            <button
               className="w-full"
               disabled={!isValidEmail || isLoading}
               onClick={() => void handleSendOtp()}
@@ -165,7 +165,7 @@ function AdminLoginForm() {
               {isLoading && !otpSent ? (
                 <><Loader2 className="h-4 w-4 animate-spin" /> Sending OTP...</>
               ) : otpSent ? "Resend OTP" : "Send OTP"}
-            </Button>
+            </button>
 
             {/* OTP input — only shows after OTP is sent */}
             {otpSent && (
@@ -183,7 +183,7 @@ function AdminLoginForm() {
                     autoFocus
                   />
                 </label>
-                <Button
+                <button
                   className="w-full"
                   disabled={isLoading || otp.length !== 6}
                   onClick={() => void handleVerifyOtp()}
@@ -191,7 +191,7 @@ function AdminLoginForm() {
                   {isLoading ? (
                     <><Loader2 className="h-4 w-4 animate-spin" /> Verifying...</>
                   ) : "Enter Admin Dashboard"}
-                </Button>
+                </button>
               </div>
             )}
 

@@ -86,7 +86,7 @@ export default function OwnerPropertiesPage() {
                   Edit
                 </Link>
                 
-                <Button
+                <button
                   className={buttonClasses("ghost", undefined, "px-4 text-clay")}
                   onClick={() => {
                     if (confirm("Delete this property?")) void remove(property.id);
@@ -94,7 +94,7 @@ export default function OwnerPropertiesPage() {
                 >
                   <Trash2 className="h-4 w-4" aria-hidden />
                   Delete
-                </Button>
+                </button>
               </div>
             </article>
           ))}

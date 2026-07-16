@@ -133,9 +133,9 @@ export function CreatePropertyModal({
             <h2 className="text-2xl font-bold text-ink">
               Create New Property
             </h2>
-            <Button onClick={onClose} className="text-muted hover:text-ink hover:bg-muted/20 rounded-full p-2">
+            <button onClick={onClose} className="text-muted hover:text-ink hover:bg-muted/20 rounded-full p-2">
               <Plus className="h-4 w-4" aria-hidden />
-            </Button>
+            </button>
           </div>
 
           {/* Form Content */}
@@ -472,20 +472,20 @@ export function CreatePropertyModal({
 
           {/* Footer */}
           <div className="p-6 border-t flex justify-end space-x-3">
-            <Button
+            <button
               onClick={onClose}
               className="px-6 py-2 bg-muted hover:bg-muted/20 rounded-md"
             >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
               type="submit"
               form="property-form"
               disabled={loading}
               className={`px-6 py-2 bg-primary text-white hover:bg-primary/90 disabled:opacity-50 rounded-md transition-colors`}
             >
               {loading ? "Creating..." : "Create Property"}
-            </Button>
+            </button>
           </div>
         </div>
       </div>

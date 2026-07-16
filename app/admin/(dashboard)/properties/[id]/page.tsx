@@ -156,13 +156,13 @@ export default function PropertyManagementPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Button
+              <button
                 onClick={() => property.propertyCode && navigator.clipboard.writeText(property.propertyCode)}
                 className="rounded-2xl bg-white px-5 py-3 font-bold text-black hover:bg-gray-200"
               >
                 <Copy className="mr-2 inline h-4 w-4" />
                 Copy ID
-              </Button>
+              </button>
               <a
                 href={`/properties/${property.id}`}
                 target="_blank"
@@ -294,13 +294,13 @@ export default function PropertyManagementPage() {
                 </div>
 
                 <div className="pt-4">
-                  <Button
+                  <button
                     type="submit"
                     disabled={reviewLoading}
                     className={`btn-primary w-full ${reviewLoading ? "opacity-50" : ""}`}
                   >
                     {reviewLoading ? "Adding Review..." : "Add Review"}
-                  </Button>
+                  </button>
                 </div>
               </form>
             </div>

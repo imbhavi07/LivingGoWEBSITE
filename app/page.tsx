@@ -99,7 +99,7 @@ export default function HomePage() {
             </p>
 
             {/* INSTANT REDIRECT SEARCH BAR */}
-            <Button 
+            <button 
               onClick={() => router.push('/listings')}
               className="mt-6 flex w-full max-w-lg items-center gap-2 rounded-full bg-white p-2 shadow-xl ring-2 ring-black/5 transition-all hover:ring-ink/20 text-left group"
             >
@@ -112,7 +112,7 @@ export default function HomePage() {
               <span className="rounded-full bg-ink px-8 py-3 text-lg font-black text-white transition-transform group-hover:scale-105 group-hover:bg-ink/90">
                 Search
               </span>
-            </Button>
+            </button>
 
             {/* SPLIT MOBILE BUTTONS / DESKTOP CALL BUTTON */}
             <div className="mt-8 flex w-full gap-3 sm:w-auto sm:inline-flex">

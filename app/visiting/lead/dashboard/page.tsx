@@ -141,7 +141,7 @@ export default function LeadDashboard() {
 
           </div>
 
-          <Button
+          <button
             onClick={() => {
 
               localStorage.removeItem("lead_token");
@@ -154,7 +154,7 @@ export default function LeadDashboard() {
             className="rounded-xl border bg-black text-white px-6 py-3 font-semibold hover:bg-gray-800"
           >
             Logout
-          </Button>
+          </button>
 
         </div>
 
@@ -295,7 +295,7 @@ export default function LeadDashboard() {
                   className="mb-4 w-full rounded-xl border p-3"
                 />
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-                  <Button
+                  <button
                     onClick={() => {
                       setSelectedVisit(visit.id);
                       setStatus("MET");
@@ -308,8 +308,8 @@ export default function LeadDashboard() {
                     }`}
                   >
                     Reached
-                  </Button>
-                  <Button
+                  </button>
+                  <button
                     onClick={() => {
                       setSelectedVisit(visit.id);
                       setStatus("SUCCESSFUL");
@@ -322,8 +322,8 @@ export default function LeadDashboard() {
                     }`}
                   >
                     Successful
-                  </Button>
-                  <Button
+                  </button>
+                  <button
                     onClick={() => {
                       setSelectedVisit(visit.id);
                       setStatus("NOT_SUCCESSFUL");
@@ -336,8 +336,8 @@ export default function LeadDashboard() {
                     }`}
                   >
                     Not Successful
-                  </Button>
-                  <Button
+                  </button>
+                  <button
                     onClick={() => {
                       setSelectedVisit(visit.id);
                       setStatus("INTERESTED_OTHER_PROPERTY");
@@ -350,8 +350,8 @@ export default function LeadDashboard() {
                     }`}
                   >
                     Other Property
-                  </Button>
-                  <Button
+                  </button>
+                  <button
                     onClick={() => {
                       setSelectedVisit(visit.id);
                       setStatus("NOT_MET");
@@ -364,15 +364,15 @@ export default function LeadDashboard() {
                     }`}
                   >
                     Not Met
-                  </Button>
+                  </button>
                 </div>
-                <Button
+                <button
                   onClick={updateStatus}
                   disabled={!status || selectedVisit !== visit.id}
                   className="mt-5 w-full rounded-xl bg-black py-3 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Save Status
-                </Button>
+                </button>
               </div>
             </div>
           ))}

@@ -122,10 +122,10 @@ function StudentSidebar({ onNavigate, onSignOut }: { onNavigate?: () => void; on
       <nav className="mt-6 space-y-2">
         {/* ... navigation links ... */}
       </nav>
-      <Button variant="ghost" className="mt-auto justify-start px-4" onClick={onSignOut}>
+      <button variant="ghost" className="mt-auto justify-start px-4" onClick={onSignOut}>
         <LogOut className="h-5 w-5" aria-hidden />
         Sign out
-      </Button>
+      </button>
     </div>
   );
 }

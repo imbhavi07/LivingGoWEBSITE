@@ -38,13 +38,13 @@ export default function AdminApprovalsPage() {
                   <Eye className="h-4 w-4" aria-hidden />
                   Review
                 </Link>
-                <Button className={buttonClasses("primary", undefined, "px-4")} onClick={() => void approve(approval.id)}>
+                <button className={buttonClasses("primary", undefined, "px-4")} onClick={() => void approve(approval.id)}>
                   Approve
-                </Button>
-                <Button className={buttonClasses("ghost", undefined, "px-4 text-red-700")} onClick={() => void reject(approval.id)}>
+                </button>
+                <button className={buttonClasses("ghost", undefined, "px-4 text-red-700")} onClick={() => void reject(approval.id)}>
                   <XCircle className="h-4 w-4" aria-hidden />
                   Reject
-                </Button>
+                </button>
               </div>
             </article>
           ))}

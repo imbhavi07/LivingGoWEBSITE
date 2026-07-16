@@ -134,7 +134,7 @@ const confirmAssignment = async () => {
       </p>
     </div>
 
-    <Button
+    <button
       onClick={() => {
         localStorage.removeItem("visiting_token");
         window.location.href = "/visiting/login";
@@ -142,7 +142,7 @@ const confirmAssignment = async () => {
       className="rounded-xl border bg-black px-6 py-3 font-semibold text-white hover:bg-gray-800"
     >
       Logout
-    </Button>
+    </button>
 
     <div className="grid gap-8 lg:grid-cols-2">
 
