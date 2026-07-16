@@ -293,7 +293,7 @@ export function PropertyEditForm({ initialData, onSave, onCancel, isSaving }: Pr
               <label className="mb-2 block text-sm font-bold text-ink">Meal Times</label>
               <div className="flex flex-wrap gap-2">
                 {MEAL_TIMES_OPTIONS.map((time) => (
-                  <button
+                  <Button
                     key={time}
                     type="button"
                     onClick={() => toggleMealTime(time)}
@@ -304,7 +304,7 @@ export function PropertyEditForm({ initialData, onSave, onCancel, isSaving }: Pr
                     }`}
                   >
                     {time}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -317,7 +317,7 @@ export function PropertyEditForm({ initialData, onSave, onCancel, isSaving }: Pr
         <h2 className="mb-4 text-lg font-black text-ink">Facilities</h2>
         <div className="flex flex-wrap gap-2">
           {FACILITIES_OPTIONS.map((facility) => (
-            <button
+            <Button
               key={facility}
               type="button"
               onClick={() => toggleFacility(facility)}
@@ -331,7 +331,7 @@ export function PropertyEditForm({ initialData, onSave, onCancel, isSaving }: Pr
                 <X className="mr-1 inline h-3 w-3" aria-hidden />
               )}
               {facility}
-            </button>
+            </Button>
           ))}
         </div>
       </div>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { X, CheckCircle, Loader2, AlertCircle, Calendar, Clock } from "lucide-react";
 import { apiClient, getApiErrorMessage } from "@/lib/api/client";
-
+import { Button } from "@/components/Button";
 type ScheduleVisitModalProps = {
   propertyId: string;
   propertyCode: string;
@@ -77,7 +77,7 @@ const TIME_SLOTS = generateTimeSlots();
 
   // Validate time slot format (HH:MM AM/PM - HH:MM AM/PM)
   const isValidTimeSlot = (timeSlotStr: string): boolean => {
-    const timeSlotRegex = /^(\d{2}):(\d{2}) (AM|PM) - (\d{2}):(\d{2}) (AM|PM)$/;
+    const timeSlotRegex = /^(\d{2}):(\d{2}) (AM|PM|am|pm) - (\d{2}):(\d{2}) (AM|PM|am|pm)$/;
     const match = timeSlotStr.match(timeSlotRegex);
 
     if (!match) return false;
@@ -161,9 +161,9 @@ const TIME_SLOTS = generateTimeSlots();
         <div className="shrink-0 flex items-center justify-between border-b border-black/5 px-6 py-4 bg-white z-20">
           <h2 className="text-lg font-black text-ink">Schedule Visit</h2>
           {step !== "loading" && (
-            <button onClick={onClose} className="rounded-full p-2 hover:bg-linen transition-colors" aria-label="Close">
+            <Button onClick={onClose} className="rounded-full p-2 hover:bg-linen transition-colors" aria-label="Close">
               <X className="h-5 w-5 text-muted" />
-            </button>
+            </Button>
           )}
         </div>
 
@@ -203,7 +203,7 @@ const TIME_SLOTS = generateTimeSlots();
                       {/* Morning slots */}
                       <div className="grid grid-cols-2 gap-3">
                       {TIME_SLOTS.map((slot) => (
-                        <button
+                        <Button
                           key={slot}
                           type="button"
                           onClick={() => setTimeSlot(slot)}
@@ -214,7 +214,7 @@ const TIME_SLOTS = generateTimeSlots();
                           }`}
                         >
                           {slot}
-                        </button>
+                        </Button>
                       ))}
                   </div>
                   </div>
@@ -244,13 +244,13 @@ const TIME_SLOTS = generateTimeSlots();
                 </div>
 
                 <div className="flex justify-end space-x-3 pt-2">
-                  <button
+                  <Button
                     onClick={onClose}
                     className="px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm font-medium text-ink hover:bg-gray-50 w-full sm:w-auto"
                   >
                     Cancel
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={handleSubmit}
                     disabled={isSubmitting || !visitDate || !timeSlot}
@@ -268,7 +268,7 @@ const TIME_SLOTS = generateTimeSlots();
                     ) : (
                       "Schedule Visit"
                     )}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -322,14 +322,14 @@ const TIME_SLOTS = generateTimeSlots();
                 </div>
               </div>
               <div className="mt-6 pt-2">
-                <button
+                <Button
                   onClick={() => {
                     onClose();
                   }}
                   className="w-full rounded-2xl bg-ink py-4 text-sm font-bold text-white hover:bg-ink/90 transition-colors"
                 >
                   Done
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -344,18 +344,18 @@ const TIME_SLOTS = generateTimeSlots();
               </div>
               <p className="text-sm font-medium text-red-600">{errorMessage || "Something went wrong. Please try again."}</p>
               <div className="mt-6 flex justify-center space-x-3">
-                <button
+                <Button
                   onClick={() => setStep("input")}
                   className="px-6 py-3 bg-white border border-gray-300 rounded-xl text-sm font-medium text-ink hover:bg-gray-50"
                 >
                   Go Back
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleSubmit}
                   className="px-6 py-3 bg-ink text-white rounded-xl font-medium text-sm hover:bg-ink/90 transition-colors"
                 >
                   Try Again
-                </button>
+                </Button>
               </div>
             </div>
           </div>

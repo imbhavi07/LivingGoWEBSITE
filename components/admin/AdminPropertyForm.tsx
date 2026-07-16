@@ -466,7 +466,7 @@ export function AdminPropertyForm({ initialData, onSave, onCancel }: AdminProper
             <div className="space-y-2 pt-2">
               <span className="text-sm font-bold text-ink">Map Location (Pin drop)</span>
               <div className="flex gap-2">
-                <button
+                <Button
                   type="button"
                   onClick={handleUseCurrentLocation}
                   disabled={isGettingLocation}
@@ -477,15 +477,15 @@ export function AdminPropertyForm({ initialData, onSave, onCancel }: AdminProper
                     : <Crosshair className="h-4 w-4" aria-hidden />
                   }
                   {isGettingLocation ? "Getting location..." : "Use current location"}
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
                   onClick={() => setShowMapPicker(true)}
                   className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-black/10 bg-linen py-3 text-sm font-bold text-ink transition hover:bg-oat"
                 >
                   <MapPin className="h-4 w-4" aria-hidden />
                   Pick on map
-                </button>
+                </Button>
               </div>
 
               {pickedLocation ? (
@@ -494,13 +494,13 @@ export function AdminPropertyForm({ initialData, onSave, onCancel }: AdminProper
                   <div className="flex-1">
                     <p className="text-xs font-bold text-moss">Map Coordinates Set</p>
                   </div>
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setPickedLocation(null)}
                     className="text-xs font-bold text-clay hover:underline"
                   >
                     Clear
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 <div className="flex items-start gap-2 rounded-2xl bg-amber-50 p-3 mt-2">

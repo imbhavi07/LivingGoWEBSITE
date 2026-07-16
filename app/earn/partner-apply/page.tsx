@@ -241,7 +241,7 @@ export default function PartnerApplyPage() {
               )}
             </div>
 
-            <button
+            <Button
               type="submit"
               disabled={loading}
               className={`w-full bg-ink text-linen px-6 py-4 rounded-xl font-bold text-lg hover:bg-ink/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
@@ -249,7 +249,7 @@ export default function PartnerApplyPage() {
               }`}
             >
               {loading ? 'Submitting...' : 'Submit Application'}
-            </button>
+            </Button>
           </form>
 
           <div className="mt-10 pt-8 border-t border-ink/5 text-center text-sm text-ink/50">
