@@ -102,18 +102,21 @@ apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
-      // Force logout or redirect to login for admin routes
-      if (window.location.pathname.startsWith("/admin")) {
-        // Remove token and redirect to admin login
-        localStorage.removeItem("LivingGo_token");
-        window.location.href = "/admin/login";
-      } else {
-        // For non-admin routes, you might want to handle Clerk session expiration
-        // For now, just reject the error
-        return Promise.reject(error);
-      }
+    if (window.location.pathname.startsWith("/admin")) {
+      localStorage.removeItem("LivingGo_token");
+      window.location.href = "/admin/login";
+    }
+    else if (window.location.pathname.startsWith("/visiting/lead")) {
+      localStorage.removeItem("lead_token");
+      localStorage.removeItem("lead_name");
+      window.location.href = "/visiting/login";
+    }
+    else if (window.location.pathname.startsWith("/visiting")) {
+      localStorage.removeItem("visiting_token");
+      window.location.href = "/visiting/login";
     }
     return Promise.reject(error);
   }
+  return Promise.reject(error);
+  }
 );
-

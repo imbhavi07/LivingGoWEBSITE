@@ -48,7 +48,7 @@ export function internAuthenticate(
   } catch {
     return res.status(401).json({
       success: false,
-      message: "Invalid token",
+      message: "Invalid or expired token"
     });
   }
 }

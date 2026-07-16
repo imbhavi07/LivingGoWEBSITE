@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-
+import { Button } from "@/components/Button";
 import { apiClient } from "@/lib/api/client";
 
 type Visit = {
@@ -30,7 +30,14 @@ type Visit = {
 };
 
 export default function VisitingDashboard() {
-  const [interns, setInterns] = useState<any[]>([]);
+  type Intern = {
+    id: string;
+    name: string;
+    username: string;
+    phone?: string | null;
+};
+
+const [interns, setInterns] = useState<Intern[]>([]);
   const [selectedVisit, setSelectedVisit] = useState<string | null>(null);
   const [selectedIntern, setSelectedIntern] = useState("");
   const [pickupPoint, setPickupPoint] = useState("");
@@ -95,8 +102,15 @@ const confirmAssignment = async () => {
     setSelectedIntern("");
     setPickupPoint("");
     loadVisits();
-  } catch (err: any) {
-    alert(err.response?.data?.message || "Assignment failed");
+  } catch (err: unknown) {
+    const error = err as {
+      response?: {
+          data?: {
+              message?: string;
+          };
+      };
+  };
+  alert(error.response?.data?.message ?? "Assignment failed");
   }
 };
   return (
@@ -111,6 +125,16 @@ const confirmAssignment = async () => {
         Manage interns and scheduled student visits.
       </p>
     </div>
+
+    <Button
+      onClick={() => {
+        localStorage.removeItem("visiting_token");
+        window.location.href = "/visiting/login";
+      }}
+      className="rounded-xl border bg-black px-6 py-3 font-semibold text-white hover:bg-gray-800"
+    >
+      Logout
+    </Button>
 
     <div className="grid gap-8 lg:grid-cols-2">
 

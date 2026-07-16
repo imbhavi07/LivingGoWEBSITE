@@ -77,7 +77,7 @@ const TIME_SLOTS = generateTimeSlots();
 
   // Validate time slot format (HH:MM AM/PM - HH:MM AM/PM)
   const isValidTimeSlot = (timeSlotStr: string): boolean => {
-    const timeSlotRegex = /^(\d{2}):(\d{2}) (AM|PM) - (\d{2}):(\d{2}) (AM|PM)$/;
+    const timeSlotRegex = /^(\d{2}):(\d{2}) (AM|PM|am|pm) - (\d{2}):(\d{2}) (AM|PM|am|pm)$/;
     const match = timeSlotStr.match(timeSlotRegex);
 
     if (!match) return false;
