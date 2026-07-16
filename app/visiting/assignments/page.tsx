@@ -99,11 +99,14 @@ export default function VisitingDashboard() {
 
     loadVisits();
 
-  } catch (err) {
-    console.error(err);
-    alert("Failed to assign intern");
-  }
-  }
+  } catch (err: any) {
+  console.error(err);
+
+  console.log(err.response?.data);
+
+  alert(err.response?.data?.message || "Failed to assign intern");
+}
+}
 
   return (
     <main className="min-h-screen bg-gray-100 p-8">
