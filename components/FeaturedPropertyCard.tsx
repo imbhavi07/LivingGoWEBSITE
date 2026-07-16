@@ -89,14 +89,14 @@ export function FeaturedPropertyCard({ property, saved, onSave }: FeaturedProper
             <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             Verified by LivingGo
           </span>
-          <button
+          <Button
             onClick={handleSave}
             className="rounded-full bg-linen p-1.5 sm:p-2 text-ink transition hover:bg-oat -mt-1 -mr-1"
             aria-label={saved ? "Remove from wishlist" : "Save property"}
             title={!isSignedIn ? "Login to save" : saved ? "Remove from wishlist" : "Save property"}
           >
             <Heart className={saved ? "h-3.5 w-3.5 sm:h-4 sm:w-4 fill-clay text-clay" : "h-3.5 w-3.5 sm:h-4 sm:w-4"} aria-hidden />
-          </button>
+          </Button>
         </div>
 
         <div className="-mt-0.5">

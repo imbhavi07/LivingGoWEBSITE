@@ -156,14 +156,14 @@ export function MapPicker({ onConfirm, onClose, initialLat, initialLng, mode = "
             <h2 className="text-lg font-black text-ink">Pick property location</h2>
             <p className="text-xs text-muted">Click on the map or drag the pin to your PG location</p>
           </div>
-          <button
+          <Button
             onClick={onClose}
             aria-label="Close modal"
             title="Close"
             className="flex h-9 w-9 items-center justify-center rounded-full bg-linen text-ink hover:bg-oat"
           >
             <X className="h-4 w-4" aria-hidden />
-          </button>
+          </Button>
         </div>
 
         {/* Map */}
@@ -183,12 +183,12 @@ export function MapPicker({ onConfirm, onClose, initialLat, initialLng, mode = "
             <p className="text-xs leading-5 text-muted line-clamp-2">{address}</p>
           </div>
           <div className="flex gap-3">
-            <button
+            <Button
               onClick={onClose}
               className="flex-1 rounded-full border border-black/10 py-3 text-sm font-bold text-ink hover:bg-linen"
             >
               Cancel
-            </button>
+            </Button>
             <Button className="flex-1" onClick={handleConfirm} disabled={isLoading}>
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
               Confirm location

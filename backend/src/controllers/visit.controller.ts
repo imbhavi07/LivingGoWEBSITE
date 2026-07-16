@@ -891,7 +891,6 @@ export const updateInternVisitStatus = asyncHandler(
         },
         data: {
           leadStatus: status,
-          visitVerified: true,
         },
       });
 

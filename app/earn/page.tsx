@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import confetti from 'canvas-confetti';
-
+import { Button } from "@/components/Button";
 // Define the shape of our tracking records to satisfy TypeScript/ESLint
 interface TrackRecord {
   date: string;
@@ -213,7 +213,7 @@ export default function EarnPage() {
                 </p>
               </div>
 
-              <button
+              <Button
                 type="submit"
                 disabled={generateLoading}
                 className={`w-full bg-ink text-linen px-5 py-3 rounded-xl font-bold text-md hover:bg-ink/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
@@ -230,7 +230,7 @@ export default function EarnPage() {
                 ) : (
                   'Generate Code'
                 )}
-              </button>
+              </Button>
             </form>
             {generatedCode && (
   <div className="mt-6 rounded-2xl border border-green-300 bg-green-50 p-5">
@@ -242,12 +242,12 @@ export default function EarnPage() {
       {generatedCode}
     </p>
 
-    <button
+    <Button
       className="mt-4 rounded-lg bg-green-600 px-4 py-2 text-white"
       onClick={() => navigator.clipboard.writeText(generatedCode)}
     >
       Copy Code
-    </button>
+    </Button>
   </div>
 )}
           </div>
@@ -330,7 +330,7 @@ export default function EarnPage() {
                 />
               </div>
 
-              <button
+              <Button
                 type="submit"
                 disabled={trackLoading}
                 className={`w-full bg-ink text-linen px-5 py-3 rounded-xl font-bold text-md hover:bg-ink/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
@@ -347,7 +347,7 @@ export default function EarnPage() {
                 ) : (
                   'Track Code'
                 )}
-              </button>
+              </Button>
             </form>
           </div>
         </div>
@@ -369,19 +369,19 @@ export default function EarnPage() {
         </p>
       </div>
 <div className="mt-6 flex gap-3">
-       <button
+       <Button
     className="flex-1 rounded-xl bg-green-600 py-3 font-bold text-white"
     onClick={() => navigator.clipboard.writeText(generatedCode ?? "")}
   >
     Copy Code
-  </button>
+  </Button>
 
-  <button
+  <Button
     className="flex-1 rounded-xl bg-black py-3 font-bold text-white"
     onClick={() => setShowSuccessPopup(false)}
   >
     OK
-  </button>
+  </Button>
   </div>
     </div>
   </div>

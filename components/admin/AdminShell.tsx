@@ -45,14 +45,14 @@ export function AdminShell({ children }: { children: ReactNode }) {
             <ShieldCheck className="h-5 w-5" aria-hidden />
             LivingGo Admin
           </Link>
-          <button className="rounded-2xl bg-linen p-3" onClick={() => setOpen(true)} aria-label="Open admin menu">
+          <Button className="rounded-2xl bg-linen p-3" onClick={() => setOpen(true)} aria-label="Open admin menu">
             <Menu className="h-5 w-5" aria-hidden />
-          </button>
+          </Button>
         </div>
       </header>
       {open ? (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <button className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} aria-label="Close admin menu" />
+          <Button className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} aria-label="Close admin menu" />
           
           {/* FIX 1: Added 'flex flex-col' to the main aside wrapper */}
           <aside className="absolute inset-y-0 left-0 w-[84vw] max-w-80 bg-[#111315] p-5 text-white shadow-lift flex flex-col">
@@ -60,9 +60,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
             {/* FIX 2: Added 'shrink-0' so the header doesn't get squished */}
             <div className="mb-5 flex shrink-0 items-center justify-between">
               <p className="text-xl font-black">LivingGo Admin</p>
-              <button className="rounded-2xl bg-white/10 p-3" onClick={() => setOpen(false)} aria-label="Close admin menu">
+              <Button className="rounded-2xl bg-white/10 p-3" onClick={() => setOpen(false)} aria-label="Close admin menu">
                 <X className="h-5 w-5" aria-hidden />
-              </button>
+              </Button>
             </div>
             
             {/* FIX 3: Wrapped the sidebar in a flex-1 container to fill exact remaining space */}

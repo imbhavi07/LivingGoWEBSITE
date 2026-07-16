@@ -72,12 +72,12 @@ export function PanoramaUploadModal({
             Upload 360° Panorama
           </h2>
 
-          <button
+          <Button
             onClick={onClose}
             className="text-lg font-bold"
           >
             ✕
-          </button>
+          </Button>
         </div>
 
         <form

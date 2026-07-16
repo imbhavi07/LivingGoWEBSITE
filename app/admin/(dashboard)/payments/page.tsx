@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Check, X, Clock, ExternalLink, Loader2 } from "lucide-react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { adminGetTokenPayments, adminModeratePayment, type AdminTokenPayment } from "@/lib/api/token-payment";
-
+import { Button } from "@/components/Button";
 const TABS = [
   { key: "pending", label: "Pending" },
   { key: "approved", label: "Approved" },
@@ -61,7 +61,7 @@ export default function AdminPaymentsPage() {
         {/* Tabs */}
         <div className="flex gap-2 border-b border-black/5">
           {TABS.map((tab) => (
-            <button
+            <Button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={`px-4 py-2.5 text-sm font-bold transition-colors border-b-2 ${
@@ -69,7 +69,7 @@ export default function AdminPaymentsPage() {
               }`}
             >
               {tab.label}
-            </button>
+            </Button>
           ))}
         </div>
 
@@ -147,22 +147,22 @@ export default function AdminPaymentsPage() {
                   {/* Actions */}
                   {activeTab === "pending" && (
                     <div className="flex flex-col gap-2 shrink-0">
-                      <button
+                      <Button
                         onClick={() => handleAction(payment.id, "approved")}
                         disabled={actioningId === payment.id}
                         className="flex items-center justify-center gap-2 rounded-xl bg-green-600 px-4 py-2 text-sm font-bold text-white hover:bg-green-700 transition-colors disabled:opacity-50"
                       >
                         {actioningId === payment.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                         Approve
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         onClick={() => handleAction(payment.id, "rejected")}
                         disabled={actioningId === payment.id}
                         className="flex items-center justify-center gap-2 rounded-xl bg-red-50 px-4 py-2 text-sm font-bold text-red-700 hover:bg-red-100 transition-colors disabled:opacity-50"
                       >
                         <X className="h-4 w-4" />
                         Reject
-                      </button>
+                      </Button>
                     </div>
                   )}
 

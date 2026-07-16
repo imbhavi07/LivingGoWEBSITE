@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { ImagePlus, X } from "lucide-react";
 import { useState } from "react";
-
+import { Button } from "@/components/Button";
 type ImageUploaderProps = {
   images: string[];
   onChange: (images: string[]) => void;
@@ -70,14 +70,14 @@ export function ImageUploader({ images, onChange, onFilesChange }: ImageUploader
           {images.map((image) => (
             <div key={image} className="relative aspect-square overflow-hidden rounded-2xl bg-oat">
               <Image src={image} alt="Uploaded property" fill className="object-cover" sizes="160px" unoptimized />
-              <button
+              <Button
                 type="button"
                 onClick={() => removeImage(image)}
                 className="absolute right-2 top-2 rounded-full bg-white p-2 text-ink shadow-soft"
                 aria-label="Remove image"
               >
                 <X className="h-4 w-4" aria-hidden />
-              </button>
+              </Button>
             </div>
           ))}
         </div>

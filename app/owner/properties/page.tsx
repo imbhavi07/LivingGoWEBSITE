@@ -9,7 +9,7 @@ import { OwnerShell } from "@/components/owner/OwnerShell";
 import { OwnerTableSkeleton } from "@/components/owner/OwnerTableSkeleton";
 import { useOwnerProperties } from "@/hooks/useOwnerProperties";
 import { formatPrice } from "@/lib/utils";
-
+import { Button } from "@/components/Button";
 // fast fast - same logic as PropertyCard component
 const optimizeImageUrl = (url: string | undefined): string => {
   if (!url) return "/placeholder-property.jpg";
@@ -86,7 +86,7 @@ export default function OwnerPropertiesPage() {
                   Edit
                 </Link>
                 
-                <button
+                <Button
                   className={buttonClasses("ghost", undefined, "px-4 text-clay")}
                   onClick={() => {
                     if (confirm("Delete this property?")) void remove(property.id);
@@ -94,7 +94,7 @@ export default function OwnerPropertiesPage() {
                 >
                   <Trash2 className="h-4 w-4" aria-hidden />
                   Delete
-                </button>
+                </Button>
               </div>
             </article>
           ))}

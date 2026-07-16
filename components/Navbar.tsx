@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePathname } from "next/navigation";
 import { motion, Variants } from "framer-motion";
 import { Playpen_Sans } from 'next/font/google';
-
+import { Button } from "@/components/Button";
 const playpenSans = Playpen_Sans({
   subsets: ['latin'],
   variable: '--font-playpensans', 
@@ -165,7 +165,7 @@ export function Navbar() {
                   >
                     <UserRound className="h-4 w-4" aria-hidden />
                   </Link>
-                  <button
+                  <Button
                     onClick={() => setOpen((prev) => !prev)}
                     className="flex items-center gap-1 text-left outline-none"
                   >
@@ -179,7 +179,7 @@ export function Navbar() {
                       className={cn("h-4 w-4 text-muted transition", open && "rotate-180")}
                       aria-hidden
                     />
-                  </button>
+                  </Button>
                 </div>
                 {open && (
                   <div className="absolute right-0 top-14 w-64 overflow-hidden rounded-3xl bg-white shadow-lift ring-1 ring-black/5">
@@ -193,13 +193,13 @@ export function Navbar() {
                       )}
                     </div>
                     <div className="p-3">
-                      <button
+                      <Button
                         onClick={() => { setOpen(false); signOut(); }}
                         className="flex w-full items-center justify-center gap-2 rounded-2xl bg-moss px-4 py-3 text-sm font-bold text-white transition hover:opacity-90"
                       >
                         <LogOut className="h-4 w-4" aria-hidden />
                         Sign out
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 )}

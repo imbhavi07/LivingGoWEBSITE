@@ -10,7 +10,15 @@ type TokenPayload = {
 };
 
 export function signJwt(payload: TokenPayload) {
-  return jwt.sign(payload, env.JWT_SECRET as Secret);
+  // With token expiry
+  // return jwt.sign(payload, env.JWT_SECRET as Secret, {
+  //   expiresIn: env.JWT_EXPIRES_IN,
+  // } as SignOptions);
+
+  // Without token expiry
+  return jwt.sign(payload, env.JWT_SECRET as Secret, {
+  expiresIn: "8h",
+} as SignOptions);
 }
 
 export function verifyJwt(token: string) {

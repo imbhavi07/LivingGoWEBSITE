@@ -5,5 +5,5 @@ export const internRouter = Router();
 
 internRouter.post(
   "/login",
-  internController.loginIntern
+  internController.internLogin
 );

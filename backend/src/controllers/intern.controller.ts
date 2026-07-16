@@ -275,7 +275,7 @@ export const updateInternVisitStatus = asyncHandler(
       }
 
       // Use constant-time comparison to prevent timing attacks
-      const isValid = await bcrypt.compare(otp, visit.visitOtp);
+      const isValid = otp === visit.visitOtp;
 
       if (!isValid) {
         return res.status(400).json({
@@ -290,7 +290,6 @@ export const updateInternVisitStatus = asyncHandler(
         },
         data: {
           leadStatus: status,
-          visitVerified: true,
         },
       });
 
