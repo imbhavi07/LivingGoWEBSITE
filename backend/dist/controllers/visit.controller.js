@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getAllVisits = exports.verifySupervisorOtp = exports.sendSupervisorOtp = exports.scheduleVisit = void 0;
+exports.createIntern = exports.getInterns = exports.assignLead = exports.getAllVisits = exports.verifySupervisorOtp = exports.sendSupervisorOtp = exports.scheduleVisit = void 0;
 const prisma_1 = require("../config/prisma");
 const app_error_1 = require("../utils/app-error");
 const zod_1 = require("zod");
@@ -298,6 +298,11 @@ exports.verifySupervisorOtp = (0, async_handler_1.asyncHandler)(async (request, 
 });
 exports.getAllVisits = (0, async_handler_1.asyncHandler)(async (_request, response) => {
     const visits = await prisma_1.prisma.visit.findMany({
+        where: {
+            leadStatus: {
+                in: ["SCHEDULED", "ASSIGNED"],
+            },
+        },
         include: {
             student: {
                 select: {
@@ -338,3 +343,112 @@ exports.getAllVisits = (0, async_handler_1.asyncHandler)(async (_request, respon
         total: visits.length,
     });
 });
+const assignLead = async (req, res) => {
+    try {
+        const { visitId } = req.params;
+        const visit = await prisma_1.prisma.visit.findUnique({
+            where: {
+                id: visitId,
+            },
+            include: {
+                property: {
+                    include: {
+                        owner: true,
+                    },
+                },
+                student: true,
+            },
+        });
+        if (!visit) {
+            return res.status(404).json({
+                success: false,
+                message: "Visit not found",
+            });
+        }
+        if (visit.leadStatus !== "SCHEDULED") {
+            return res.status(400).json({
+                success: false,
+                message: "Lead already assigned.",
+            });
+        }
+        const { internId, meetingPointId } = req.body;
+        const updatedVisit = await prisma_1.prisma.visit.update({
+            where: {
+                id: visitId,
+            },
+            data: {
+                leadStatus: "ASSIGNED",
+                assignedLeadId: internId,
+                meetingPointId
+            },
+        });
+        return res.json({
+            success: true,
+            message: "Lead assigned successfully.",
+            visit: updatedVisit,
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+};
+exports.assignLead = assignLead;
+const getInterns = async (req, res) => {
+    try {
+        const supervisorId = req.user.id;
+        const interns = await prisma_1.prisma.intern.findMany({
+            where: {
+                supervisorId,
+                active: true,
+            },
+            orderBy: {
+                name: "asc",
+            },
+        });
+        return res.json({
+            success: true,
+            interns,
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+};
+exports.getInterns = getInterns;
+const createIntern = async (req, res) => {
+    try {
+        const supervisorId = req.user.id;
+        const { name, phone, password } = req.body;
+        const username = `INT${Date.now().toString().slice(-6)}`;
+        const passwordHash = await bcryptjs_1.default.hash(password, 10);
+        const intern = await prisma_1.prisma.intern.create({
+            data: {
+                supervisorId,
+                name,
+                phone,
+                username,
+                passwordHash,
+            },
+        });
+        return res.json({
+            success: true,
+            intern
+        });
+    }
+    catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+};
+exports.createIntern = createIntern;

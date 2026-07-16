@@ -40,6 +40,7 @@ adminRouter.get("/properties/:id/manage", validate(adminIdSchema), adminControll
 adminRouter.post("/properties", uploadImages, validate(createPropertySchema), propertyController.createProperty);
 // NEW: Admin coupon creation endpoint
 adminRouter.post("/coupons", couponController.createCoupon);
+adminRouter.get("/coupons", couponController.getCoupons);
 
 // NEW: Admin review endpoints
 adminRouter.post("/properties/:id/reviews", validate(propertyIdSchema), adminController.createAdminReview);

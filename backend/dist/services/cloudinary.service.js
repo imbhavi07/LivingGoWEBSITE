@@ -12,6 +12,7 @@ async function uploadImage(file) {
         const stream = cloudinary_1.cloudinary.uploader.upload_stream({
             folder: "LivingGo/properties",
             resource_type: "image",
+            chunk_size: 6000000,
             transformation: [
                 {
                     quality: "auto:good",
@@ -31,6 +32,7 @@ async function uploadPanorama(file) {
         const stream = cloudinary_1.cloudinary.uploader.upload_stream({
             folder: "LivingGo/panoramas",
             resource_type: "image",
+            chunk_size: 6000000,
             transformation: [
                 {
                     width: 6000,
