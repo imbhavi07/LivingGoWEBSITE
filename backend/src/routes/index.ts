@@ -31,5 +31,5 @@ apiRouter.use("/webhooks/clerk", webhookRouter);
 apiRouter.use("/admin", adminRouter);
 apiRouter.use("/uploads", uploadRouter);
 apiRouter.use("/token-payments", tokenPaymentRouter);
-apiRouter.use("/visiting/intern", internRouter);
+apiRouter.use("/visiting/lead", internRouter);
 apiRouter.post("/coupons/apply", couponController.applyCoupon);
