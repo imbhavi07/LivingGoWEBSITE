@@ -94,13 +94,13 @@ export default function InternPage() {
           onChange={(e)=>setPassword(e.target.value)}
         />
 
-        <Button
+        <button
           onClick={createIntern}
           disabled={loading}
           className="bg-black text-white rounded px-6 py-3"
         >
           Create Intern
-        </Button>
+        </button>
 
       </div>
 

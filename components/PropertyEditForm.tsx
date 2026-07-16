@@ -293,7 +293,7 @@ export function PropertyEditForm({ initialData, onSave, onCancel, isSaving }: Pr
               <label className="mb-2 block text-sm font-bold text-ink">Meal Times</label>
               <div className="flex flex-wrap gap-2">
                 {MEAL_TIMES_OPTIONS.map((time) => (
-                  <Button
+                  <button
                     key={time}
                     type="button"
                     onClick={() => toggleMealTime(time)}
@@ -304,7 +304,7 @@ export function PropertyEditForm({ initialData, onSave, onCancel, isSaving }: Pr
                     }`}
                   >
                     {time}
-                  </Button>
+                  </button>
                 ))}
               </div>
             </div>
@@ -317,7 +317,7 @@ export function PropertyEditForm({ initialData, onSave, onCancel, isSaving }: Pr
         <h2 className="mb-4 text-lg font-black text-ink">Facilities</h2>
         <div className="flex flex-wrap gap-2">
           {FACILITIES_OPTIONS.map((facility) => (
-            <Button
+            <button
               key={facility}
               type="button"
               onClick={() => toggleFacility(facility)}
@@ -331,19 +331,19 @@ export function PropertyEditForm({ initialData, onSave, onCancel, isSaving }: Pr
                 <X className="mr-1 inline h-3 w-3" aria-hidden />
               )}
               {facility}
-            </Button>
+            </button>
           ))}
         </div>
       </div>
 
       {/* Actions */}
       <div className="flex gap-3">
-        <Button type="submit" disabled={isSaving} className="flex-1">
+        <button type="submit" disabled={isSaving} className="flex-1">
           {isSaving ? "Saving..." : "Save Changes"}
-        </Button>
-        <Button type="button" variant="secondary" onClick={onCancel} className="flex-1">
+        </button>
+        <button type="button" variant="secondary" onClick={onCancel} className="flex-1">
           Cancel
-        </Button>
+        </button>
       </div>
     </form>
   );

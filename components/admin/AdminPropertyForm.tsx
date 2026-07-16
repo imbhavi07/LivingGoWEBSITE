@@ -466,7 +466,7 @@ export function AdminPropertyForm({ initialData, onSave, onCancel }: AdminProper
             <div className="space-y-2 pt-2">
               <span className="text-sm font-bold text-ink">Map Location (Pin drop)</span>
               <div className="flex gap-2">
-                <Button
+                <button
                   type="button"
                   onClick={handleUseCurrentLocation}
                   disabled={isGettingLocation}
@@ -477,15 +477,15 @@ export function AdminPropertyForm({ initialData, onSave, onCancel }: AdminProper
                     : <Crosshair className="h-4 w-4" aria-hidden />
                   }
                   {isGettingLocation ? "Getting location..." : "Use current location"}
-                </Button>
-                <Button
+                </button>
+                <button
                   type="button"
                   onClick={() => setShowMapPicker(true)}
                   className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-black/10 bg-linen py-3 text-sm font-bold text-ink transition hover:bg-oat"
                 >
                   <MapPin className="h-4 w-4" aria-hidden />
                   Pick on map
-                </Button>
+                </button>
               </div>
 
               {pickedLocation ? (
@@ -494,13 +494,13 @@ export function AdminPropertyForm({ initialData, onSave, onCancel }: AdminProper
                   <div className="flex-1">
                     <p className="text-xs font-bold text-moss">Map Coordinates Set</p>
                   </div>
-                  <Button
+                  <button
                     type="button"
                     onClick={() => setPickedLocation(null)}
                     className="text-xs font-bold text-clay hover:underline"
                   >
                     Clear
-                  </Button>
+                  </button>
                 </div>
               ) : (
                 <div className="flex items-start gap-2 rounded-2xl bg-amber-50 p-3 mt-2">
@@ -712,9 +712,9 @@ export function AdminPropertyForm({ initialData, onSave, onCancel }: AdminProper
                             placeholder="e.g. PlayStation 5, Pool Table..."
                             className="flex-1 bg-transparent text-sm font-semibold text-ink outline-none placeholder:text-muted"
                           />
-                          <Button type="button" variant="secondary" onClick={handleAddCustomFacility} className="h-9 px-4 py-0 text-xs">
+                          <button type="button" variant="secondary" onClick={handleAddCustomFacility} className="h-9 px-4 py-0 text-xs">
                             <Plus className="h-4 w-4" /> Add
-                          </Button>
+                          </button>
                         </div>
                       </div>
                     </section>
@@ -734,21 +734,21 @@ export function AdminPropertyForm({ initialData, onSave, onCancel }: AdminProper
           {error ? <p className="rounded-2xl bg-red-50 p-3 text-sm font-semibold text-red-600 mb-4">{error}</p> : null}
           {/* Actions */}
           <div className="flex items-center justify-between pt-4">
-            <Button
+            <button
               variant="outline"
               onClick={onCancel}
               className="w-full md:w-auto"
             >
               Cancel
-            </Button>
-            <Button
+            </button>
+            <button
               variant="primary"
               type="submit"
               className="w-full md:w-auto"
               disabled={isSubmitting}
             >
               {isSubmitting ? "Saving..." : "Save Property"}
-            </Button>
+            </button>
           </div>
 
         </div>

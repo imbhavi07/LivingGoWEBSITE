@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import VisitingNavbar from "@/components/VisitingNavbar";
 
 export default function VisitingLayout({
   children,
@@ -23,5 +24,10 @@ export default function VisitingLayout({
     }
   }, []);
 
-  return <>{children}</>;
+  return (
+    <>
+      <main className="min-h-screen pb-20">{children}</main>
+      <VisitingNavbar />
+    </>
+  );
 }

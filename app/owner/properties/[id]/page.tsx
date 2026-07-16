@@ -61,9 +61,9 @@ export default function PropertyDashboardPage() {
             <p className="text-sm font-bold uppercase text-clay">Property Dashboard</p>
             <h1 className="mt-2 text-3xl font-black text-ink">{property.title}</h1>
           </div>
-          <Button className="rounded-md bg-ink px-4 py-2 text-white transition hover:bg-clay">
+          <button className="rounded-md bg-ink px-4 py-2 text-white transition hover:bg-clay">
             Quick Actions
-          </Button>
+          </button>
         </div>
 
         {/* Rent Progress Bar */}
@@ -81,7 +81,7 @@ export default function PropertyDashboardPage() {
         <div className="mt-6">
           <div className="flex border-b border-clay/20">
             {tabs.map((tab) => (
-              <Button
+              <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`px-4 py-3 text-sm font-medium transition-all ${
@@ -91,7 +91,7 @@ export default function PropertyDashboardPage() {
                 }`}
               >
                 {tab}
-              </Button>
+              </button>
             ))}
           </div>
 

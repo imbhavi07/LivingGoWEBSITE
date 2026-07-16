@@ -139,9 +139,9 @@ export function LockPropertyModal({ propertyId, propertyCode, monthlyRent, onClo
         <div className="flex items-center justify-between border-b border-black/5 px-6 py-4 sticky top-0 bg-white z-10">
           <h2 className="text-lg font-black text-ink">Lock Property</h2>
           {step !== "loading" && (
-            <Button onClick={onClose} className="rounded-full p-2 hover:bg-linen transition-colors" aria-label="Close">
+            <button onClick={onClose} className="rounded-full p-2 hover:bg-linen transition-colors" aria-label="Close">
               <X className="h-5 w-5 text-muted" />
-            </Button>
+            </button>
           )}
         </div>
 
@@ -181,13 +181,13 @@ export function LockPropertyModal({ propertyId, propertyCode, monthlyRent, onClo
                       className="flex-1 px-3 py-2 bg-white border border-black/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-ink transition-all duration-200 text-sm font-mono"
                       disabled={applyingCoupon}
                     />
-                    <Button
+                    <button
                       onClick={applyCoupon}
                       disabled={applyingCoupon || !couponCode.trim()}
                       className={`px-4 py-2 bg-ink text-white rounded-xl font-bold text-sm hover:bg-ink/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
                     >
                       {applyingCoupon ? '...' : 'Apply'}
-                    </Button>
+                    </button>
                   </div>
                   {discountAmount > 0 && (
                     <div className="mt-2 rounded-xl border border-green-200 bg-green-50 p-3">
@@ -205,13 +205,13 @@ export function LockPropertyModal({ propertyId, propertyCode, monthlyRent, onClo
                 <span className="text-2xl font-black text-ink">₹{finalAmount.toLocaleString("en-IN")}</span>
               </div>
 
-              <Button
+              <button
                 onClick={() => setStep("payment")}
                 className="w-full rounded-2xl bg-ink py-4 text-sm font-black text-white hover:bg-ink/90 transition-transform hover:scale-[1.02] flex items-center justify-center gap-2"
               >
                   <ShieldCheck className="h-5 w-5" />
                   Proceed To Pay Securely
-              </Button>
+              </button>
             </div>
           )}
 
@@ -250,19 +250,19 @@ export function LockPropertyModal({ propertyId, propertyCode, monthlyRent, onClo
               </div>
 
               <div className="flex gap-2">
-                <Button
+                <button
                   onClick={() => setStep("info")}
                   className="w-1/3 rounded-2xl bg-linen py-3 text-sm font-bold text-ink hover:bg-black/5 transition-colors"
                 >
                   Back
-                </Button>
-                <Button
+                </button>
+                <button
                   onClick={handleSubmitUtr}
                   disabled={utrNumber.length < 12}
                   className="w-2/3 rounded-2xl bg-ink py-3 text-sm font-bold text-white hover:bg-ink/90 transition-colors disabled:opacity-50"
                 >
                   Submit Payment
-                </Button>
+                </button>
               </div>
             </div>
           )}
@@ -292,12 +292,12 @@ export function LockPropertyModal({ propertyId, propertyCode, monthlyRent, onClo
                 <h3 className="text-lg font-bold text-ink">Submission Failed</h3>
                 <p className="mt-1 text-sm text-red-600 font-medium px-2">{errorMessage}</p>
               </div>
-              <Button
+              <button
                 onClick={() => setStep("payment")}
                 className="w-full rounded-2xl bg-ink py-3 text-sm font-bold text-white hover:bg-ink/90 transition-colors"
               >
                 Try Again
-              </Button>
+              </button>
             </div>
           )}
 
@@ -313,7 +313,7 @@ export function LockPropertyModal({ propertyId, propertyCode, monthlyRent, onClo
                   Your UTR has been submitted securely. Our team will verify the transaction and unlock your dashboard shortly.
                 </p>
               </div>
-              <Button
+              <button
                 onClick={() => {
                   onClose();
                   router.push("/student/dashboard");
@@ -321,7 +321,7 @@ export function LockPropertyModal({ propertyId, propertyCode, monthlyRent, onClo
                 className="w-full rounded-2xl bg-ink py-3 text-sm font-bold text-white hover:bg-ink/90 transition-colors"
               >
                 Go to Dashboard
-              </Button>
+              </button>
             </div>
           )}
 

@@ -212,7 +212,7 @@ export default function StudentReferralPage() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-ink">Your Referral Code</h2>
               <div className="flex items-center gap-2">
-                <Button
+                <button
                   onClick={() => copyReferralLink(referral?.code || '')}
                   disabled={!referral?.code}
                   className={`
@@ -227,8 +227,8 @@ export default function StudentReferralPage() {
                     <Copy className="h-4 w-4" />
                   )}
                   <span>{copied === (referral?.code || '') ? 'Copied!' : 'Copy Link'}</span>
-                </Button>
-                <Button
+                </button>
+                <button
                   onClick={handleRefresh}
                   disabled={loading}
                   className={`ml-2 p-1 rounded-full border border-ink/20 hover:bg-linen/30 transition-colors ${
@@ -236,7 +236,7 @@ export default function StudentReferralPage() {
                   }`}
                 >
                   <RefreshCw className="h-4 w-4 text-ink/60" />
-                </Button>
+                </button>
               </div>
             </div>
 
@@ -318,7 +318,7 @@ export default function StudentReferralPage() {
                 Your UPI ID should be in the format: <code className="bg-linen/20 px-1 py-0.5 rounded">name@bank</code>
               </p>
 
-              <Button
+              <button
                 type="submit"
                 disabled={updatingUpi || !upiId.trim()}
                 className={`w-full bg-ink text-linen px-5 py-3 rounded-xl font-bold text-md hover:bg-ink/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
@@ -326,7 +326,7 @@ export default function StudentReferralPage() {
                 }`}
               >
                 {updatingUpi ? 'Updating...' : 'Update UPI ID'}
-              </Button>
+              </button>
             </form>
           </div>
         </div>

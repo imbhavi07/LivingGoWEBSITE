@@ -114,9 +114,9 @@ export default function AdminListingDetailsPage() {
                 <p className="text-sm font-bold uppercase text-muted">Editing listing</p>
                 <h1 className="mt-1 text-2xl font-black text-ink">{listing.title}</h1>
               </div>
-              <Button variant="ghost" onClick={() => setEditing(false)}>
+              <button variant="ghost" onClick={() => setEditing(false)}>
                 <X className="h-4 w-4" aria-hidden /> Cancel
-              </Button>
+              </button>
             </div>
             <AdminPropertyForm
               initialData={{
@@ -214,7 +214,7 @@ export default function AdminListingDetailsPage() {
                       }}
                     />
 
-                    <Button
+                    <button
                       variant="ghost"
                       className="text-red-600"
                       onClick={() => {
@@ -222,7 +222,7 @@ export default function AdminListingDetailsPage() {
                       }}
                     >
                       Delete
-                    </Button>
+                    </button>
                   </div>
                 </div>
               ))}
@@ -247,12 +247,12 @@ export default function AdminListingDetailsPage() {
                   Upload Insta360 panoramas for this property.
                 </p>
 
-                <Button
+                <button
                   className="mt-4"
                   onClick={() => setShowPanoramaModal(true)}
                 >
                   Add Panorama
-                </Button>
+                </button>
                 <div className="mt-4 space-y-3">
   {listing.panoramas?.map((panorama) => (
     <div
@@ -323,7 +323,7 @@ export default function AdminListingDetailsPage() {
             }}
           />
             <div className="flex gap-2">
-              <Button
+              <button
                 onClick={async () => {
                   await updatePanorama(
                     panorama.id,
@@ -342,9 +342,9 @@ export default function AdminListingDetailsPage() {
                 }}
               >
                 Save
-              </Button>
+              </button>
 
-              <Button
+              <button
                 variant="ghost"
                 onClick={() =>
                   setEditingPanoramaId(
@@ -353,7 +353,7 @@ export default function AdminListingDetailsPage() {
                 }
               >
                 Cancel
-              </Button>
+              </button>
             </div>
           </div>
         ) : (
@@ -371,7 +371,7 @@ export default function AdminListingDetailsPage() {
       </div>
 
       <div className="flex gap-2">
-        <Button
+        <button
           variant="secondary"
           onClick={() => {
             setEditingPanoramaId(
@@ -388,9 +388,9 @@ export default function AdminListingDetailsPage() {
           }}
         >
           Edit
-        </Button>
+        </button>
 
-        <Button
+        <button
           variant="ghost"
           className="text-red-600"
           onClick={async () => {
@@ -410,7 +410,7 @@ export default function AdminListingDetailsPage() {
           }}
         >
           Delete
-        </Button>
+        </button>
       </div>
     </div>
   ))}
@@ -427,18 +427,18 @@ export default function AdminListingDetailsPage() {
                 <p>Preference: {listing.preference}</p>
               </div>
               <div className="mt-5 grid gap-3">
-                <Button onClick={() => setEditing(true)} variant="secondary">
+                <button onClick={() => setEditing(true)} variant="secondary">
                   <Pencil className="h-4 w-4" aria-hidden /> Edit listing
-                </Button>
-                <Button onClick={() => void approveListing(listing.id)}>
+                </button>
+                <button onClick={() => void approveListing(listing.id)}>
                   <Check className="h-4 w-4" aria-hidden />Approve listing
-                </Button>
-                <Button variant="secondary" onClick={() => void rejectListing(listing.id)}>
+                </button>
+                <button variant="secondary" onClick={() => void rejectListing(listing.id)}>
                   <X className="h-4 w-4" aria-hidden />Reject listing
-                </Button>
-                <Button variant="ghost" className="text-red-700" onClick={() => { setDeleteListingId(listing.id); }}>
+                </button>
+                <button variant="ghost" className="text-red-700" onClick={() => { setDeleteListingId(listing.id); }}>
                   <Trash2 className="h-4 w-4" aria-hidden />Delete fake listing
-                </Button>
+                </button>
               </div>
             </aside>
           </div>

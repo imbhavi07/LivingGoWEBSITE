@@ -82,7 +82,7 @@ window.location.href = "/visiting/lead/dashboard";
         
         {/* 1. Tab Switcher Toggle Pill */}
         <div className="flex bg-[#FBF7F4] p-1.5 rounded-2xl mb-8">
-          <Button
+          <button
             onClick={() => setActiveTab("supervisor")}
             className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-bold rounded-xl transition-all duration-200 ${
               activeTab === "supervisor"
@@ -91,8 +91,8 @@ window.location.href = "/visiting/lead/dashboard";
             }`}
           >
             🎓 Supervisor
-          </Button>
-          <Button
+          </button>
+          <button
             onClick={() => setActiveTab("intern")}
             className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-bold rounded-xl transition-all duration-200 ${
               activeTab === "intern"
@@ -101,7 +101,7 @@ window.location.href = "/visiting/lead/dashboard";
             }`}
           >
             🏢 Intern / Lead
-          </Button>
+          </button>
         </div>
 
         {/* 2. Logo Header */}
@@ -123,13 +123,13 @@ window.location.href = "/visiting/lead/dashboard";
               onChange={(e) => setEmail(e.target.value)}
             />
 
-            <Button
+            <button
               onClick={sendSupervisorOtp}
               disabled={loading}
               className="w-full rounded-xl bg-[#5B3416] py-3 font-bold text-white hover:bg-[#4a2a10] disabled:opacity-50"
             >
               {loading ? "Sending..." : "Send OTP"}
-            </Button>
+            </button>
 
             {otpSent && (
               <div className="mt-5 space-y-4 pt-4 border-t border-dashed border-gray-200">
@@ -140,13 +140,13 @@ window.location.href = "/visiting/lead/dashboard";
                   onChange={(e) => setOtp(e.target.value)}
                 />
 
-                <Button
+                <button
                   onClick={verifySupervisorOtp}
                   disabled={verifying}
                   className="w-full rounded-xl bg-green-600 py-3 font-bold text-white transition hover:bg-green-700 disabled:opacity-50"
                 >
                   {verifying ? "Verifying..." : "Verify OTP"}
-                </Button>
+                </button>
               </div>
             )}
           </div>
@@ -174,13 +174,13 @@ window.location.href = "/visiting/lead/dashboard";
               </p>
             )}
 
-            <Button
+            <button
               onClick={handleInternLogin}
               disabled={internLoading}
               className="w-full rounded-xl bg-[#5B3416] py-3 font-bold text-white hover:bg-[#4a2a10] disabled:opacity-50"
             >
               {internLoading ? "Logging in..." : "Login"}
-            </Button>
+            </button>
           </div>
         )}
       </div>

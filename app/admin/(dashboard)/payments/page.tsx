@@ -61,7 +61,7 @@ export default function AdminPaymentsPage() {
         {/* Tabs */}
         <div className="flex gap-2 border-b border-black/5">
           {TABS.map((tab) => (
-            <Button
+            <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               className={`px-4 py-2.5 text-sm font-bold transition-colors border-b-2 ${
@@ -69,7 +69,7 @@ export default function AdminPaymentsPage() {
               }`}
             >
               {tab.label}
-            </Button>
+            </button>
           ))}
         </div>
 
@@ -147,22 +147,22 @@ export default function AdminPaymentsPage() {
                   {/* Actions */}
                   {activeTab === "pending" && (
                     <div className="flex flex-col gap-2 shrink-0">
-                      <Button
+                      <button
                         onClick={() => handleAction(payment.id, "approved")}
                         disabled={actioningId === payment.id}
                         className="flex items-center justify-center gap-2 rounded-xl bg-green-600 px-4 py-2 text-sm font-bold text-white hover:bg-green-700 transition-colors disabled:opacity-50"
                       >
                         {actioningId === payment.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                         Approve
-                      </Button>
-                      <Button
+                      </button>
+                      <button
                         onClick={() => handleAction(payment.id, "rejected")}
                         disabled={actioningId === payment.id}
                         className="flex items-center justify-center gap-2 rounded-xl bg-red-50 px-4 py-2 text-sm font-bold text-red-700 hover:bg-red-100 transition-colors disabled:opacity-50"
                       >
                         <X className="h-4 w-4" />
                         Reject
-                      </Button>
+                      </button>
                     </div>
                   )}
 

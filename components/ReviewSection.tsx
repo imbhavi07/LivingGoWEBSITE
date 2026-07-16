@@ -111,7 +111,7 @@ export function ReviewSection({ propertyId, rating, reviews: initialReviews, use
                     ? star <= hoveredStar
                     : star <= scores[key];
                   return (
-                    <Button
+                    <button
                       key={star}
                       className="focus:outline-none"
                       onMouseEnter={() => { setHoveredKey(key); setHoveredStar(star); }}
@@ -122,7 +122,7 @@ export function ReviewSection({ propertyId, rating, reviews: initialReviews, use
                       <Star
                         className={`h-6 w-6 transition-colors ${isActive ? "fill-amber-400 text-amber-400" : "text-gray-300"}`}
                       />
-                    </Button>
+                    </button>
                   );
                 })}
               </div>
@@ -144,26 +144,26 @@ export function ReviewSection({ propertyId, rating, reviews: initialReviews, use
             <p className="text-sm text-red-600 font-medium">{error}</p>
           )}
 
-          <Button
+          <button
             onClick={handleSubmit}
             disabled={!canSubmit || submitting}
             className="flex items-center gap-2 rounded-xl bg-ink px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50 hover:bg-ink/90 transition-colors"
           >
             {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             Submit Review
-          </Button>
+          </button>
         </div>
       )}
 
       {isSignedIn && userRole === "student" && submitted && (
         <div className="mt-4 rounded-2xl bg-green-50 p-4 flex items-center justify-between gap-3">
           <p className="text-sm text-green-700 font-semibold">✓ Review submitted — thank you!</p>
-          <Button
+          <button
             onClick={() => setSubmitted(false)}
             className="text-xs font-bold text-green-700 underline underline-offset-2 hover:text-green-900"
           >
             Edit review
-          </Button>
+          </button>
         </div>
       )}
 

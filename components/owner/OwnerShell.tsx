@@ -124,17 +124,17 @@ function OwnerSidebar({ onNavigate, onSignOut }: { onNavigate?: () => void; onSi
           );
         })}
         {onNavigate && (
-          <Button variant="ghost" className="mt-4 justify-start px-4" onClick={onSignOut}>
+          <button variant="ghost" className="mt-4 justify-start px-4" onClick={onSignOut}>
             <LogOut className="h-5 w-5" aria-hidden />
             Sign out
-          </Button>
+          </button>
         )}
       </nav>
       {!onNavigate && (
-        <Button variant="ghost" className="mt-auto justify-start px-4" onClick={onSignOut}>
+        <button variant="ghost" className="mt-auto justify-start px-4" onClick={onSignOut}>
           <LogOut className="h-5 w-5" aria-hidden />
           Sign out
-        </Button>
+        </button>
       )}
     </div>
   );

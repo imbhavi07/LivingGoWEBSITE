@@ -76,12 +76,12 @@ export function Gallery({
         </div>
 
         {images.length > 5 && (
-          <Button
+          <button
             onClick={() => setShowAll(true)}
             className="absolute bottom-4 right-4 rounded-xl bg-white px-4 py-2 text-sm font-bold shadow-lg transition-transform hover:scale-105"
           >
             View all {images.length} photos
-          </Button>
+          </button>
         )}
       </section>
 
@@ -96,32 +96,32 @@ export function Gallery({
                 {title}
               </h2>
 
-              <Button
+              <button
                 onClick={() => setShowAll(false)}
                              className="rounded-xl bg-white px-6 py-2 font-bold text-black transition-transform hover:scale-105"
               >
                 Close
-              </Button>
+              </button>
             </div>
 
             <div className="flex justify-center">
-              <Button
+              <button
                 onClick={() =>
                   setSelectedIndex((selectedIndex - 1 + images.length) % images.length)
                 }
                 className="absolute left-6 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white p-4 shadow-xl hover:scale-110"
               >
                 ←
-              </Button>
+              </button>
               
-              <Button
+              <button
                 onClick={() =>
                   setSelectedIndex((selectedIndex + 1) % images.length)
                 }
                 className="absolute right-6 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white p-4 shadow-xl hover:scale-110"
               >
                 →
-              </Button>
+              </button>
               <div className="relative h-[75vh] w-full max-w-6xl overflow-hidden rounded-3xl">
                 <Image
                   src={images[selectedIndex].url}

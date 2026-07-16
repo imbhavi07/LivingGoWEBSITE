@@ -110,7 +110,7 @@ export function OwnerBookings() {
                   maxLength={6}
                 />
 
-                <Button
+                <button
                   disabled={otpLoading[visit.id] === true}
                   className="mt-3 rounded-xl bg-amber-600 px-4 py-2 font-bold text-white"
                   onClick={async () => {
@@ -163,7 +163,7 @@ export function OwnerBookings() {
                   ) : (
                     "Verify OTP"
                   )}
-                </Button>
+                </button>
 
                 {otpError[visit.id] && (
                   <p className="mt-2 text-sm text-red-600">
@@ -253,7 +253,7 @@ export function OwnerBookings() {
                             className="flex-1 min-w-0 rounded-xl border px-4 py-2 text-sm"
                             maxLength={6}
                           />
-                          <Button
+                          <button
                             disabled={otpLoading[payment.id] === true}
                             onClick={async () => {
                               const id = payment.id;
@@ -314,7 +314,7 @@ export function OwnerBookings() {
                             ) : (
                               "Verify Visit"
                             )}
-                          </Button>
+                          </button>
                         </div>
                         {otpError[payment.id] && (
                           <p className="mt-2 text-sm text-red-600">
@@ -351,7 +351,7 @@ export function OwnerBookings() {
                       <p className="font-bold text-green-700">
                         Student requested Move-in Approval
                       </p>
-                      <Button
+                      <button
                         onClick={async () => {
                           try {
                             await approveMoveIn(payment.id);
@@ -374,7 +374,7 @@ export function OwnerBookings() {
                         className="mt-3 rounded-xl bg-green-600 px-4 py-2 font-bold text-white"
                       >
                         Approve Move-in
-                      </Button>
+                      </button>
                     </div>
                   )}
               </div>

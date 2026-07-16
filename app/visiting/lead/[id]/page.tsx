@@ -197,13 +197,13 @@ export default function LeadDetail() {
             Visit Details
           </h1>
           <div className="flex items-center space-x-3">
-            <Button
+            <button
               onClick={() => router.back()}
               className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900"
             >
               ← Back
-            </Button>
-            <Button
+            </button>
+            <button
               onClick={() => {
                 if (typeof window !== "undefined") {
                   localStorage.removeItem("intern_token");
@@ -213,7 +213,7 @@ export default function LeadDetail() {
               className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
             >
               Logout
-            </Button>
+            </button>
           </div>
         </div>
       </div>
@@ -432,13 +432,13 @@ export default function LeadDetail() {
 
               {/* Submit Button */}
               <div className="pt-4">
-                <Button
+                <button
                   type="submit"
                   disabled={submitting || !otp || !status}
                   className="w-full rounded-lg bg-blue-600 px-5 py-3 text-white font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
                 >
                   {submitting ? "Updating..." : "Update Visit Status"}
-                </Button>
+                </button>
               </div>
             </div>
           </form>

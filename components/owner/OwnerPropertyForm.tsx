@@ -587,9 +587,9 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
                   placeholder="e.g. PlayStation 5, Pool Table..."
                   className="flex-1 bg-transparent text-sm font-semibold text-ink outline-none placeholder:text-muted"
                 />
-                <Button type="button" variant="secondary" onClick={handleAddCustomFacility} className="h-9 px-4 py-0 text-xs">
+                <button type="button" variant="secondary" onClick={handleAddCustomFacility} className="h-9 px-4 py-0 text-xs">
                   <Plus className="h-4 w-4" /> Add
-                </Button>
+                </button>
               </div>
             </div>
           </section>
@@ -668,10 +668,10 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
             </div>
 
             {error ? <p className="rounded-2xl bg-linen p-3 text-sm font-semibold text-clay">{error}</p> : null}
-            <Button className="w-full" disabled={isSubmitting}>
+            <button className="w-full" disabled={isSubmitting}>
               <Save className="h-4 w-4" aria-hidden />
               {isSubmitting ? "Saving..." : property ? "Update property" : "Create property"}
-            </Button>
+            </button>
           </div>
         </aside>
       </form>

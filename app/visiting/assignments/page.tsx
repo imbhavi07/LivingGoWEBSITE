@@ -220,7 +220,7 @@ export default function VisitingDashboard() {
                     {visit.meetingPointId || "-"}
                   </p>
                   <div className="mt-6">
-                    <Button
+                    <button
                       onClick={() => {
                         if (!visit.student.phone) {
                           alert("Student phone number is not available.");
@@ -263,17 +263,17 @@ export default function VisitingDashboard() {
                       className="bg-green-600 hover:bg-green-700 text-white"
                     >
                       Send WhatsApp to Student
-                    </Button>
+                    </button>
                   </div>
                 </div>
               </div>
             ) : (
-              <Button
+              <button
                 onClick={() => openAssignModal(visit)}
                 className="mt-6 rounded-xl bg-black px-5 py-3 text-white"
               >
                 Assign Lead
-              </Button>
+              </button>
             )}
           </div>
         ))}
@@ -324,21 +324,21 @@ onChange={(e)=>setMeetingPointId(e.target.value)}
 
 <div className="flex gap-4">
 
-<Button
+<button
 onClick={()=>setShowAssignModal(false)}
 className="border rounded px-5 py-3"
 >
 
 Cancel
 
-</Button>
+</button>
 
-<Button
+<button
   onClick={assignIntern}
   className="bg-black text-white rounded px-5 py-3"
 >
   Assign
-</Button>
+</button>
 
 </div>
 

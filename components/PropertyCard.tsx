@@ -173,7 +173,7 @@ export function PropertyCard({ property, saved, onSave, priority = false }: Prop
               <span className="hidden sm:inline">Call</span> 
             </a>
 
-            <Button
+            <button
               onClick={(e) => {
                 e.stopPropagation();
                 handleSave();
@@ -183,7 +183,7 @@ export function PropertyCard({ property, saved, onSave, priority = false }: Prop
               title={!isSignedIn ? "Login to save" : saved ? "Remove from wishlist" : "Save property"}
             >
               <Heart className={saved ? "h-5 w-5 fill-clay text-clay" : "h-5 w-5"} aria-hidden />
-            </Button>
+            </button>
           </div>
         </div>
 
@@ -202,7 +202,7 @@ export function PropertyCard({ property, saved, onSave, priority = false }: Prop
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          <Button
+          <button
             className="w-full rounded-2xl bg-clay text-white hover:bg-clay/90"
             onClick={(e) => {
               e.stopPropagation();
@@ -210,9 +210,9 @@ export function PropertyCard({ property, saved, onSave, priority = false }: Prop
             }}
           >
             Pre-Book
-          </Button>
+          </button>
           
-          <Button
+          <button
             className="w-full rounded-2xl bg-clay text-white hover:bg-clay/90"
             onClick={(e) => {
               e.stopPropagation();
@@ -220,7 +220,7 @@ export function PropertyCard({ property, saved, onSave, priority = false }: Prop
             }}
           >
             Schedule Visit
-          </Button>
+          </button>
         </div>
       </div>
     </article>
