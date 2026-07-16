@@ -52,6 +52,7 @@ visitingRouter.get(
 
 visitingRouter.post(
   "/:visitId/assign-lead",
+  supervisorAuthenticate,
   visitController.assignLead
 );
 
