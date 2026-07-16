@@ -8,6 +8,7 @@ export async function uploadImage(file: Express.Multer.File) {
       {
         folder: "LivingGo/properties",
         resource_type: "image",
+        chunk_size: 60000000,
         transformation: [
           {
             quality: "auto:good",
@@ -16,7 +17,25 @@ export async function uploadImage(file: Express.Multer.File) {
         ]
       },
       (error, result) => {
-        if (error || !result) return reject(error);
+        if (error) {
+          console.error("Cloudinary Upload Stream Error:", error);
+          let message = 'Unknown error from Cloudinary';
+          if (typeof error === 'string') {
+            message = error;
+          } else if (error !== null && typeof error === 'object' && 'message' in error) {
+            message = String(error.message);
+          } else {
+            try {
+              message = JSON.stringify(error);
+            } catch {
+              message = String(error);
+            }
+          }
+          return reject(new Error(message));
+        }
+        if (!result) {
+          return reject(new Error("Cloudinary returned no result"));
+        }
         resolve(result);
       }
     );
@@ -31,6 +50,7 @@ export async function uploadPanorama(file: Express.Multer.File) {
       {
         folder: "LivingGo/panoramas",
         resource_type: "image",
+        chunk_size: 0,
 
         transformation: [
           {
@@ -43,7 +63,25 @@ export async function uploadPanorama(file: Express.Multer.File) {
         ]
       },
       (error, result) => {
-        if (error || !result) return reject(error);
+        if (error) {
+          console.error("Cloudinary Upload Stream Error:", error);
+          let message = 'Unknown error from Cloudinary';
+          if (typeof error === 'string') {
+            message = error;
+          } else if (error !== null && typeof error === 'object' && 'message' in error) {
+            message = String(error.message);
+          } else {
+            try {
+              message = JSON.stringify(error);
+            } catch {
+              message = String(error);
+            }
+          }
+          return reject(new Error(message));
+        }
+        if (!result) {
+          return reject(new Error("Cloudinary returned no result"));
+        }
         resolve(result);
       }
     );

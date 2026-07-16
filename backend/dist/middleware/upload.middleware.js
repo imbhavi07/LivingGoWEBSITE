@@ -18,4 +18,7 @@ exports.uploadImages = (0, multer_1.default)({
 }).array("images", 50);
 exports.upload = (0, multer_1.default)({
     storage: multer_1.default.memoryStorage(),
+    limits: {
+        fileSize: 50 * 1024 * 1024, // 50 MB
+    },
 });

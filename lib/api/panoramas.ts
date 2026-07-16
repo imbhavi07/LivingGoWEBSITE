@@ -1,5 +1,4 @@
 import { apiClient } from "./client";
-import imageCompression from 'browser-image-compression';
 
 export type Panorama = {
   id: string;
@@ -27,20 +26,16 @@ export async function uploadPanorama(
 ) {
   const formData = new FormData();
 
-  // Optimized specifically for wide 360 aspect-ratio limits
-  const options = { maxSizeMB: 3.5, maxWidthOrHeight: 8000, useWebWorker: true };
-  console.log("Compressing panorama client-side...");
-  const compressedImage = await imageCompression(payload.image, options);
-
+  // Removed client-side compression to preserve 360 EXIF metadata
   formData.append("title", payload.title);
-  formData.append("image", compressedImage); // Hand over the safe compressed blob
+  formData.append("image", payload.image); // Use original image to preserve EXIF
 
   if (payload.sortOrder !== undefined) {
     formData.append("sortOrder", String(payload.sortOrder));
   }
 
   const { data } = await apiClient.post(
-    `/api/admin/properties/${propertyId}/panoramas`,
+    `/admin/properties/${propertyId}/panoramas`,
     formData,
     {
       headers: {
@@ -60,7 +55,7 @@ export async function updatePanorama(
   }
 ) {
   const response = await apiClient.put(
-    `/api/admin/properties/panoramas/${panoramaId}`,
+    `/admin/properties/panoramas/${panoramaId}`,
     data
   );
 
@@ -71,7 +66,7 @@ export async function deletePanorama(
   panoramaId: string
 ) {
   await apiClient.delete(
-    `/api/admin/properties/panoramas/${panoramaId}`
+    `/admin/properties/panoramas/${panoramaId}`
   );
 }
 
@@ -81,13 +76,10 @@ export async function replacePanoramaImage(
 ) {
   const formData = new FormData();
 
-  const options = { maxSizeMB: 3.5, maxWidthOrHeight: 8000, useWebWorker: true };
-  const compressedImage = await imageCompression(image, options);
-
-  formData.append("image", compressedImage);
+  formData.append("image", image); // Use original image to preserve EXIF
 
   const { data } = await apiClient.put(
-    `/api/admin/properties/panoramas/${panoramaId}/image`,
+    `/admin/properties/panoramas/${panoramaId}/image`,
     formData,
     {
       headers: {

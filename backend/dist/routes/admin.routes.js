@@ -48,6 +48,8 @@ const upload_middleware_1 = require("../middleware/upload.middleware");
 const property_validation_1 = require("../validations/property.validation");
 const property_validation_2 = require("../validations/property.validation");
 exports.adminRouter = (0, express_1.Router)();
+const adminAuth = [auth_middleware_1.authenticate, (0, auth_middleware_1.authorize)("admin")];
+exports.adminRouter.post('/properties/:id/panoramas', ...adminAuth, upload_middleware_1.upload.single('image'), adminController.addPanoramaController);
 exports.adminRouter.post("/auth/login", security_middleware_1.authLimiter, (0, validate_middleware_1.validate)(auth_validation_1.loginSchema), authController.adminLogin);
 exports.adminRouter.use(auth_middleware_1.authenticate, (0, auth_middleware_1.authorize)("admin"));
 exports.adminRouter.get("/dashboard/stats", adminController.getStats);
@@ -71,6 +73,7 @@ exports.adminRouter.get("/properties/:id/manage", (0, validate_middleware_1.vali
 exports.adminRouter.post("/properties", upload_middleware_1.uploadImages, (0, validate_middleware_1.validate)(property_validation_2.createPropertySchema), propertyController.createProperty);
 // NEW: Admin coupon creation endpoint
 exports.adminRouter.post("/coupons", couponController.createCoupon);
+exports.adminRouter.get("/coupons", couponController.getCoupons);
 // NEW: Admin review endpoints
 exports.adminRouter.post("/properties/:id/reviews", (0, validate_middleware_1.validate)(property_validation_1.propertyIdSchema), adminController.createAdminReview);
 exports.adminRouter.delete("/reviews/:id", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.deleteAdminReview);
@@ -80,7 +83,6 @@ exports.adminRouter.post("/properties/:id/images", upload_middleware_1.uploadIma
 exports.adminRouter.put("/properties/:id/images/:imageId", upload_middleware_1.uploadImages, adminController.replacePropertyImage);
 exports.adminRouter.delete("/properties/:id/images/:imageId", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.deletePropertyImage);
 // Panorama routes
-exports.adminRouter.post("/properties/:id/panoramas", upload_middleware_1.upload.single('file'), adminController.addPanoramaController);
 exports.adminRouter.put("/properties/panoramas/:panoramaId", adminController.updatePanorama);
 exports.adminRouter.delete("/properties/panoramas/:panoramaId", adminController.deletePanorama);
-exports.adminRouter.put("/properties/panoramas/:panoramaId/image", upload_middleware_1.upload.single('file'), adminController.replacePanoramaImage);
+exports.adminRouter.put("/properties/panoramas/:panoramaId/image", upload_middleware_1.upload.single('image'), adminController.replacePanoramaImage);
