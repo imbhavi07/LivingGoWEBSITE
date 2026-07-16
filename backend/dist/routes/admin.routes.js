@@ -46,7 +46,6 @@ const admin_validation_1 = require("../validations/admin.validation");
 const auth_validation_1 = require("../validations/auth.validation");
 const upload_middleware_1 = require("../middleware/upload.middleware");
 const property_validation_1 = require("../validations/property.validation");
-const property_validation_2 = require("../validations/property.validation");
 exports.adminRouter = (0, express_1.Router)();
 const adminAuth = [auth_middleware_1.authenticate, (0, auth_middleware_1.authorize)("admin")];
 exports.adminRouter.post('/properties/:id/panoramas', ...adminAuth, upload_middleware_1.upload.single('image'), adminController.addPanoramaController);
@@ -54,11 +53,11 @@ exports.adminRouter.post("/auth/login", security_middleware_1.authLimiter, (0, v
 exports.adminRouter.use(auth_middleware_1.authenticate, (0, auth_middleware_1.authorize)("admin"));
 exports.adminRouter.get("/dashboard/stats", adminController.getStats);
 exports.adminRouter.get("/listings", (0, validate_middleware_1.validate)(admin_validation_1.adminListSchema), adminController.getListings);
+// ✅ FIXED: Changed from /listings/:id to /properties/:id to match frontend API calls
 exports.adminRouter.get("/properties/:id", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.getAdminPropertyByIdController);
-exports.adminRouter.patch("/listings/:id/approve", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.approveListing);
-exports.adminRouter.patch("/listings/:id/reject", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.rejectListing);
-exports.adminRouter.delete("/listings/:id", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.removeListing);
-exports.adminRouter.patch("/listings/:id", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.updateListing);
+exports.adminRouter.patch("/properties/:id/approve", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.approveListing);
+exports.adminRouter.patch("/properties/:id/reject", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.rejectListing);
+exports.adminRouter.delete("/properties/:id", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.removeListing);
 exports.adminRouter.get("/users", (0, validate_middleware_1.validate)(admin_validation_1.adminUserListSchema), adminController.getUsers);
 exports.adminRouter.patch("/users/:id/suspend", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.suspendUser);
 exports.adminRouter.delete("/users/:id", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.deleteUser);
@@ -69,15 +68,15 @@ exports.adminRouter.patch("/approvals/:id/approve", (0, validate_middleware_1.va
 exports.adminRouter.patch("/approvals/:id/reject", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.rejectOwner);
 exports.adminRouter.get("/properties", adminController.getAllProperties);
 exports.adminRouter.get("/properties/:id/manage", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.getPropertyManagement);
-// NEW: Admin property creation endpoint
-exports.adminRouter.post("/properties", upload_middleware_1.uploadImages, (0, validate_middleware_1.validate)(property_validation_2.createPropertySchema), propertyController.createProperty);
-// NEW: Admin coupon creation endpoint
+// Admin property creation endpoint
+exports.adminRouter.post("/properties", upload_middleware_1.uploadImages, (0, validate_middleware_1.validate)(property_validation_1.createPropertySchema), propertyController.createProperty);
+// Admin coupon creation endpoint
 exports.adminRouter.post("/coupons", couponController.createCoupon);
 exports.adminRouter.get("/coupons", couponController.getCoupons);
-// NEW: Admin review endpoints
+// Admin review endpoints
 exports.adminRouter.post("/properties/:id/reviews", (0, validate_middleware_1.validate)(property_validation_1.propertyIdSchema), adminController.createAdminReview);
 exports.adminRouter.delete("/reviews/:id", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.deleteAdminReview);
-// Image management routes for properties
+// Image management routes for properties 
 exports.adminRouter.patch("/properties/:id", upload_middleware_1.uploadImages, (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.updateListing);
 exports.adminRouter.post("/properties/:id/images", upload_middleware_1.uploadImages, adminController.addPropertyImages);
 exports.adminRouter.put("/properties/:id/images/:imageId", upload_middleware_1.uploadImages, adminController.replacePropertyImage);
