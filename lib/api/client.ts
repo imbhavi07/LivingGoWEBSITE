@@ -64,6 +64,16 @@ apiClient.interceptors.request.use(async (config) => {
   return config;
 }
 
+if (window.location.pathname.startsWith("/visiting/lead")) {
+  const token = localStorage.getItem("lead_token");
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+}
+
 if (isVisitingRequest) {
   const token = localStorage.getItem("visiting_token");
 
