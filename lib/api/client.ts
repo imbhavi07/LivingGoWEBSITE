@@ -102,7 +102,6 @@ apiClient.interceptors.response.use(
   (response: AxiosResponse) => response, // ✅ FIXED: Explicitly typed as AxiosResponse
   async (error) => {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
-<<<<<<< HEAD
     if (window.location.pathname.startsWith("/admin")) {
       localStorage.removeItem("LivingGo_token");
       window.location.href = "/admin/login";
@@ -120,32 +119,4 @@ apiClient.interceptors.response.use(
   }
   return Promise.reject(error);
   }
-=======
-      // Handle logout for different sections
-      if (window.location.pathname.startsWith("/admin")) {
-        // Remove token and redirect to admin login
-        localStorage.removeItem("LivingGo_token");
-        window.location.href = "/admin/login";
-      } else if (
-        window.location.pathname.startsWith("/visiting/lead/dashboard") ||
-        window.location.pathname.startsWith("/visiting/lead/visit/") ||
-        window.location.pathname === "/visiting/interns/leads" ||
-        window.location.pathname.startsWith("/visiting/lead/")
-      ) {
-        // Remove intern token and redirect to login
-        localStorage.removeItem("intern_token");
-        window.location.href = "/visiting/login";
-      } else if (window.location.pathname.startsWith("/visiting")) {
-        // Remove visiting token and redirect to visiting login
-        localStorage.removeItem("visiting_token");
-        window.location.href = "/visiting/login";
-      } else {
-        // For other routes, you might want to handle Clerk session expiration
-        // For now, just reject the error
-        return Promise.reject(error);
-      }
-    }
-    return Promise.reject(error);
-  }
->>>>>>> b9d7d75e05f47f8ca59188070d70e20f962bf940
 );
