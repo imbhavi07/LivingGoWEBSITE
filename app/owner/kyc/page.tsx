@@ -135,7 +135,7 @@ function KYCContent() {
               <p>✓ Identity is verified against registration details</p>
               <p>✓ You receive access to list properties</p>
             </div>
-            <button
+            <Button
               onClick={async () => {
                 await user?.reload();
                 window.location.href = '/owner/dashboard';
@@ -143,7 +143,7 @@ function KYCContent() {
               className="mt-6 inline-block rounded-full bg-ink px-6 py-3 text-sm font-bold text-white"
             >
               Go to Dashboard
-            </button>
+            </Button>
           </div>
         </div>
       </OwnerShell>
@@ -162,12 +162,12 @@ function KYCContent() {
             <p className="mt-3 text-sm leading-6 text-muted">
               Your identity has been verified. Please sign in again to access your dashboard.
             </p>
-            <button
+            <Button
               onClick={() => void signOut({ redirectUrl: "/owner/dashboard" })}
               className="mt-6 inline-block rounded-full bg-ink px-6 py-3 text-sm font-bold text-white"
             >
               Go To Dashboard →
-            </button>
+            </Button>
           </div>
         </div>
       </OwnerShell>
@@ -186,12 +186,12 @@ function KYCContent() {
             <p className="mt-3 text-sm leading-6 text-muted">
               Please resubmit with correct documents. Make sure your Aadhaar images are clear and match the details entered.
             </p>
-            <button
+            <Button
               onClick={() => setStatus("form")}
               className="mt-6 inline-block rounded-full bg-ink px-6 py-3 text-sm font-bold text-white"
             >
               Resubmit KYC
-            </button>
+            </Button>
           </div>
         </div>
       </OwnerShell>

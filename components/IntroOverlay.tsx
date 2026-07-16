@@ -57,13 +57,13 @@ export default function IntroOverlay() {
           />
         </div>
 
-        {/* Restored your original skip button styling but hooked to the new event logic */}
-        <button
+        {/* Restored your original skip Button styling but hooked to the new event logic */}
+        <Button
           onClick={handleIntroComplete}
           className="mt-8 px-4 py-2 text-xl font-semibold text-ink transition-colors hover:text-gray-700 flex items-center gap-2"
         >
           Skip Intro <ArrowRight className="h-6 w-6" aria-hidden="true" />
-        </button>
+        </Button>
       </motion.div>
     </AnimatePresence>
   );

@@ -9,7 +9,7 @@ import { useParams } from "next/navigation";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useCreateReview } from "@/hooks/useAdmin";
 import { useToast } from "@/contexts/ToastContext";
-
+import { Button } from "@/components/Button";
 export default function PropertyManagementPage() {
   const { id } = useParams<{ id: string }>();
   type TokenPayment = { amount: number | null };
@@ -156,13 +156,13 @@ export default function PropertyManagementPage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <button
+              <Button
                 onClick={() => property.propertyCode && navigator.clipboard.writeText(property.propertyCode)}
                 className="rounded-2xl bg-white px-5 py-3 font-bold text-black hover:bg-gray-200"
               >
                 <Copy className="mr-2 inline h-4 w-4" />
                 Copy ID
-              </button>
+              </Button>
               <a
                 href={`/properties/${property.id}`}
                 target="_blank"
@@ -294,13 +294,13 @@ export default function PropertyManagementPage() {
                 </div>
 
                 <div className="pt-4">
-                  <button
+                  <Button
                     type="submit"
                     disabled={reviewLoading}
                     className={`btn-primary w-full ${reviewLoading ? "opacity-50" : ""}`}
                   >
                     {reviewLoading ? "Adding Review..." : "Add Review"}
-                  </button>
+                  </Button>
                 </div>
               </form>
             </div>

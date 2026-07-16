@@ -173,7 +173,7 @@ export function PropertyCard({ property, saved, onSave, priority = false }: Prop
               <span className="hidden sm:inline">Call</span> 
             </a>
 
-            <button
+            <Button
               onClick={(e) => {
                 e.stopPropagation();
                 handleSave();
@@ -183,7 +183,7 @@ export function PropertyCard({ property, saved, onSave, priority = false }: Prop
               title={!isSignedIn ? "Login to save" : saved ? "Remove from wishlist" : "Save property"}
             >
               <Heart className={saved ? "h-5 w-5 fill-clay text-clay" : "h-5 w-5"} aria-hidden />
-            </button>
+            </Button>
           </div>
         </div>
 

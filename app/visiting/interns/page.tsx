@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api/client";
-
+import { Button } from "@/components/Button";
 type Intern = {
   id: string;
   name: string;
@@ -94,13 +94,13 @@ export default function InternPage() {
           onChange={(e)=>setPassword(e.target.value)}
         />
 
-        <button
+        <Button
           onClick={createIntern}
           disabled={loading}
           className="bg-black text-white rounded px-6 py-3"
         >
           Create Intern
-        </button>
+        </Button>
 
       </div>
 

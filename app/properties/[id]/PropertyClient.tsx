@@ -25,6 +25,7 @@ import {
   Coffee
 } from "lucide-react";
 
+
 // Cloudinary image optimization helper
 const optimizeImageUrl = (url: string | undefined): string => {
   if (!url) return "/placeholder-property.jpg";
@@ -277,13 +278,13 @@ export default function PropertyClient({ property }: { property: any }) {
                     {property.propertyCode}
                   </span>
 
-                  <button
+                  <Button
                     type="button"
                     onClick={() => navigator.clipboard.writeText(property.propertyCode)}
                     className="rounded-md px-2 py-1 text-xs font-bold text-amber-700 hover:bg-amber-100"
                   >
                     Copy
-                  </button>
+                  </Button>
                 </div>
               )}
 
@@ -300,7 +301,7 @@ export default function PropertyClient({ property }: { property: any }) {
                 <h2 className="text-2xl font-black text-ink">Room Availability</h2>
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
                   {(property?.bedsSingle ?? 0) > 0 && (
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setSelectedRoom("single")}
                       className={`rounded-2xl p-4 text-left transform transition-all duration-300 ease-out
@@ -319,10 +320,10 @@ export default function PropertyClient({ property }: { property: any }) {
                       {property.priceSingle && (
                         <p className="mt-2 text-sm font-bold text-ink">{formatPrice(property.priceSingle)}/mo</p>
                       )}
-                    </button>
+                    </Button>
                   )}
                   {(property?.bedsDouble ?? 0) > 0 && (
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setSelectedRoom("double")}
                       className={`rounded-2xl p-4 text-left transform transition-all duration-300 ease-out
@@ -341,10 +342,10 @@ export default function PropertyClient({ property }: { property: any }) {
                       {property.priceDouble && (
                         <p className="mt-2 text-sm font-bold text-ink">{formatPrice(property.priceDouble)}/mo</p>
                       )}
-                    </button>
+                    </Button>
                   )}
                   {(property?.bedsTriple ?? 0) > 0 && (
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setSelectedRoom("triple")}
                       className={`rounded-2xl p-4 text-left transform transition-all duration-300 ease-out
@@ -363,7 +364,7 @@ export default function PropertyClient({ property }: { property: any }) {
                       {property.priceTriple && (
                         <p className="mt-2 text-sm font-bold text-ink">{formatPrice(property.priceTriple)}/mo</p>
                       )}
-                    </button>
+                    </Button>
                   )}
                 </div>
 
@@ -521,13 +522,13 @@ export default function PropertyClient({ property }: { property: any }) {
         <span className="font-mono text-lg font-black text-ink">
           {property.propertyCode}
         </span>
-        <button
+        <Button
           type="button"
           onClick={() => navigator.clipboard.writeText(property.propertyCode)}
           className="rounded-md bg-white px-2 py-1 text-xs font-bold shadow hover:bg-slate-100"
         >
           Copy
-        </button>
+        </Button>
       </div>
     </div>
   )}
@@ -559,14 +560,14 @@ export default function PropertyClient({ property }: { property: any }) {
         Message/Call Us For Exact Address
       </p>
     </div>
-    <button
+    <Button
       onClick={handleLockClick}
       disabled={totalBeds > 0 && availableBeds === 0}
       className={buttonClasses("primary", undefined, "w-full")}
       style={totalBeds > 0 && availableBeds === 0 ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
     >
       {totalBeds > 0 && availableBeds === 0 ? "Property Full" : "Pre-Book Property"}
-    </button>
+    </Button>
     <Button variant="secondary" className="w-full" onClick={() => wishlist.toggle(property?.id)}>
       <Heart className={saved ? "h-4 w-4 fill-clay text-clay" : "h-4 w-4"} aria-hidden />
       {saved ? "Saved" : "Save property"}
@@ -587,12 +588,12 @@ export default function PropertyClient({ property }: { property: any }) {
       </svg>
       Enquire Now
     </a>
-    <button
+    <Button
       onClick={() => setShowScheduleVisitModal(true)}
       className="inline-flex items-center justify-center gap-2 rounded-full font-semibold transition focus:outline-none focus:ring-2 focus:ring-ink/20 disabled:cursor-not-allowed disabled:opacity-60 min-h-11 px-5 text-sm bg-ink text-white shadow-soft hover:bg-black w-full"
     >
       Schedule Visit
-    </button>
+    </Button>
   </div>
 </aside>
         </section>
@@ -621,13 +622,13 @@ export default function PropertyClient({ property }: { property: any }) {
           {property?.panoramas && property.panoramas.length > 1 && (
             <div className="absolute left-5 top-5 z-50 flex gap-2">
               {property.panoramas.map((panorama: Panorama) => (
-                <button
+                <Button
                   key={panorama.id}
                   onClick={() => setActivePanorama(optimizeImageUrl(panorama.imageUrl))}
                   className="rounded-xl bg-white px-4 py-2 text-sm font-bold shadow-lg hover:bg-linen"
                 >
                   {panorama.title}
-                </button>
+                </Button>
               ))}
             </div>
           )}

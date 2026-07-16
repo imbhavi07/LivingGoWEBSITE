@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-
+import { Button } from "@/components/Button";
 type GalleryImage = {
   url: string;
   roomCategory?: string;
@@ -76,12 +76,12 @@ export function Gallery({
         </div>
 
         {images.length > 5 && (
-          <button
+          <Button
             onClick={() => setShowAll(true)}
             className="absolute bottom-4 right-4 rounded-xl bg-white px-4 py-2 text-sm font-bold shadow-lg transition-transform hover:scale-105"
           >
             View all {images.length} photos
-          </button>
+          </Button>
         )}
       </section>
 
@@ -90,38 +90,38 @@ export function Gallery({
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/95 p-6">
           <div className="mx-auto max-w-7xl">
             
-            {/* Added sticky header so the close button doesn't scroll away */}
+            {/* Added sticky header so the close Button doesn't scroll away */}
             <div className="mb-6 flex justify-between items-center sticky top-0 z-10 bg-black/95 py-4">
               <h2 className="text-2xl font-black text-white truncate pr-4">
                 {title}
               </h2>
 
-              <button
+              <Button
                 onClick={() => setShowAll(false)}
                              className="rounded-xl bg-white px-6 py-2 font-bold text-black transition-transform hover:scale-105"
               >
                 Close
-              </button>
+              </Button>
             </div>
 
             <div className="flex justify-center">
-              <button
+              <Button
                 onClick={() =>
                   setSelectedIndex((selectedIndex - 1 + images.length) % images.length)
                 }
                 className="absolute left-6 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white p-4 shadow-xl hover:scale-110"
               >
                 ←
-              </button>
+              </Button>
               
-              <button
+              <Button
                 onClick={() =>
                   setSelectedIndex((selectedIndex + 1) % images.length)
                 }
                 className="absolute right-6 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white p-4 shadow-xl hover:scale-110"
               >
                 →
-              </button>
+              </Button>
               <div className="relative h-[75vh] w-full max-w-6xl overflow-hidden rounded-3xl">
                 <Image
                   src={images[selectedIndex].url}
