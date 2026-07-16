@@ -12,7 +12,38 @@ import { useToast } from "@/contexts/ToastContext";
 
 export default function PropertyManagementPage() {
   const { id } = useParams<{ id: string }>();
-  const [property, setProperty] = useState<any>(null);
+  type TokenPayment = { amount: number | null };
+
+  type Owner = {
+    name?: string | null;
+    email?: string | null;
+    phone?: string | null;
+  };
+
+  type Review = {
+    id?: string;
+    studentName?: string;
+    rating?: number;
+    content?: string;
+  };
+
+  type Property = {
+    id?: string;
+    propertyCode?: string;
+    status?: string;
+    title?: string;
+    location?: string;
+    bedsSingle?: number | null;
+    bedsDouble?: number | null;
+    bedsTriple?: number | null;
+    occupiedBeds?: number | null;
+    reviews?: Review[];
+    wishlistedBy?: { id?: string; name?: string | null }[];
+    tokenPayments?: TokenPayment[];
+    owner?: Owner | null;
+  } | null;
+
+  const [property, setProperty] = useState<Property>(null);
   const [loading, setLoading] = useState(true);
   const [reviewForm, setReviewForm] = useState({
     studentName: "",
@@ -126,7 +157,7 @@ export default function PropertyManagementPage() {
             </div>
             <div className="flex flex-wrap gap-3">
               <button
-                onClick={() => navigator.clipboard.writeText(property.propertyCode)}
+                onClick={() => property.propertyCode && navigator.clipboard.writeText(property.propertyCode)}
                 className="rounded-2xl bg-white px-5 py-3 font-bold text-black hover:bg-gray-200"
               >
                 <Copy className="mr-2 inline h-4 w-4" />

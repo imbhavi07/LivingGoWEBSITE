@@ -35,7 +35,7 @@ export async function uploadPanorama(
   }
 
   const { data } = await apiClient.post(
-    `/api/admin/properties/${propertyId}/panoramas`,
+    `/admin/properties/${propertyId}/panoramas`,
     formData,
     {
       headers: {
@@ -55,7 +55,7 @@ export async function updatePanorama(
   }
 ) {
   const response = await apiClient.put(
-    `/api/admin/properties/panoramas/${panoramaId}`,
+    `/admin/properties/panoramas/${panoramaId}`,
     data
   );
 
@@ -66,7 +66,7 @@ export async function deletePanorama(
   panoramaId: string
 ) {
   await apiClient.delete(
-    `/api/admin/properties/panoramas/${panoramaId}`
+    `/admin/properties/panoramas/${panoramaId}`
   );
 }
 
@@ -79,7 +79,7 @@ export async function replacePanoramaImage(
   formData.append("image", image); // Use original image to preserve EXIF
 
   const { data } = await apiClient.put(
-    `/api/admin/properties/panoramas/${panoramaId}/image`,
+    `/admin/properties/panoramas/${panoramaId}/image`,
     formData,
     {
       headers: {
