@@ -9,12 +9,15 @@ export const loginIntern = async (
 ) => {
   try {
     const { username, password } = req.body;
+    console.log("USERNAME:", username);
+    console.log("PASSWORD:", password);
 
     const intern = await prisma.intern.findUnique({
       where: {
         username,
       },
     });
+    console.log("FOUND INTERN:", intern);
 
     if (!intern) {
       return res.status(401).json({
@@ -27,6 +30,7 @@ export const loginIntern = async (
       password,
       intern.passwordHash
     );
+    console.log("PASSWORD VALID:", valid);
 
     if (!valid) {
       return res.status(401).json({

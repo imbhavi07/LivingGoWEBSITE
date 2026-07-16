@@ -13,7 +13,7 @@ import { FeaturesSection } from "@/components/FeaturesSection";
 import { toProperty } from "@/lib/api/types";
 import { motion, Variants, useAnimation } from "framer-motion";
 import { EB_Garamond } from "next/font/google";
-
+import { Button } from "@/components/Button";
 const EBGaramond = EB_Garamond({
   subsets: ['latin'],
   variable: '--font-eb_garamond',
@@ -79,7 +79,7 @@ export default function HomePage() {
             </p>
 
             {/* INSTANT REDIRECT SEARCH BAR */}
-            <button 
+            <Button 
               onClick={() => router.push('/listings')}
               className="mt-6 flex w-full max-w-lg items-center gap-2 rounded-full bg-white p-2 shadow-xl ring-2 ring-black/5 transition-all hover:ring-ink/20 text-left group"
             >
@@ -92,7 +92,7 @@ export default function HomePage() {
               <span className="rounded-full bg-ink px-8 py-3 text-lg font-black text-white transition-transform group-hover:scale-105 group-hover:bg-ink/90">
                 Search
               </span>
-            </button>
+            </Button>
 
             {/* GIANT CALL BUTTON WITH EMERALD-950 OUTLINE */}
             <a

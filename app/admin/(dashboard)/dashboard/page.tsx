@@ -6,7 +6,7 @@ import { AdminStatCard } from "@/components/admin/AdminStatCard";
 import { useAdminStats } from "@/hooks/useAdmin";
 import { useAdminVisits } from "@/hooks/useAdminVisits";
 import { VisitStatusDropdown } from "@/components/admin/VisitStatusDropdown";
-
+import { Button } from "@/components/Button";
 export default function AdminDashboardPage() {
   const { stats, isLoading } = useAdminStats();
   const { visits, isLoading: visitsLoading } = useAdminVisits();
@@ -115,7 +115,7 @@ export default function AdminDashboardPage() {
                       />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
+                      <Button
                         className="text-indigo-600 hover:text-indigo-900"
                         onClick={() => {
                           // This would open a transfer property dialog
@@ -123,7 +123,7 @@ export default function AdminDashboardPage() {
                         }}
                       >
                         Transfer Property
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 ))}
