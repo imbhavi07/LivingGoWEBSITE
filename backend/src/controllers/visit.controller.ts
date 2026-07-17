@@ -111,8 +111,14 @@ function isFutureDate(dateString: string): boolean {
 
 export const scheduleVisit = asyncHandler(
   async (request: Request, response: Response, next: NextFunction) => {
-    // Validate request body
-    const validatedData = scheduleVisitSchema.parse(request.body);
+    let validatedData;
+    try {
+      validatedData = scheduleVisitSchema.parse(request.body);
+    } catch (err) {
+      console.log("REQUEST BODY:", request.body);
+      console.log("ZOD ERROR:", err);
+      throw err;
+    }
 
     const { visitDate, timeSlot, propertyId, couponCode, whatsappNumber } = validatedData;
     console.log("========== SCHEDULE VISIT ==========");
