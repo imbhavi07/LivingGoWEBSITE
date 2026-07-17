@@ -34,6 +34,7 @@ export default function AdminListingDetailsPage() {
   const [editingTitle, setEditingTitle] = useState("");
   const [editingSortOrder, setEditingSortOrder] = useState(0);
   const [deleteListingId, setDeleteListingId] = useState<string | null>(null);
+  
   async function handleSave(data: FormData) {
     setIsSaving(true);
     try {
@@ -72,19 +73,37 @@ export default function AdminListingDetailsPage() {
               </Button>
             </div>
             <AdminPropertyForm
+              // ✅ FIXED: Passed all necessary properties so the form binds correctly
               initialData={{
                 id: listing.id,
                 title: listing.title,
                 description: listing.description || "",
                 price: listing.price,
                 location: listing.location,
+                exactAddress: (listing as any).exactAddress || listing.location || "",
                 roomType: listing.roomType,
                 preference: listing.preference,
                 facilities: listing.facilities,
                 images: listing.images.map((img) => img.url),
                 status: (listing.status as unknown) as OwnerListingStatus,
                 createdAt: listing.submittedAt || new Date().toISOString(),
-              }}
+                priceSingle: (listing as any).priceSingle,
+                bedsSingle: (listing as any).bedsSingle,
+                priceDouble: (listing as any).priceDouble,
+                bedsDouble: (listing as any).bedsDouble,
+                priceTriple: (listing as any).priceTriple,
+                bedsTriple: (listing as any).bedsTriple,
+                lat: (listing as any).lat,
+                lng: (listing as any).lng,
+                mealPlan: (listing as any).mealPlan,
+                mealTimes: (listing as any).mealTimes,
+                curfewTime: (listing as any).curfewTime,
+                noticePeriod: (listing as any).noticePeriod,
+                rulesStrictness: (listing as any).rulesStrictness,
+                securityDepositMonths: (listing as any).securityDepositMonths,
+                managerContact: (listing as any).managerContact,
+                securityContact: (listing as any).securityContact,
+              } as any}
               onSave={handleSave}
               onCancel={() => setEditing(false)}
             />
