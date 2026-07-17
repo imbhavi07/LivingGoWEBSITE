@@ -304,10 +304,17 @@ export const replacePropertyImage = asyncHandler(async (req: Request, res: Respo
 export const deletePropertyImage = asyncHandler(async (req: Request, res: Response) => {
   const propertyId = String(req.params.id);
   const imageId = String(req.params.imageId);
-
+  console.log("PROPERTY ID:", req.params.id);
+  console.log("IMAGE ID:", req.params.imageId);
   const image = await prisma.propertyImage.findUnique({
-    where: { id: imageId, propertyId },
+    where: {
+      id: imageId,
+    },
   });
+
+  if (!image || image.propertyId !== propertyId) {
+    throw new AppError("Image not found", 404);
+  }
 
   if (!image) {
     throw new AppError("Image not found", 404);
@@ -318,7 +325,7 @@ export const deletePropertyImage = asyncHandler(async (req: Request, res: Respon
   }
 
   await adminService.deletePropertyImage(imageId);
-
+  console.log("DELETE SUCCESS");
   res.status(204).send();
 });
 
