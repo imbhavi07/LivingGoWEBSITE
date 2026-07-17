@@ -57,7 +57,8 @@ adminRouter.delete("/reviews/:id", validate(adminIdSchema), adminController.dele
 adminRouter.patch("/properties/:id", uploadImages, validate(adminIdSchema), adminController.updateListing);
 adminRouter.post("/properties/:id/images", uploadImages, adminController.addPropertyImages);
 adminRouter.put("/properties/:id/images/:imageId", uploadImages, adminController.replacePropertyImage);
-adminRouter.delete("/properties/:id/images/:imageId", validate(adminIdSchema), adminController.deletePropertyImage);
+//update kar diya delete feature bc
+adminRouter.delete("/properties/:id/images/:imageId", adminController.deletePropertyImage);
 
 // Panorama routes
 adminRouter.put("/properties/panoramas/:panoramaId", adminController.updatePanorama);
