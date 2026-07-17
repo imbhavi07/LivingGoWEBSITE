@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { X, CheckCircle, Loader2, AlertCircle, Calendar, Clock } from "lucide-react";
 import { apiClient, getApiErrorMessage } from "@/lib/api/client";
-import { Button } from "@/components/Button";
 type ScheduleVisitModalProps = {
   propertyId: string;
   propertyCode: string;
@@ -113,7 +112,7 @@ const TIME_SLOTS = generateTimeSlots();
   };
 
   const isValidWhatsAppNumber = (number: string): boolean => {
-    const whatsappRegex = /^\\+91[0-9]{10}$/;
+    const whatsappRegex = /^\+91\d{10}$/;
     return whatsappRegex.test(number);
   };
 
@@ -145,6 +144,10 @@ const TIME_SLOTS = generateTimeSlots();
     setErrorMessage(null);
 
     try {
+      if (!whatsappNumber.trim()) {
+        alert("WhatsApp number is required.");
+        return;
+      }
       const response = await apiClient.post("/visits/schedule", {
         propertyId,
         visitDate: new Date(visitDate).toISOString(),
@@ -205,7 +208,7 @@ const TIME_SLOTS = generateTimeSlots();
                     min={new Date().toISOString().split("T")[0]}
                     className="w-full px-4 py-3 bg-white border border-black/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-ink transition-all duration-200 text-lg"
                   />
-                  {errorMessage && <p className="mt-2 text-sm text-red-600">{errorMessage}</p>}
+                  
                 </div>
 
                 <div className="space-y-4">
@@ -235,7 +238,7 @@ const TIME_SLOTS = generateTimeSlots();
                       ))}
                   </div>
                   </div>
-                  {errorMessage && <p className="mt-2 text-sm text-red-600">{errorMessage}</p>}
+                  
                 </div>
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3">
@@ -246,6 +249,7 @@ const TIME_SLOTS = generateTimeSlots();
                     </div>
                   </div>
                   <input
+                    required
                     type="tel"
                     value={whatsappNumber}
                     onChange={(e) => setWhatsappNumber(e.target.value.replace(/\s/g, ''))} // Remove spaces
@@ -287,9 +291,9 @@ const TIME_SLOTS = generateTimeSlots();
                   <button
                     type="button"
                     onClick={handleSubmit}
-                    disabled={isSubmitting || !visitDate || !timeSlot}
+                    disabled={isSubmitting || !visitDate || !timeSlot || !whatsappNumber.trim()}
                     className={`px-4 py-3 rounded-xl text-sm font-medium text-white transition-all w-full sm:w-auto ${
-                      isSubmitting || !visitDate || !timeSlot
+                      isSubmitting || !visitDate || !timeSlot || !whatsappNumber.trim()
                         ? "cursor-not-allowed bg-gray-400"
                         : "bg-ink hover:bg-ink/90"
                     }`}
