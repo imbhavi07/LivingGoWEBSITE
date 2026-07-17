@@ -53,6 +53,7 @@ export function ScheduleVisitModal({ propertyId, propertyCode, onClose }: Schedu
 const TIME_SLOTS = generateTimeSlots();
   const [couponCode, setCouponCode] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [whatsappNumber, setWhatsappNumber] = useState<string>("");
   const [visitDetails, setVisitDetails] = useState<{
     tokenId: string;
     visitOtp: string;
@@ -111,6 +112,11 @@ const TIME_SLOTS = generateTimeSlots();
     return true;
   };
 
+  const isValidWhatsAppNumber = (number: string): boolean => {
+    const whatsappRegex = /^\\+91[0-9]{10}$/;
+    return whatsappRegex.test(number);
+  };
+
   const handleSubmit = async () => {
     if (!visitDate || !timeSlot) {
       setErrorMessage("Please select a date and time slot");
@@ -125,6 +131,16 @@ const TIME_SLOTS = generateTimeSlots();
       return;
     }
 
+    // WhatsApp number validation
+    if (!whatsappNumber) {
+      setErrorMessage("Please enter your WhatsApp number");
+      return;
+    }
+    if (!isValidWhatsAppNumber(whatsappNumber)) {
+      setErrorMessage("Please enter a valid WhatsApp number (e.g., +919876543210)");
+      return;
+    }
+
     setIsSubmitting(true);
     setErrorMessage(null);
 
@@ -134,6 +150,7 @@ const TIME_SLOTS = generateTimeSlots();
         visitDate: new Date(visitDate).toISOString(),
         timeSlot,
         couponCode: couponCode || null,
+        whatsappNumber: whatsappNumber,
       });
 
       setVisitDetails(response.data.data);
@@ -220,6 +237,23 @@ const TIME_SLOTS = generateTimeSlots();
                   </div>
                   {errorMessage && <p className="mt-2 text-sm text-red-600">{errorMessage}</p>}
                 </div>
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3">
+                    <span className="h-5 w-5 text-ink">📱</span>
+                    <div>
+                      <p className="font-semibold text-ink">WhatsApp Number</p>
+                      <p className="text-sm text-muted">Enter your WhatsApp number (e.g., +919876543210)</p>
+                    </div>
+                  </div>
+                  <input
+                    type="tel"
+                    value={whatsappNumber}
+                    onChange={(e) => setWhatsappNumber(e.target.value.replace(/\s/g, ''))} // Remove spaces
+                    placeholder="+919876543210"
+                    className="w-full px-4 py-3 bg-white border border-black/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-ink transition-all duration-200"
+                  />
+                  {errorMessage && <p className="mt-2 text-sm text-red-600">{errorMessage}</p>}
+                </div>
               </div>
             </div>
 
@@ -231,7 +265,7 @@ const TIME_SLOTS = generateTimeSlots();
                     <CheckCircle className="h-5 w-5 text-moss" />
                     <div>
                       <p className="font-semibold text-ink">Referral Code (Optional)</p>
-                      <p className="text-xs text-muted">Enter a referral code if you have one</p>
+                      <p className="text-xs text-muted">ENTER A REFERRAL CODE TO AVAIL DISCOUNT UPON BOOKING</p>
                     </div>
                   </div>
                   <input
@@ -285,8 +319,7 @@ const TIME_SLOTS = generateTimeSlots();
               </div>
               <p className="text-sm text-muted">
                 Your visit has been scheduled successfully. Please keep your Visit OTP safe. You must share this OTP with the
-                LivingGo Lead when you meet them. A confirmation WhatsApp message will also be sent to your registered mobile
-                number.
+                LivingGo Lead when you meet them. A confirmation WhatsApp message will be sent to the number you provided.
               </p>
               <div className="mt-4 bg-linen p-4 rounded-xl space-y-3 text-left">
                 <p className="font-semibold text-ink">Visit Details</p>

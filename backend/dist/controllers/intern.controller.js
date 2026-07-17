@@ -55,19 +55,8 @@ exports.internLogin = (0, async_handler_1.asyncHandler)(async (req, res) => {
 });
 exports.createIntern = (0, async_handler_1.asyncHandler)(async (req, res) => {
     try {
-        // In a real application, this would be protected by supervisor authentication
-        // For now, we'll assume the supervisor ID is passed in the request
-        // In production, you'd get this from req.user or similar after authentication
-        // For demonstration, we'll require supervisorId in the body
-        // In a real app with proper auth middleware, this would come from req.user
-        const { supervisorId, name, phone, password } = req.body;
-        if (!supervisorId) {
-            return res.status(400).json({
-                success: false,
-                message: "Supervisor ID is required",
-            });
-        }
-        // Validate required fields
+        const { name, phone, password } = req.body;
+        const supervisorId = req.user.id;
         if (!name || !phone || !password) {
             return res.status(400).json({
                 success: false,
@@ -100,18 +89,7 @@ exports.createIntern = (0, async_handler_1.asyncHandler)(async (req, res) => {
 });
 exports.getInterns = (0, async_handler_1.asyncHandler)(async (req, res) => {
     try {
-        // In a real application, this would be protected by supervisor authentication
-        // For now, we'll assume the supervisor ID is passed in the request
-        // In production, you'd get this from req.user or similar after authentication
-        // For demonstration, we'll require supervisorId in the query params or body
-        // In a real app with proper auth middleware, this would come from req.user
-        const { supervisorId } = req.query;
-        if (!supervisorId) {
-            return res.status(400).json({
-                success: false,
-                message: "Supervisor ID is required",
-            });
-        }
+        const supervisorId = req.user.id;
         const interns = await prisma_1.prisma.intern.findMany({
             where: {
                 supervisorId: String(supervisorId),

@@ -13,6 +13,7 @@ const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const resend_1 = require("resend");
 const jwt_1 = require("../utils/jwt");
 const visit_config_1 = require("../config/visit.config");
+const whatsapp_service_1 = require("../services/whatsapp.service");
 const client_1 = require("@prisma/client");
 const resend = new resend_1.Resend(process.env.RESEND_API_KEY);
 const SUPERVISOR_EMAILS = [
@@ -26,6 +27,7 @@ const scheduleVisitSchema = zod_1.z.object({
     timeSlot: zod_1.z.string().min(1, "Time slot is required"),
     propertyId: zod_1.z.string().min(1, "Property ID is required"),
     couponCode: zod_1.z.string().optional().nullable(),
+    whatsappNumber: zod_1.z.string().regex(/^\\+91[0-9]{10}$/, "Invalid WhatsApp number format. Please enter a valid Indian mobile number starting with +91 followed by 10 digits."),
 });
 // Helper function to generate a random 6-character alphanumeric string
 function generateTokenId() {
@@ -39,8 +41,10 @@ function generateVisitOtp() {
 // Helper function to validate time slot format and range
 function isValidTimeSlot(timeSlot) {
     // Expected format: "HH:MM AM/PM - HH:MM AM/PM" (e.g., "09:20 AM - 09:40 AM")
+    // Convert to uppercase to allow lowercase am/pm
+    const upperTimeSlot = timeSlot.toUpperCase();
     const timeSlotRegex = /^(\d{2}):(\d{2}) (AM|PM) - (\d{2}):(\d{2}) (AM|PM)$/;
-    const match = timeSlot.match(timeSlotRegex);
+    const match = upperTimeSlot.match(timeSlotRegex);
     if (!match)
         return false;
     const [, startHourStr, startMinStr, startPeriod, endHourStr, endMinStr, endPeriod] = match;
@@ -91,7 +95,7 @@ function isFutureDate(dateString) {
 exports.scheduleVisit = (0, async_handler_1.asyncHandler)(async (request, response, next) => {
     // Validate request body
     const validatedData = scheduleVisitSchema.parse(request.body);
-    const { visitDate, timeSlot, propertyId, couponCode } = validatedData;
+    const { visitDate, timeSlot, propertyId, couponCode, whatsappNumber } = validatedData;
     console.log("========== SCHEDULE VISIT ==========");
     console.log(request.body);
     console.log("USER:", request.user);
@@ -160,6 +164,7 @@ exports.scheduleVisit = (0, async_handler_1.asyncHandler)(async (request, respon
             timeSlot,
             visitOtp: generateVisitOtp(),
             couponCode: couponCode?.toUpperCase().trim() || null,
+            whatsappNumber: whatsappNumber,
         },
         include: {
             student: {
@@ -189,6 +194,15 @@ exports.scheduleVisit = (0, async_handler_1.asyncHandler)(async (request, respon
     });
     console.log("VISIT CREATED");
     console.log(visit);
+    // Send WhatsApp notification
+    try {
+        const message = `Your LivingGo visit has been booked successfully!\n\nOTP: ${visit.visitOtp}\nToken ID: ${visit.tokenId}\n\nPlease share this OTP with the Live-in Guru when you meet them.`;
+        await (0, whatsapp_service_1.sendWhatsAppMessage)(whatsappNumber, message);
+    }
+    catch (whatsappError) {
+        console.error("Failed to send WhatsApp message:", whatsappError);
+        // We don't want to fail the request if WhatsApp fails, so we just log the error.
+    }
     // If a valid coupon code was provided, increment its usage count
     if (couponCode) {
         const upperCode = couponCode.toUpperCase().trim();

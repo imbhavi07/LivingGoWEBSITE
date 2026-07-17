@@ -72,7 +72,7 @@ export default function AdminDashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {visits.map((visit) => (
+                {visits.length > 0 ? visits.map((visit) => (
                   <tr key={visit.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center space-x-3">
@@ -126,7 +126,13 @@ export default function AdminDashboardPage() {
                       </button>
                     </td>
                   </tr>
-                ))}
+                )) : (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
+                      No visits scheduled
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

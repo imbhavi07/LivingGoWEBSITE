@@ -45,6 +45,7 @@ const validate_middleware_1 = require("../middleware/validate.middleware");
 const admin_validation_1 = require("../validations/admin.validation");
 const auth_validation_1 = require("../validations/auth.validation");
 const upload_middleware_1 = require("../middleware/upload.middleware");
+const visitController = __importStar(require("../controllers/visit.controller"));
 const property_validation_1 = require("../validations/property.validation");
 exports.adminRouter = (0, express_1.Router)();
 const adminAuth = [auth_middleware_1.authenticate, (0, auth_middleware_1.authorize)("admin")];
@@ -85,3 +86,4 @@ exports.adminRouter.delete("/properties/:id/images/:imageId", (0, validate_middl
 exports.adminRouter.put("/properties/panoramas/:panoramaId", adminController.updatePanorama);
 exports.adminRouter.delete("/properties/panoramas/:panoramaId", adminController.deletePanorama);
 exports.adminRouter.put("/properties/panoramas/:panoramaId/image", upload_middleware_1.upload.single('image'), adminController.replacePanoramaImage);
+exports.adminRouter.get("/visits", visitController.getAllVisits);
