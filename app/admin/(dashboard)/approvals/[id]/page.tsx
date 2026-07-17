@@ -50,7 +50,7 @@ export default function AdminApprovalDetailsPage() {
             <p className="mt-2 text-sm leading-6 text-muted">Approve only after reviewing the owner identity proof and legal acceptance.</p>
             <div className="mt-5 grid gap-3">
               <button onClick={() => void handleApprove()}>Approve owner</button>
-              <button variant="secondary" onClick={() => void handleReject()}>Reject application</button>
+              <Button variant="secondary" onClick={() => void handleReject()}>Reject application</Button>
             </div>
           </aside>
         </div>

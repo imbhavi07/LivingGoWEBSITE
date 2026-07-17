@@ -587,9 +587,9 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
                   placeholder="e.g. PlayStation 5, Pool Table..."
                   className="flex-1 bg-transparent text-sm font-semibold text-ink outline-none placeholder:text-muted"
                 />
-                <button type="button" variant="secondary" onClick={handleAddCustomFacility} className="h-9 px-4 py-0 text-xs">
+                <Button type="button" variant="secondary" onClick={handleAddCustomFacility} className="h-9 px-4 py-0 text-xs">
                   <Plus className="h-4 w-4" /> Add
-                </button>
+                </Button>
               </div>
             </div>
           </section>

@@ -114,9 +114,9 @@ export default function AdminListingDetailsPage() {
                 <p className="text-sm font-bold uppercase text-muted">Editing listing</p>
                 <h1 className="mt-1 text-2xl font-black text-ink">{listing.title}</h1>
               </div>
-              <button variant="ghost" onClick={() => setEditing(false)}>
+              <Button variant="ghost" onClick={() => setEditing(false)}>
                 <X className="h-4 w-4" aria-hidden /> Cancel
-              </button>
+              </Button>
             </div>
             <AdminPropertyForm
               initialData={{
@@ -214,7 +214,7 @@ export default function AdminListingDetailsPage() {
                       }}
                     />
 
-                    <button
+                    <Button
                       variant="ghost"
                       className="text-red-600"
                       onClick={() => {
@@ -222,7 +222,7 @@ export default function AdminListingDetailsPage() {
                       }}
                     >
                       Delete
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -344,7 +344,7 @@ export default function AdminListingDetailsPage() {
                 Save
               </button>
 
-              <button
+              <Button
                 variant="ghost"
                 onClick={() =>
                   setEditingPanoramaId(
@@ -353,7 +353,7 @@ export default function AdminListingDetailsPage() {
                 }
               >
                 Cancel
-              </button>
+              </Button>
             </div>
           </div>
         ) : (
@@ -371,7 +371,7 @@ export default function AdminListingDetailsPage() {
       </div>
 
       <div className="flex gap-2">
-        <button
+        <Button
           variant="secondary"
           onClick={() => {
             setEditingPanoramaId(
@@ -388,9 +388,9 @@ export default function AdminListingDetailsPage() {
           }}
         >
           Edit
-        </button>
+        </Button>
 
-        <button
+        <Button
           variant="ghost"
           className="text-red-600"
           onClick={async () => {
@@ -410,7 +410,7 @@ export default function AdminListingDetailsPage() {
           }}
         >
           Delete
-        </button>
+        </Button>
       </div>
     </div>
   ))}
@@ -427,18 +427,18 @@ export default function AdminListingDetailsPage() {
                 <p>Preference: {listing.preference}</p>
               </div>
               <div className="mt-5 grid gap-3">
-                <button onClick={() => setEditing(true)} variant="secondary">
+                <Button onClick={() => setEditing(true)} variant="secondary">
                   <Pencil className="h-4 w-4" aria-hidden /> Edit listing
-                </button>
-                <button onClick={() => void approveListing(listing.id)}>
+                </Button>
+                <Button onClick={() => void approveListing(listing.id)} variant="secondary">
                   <Check className="h-4 w-4" aria-hidden />Approve listing
-                </button>
-                <button variant="secondary" onClick={() => void rejectListing(listing.id)}>
+                </Button>
+                <Button variant="secondary" onClick={() => void rejectListing(listing.id)}>
                   <X className="h-4 w-4" aria-hidden />Reject listing
-                </button>
-                <button variant="ghost" className="text-red-700" onClick={() => { setDeleteListingId(listing.id); }}>
+                </Button>
+                <Button variant="ghost" className="text-red-700" onClick={() => { setDeleteListingId(listing.id); }}>
                   <Trash2 className="h-4 w-4" aria-hidden />Delete fake listing
-                </button>
+                </Button>
               </div>
             </aside>
           </div>

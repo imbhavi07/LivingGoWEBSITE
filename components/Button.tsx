@@ -1,12 +1,12 @@
 import type { ButtonHTMLAttributes, PropsWithChildren } from "react";
 import { cn } from "@/lib/utils";
 
-type ButtonProps = PropsWithChildren<buttonHTMLAttributes<HTMLButtonElement>> & {
+type buttonProps = PropsWithChildren<ButtonHTMLAttributes<HTMLButtonElement>> & {
   variant?: "primary" | "secondary" | "ghost" | "outline" | "glow";
   size?: "sm" | "md" | "lg";
 };
 
-export function buttonClasses(variant: ButtonProps["variant"] = "primary", size: ButtonProps["size"] = "md", className?: string) {
+export function buttonClasses(variant: buttonProps["variant"] = "primary", size: buttonProps["size"] = "md", className?: string) {
   return cn(
     "inline-flex items-center justify-center gap-2 rounded-full font-semibold transition focus:outline-none focus:ring-2 focus:ring-ink/20 disabled:cursor-not-allowed disabled:opacity-60",
     size === "sm" && "min-h-9 px-3 text-xs",
@@ -21,7 +21,7 @@ export function buttonClasses(variant: ButtonProps["variant"] = "primary", size:
   );
 }
 
-export function Button({ children, className, variant = "primary", size = "md", ...props }: ButtonProps) {
+export function Button({ children, className, variant = "primary", size = "md", ...props }: buttonProps) {
   return (
     <button
       className={buttonClasses(variant, size, className)}

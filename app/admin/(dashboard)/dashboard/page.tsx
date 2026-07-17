@@ -6,7 +6,7 @@ import { AdminStatCard } from "@/components/admin/AdminStatCard";
 import { useAdminStats } from "@/hooks/useAdmin";
 import { useAdminVisits } from "@/hooks/useAdminVisits";
 import { VisitStatusDropdown } from "@/components/admin/VisitStatusDropdown";
-import { Button } from "@/components/Button";
+import type { VisitStatus } from "@/components/admin/VisitStatusDropdown";
 export default function AdminDashboardPage() {
   const { stats, isLoading } = useAdminStats();
   const { visits, isLoading: visitsLoading } = useAdminVisits();
@@ -107,7 +107,7 @@ export default function AdminDashboardPage() {
                         <VisitStatusDropdown
                         visitId={visit.id}
                         // visit.leadStatus may be a string from the API - assert to the expected enum/type
-                        currentStatus={visit.leadStatus as any}
+                        currentStatus={visit.leadStatus as VisitStatus}
                         onStatusChange={(newStatus) => {
                           // This would call an API to update the visit status
                           console.log(`Updating visit ${visit.id} status to ${newStatus}`);
