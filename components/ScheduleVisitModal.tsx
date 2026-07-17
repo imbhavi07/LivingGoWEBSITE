@@ -102,7 +102,7 @@ const TIME_SLOTS = generateTimeSlots();
     const endTimeInMinutes = endHour24 * 60 + endMin;
 
     const minTime = 8 * 60; // 8:00 AM
-    const maxTime = 20 * 60; // 8:00 PM
+    const maxTime = 22 * 60; // 8:00 PM
 
     if (startTimeInMinutes < minTime || endTimeInMinutes > maxTime) return false;
     if (endTimeInMinutes - startTimeInMinutes !== 20) return false;
@@ -112,8 +112,7 @@ const TIME_SLOTS = generateTimeSlots();
   };
 
   const isValidWhatsAppNumber = (number: string): boolean => {
-    const whatsappRegex = /^\+91\d{10}$/;
-    return whatsappRegex.test(number);
+    return /^\d{10}$/.test(number);
   };
 
   const handleSubmit = async () => {
@@ -125,10 +124,6 @@ const TIME_SLOTS = generateTimeSlots();
       setErrorMessage("Please select a date that is today or in the future");
       return;
     }
-    if (!visitDate || !timeSlot) {
-      setErrorMessage("Please select a date and time slot");
-      return;
-    }
 
     // WhatsApp number validation
     if (!whatsappNumber) {
@@ -136,7 +131,7 @@ const TIME_SLOTS = generateTimeSlots();
       return;
     }
     if (!isValidWhatsAppNumber(whatsappNumber)) {
-      setErrorMessage("Please enter a valid WhatsApp number (e.g., +919876543210)");
+      setErrorMessage("Please enter a valid 10-digit WhatsApp number");
       return;
     }
 
@@ -153,7 +148,7 @@ const TIME_SLOTS = generateTimeSlots();
         visitDate: new Date(visitDate).toISOString(),
         timeSlot,
         couponCode: couponCode || null,
-        whatsappNumber: whatsappNumber,
+        whatsappNumber: `+91${whatsappNumber}`,
       });
 
       setVisitDetails(response.data.data);
@@ -187,7 +182,6 @@ const TIME_SLOTS = generateTimeSlots();
           )}
         </div>
 
-        {/* --- STEP 1: Input Form --- */}
         {step === "input" && (
           <>
             {/* Scrollable Body (Date & Time Slots) */}
@@ -240,23 +234,21 @@ const TIME_SLOTS = generateTimeSlots();
                   </div>
                   
                 </div>
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-3">
-                    <span className="h-5 w-5 text-ink">📱</span>
-                    <div>
-                      <p className="font-semibold text-ink">WhatsApp Number</p>
-                      <p className="text-sm text-muted">Enter your WhatsApp number (e.g., +919876543210)</p>
-                    </div>
-                  </div>
+
+                <div className="flex">
+                  <span className="flex items-center rounded-l-xl border border-r-0 border-gray-300 bg-gray-100 px-3 text-gray-600">
+                    +91
+                  </span>
                   <input
-                    required
                     type="tel"
+                    maxLength={10}
+                    placeholder="9876543210"
                     value={whatsappNumber}
-                    onChange={(e) => setWhatsappNumber(e.target.value.replace(/\s/g, ''))} // Remove spaces
-                    placeholder="+919876543210"
-                    className="w-full px-4 py-3 bg-white border border-black/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-ink transition-all duration-200"
+                    onChange={(e) =>
+                      setWhatsappNumber(e.target.value.replace(/\D/g, ""))
+                    }
+                    className="w-full rounded-r-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500"
                   />
-                  {errorMessage && <p className="mt-2 text-sm text-red-600">{errorMessage}</p>}
                 </div>
               </div>
             </div>
@@ -291,7 +283,7 @@ const TIME_SLOTS = generateTimeSlots();
                   <button
                     type="button"
                     onClick={handleSubmit}
-                    disabled={isSubmitting || !visitDate || !timeSlot || !whatsappNumber.trim()}
+                    disabled={isSubmitting || !visitDate || !timeSlot || !isValidWhatsAppNumber(whatsappNumber)}
                     className={`px-4 py-3 rounded-xl text-sm font-medium text-white transition-all w-full sm:w-auto ${
                       isSubmitting || !visitDate || !timeSlot || !whatsappNumber.trim()
                         ? "cursor-not-allowed bg-gray-400"
