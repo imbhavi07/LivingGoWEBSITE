@@ -668,10 +668,10 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
             </div>
 
             {error ? <p className="rounded-2xl bg-linen p-3 text-sm font-semibold text-clay">{error}</p> : null}
-            <button className="w-full" disabled={isSubmitting}>
+            <Button className="w-full" disabled={isSubmitting}>
               <Save className="h-4 w-4" aria-hidden />
               {isSubmitting ? "Saving..." : property ? "Update property" : "Create property"}
-            </button>
+            </Button>
           </div>
         </aside>
       </form>
