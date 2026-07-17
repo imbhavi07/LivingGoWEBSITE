@@ -4,14 +4,13 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { Check, Pencil, Trash2, X } from "lucide-react";
-import { isAxiosError } from "axios"; // ✅ FIXED: Imported directly from axios
+import { isAxiosError } from "axios"; 
 import { AdminShell } from "@/components/admin/AdminShell";
 import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
-import { PropertyEditForm, type PropertyEditPayload } from "@/components/PropertyEditForm";
 import { AdminPropertyForm } from "@/components/admin/AdminPropertyForm";
-import { approveListing, deleteListing, rejectListing, updateListing, updateListingWithFormData } from "@/lib/api/admin";
+import { approveListing, rejectListing, updateListingWithFormData } from "@/lib/api/admin";
 import { OwnerListingStatus } from "@/types/owner";
 import { useAdminListing } from "@/hooks/useAdmin";
 import { useToast } from "@/contexts/ToastContext";
@@ -34,10 +33,7 @@ export default function AdminListingDetailsPage() {
   const [editingPanoramaId, setEditingPanoramaId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
   const [editingSortOrder, setEditingSortOrder] = useState(0);
-  const [deleteImageId, setDeleteImageId] = useState<string | null>(null);
-  const [isDeletingImage, setIsDeletingImage] = useState(false);
   const [deleteListingId, setDeleteListingId] = useState<string | null>(null);
-  const [isDeletingListing, setIsDeletingListing] = useState(false);
   async function handleSave(data: FormData) {
     setIsSaving(true);
     try {
@@ -56,49 +52,6 @@ export default function AdminListingDetailsPage() {
       showToast(message, "error");
     } finally {
       setIsSaving(false);
-    }
-  }
-
-  async function handleDeleteImageConfirm() {
-    if (!deleteImageId || !listing) return;
-    setIsDeletingImage(true);
-    try {
-      await deletePropertyImage(listing.id, deleteImageId);
-      await mutate();
-      showToast("Image deleted successfully", "success");
-    } catch (err) {
-      let message = "Failed to delete image.";
-      if (isAxiosError(err)) {
-        const serverMsg = err.response?.data?.message;
-        if (typeof serverMsg === "string" && serverMsg.trim()) {
-          message = serverMsg;
-        }
-      }
-      showToast(message, "error");
-    } finally {
-      setIsDeletingImage(false);
-      setDeleteImageId(null);
-    }
-  }
-
-  async function handleDeleteListingConfirm() {
-    if (!deleteListingId) return;
-    setIsDeletingListing(true);
-    try {
-      await deleteListing(deleteListingId);
-      showToast("Listing deleted successfully", "success");
-    } catch (err) {
-      let message = "Failed to delete listing.";
-      if (isAxiosError(err)) {
-        const serverMsg = err.response?.data?.message;
-        if (typeof serverMsg === "string" && serverMsg.trim()) {
-          message = serverMsg;
-        }
-      }
-      showToast(message, "error");
-    } finally {
-      setIsDeletingListing(false);
-      setDeleteListingId(null);
     }
   }
 
@@ -195,18 +148,14 @@ export default function AdminListingDetailsPage() {
                       accept="image/*"
                       onChange={async (e) => {
                         const file = e.target.files?.[0];
-                      
                         if (!file) return;
-                      
                         try {
                           await replacePropertyImage(
                             listing.id,
                             image.id,
                             file
                           );
-                        
                           await mutate();
-                        
                           alert("Image replaced");
                         } catch {
                           alert("Replace failed");
@@ -217,8 +166,23 @@ export default function AdminListingDetailsPage() {
                     <Button
                       variant="ghost"
                       className="text-red-600"
-                      onClick={() => {
-                        setDeleteImageId(image.id);
+                      onClick={async () => {
+                        if (!confirm("Delete this image?")) return;
+                        try {
+                          await deletePropertyImage(listing.id, image.id);
+                          await mutate();
+                          showToast("Image deleted successfully", "success");
+                        } catch (err) {
+                          let message = "Failed to delete image.";
+                        
+                          if (isAxiosError(err)) {
+                            const serverMsg = err.response?.data?.message;
+                            if (typeof serverMsg === "string" && serverMsg.trim()) {
+                              message = serverMsg;
+                            }
+                          }
+                          showToast(message, "error");
+                        }
                       }}
                     >
                       Delete
