@@ -40,8 +40,10 @@ function generateVisitOtp(): string {
 // Helper function to validate time slot format and range
 function isValidTimeSlot(timeSlot: string): boolean {
   // Expected format: "HH:MM AM/PM - HH:MM AM/PM" (e.g., "09:20 AM - 09:40 AM")
+  // Convert to uppercase to allow lowercase am/pm
+  const upperTimeSlot = timeSlot.toUpperCase();
   const timeSlotRegex = /^(\d{2}):(\d{2}) (AM|PM) - (\d{2}):(\d{2}) (AM|PM)$/;
-  const match = timeSlot.match(timeSlotRegex);
+  const match = upperTimeSlot.match(timeSlotRegex);
 
   if (!match) return false;
 
