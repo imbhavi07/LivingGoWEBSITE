@@ -5,7 +5,6 @@ import Image from "next/image";
 import { Heart, MapPin, BedDouble, Phone } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
-import { Button } from "@/components/Button";
 import { formatPrice } from "@/lib/utils";
 import type { Property } from "@/types/property";
 import { getTailoredColleges } from "@/lib/distance";
@@ -32,7 +31,6 @@ type PropertyCardProps = {
   priority?: boolean; 
 };
 
-
 export function PropertyCard({ property, saved, onSave, priority = false }: PropertyCardProps) {
 
   const { isSignedIn } = useUser();
@@ -40,6 +38,7 @@ export function PropertyCard({ property, saved, onSave, priority = false }: Prop
   const openProperty = () => {
     router.push(`/properties/${property.id}`);
   };
+  
   function handleSave() {
     if (!isSignedIn) {
       router.push("/login");
@@ -91,13 +90,13 @@ export function PropertyCard({ property, saved, onSave, priority = false }: Prop
     return () => clearInterval(cycleTimer);
   }, [nearestColleges.length]);
 
-  let distanceUI = <span className="text-sm font-medium text-muted truncate flex-1 min-w-0">{property.location ?? ''}</span>;
+  let distanceUI = <span className="text-[13px] font-medium text-muted truncate flex-1 min-w-0">{property.location ?? ''}</span>;
 
   if (nearestColleges.length > 0) {
     const currentCollege = nearestColleges[collegeIndex];
     distanceUI = (
       <span
-        className={`text-sm font-medium text-muted truncate transition-opacity duration-500 ease-in-out flex-1 min-w-0 ${
+        className={`text-[13px] font-medium text-muted truncate transition-opacity duration-500 ease-in-out flex-1 min-w-0 ${
           isFading ? "opacity-0" : "opacity-100"
         }`}
       >
@@ -106,15 +105,13 @@ export function PropertyCard({ property, saved, onSave, priority = false }: Prop
     );
   }
   // ───────────────────────────────────────────────────────────────────
-  const locality =
-  property.location
-    ?.split(",")[0]
-    ?.trim() || "North Campus";
+  
+  const locality = property.location?.split(",")[0]?.trim() || "North Campus";
 
   return (
     <article
       onClick={openProperty}
-      className="group flex-shrink-0 h-auto min-h-[fit-content] cursor-pointer overflow-hidden rounded-3xl bg-white shadow-2xl transition-all duration-300 hover:-translate-y-3 hover:shadow-lift mb-4"
+      className="group flex-shrink-0 h-auto min-h-[fit-content] cursor-pointer overflow-hidden rounded-3xl bg-white shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:shadow-lift mb-4"
     >
         <div className="relative aspect-[4/3] overflow-hidden">
           <Image
@@ -135,42 +132,65 @@ export function PropertyCard({ property, saved, onSave, priority = false }: Prop
             </span>
           )}
         </div>
-      <div className="space-y-4 p-5">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex-1">
-            <p className="text-xl font-black text-ink">{formatPrice(property.price)}<span className="text-sm font-semibold text-muted">/mo</span></p>
-            <h2 className="mt-1 line-clamp-1 text-lg font-bold text-ink">
-              {property.preference === "Any" ? "Boys & Girls PG" : `${property.preference} PG`} 
-              {" "}in{" "} 
-              <span className="text-amber-700">
-                {locality}
-              </span>
-              
-            </h2>
-            {property.propertyCode && (
-              <div className="mt-2 inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-bold tracking-wide text-slate-700">
-                🏷
-                <span>Property ID:</span>
-                <span className="font-extrabold text-amber-700">
-                  {property.propertyCode}
-                </span>
-              </div>
-            )}
-            {displayRoomTypes && (
-              <p className="mt-1 text-sm font-semibold text-muted">
-                {displayRoomTypes}
-              </p>
-            )}
-          </div>
+
+      {/* TWO-COLUMN LAYOUT: Details (Left) + Actions (Right) */}
+      <div className="flex items-start justify-between gap-2 p-4 sm:p-5">
+        
+        {/* LEFT COLUMN - Information */}
+        <div className="flex-1 min-w-0 pr-2">
+          <p className="text-xl font-black text-ink">
+            {formatPrice(property.price)}<span className="text-[13px] font-semibold text-muted">/mo</span>
+          </p>
           
-          <div className="flex items-center gap-2">
+          <h2 className="mt-1 line-clamp-2 text-[17px] font-bold leading-tight text-ink">
+            {property.preference === "Any" ? "Boys & Girls PG" : `${property.preference} PG`} 
+            {" "}in{" "} 
+            <span className="text-amber-700">
+              {locality}
+            </span>
+          </h2>
+
+          {property.propertyCode && (
+            <div className="mt-2.5 inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-bold tracking-wide text-slate-700">
+              <span>ID:</span>
+              <span className="font-extrabold text-amber-700">
+                {property.propertyCode}
+              </span>
+            </div>
+          )}
+
+          {displayRoomTypes && (
+            <p className="mt-1.5 text-xs font-semibold text-muted">
+              {displayRoomTypes}
+            </p>
+          )}
+
+          <div className="mt-2.5 flex items-center gap-1.5">
+            <MapPin className="h-3.5 w-3.5 flex-shrink-0 text-ink" aria-hidden />
+            {distanceUI}
+          </div>
+
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {(property.facilities ?? []).slice(0, 3).map((facility) => (
+              <span key={facility} className="rounded-full bg-linen px-2 py-1 text-[10px] font-bold text-muted">
+                {facility}
+              </span>
+            ))}
+          </div>
+        </div>
+        
+        {/* RIGHT COLUMN - Actions */}
+        <div className="flex w-[120px] shrink-0 flex-col items-end gap-2.5">
+          
+          {/* Top Icons Row */}
+          <div className="flex w-full items-center justify-end gap-2 mb-1">
             <a
               href="tel:+916200232083"
-              className="flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-2.5 text-sm font-bold text-green-700 transition hover:bg-green-200"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100 text-green-700 transition hover:bg-green-200"
               onClick={(e) => e.stopPropagation()} 
+              title="Call Owner"
             >
               <Phone className="h-4 w-4" />
-              <span className="hidden sm:inline">Call</span> 
             </a>
 
             <button
@@ -178,32 +198,17 @@ export function PropertyCard({ property, saved, onSave, priority = false }: Prop
                 e.stopPropagation();
                 handleSave();
               }}
-              className="rounded-full bg-linen p-2.5 text-ink transition hover:bg-oat"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-linen text-ink transition hover:bg-oat focus:outline-none"
               aria-label={saved ? "Remove from wishlist" : "Save property"}
               title={!isSignedIn ? "Login to save" : saved ? "Remove from wishlist" : "Save property"}
             >
               <Heart className={saved ? "h-5 w-5 fill-clay text-clay" : "h-5 w-5"} aria-hidden />
             </button>
           </div>
-        </div>
 
-        <div className="flex items-center gap-2 pt-1 pb-2">
-          <MapPin className="h-4 w-4 text-ink flex-shrink-0" aria-hidden />
-          {distanceUI}
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          <span className="rounded-full bg-linen px-3 py-1 text-xs font-bold text-ink">{property.preference}</span>
-          {(property.facilities ?? []).slice(0, 3).map((facility) => (
-            <span key={facility} className="rounded-full bg-linen px-3 py-1 text-xs font-semibold text-muted">
-              {facility}
-            </span>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
+          {/* Stacked CTA Buttons */}
           <button
-            className="w-full rounded-2xl bg-clay text-white hover:bg-clay/90"
+            className="w-full rounded-3xl bg-[#78b264] py-3.5 text-[13px] font-bold tracking-wider text-white shadow-soft transition hover:bg-ink focus:outline-none focus:ring-2 focus:ring-ink/20"
             onClick={(e) => {
               e.stopPropagation();
               router.push(`/properties/${property.id}`);
@@ -213,7 +218,7 @@ export function PropertyCard({ property, saved, onSave, priority = false }: Prop
           </button>
           
           <button
-            className="w-full rounded-2xl bg-clay text-white hover:bg-clay/90"
+            className="w-full rounded-3xl bg-[#60c0be] py-3.5 text-[13px] font-bold tracking-wider text-white shadow-soft transition hover:bg-ink focus:outline-none focus:ring-2 focus:ring-ink/20"
             onClick={(e) => {
               e.stopPropagation();
               router.push(`/properties/${property.id}?scheduleVisit=true`);
@@ -221,7 +226,9 @@ export function PropertyCard({ property, saved, onSave, priority = false }: Prop
           >
             Schedule Visit
           </button>
+
         </div>
+
       </div>
     </article>
   );

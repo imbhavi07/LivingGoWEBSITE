@@ -25,7 +25,8 @@ const scheduleVisitSchema = z.object({
   timeSlot: z.string().min(1, "Time slot is required"),
   propertyId: z.string().min(1, "Property ID is required"),
   couponCode: z.string().optional().nullable(),
-  whatsappNumber: z.string().regex(/^\\+91[0-9]{10}$/, "Invalid WhatsApp number format. Please enter a valid Indian mobile number starting with +91 followed by 10 digits."),
+  // FIXED: Removed the double backslash
+  whatsappNumber: z.string().regex(/^\+91[0-9]{10}$/, "Invalid WhatsApp number format. Please enter a valid Indian mobile number starting with +91 followed by 10 digits."),
 });
 
 // Helper function to generate a random 6-character alphanumeric string

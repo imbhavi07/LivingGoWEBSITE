@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { X, CheckCircle, Loader2, AlertCircle, Calendar, Clock } from "lucide-react";
 import { apiClient, getApiErrorMessage } from "@/lib/api/client";
+import { Button } from "@/components/Button";
+
 type ScheduleVisitModalProps = {
   propertyId: string;
   propertyCode: string;
@@ -16,40 +18,39 @@ export function ScheduleVisitModal({ propertyId, propertyCode, onClose }: Schedu
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [visitDate, setVisitDate] = useState<string>("");
   const [timeSlot, setTimeSlot] = useState<string>("");
+  
   const generateTimeSlots = () => {
-  const slots: string[] = [];
+    const slots: string[] = [];
+    let hour = 9;
+    let minute = 0;
 
-  let hour = 8;
-  let minute = 0;
+    while (hour < 19) {
+      const start = new Date();
+      start.setHours(hour, minute, 0, 0);
 
-  while (hour < 22) {
-    const start = new Date();
-    start.setHours(hour, minute, 0, 0);
+      const end = new Date(start);
+      end.setMinutes(end.getMinutes() + 20);
 
-    const end = new Date(start);
-    end.setMinutes(end.getMinutes() + 20);
+      const format = (date: Date) =>
+        date.toLocaleTimeString("en-IN", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        });
 
-    const format = (date: Date) =>
-      date.toLocaleTimeString("en-IN", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      });
+      slots.push(`${format(start)} - ${format(end)}`);
 
-    slots.push(`${format(start)} - ${format(end)}`);
+      minute += 20;
 
-    minute += 20;
-
-    if (minute >= 60) {
-      minute = 0;
-      hour++;
+      if (minute >= 60) {
+        minute = 0;
+        hour++;
+      }
     }
-  }
+    return slots;
+  };
 
-  return slots;
-};
-
-const TIME_SLOTS = generateTimeSlots();
+  const TIME_SLOTS = generateTimeSlots();
   const [couponCode, setCouponCode] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [whatsappNumber, setWhatsappNumber] = useState<string>("");
@@ -102,7 +103,7 @@ const TIME_SLOTS = generateTimeSlots();
     const endTimeInMinutes = endHour24 * 60 + endMin;
 
     const minTime = 8 * 60; // 8:00 AM
-    const maxTime = 22 * 60; // 8:00 PM
+    const maxTime = 20 * 60; // 8:00 PM
 
     if (startTimeInMinutes < minTime || endTimeInMinutes > maxTime) return false;
     if (endTimeInMinutes - startTimeInMinutes !== 20) return false;
@@ -112,7 +113,9 @@ const TIME_SLOTS = generateTimeSlots();
   };
 
   const isValidWhatsAppNumber = (number: string): boolean => {
-    return /^\d{10}$/.test(number);
+    // FIXED: Accept either standard 10 digits OR +91 followed by 10 digits
+    const whatsappRegex = /^(?:\+91)?[0-9]{10}$/;
+    return whatsappRegex.test(number);
   };
 
   const handleSubmit = async () => {
@@ -122,6 +125,10 @@ const TIME_SLOTS = generateTimeSlots();
     }
     if (!isValidDate(visitDate)) {
       setErrorMessage("Please select a date that is today or in the future");
+      return;
+    }
+    if (!isValidTimeSlot(timeSlot)) {
+      setErrorMessage("Please select a valid time slot between 8:00 AM and 8:00 PM in 20-minute intervals");
       return;
     }
 
@@ -138,17 +145,18 @@ const TIME_SLOTS = generateTimeSlots();
     setIsSubmitting(true);
     setErrorMessage(null);
 
+    // FIXED: Format the number with +91 if the user didn't include it so the backend doesn't crash
+    const formattedWhatsappNumber = whatsappNumber.startsWith("+91")
+      ? whatsappNumber
+      : `+91${whatsappNumber}`;
+
     try {
-      if (!whatsappNumber.trim()) {
-        alert("WhatsApp number is required.");
-        return;
-      }
       const response = await apiClient.post("/visits/schedule", {
         propertyId,
         visitDate: new Date(visitDate).toISOString(),
         timeSlot,
         couponCode: couponCode || null,
-        whatsappNumber: `+91${whatsappNumber}`,
+        whatsappNumber: formattedWhatsappNumber,
       });
 
       setVisitDetails(response.data.data);
@@ -182,6 +190,7 @@ const TIME_SLOTS = generateTimeSlots();
           )}
         </div>
 
+        {/* --- STEP 1: Input Form --- */}
         {step === "input" && (
           <>
             {/* Scrollable Body (Date & Time Slots) */}
@@ -202,7 +211,7 @@ const TIME_SLOTS = generateTimeSlots();
                     min={new Date().toISOString().split("T")[0]}
                     className="w-full px-4 py-3 bg-white border border-black/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-ink transition-all duration-200 text-lg"
                   />
-                  
+                  {errorMessage && <p className="mt-2 text-sm text-red-600">{errorMessage}</p>}
                 </div>
 
                 <div className="space-y-4">
@@ -210,7 +219,7 @@ const TIME_SLOTS = generateTimeSlots();
                     <Clock className="h-5 w-5 text-ink" />
                     <div>
                       <p className="font-semibold text-ink">Time Slot</p>
-                      <p className="text-sm text-muted">Select a 20-minute window between 8:00 AM and 10:00 PM</p>
+                      <p className="text-sm text-muted">Select 20-minute window between 8:00 AM and 8:00 PM</p>
                     </div>
                   </div>
                     <div className="space-y-2">
@@ -232,23 +241,24 @@ const TIME_SLOTS = generateTimeSlots();
                       ))}
                   </div>
                   </div>
-                  
+                  {errorMessage && <p className="mt-2 text-sm text-red-600">{errorMessage}</p>}
                 </div>
-
-                <div className="flex">
-                  <span className="flex items-center rounded-l-xl border border-r-0 border-gray-300 bg-gray-100 px-3 text-gray-600">
-                    +91
-                  </span>
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3">
+                    <span className="h-5 w-5 text-ink">📱</span>
+                    <div>
+                      <p className="font-semibold text-ink">WhatsApp Number</p>
+                      <p className="text-sm text-muted">Enter your WhatsApp number (e.g., 9876543210)</p>
+                    </div>
+                  </div>
                   <input
                     type="tel"
-                    maxLength={10}
-                    placeholder="9876543210"
                     value={whatsappNumber}
-                    onChange={(e) =>
-                      setWhatsappNumber(e.target.value.replace(/\D/g, ""))
-                    }
-                    className="w-full rounded-r-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    onChange={(e) => setWhatsappNumber(e.target.value.replace(/\s/g, ''))} // Remove spaces
+                    placeholder="9876543210"
+                    className="w-full px-4 py-3 bg-white border border-black/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-ink transition-all duration-200"
                   />
+                  {errorMessage && <p className="mt-2 text-sm text-red-600">{errorMessage}</p>}
                 </div>
               </div>
             </div>
@@ -283,9 +293,9 @@ const TIME_SLOTS = generateTimeSlots();
                   <button
                     type="button"
                     onClick={handleSubmit}
-                    disabled={isSubmitting || !visitDate || !timeSlot || !isValidWhatsAppNumber(whatsappNumber)}
+                    disabled={isSubmitting || !visitDate || !timeSlot}
                     className={`px-4 py-3 rounded-xl text-sm font-medium text-white transition-all w-full sm:w-auto ${
-                      isSubmitting || !visitDate || !timeSlot || !whatsappNumber.trim()
+                      isSubmitting || !visitDate || !timeSlot
                         ? "cursor-not-allowed bg-gray-400"
                         : "bg-ink hover:bg-ink/90"
                     }`}
