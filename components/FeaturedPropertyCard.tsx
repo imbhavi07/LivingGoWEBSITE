@@ -124,9 +124,9 @@ export function FeaturedPropertyCard({ property, saved, onSave }: FeaturedProper
 
         </div>
 
-        <button variant="secondary" className="w-full mt-1 py-1 text-[10px] sm:text-xs" onClick={() => window.location.assign(`/properties/${property.id}`)}>
+        <Button variant="secondary" className="w-full mt-1 py-1 text-[10px] sm:text-xs" onClick={() => window.location.assign(`/properties/${property.id}`)}>
           View details
-        </button>
+        </Button>
       </div>
     </article>
   );

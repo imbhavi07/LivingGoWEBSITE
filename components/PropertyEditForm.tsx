@@ -341,9 +341,9 @@ export function PropertyEditForm({ initialData, onSave, onCancel, isSaving }: Pr
         <button type="submit" disabled={isSaving} className="flex-1">
           {isSaving ? "Saving..." : "Save Changes"}
         </button>
-        <button type="button" variant="secondary" onClick={onCancel} className="flex-1">
+        <Button type="button" variant="secondary" onClick={onCancel} className="flex-1">
           Cancel
-        </button>
+        </Button>
       </div>
     </form>
   );

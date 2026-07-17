@@ -122,10 +122,10 @@ function AdminSidebar({ onNavigate, onSignOut}: { onNavigate?: () => void; onSig
           );
         })}
       </nav>
-      <button variant="ghost" className="mt-auto justify-start px-4 text-white hover:bg-white/10" onClick={onSignOut}>
+      <Button variant="ghost" className="mt-auto justify-start px-4 text-white hover:bg-white/10" onClick={onSignOut}>
         <LogOut className="h-5 w-5" aria-hidden />
         Sign out
-      </button>
+      </Button>
     </div>
   );
 }

@@ -13,7 +13,9 @@ function signJwt(payload) {
     //   expiresIn: env.JWT_EXPIRES_IN,
     // } as SignOptions);
     // Without token expiry
-    return jsonwebtoken_1.default.sign(payload, env_1.env.JWT_SECRET);
+    return jsonwebtoken_1.default.sign(payload, env_1.env.JWT_SECRET, {
+        expiresIn: "8h",
+    });
 }
 function verifyJwt(token) {
     return jsonwebtoken_1.default.verify(token, env_1.env.JWT_SECRET);

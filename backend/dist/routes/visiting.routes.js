@@ -36,18 +36,32 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.visitingRouter = void 0;
 const express_1 = require("express");
 const visitController = __importStar(require("../controllers/visit.controller"));
+// ✅ IMPORT THE NEW INTERN CONTROLLER
+const internController = __importStar(require("../controllers/intern.controller"));
 const intern_middleware_1 = require("../middleware/intern.middleware");
 const supervisor_middleware_1 = require("../middleware/supervisor.middleware");
 exports.visitingRouter = (0, express_1.Router)();
+// ==========================================
+// 1. PUBLIC / AUTH ROUTES
+// ==========================================
 exports.visitingRouter.post("/send-otp", visitController.sendSupervisorOtp);
 exports.visitingRouter.post("/verify-otp", visitController.verifySupervisorOtp);
-exports.visitingRouter.post("/login", visitController.internLogin);
-exports.visitingRouter.get("/dashboard", intern_middleware_1.internAuthenticate, visitController.getInternDashboard);
-exports.visitingRouter.patch("/lead/:id", intern_middleware_1.internAuthenticate, visitController.updateInternVisitStatus);
+// Pointing intern login to the correct intern controller
+exports.visitingRouter.post("/login", internController.internLogin);
+// ==========================================
+// 2. INTERN PROTECTED ROUTES
+// ==========================================
+// Prefixed with /lead/ to prevent collisions with the supervisor dashboard
+exports.visitingRouter.get("/lead/dashboard", intern_middleware_1.internAuthenticate, internController.getInternDashboard);
+exports.visitingRouter.patch("/lead/:id", intern_middleware_1.internAuthenticate, internController.updateInternVisitStatus);
+// ==========================================
+// 3. SUPERVISOR PROTECTED ROUTES
+// ==========================================
+// Everything below this line requires a supervisor token
 exports.visitingRouter.use(supervisor_middleware_1.supervisorAuthenticate);
 exports.visitingRouter.get("/dashboard", visitController.getAllVisits);
 exports.visitingRouter.get("/:visitId/available-interns", visitController.getAvailableInterns);
-exports.visitingRouter.post("/:visitId/assign-lead", supervisor_middleware_1.supervisorAuthenticate, visitController.assignLead);
-exports.visitingRouter.post("/interns", visitController.createIntern);
-exports.visitingRouter.get("/interns", visitController.getInterns);
-exports.visitingRouter.post("/interns", supervisor_middleware_1.supervisorAuthenticate, visitController.createIntern);
+exports.visitingRouter.post("/:visitId/assign-lead", visitController.assignLead);
+// Consolidated to a single POST /interns route under supervisor auth
+exports.visitingRouter.post("/interns", internController.createIntern);
+exports.visitingRouter.get("/interns", internController.getInterns);

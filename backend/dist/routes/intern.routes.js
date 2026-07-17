@@ -37,4 +37,4 @@ exports.internRouter = void 0;
 const express_1 = require("express");
 const internController = __importStar(require("../controllers/intern.controller"));
 exports.internRouter = (0, express_1.Router)();
-exports.internRouter.post("/login", internController.loginIntern);
+exports.internRouter.post("/login", internController.internLogin);

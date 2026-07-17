@@ -7,6 +7,7 @@ import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { useOwnerApproval, useOwnerApprovals } from "@/hooks/useAdmin";
 import { formatIST } from "@/lib/utils";
+import type { OwnerApproval } from "@/types/admin";
 
 export default function AdminApprovalDetailsPage() {
   const params = useParams<{ id: string }>();
@@ -49,8 +50,8 @@ export default function AdminApprovalDetailsPage() {
             <p className="text-sm font-black uppercase text-muted">Decision</p>
             <p className="mt-2 text-sm leading-6 text-muted">Approve only after reviewing the owner identity proof and legal acceptance.</p>
             <div className="mt-5 grid gap-3">
-              <button onClick={() => void handleApprove()}>Approve owner</button>
-              <button variant="secondary" onClick={() => void handleReject()}>Reject application</button>
+              <Button onClick={() => void handleApprove()}>Approve owner</Button>
+              <Button variant="secondary" onClick={() => void handleReject()}>Reject application</Button>
             </div>
           </aside>
         </div>
@@ -68,17 +69,6 @@ function Info({ label, value }: { label: string; value: string }) {
   );
 }
 
-interface OwnerApproval {
-  name: string;
-  email: string;
-  phone: string;
-  ownerType: string;
-  aadhaarNumber: string;
-  legalAcceptedAt: string;
-  createdAt: string;
-  aadhaarFrontUrl: string;
-}
-
 function DigitalIdentityBadge({ approval }: { approval: OwnerApproval }) {
   const redactedAadhar = approval.aadhaarNumber
     ? approval.aadhaarNumber.replace(/^\d{4}(\d{4})\d{4}$/, 'XXXX-XXXX-$1')
@@ -93,7 +83,16 @@ function DigitalIdentityBadge({ approval }: { approval: OwnerApproval }) {
         <Image
           src={approval.aadhaarFrontUrl}
           alt="Aadhaar Front"
+          width={96}
+          height={128}
           className="w-24 h-32 rounded-lg object-cover"
+        />
+        <Image
+          src={approval.aadhaarBackUrl}
+          alt="Aadhaar Back"
+          width={96}
+          height={128}
+          className="w-24 h-32 rounded-lg object-cover ml-4"
         />
         <div className="ml-4 space-y-2">
           <p className="text-sm font-medium text-ink">{approval.name}</p>

@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes, PropsWithChildren } from "react";
 import { cn } from "@/lib/utils";
 
-type ButtonProps = PropsWithChildren<buttonHTMLAttributes<HTMLButtonElement>> & {
+type ButtonProps = PropsWithChildren<ButtonHTMLAttributes<HTMLButtonElement>> & {
   variant?: "primary" | "secondary" | "ghost" | "outline" | "glow";
   size?: "sm" | "md" | "lg";
 };
