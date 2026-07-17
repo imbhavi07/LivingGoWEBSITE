@@ -15,7 +15,7 @@ export function WhatsAppButton() {
   // Check if we are on a property details page
   const isPropertyPage = pathname?.startsWith("/properties/");
 
-  const phoneNumber = "9355405403";
+  const phoneNumber = "7678257715";
   const message = "Hi! I need help with student housing.";
   const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
