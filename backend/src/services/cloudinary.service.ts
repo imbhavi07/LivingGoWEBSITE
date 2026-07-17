@@ -50,8 +50,8 @@ export async function uploadPanorama(file: Express.Multer.File) {
       {
         folder: "LivingGo/panoramas",
         resource_type: "image",
-        chunk_size: 0,
-
+        chunk_size: 60000000, 
+        
         transformation: [
           {
             width: 6000,

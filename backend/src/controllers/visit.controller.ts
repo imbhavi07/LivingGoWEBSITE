@@ -8,6 +8,7 @@ import bcrypt from "bcryptjs";
 import { Resend } from "resend";
 import { signJwt } from "../utils/jwt";
 import { VISIT_CONFIG } from "../config/visit.config";
+import { sendWhatsAppMessage } from "../services/whatsapp.service";
 import { Role } from "@prisma/client";
 import type { InternRequest } from "../middleware/intern.middleware";
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -24,6 +25,7 @@ const scheduleVisitSchema = z.object({
   timeSlot: z.string().min(1, "Time slot is required"),
   propertyId: z.string().min(1, "Property ID is required"),
   couponCode: z.string().optional().nullable(),
+  whatsappNumber: z.string().regex(/^\\+91[0-9]{10}$/, "Invalid WhatsApp number format. Please enter a valid Indian mobile number starting with +91 followed by 10 digits."),
 });
 
 // Helper function to generate a random 6-character alphanumeric string
@@ -112,7 +114,7 @@ export const scheduleVisit = asyncHandler(
     // Validate request body
     const validatedData = scheduleVisitSchema.parse(request.body);
 
-    const { visitDate, timeSlot, propertyId, couponCode } = validatedData;
+    const { visitDate, timeSlot, propertyId, couponCode, whatsappNumber } = validatedData;
     console.log("========== SCHEDULE VISIT ==========");
     console.log(request.body);
     console.log("USER:", request.user);
@@ -201,6 +203,7 @@ export const scheduleVisit = asyncHandler(
         timeSlot,
         visitOtp: generateVisitOtp(),
         couponCode: couponCode?.toUpperCase().trim() || null,
+        whatsappNumber: whatsappNumber,
         },
 
         include: {
@@ -232,6 +235,15 @@ export const scheduleVisit = asyncHandler(
       });
     console.log("VISIT CREATED");
     console.log(visit);
+
+    // Send WhatsApp notification
+    try {
+      const message = `Your LivingGo visit has been booked successfully!\n\nOTP: ${visit.visitOtp}\nToken ID: ${visit.tokenId}\n\nPlease share this OTP with the Live-in Guru when you meet them.`;
+      await sendWhatsAppMessage(whatsappNumber, message);
+    } catch (whatsappError) {
+      console.error("Failed to send WhatsApp message:", whatsappError);
+      // We don't want to fail the request if WhatsApp fails, so we just log the error.
+    }
 
     // If a valid coupon code was provided, increment its usage count
     if (couponCode) {
@@ -422,57 +434,53 @@ export const getAllVisits = asyncHandler(
   async (_request: Request, response: Response) => {
 
     const visits = await prisma.visit.findMany({
-  where: {
-    leadStatus: {
-      in: ["SCHEDULED", "ASSIGNED"],
-    },
-  },
-
-  include: {
-    student: {
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-      },
-    },
-
-    property: {
-      select: {
-        id: true,
-        propertyCode: true,
-        title: true,
-        location: true,
-        price: true,
-
-        owner: {
+      // Removed status filter to get all visits for admin dashboard
+      // If we need to filter by status, we can add it as a query parameter later
+      include: {
+        student: {
           select: {
+            id: true,
             name: true,
+            email: true,
+            phone: true,
+          },
+        },
+
+        property: {
+          select: {
+            id: true,
+            propertyCode: true,
+            title: true,
+            location: true,
+            price: true,
+
+            owner: {
+              select: {
+                name: true,
+                phone: true,
+              },
+            },
+          },
+        },
+        intern: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
             phone: true,
           },
         },
       },
-    },
-    intern: {
-      select: {
-        id: true,
-        name: true,
-        username: true,
-        phone: true,
-      },
-    },
-  },
 
-  orderBy: [
-    {
-      visitDate: "asc",
-    },
-    {
-      timeSlot: "asc",
-    },
-  ],
-});
+      orderBy: [
+        {
+          visitDate: "asc",
+        },
+        {
+          timeSlot: "asc",
+        },
+      ],
+    });
 
     response.json({
       success: true,
