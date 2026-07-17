@@ -24,7 +24,7 @@ export function ScheduleVisitModal({ propertyId, propertyCode, onClose }: Schedu
     let hour = 8;
     let minute = 0;
 
-    while (hour < 20) {
+    while (hour < 22) {
       const start = new Date();
       start.setHours(hour, minute, 0, 0);
 
@@ -76,41 +76,6 @@ export function ScheduleVisitModal({ propertyId, propertyCode, onClose }: Schedu
     return selectedDate >= today;
   };
 
-  // Validate time slot format (HH:MM AM/PM - HH:MM AM/PM)
-  const isValidTimeSlot = (timeSlotStr: string): boolean => {
-    const timeSlotRegex = /^(\d{2}):(\d{2}) (AM|PM|am|pm) - (\d{2}):(\d{2}) (AM|PM|am|pm)$/;
-    const match = timeSlotStr.match(timeSlotRegex);
-
-    if (!match) return false;
-
-    const [, startHourStr, startMinStr, startPeriod, endHourStr, endMinStr, endPeriod] = match;
-
-    const startHour = parseInt(startHourStr, 10);
-    const startMin = parseInt(startMinStr, 10);
-    const endHour = parseInt(endHourStr, 10);
-    const endMin = parseInt(endMinStr, 10);
-
-    let startHour24 = startHour;
-    let endHour24 = endHour;
-
-    if (startPeriod === "PM" && startHour !== 12) startHour24 = startHour + 12;
-    if (startPeriod === "AM" && startHour === 12) startHour24 = 0;
-
-    if (endPeriod === "PM" && endHour !== 12) endHour24 = endHour + 12;
-    if (endPeriod === "AM" && endHour === 12) endHour24 = 0;
-
-    const startTimeInMinutes = startHour24 * 60 + startMin;
-    const endTimeInMinutes = endHour24 * 60 + endMin;
-
-    const minTime = 8 * 60; // 8:00 AM
-    const maxTime = 20 * 60; // 8:00 PM
-
-    if (startTimeInMinutes < minTime || endTimeInMinutes > maxTime) return false;
-    if (endTimeInMinutes - startTimeInMinutes !== 20) return false;
-    if (startMin % 20 !== 0) return false;
-
-    return true;
-  };
 
   const isValidWhatsAppNumber = (number: string): boolean => {
     // FIXED: Accept either standard 10 digits OR +91 followed by 10 digits
@@ -125,10 +90,6 @@ export function ScheduleVisitModal({ propertyId, propertyCode, onClose }: Schedu
     }
     if (!isValidDate(visitDate)) {
       setErrorMessage("Please select a date that is today or in the future");
-      return;
-    }
-    if (!isValidTimeSlot(timeSlot)) {
-      setErrorMessage("Please select a valid time slot between 8:00 AM and 8:00 PM in 20-minute intervals");
       return;
     }
 
@@ -219,7 +180,7 @@ export function ScheduleVisitModal({ propertyId, propertyCode, onClose }: Schedu
                     <Clock className="h-5 w-5 text-ink" />
                     <div>
                       <p className="font-semibold text-ink">Time Slot</p>
-                      <p className="text-sm text-muted">Select 20-minute window between 8:00 AM and 8:00 PM</p>
+                      <p className="text-sm text-muted">Select 20-minute window between 8:00 AM and 10:00 PM</p>
                     </div>
                   </div>
                     <div className="space-y-2">
