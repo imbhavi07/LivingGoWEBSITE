@@ -230,12 +230,12 @@ export default function AdminListingDetailsPage() {
                   Upload Insta360 panoramas for this property.
                 </p>
 
-                <button
+                <Button
                   className="mt-4"
                   onClick={() => setShowPanoramaModal(true)}
                 >
                   Add Panorama
-                </button>
+                </Button>
                 <div className="mt-4 space-y-3">
   {listing.panoramas?.map((panorama) => (
     <div
@@ -306,7 +306,7 @@ export default function AdminListingDetailsPage() {
             }}
           />
             <div className="flex gap-2">
-              <button
+              <Button
                 onClick={async () => {
                   await updatePanorama(
                     panorama.id,
@@ -325,7 +325,7 @@ export default function AdminListingDetailsPage() {
                 }}
               >
                 Save
-              </button>
+              </Button>
 
               <Button
                 variant="ghost"
