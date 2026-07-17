@@ -48,9 +48,9 @@ const jwt_1 = require("../utils/jwt");
 const resend = new resend_1.Resend(process.env.RESEND_API_KEY);
 const ADMIN_ROLES = {
     "semwalb3@gmail.com": "SUPER_ADMIN",
-    "heypragya345@gmail.com": "admin",
     "rctaccommodations@gmail.com": "SUPER_ADMIN",
     "falitnautiyal7@gmail.com": "admin",
+    "heypragya345@gmail.com": "admin",
     "shaannothere@gmail.com": "SUPER_ADMIN",
     "techshaan@hotmail.com": "admin",
     "faizaanahmedahmed123@gmail.com": "admin",
