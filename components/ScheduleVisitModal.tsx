@@ -19,10 +19,10 @@ export function ScheduleVisitModal({ propertyId, propertyCode, onClose }: Schedu
   const generateTimeSlots = () => {
   const slots: string[] = [];
 
-  let hour = 9;
+  let hour = 8;
   let minute = 0;
 
-  while (hour < 19) {
+  while (hour < 22) {
     const start = new Date();
     start.setHours(hour, minute, 0, 0);
 
@@ -125,8 +125,8 @@ const TIME_SLOTS = generateTimeSlots();
       setErrorMessage("Please select a date that is today or in the future");
       return;
     }
-    if (!isValidTimeSlot(timeSlot)) {
-      setErrorMessage("Please select a valid time slot between 8:00 AM and 8:00 PM in 20-minute intervals");
+    if (!visitDate || !timeSlot) {
+      setErrorMessage("Please select a date and time slot");
       return;
     }
 
@@ -216,7 +216,7 @@ const TIME_SLOTS = generateTimeSlots();
                     <Clock className="h-5 w-5 text-ink" />
                     <div>
                       <p className="font-semibold text-ink">Time Slot</p>
-                      <p className="text-sm text-muted">Select 20-minute window between 8:00 AM and 8:00 PM</p>
+                      <p className="text-sm text-muted">Select a 20-minute window between 8:00 AM and 10:00 PM</p>
                     </div>
                   </div>
                     <div className="space-y-2">
