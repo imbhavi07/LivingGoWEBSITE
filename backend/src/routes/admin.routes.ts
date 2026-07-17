@@ -9,6 +9,7 @@ import { validate } from "../middleware/validate.middleware";
 import { adminIdSchema, adminListSchema, adminUserListSchema } from "../validations/admin.validation";
 import { loginSchema } from "../validations/auth.validation";
 import { uploadImages, upload } from "../middleware/upload.middleware";
+import * as visitController from "../controllers/visit.controller";
 import { propertyIdSchema, createPropertySchema } from "../validations/property.validation";
 
 export const adminRouter = Router();
@@ -62,3 +63,4 @@ adminRouter.delete("/properties/:id/images/:imageId", validate(adminIdSchema), a
 adminRouter.put("/properties/panoramas/:panoramaId", adminController.updatePanorama);
 adminRouter.delete("/properties/panoramas/:panoramaId", adminController.deletePanorama);
 adminRouter.put("/properties/panoramas/:panoramaId/image", upload.single('image'), adminController.replacePanoramaImage);
+adminRouter.get("/visits", visitController.getAllVisits);
