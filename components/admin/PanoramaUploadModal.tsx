@@ -141,13 +141,13 @@ export function PanoramaUploadModal({
           </div>
 
           <div className="flex justify-end gap-3">
-            <button
+            <Button
               type="button"
               variant="ghost"
               onClick={onClose}
             >
               Cancel
-            </button>
+            </Button>
 
             <button
               type="submit"

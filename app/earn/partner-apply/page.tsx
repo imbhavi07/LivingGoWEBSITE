@@ -122,13 +122,13 @@ export default function PartnerApplyPage() {
             Once approved, you&rquo;ll receive your unique referral code and can start earning rewards.
           </p>
           <div className="mt-8">
-            <button
+            <Button
               variant="outline"
               onClick={() => router.push('/')}
               className="w-full sm:w-auto px-6 py-3"
             >
               Go to Homepage
-            </button>
+            </Button>
           </div>
         </div>
       </div>

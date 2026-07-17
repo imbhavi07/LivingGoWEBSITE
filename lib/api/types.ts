@@ -54,6 +54,8 @@ export type ApiProperty = {
   noticePeriod?: string;
   rulesStrictness?: string;
   facilities: string[];
+  managerContact?: string | null;
+  securityContact?: string | null;
   status?: string;
   images: ApiImage[];
   owner?: ApiOwner;
@@ -111,6 +113,7 @@ export type ApiOwnerApproval = {
   ownerType: string;
   aadhaarNumber: string;
   aadhaarFrontUrl: string;
+  aadhaarBackUrl: string;
   legalAcceptedAt: string;
   verificationStatus: OwnerApproval["verificationStatus"];
   createdAt: string;
@@ -257,7 +260,24 @@ export function toAdminListing(property: ApiProperty): AdminListing {
   submittedAt:
     property.submittedAt ??
     property.createdAt ??
-    new Date().toISOString()
+    new Date().toISOString(),
+  // Additional fields for property editing
+  priceSingle: property.priceSingle,
+  bedsSingle: property.bedsSingle,
+  priceDouble: property.priceDouble,
+  bedsDouble: property.bedsDouble,
+  priceTriple: property.priceTriple,
+  bedsTriple: property.bedsTriple,
+  securityDepositMonths: property.securityDepositMonths === null ? undefined : property.securityDepositMonths,
+  mealPlan: property.mealPlan,
+  mealTimes: property.mealTimes,
+  curfewTime: property.curfewTime,
+  noticePeriod: property.noticePeriod,
+  rulesStrictness: property.rulesStrictness,
+  managerContact: property.managerContact === null ? undefined : property.managerContact,
+  securityContact: property.securityContact === null ? undefined : property.securityContact,
+  lat: property.lat,
+  lng: property.lng
 };
 }
 
@@ -282,6 +302,7 @@ export function toOwnerApproval(approval: ApiOwnerApproval): OwnerApproval {
     ownerType: approval.ownerType,
     aadhaarNumber: approval.aadhaarNumber,
     aadhaarFrontUrl: approval.aadhaarFrontUrl,
+    aadhaarBackUrl: approval.aadhaarBackUrl,
     legalAcceptedAt: approval.legalAcceptedAt,
     verificationStatus: approval.verificationStatus,
     createdAt: approval.createdAt

@@ -229,7 +229,7 @@ export default function PropertyClient({ property }: { property: any }) {
              </p>
              <div className="mt-4 flex flex-wrap gap-3">
                {property.panoramas.map((panorama: Panorama) => (
-                 <button
+                 <Button
                    key={panorama.id}
                    variant="secondary"
                    onClick={() => {
@@ -238,7 +238,7 @@ export default function PropertyClient({ property }: { property: any }) {
                    }}
                  >
                    {panorama.title}
-                 </button>
+                 </Button>
                ))}
              </div>
            </div>
@@ -568,10 +568,10 @@ export default function PropertyClient({ property }: { property: any }) {
     >
       {totalBeds > 0 && availableBeds === 0 ? "Property Full" : "Pre-Book Property"}
     </button>
-    <button variant="secondary" className="w-full" onClick={() => wishlist.toggle(property?.id)}>
+    <Button variant="secondary" className="w-full" onClick={() => wishlist.toggle(property?.id)}>
       <Heart className={saved ? "h-4 w-4 fill-clay text-clay" : "h-4 w-4"} aria-hidden />
       {saved ? "Saved" : "Save property"}
-    </button>
+    </Button>
   </div>
 
   <div className="mt-3 flex grid grid-cols-2 gap-2">
@@ -611,12 +611,12 @@ export default function PropertyClient({ property }: { property: any }) {
       {showPanorama && activePanorama && (
         <div className="fixed inset-0 z-[100] bg-black">
           <div className="absolute right-5 top-5 z-50">
-            <button
+            <Button
               variant="secondary"
               onClick={() => setShowPanorama(false)}
             >
               ✕ Close Tour
-            </button>
+            </Button>
           </div>
 
           {property?.panoramas && property.panoramas.length > 1 && (

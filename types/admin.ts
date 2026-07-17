@@ -34,6 +34,23 @@ export type AdminListing = {
     sortOrder: number;
   }[];
   description: string;
+  // Additional fields for property editing
+  priceSingle?: number;
+  bedsSingle?: number;
+  priceDouble?: number;
+  bedsDouble?: number;
+  priceTriple?: number;
+  bedsTriple?: number;
+  securityDepositMonths?: string | number;
+  mealPlan?: string;
+  mealTimes?: string[];
+  curfewTime?: string;
+  noticePeriod?: string;
+  rulesStrictness?: string;
+  managerContact?: string;
+  securityContact?: string;
+  lat?: number | null;
+  lng?: number | null;
   status: AdminListingStatus;
   submittedAt: string;
 };
@@ -56,6 +73,7 @@ export type OwnerApproval = {
   ownerType: string;
   aadhaarNumber: string;
   aadhaarFrontUrl: string;
+  aadhaarBackUrl: string;
   legalAcceptedAt: string;
   verificationStatus: OwnerApprovalStatus;
   createdAt: string;

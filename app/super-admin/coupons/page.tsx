@@ -50,9 +50,9 @@ export default function SuperAdminCouponsPage() {
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
-        <button onClick={handleRefresh} variant="outline">
+        <Button onClick={handleRefresh} variant="outline">
           <ArrowUpRight className="mr-2 h-4 w-4" /> Refresh
-        </button>
+        </Button>
       </div>
 
       {isLoading ? (
