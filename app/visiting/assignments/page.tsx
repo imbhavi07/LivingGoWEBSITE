@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 import { apiClient } from "@/lib/api/client";
 import axios from "axios";
 
-
 type Visit = {
   id: string;
   visitDate: string;
   timeSlot: string;
   couponCode?: string | null;
   leadStatus: string;
+  whatsappNumber?: string | null;
 
   student: {
     name: string;
@@ -28,7 +28,7 @@ type Visit = {
       phone?: string | null;
     };
   };
-    intern?: {
+  intern?: {
     id: string;
     name: string;
     username: string;
@@ -42,28 +42,30 @@ export default function VisitingDashboard() {
   const [visits, setVisits] = useState<Visit[]>([]);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedVisit, setSelectedVisit] = useState<Visit | null>(null);
-    type Intern = {
+
+  type Intern = {
     id: string;
     name: string;
     username: string;
     phone: string | null;
   };
+  
   const [interns, setInterns] = useState<Intern[]>([]);
   const [selectedIntern, setSelectedIntern] = useState("");
   const [meetingPointId, setMeetingPointId] = useState("");
+  
   useEffect(() => {
     loadVisits();
   }, []);
+  
   async function loadVisits() {
     try {
-      const response = await apiClient.get(
-        "/visiting/dashboard",
-        {
-          headers: {
-          Authorization: `Bearer ${localStorage.getItem(
-          "visiting_token"
-        )}`,},});
-        console.log(response.data);
+      const response = await apiClient.get("/visiting/dashboard", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("visiting_token")}`,
+        },
+      });
+      console.log(response.data);
       setVisits(response.data.visits);
     } catch (e) {
       console.error(e);
@@ -78,9 +80,7 @@ export default function VisitingDashboard() {
       `/visiting/${visit.id}/available-interns`,
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem(
-            "visiting_token"
-          )}`,
+          Authorization: `Bearer ${localStorage.getItem("visiting_token")}`,
         },
       }
     );
@@ -89,112 +89,74 @@ export default function VisitingDashboard() {
   }
 
   async function assignIntern() {
-  if (!selectedVisit || !selectedIntern) return;
+    if (!selectedVisit || !selectedIntern) return;
 
-  try {
-    console.log("Sending assignment:", {
-      internId: selectedIntern,
-      meetingPointId,
-    });
-    await apiClient.post(
-      `/visiting/${selectedVisit.id}/assign-lead`,
-      {
+    try {
+      console.log("Sending assignment:", {
         internId: selectedIntern,
         meetingPointId,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem(
-            "visiting_token"
-          )}`,
+      });
+      await apiClient.post(
+        `/visiting/${selectedVisit.id}/assign-lead`,
+        {
+          internId: selectedIntern,
+          meetingPointId,
         },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("visiting_token")}`,
+          },
+        }
+      );
+
+      setShowAssignModal(false);
+      setSelectedIntern("");
+      setMeetingPointId("");
+      loadVisits();
+    } catch (err: unknown) {
+      console.error(err);
+
+      if (axios.isAxiosError(err)) {
+        console.log(err.response?.data);
+        alert(err.response?.data?.message || "Failed to assign intern");
+      } else {
+        alert("Failed to assign intern");
       }
-    );
-
-    setShowAssignModal(false);
-
-    setSelectedIntern("");
-    setMeetingPointId("");
-
-    loadVisits();
-
-  } catch (err: unknown) {
-  console.error(err);
-
-  if (axios.isAxiosError(err)) {
-    console.log(err.response?.data);
-
-    alert(
-      err.response?.data?.message || "Failed to assign intern"
-    );
-  } else {
-    alert("Failed to assign intern");
+    }
   }
-}
-}
 
   return (
     <main className="min-h-screen bg-gray-100 p-8">
-      <h1 className="mb-8 text-4xl font-black">
-        LivingGo Visiting Dashboard
-      </h1>
-      {loading && (
-        <div>
-          Loading...
-        </div>
-      )}
+      <h1 className="mb-8 text-4xl font-black">LivingGo Visiting Dashboard</h1>
+      {loading && <div>Loading...</div>}
       <div className="space-y-6">
         {visits.map((visit) => (
-          <div
-            key={visit.id}
-            className="rounded-2xl bg-white p-6 shadow"
-          >
+          <div key={visit.id} className="rounded-2xl bg-white p-6 shadow">
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <h2 className="font-bold">
-                  Student
-                </h2>
-                <p>
-                  {visit.student.name}
-                </p>
-                <p>
-                  {visit.student.phone}
-                </p>
+                <h2 className="font-bold">Student</h2>
+                <p>{visit.student.name}</p>
+                <p>{visit.student.phone}</p>
+                {visit.whatsappNumber && (
+                  <p className="text-sm text-green-600 mt-1">
+                    WhatsApp: {visit.whatsappNumber}
+                  </p>
+                )}
               </div>
               <div>
-                <h2 className="font-bold">
-                  Property
-                </h2>
-                <p>
-                  {visit.property.propertyCode}
-                </p>
-                <p>
-                  {visit.property.title}
-                </p>
-                <p>
-                  ₹{visit.property.price}
-                </p>
+                <h2 className="font-bold">Property</h2>
+                <p>{visit.property.propertyCode}</p>
+                <p>{visit.property.title}</p>
+                <p>₹{visit.property.price}</p>
               </div>
               <div>
-                <h2 className="font-bold">
-                  Visit
-                </h2>
-                <p>
-                  {new Date(
-                    visit.visitDate
-                  ).toLocaleDateString()}
-                </p>
-                <p>
-                  {visit.timeSlot}
-                </p>
+                <h2 className="font-bold">Visit</h2>
+                <p>{new Date(visit.visitDate).toLocaleDateString()}</p>
+                <p>{visit.timeSlot}</p>
               </div>
               <div>
-                <h2 className="font-bold">
-                  Coupon
-                </h2>
-                <p>
-                  {visit.couponCode ?? "-"}
-                </p>
+                <h2 className="font-bold">Coupon</h2>
+                <p>{visit.couponCode ?? "-"}</p>
               </div>
             </div>
             {visit.intern ? (
@@ -222,45 +184,56 @@ export default function VisitingDashboard() {
                   <div className="mt-6">
                     <button
                       onClick={() => {
-                        if (!visit.student.phone) {
-                          alert("Student phone number is not available.");
+                        // Prioritize WhatsApp number, fallback to student profile phone
+                        const phoneToSend = visit.whatsappNumber || visit.student.phone;
+
+                        if (!phoneToSend) {
+                          alert("Student WhatsApp number is not available.");
                           return;
                         }
-                      
+
+                        // Clean up the number by removing +, spaces, dashes to ensure wa.me link works perfectly
+                        let cleanPhone = phoneToSend.replace(/\D/g, "");
+
+                        // Standardize the Indian country code if missing
+                        if (cleanPhone.length === 10) {
+                          cleanPhone = `91${cleanPhone}`;
+                        }
+
                         const message = encodeURIComponent(
                           `Hi ${visit.student.name},
 
-                          Your LivingGo property visit has been scheduled.
+Your LivingGo property visit has been scheduled.
 
-                          👤 Assigned Lead:
-                          ${visit.intern?.name}
+👤 Assigned Lead:
+${visit.intern?.name}
 
-                          📞 Contact:
-                          ${visit.intern?.phone}
+📞 Contact:
+${visit.intern?.phone}
 
-                          📍 Meeting Point:
-                          ${visit.meetingPointId}
+📍 Meeting Point:
+${visit.meetingPointId}
 
-                          📅 Date:
-                          ${new Date(visit.visitDate).toLocaleDateString()}
+📅 Date:
+${new Date(visit.visitDate).toLocaleDateString()}
 
-                          ⏰ Time:
-                          ${visit.timeSlot}
+⏰ Time:
+${visit.timeSlot}
 
-                          🏠 Property:
-                          ${visit.property.title}
+🏠 Property:
+${visit.property.title}
 
-                          Please be available on time.
+Please be available on time.
 
-                          Thank you,
-                          LivingGo`
+Thank you,
+LivingGo`
                         );
                         window.open(
-                          `https://wa.me/91${visit.student.phone}?text=${message}`,
+                          `https://wa.me/${cleanPhone}?text=${message}`,
                           "_blank"
                         );
                       }}
-                      className="bg-green-600 hover:bg-green-700 text-white"
+                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
                     >
                       Send WhatsApp to Student
                     </button>
@@ -279,75 +252,49 @@ export default function VisitingDashboard() {
         ))}
       </div>
       {showAssignModal && selectedVisit && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+          <div className="bg-white rounded-2xl p-8 w-[500px]">
+            <h2 className="text-2xl font-bold mb-6">Assign Intern</h2>
 
-<div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+            <select
+              className="border rounded p-3 w-full mb-4"
+              value={selectedIntern}
+              onChange={(e) => setSelectedIntern(e.target.value)}
+            >
+              <option value="">Select Intern</option>
 
-<div className="bg-white rounded-2xl p-8 w-[500px]">
+              {interns.map((intern: Intern) => (
+                <option key={intern.id} value={intern.id}>
+                  {intern.name}
+                </option>
+              ))}
+            </select>
 
-<h2 className="text-2xl font-bold mb-6">
+            <input
+              placeholder="Meeting Point"
+              className="border rounded p-3 w-full mb-4"
+              value={meetingPointId}
+              onChange={(e) => setMeetingPointId(e.target.value)}
+            />
 
-Assign Intern
+            <div className="flex gap-4">
+              <button
+                onClick={() => setShowAssignModal(false)}
+                className="border rounded px-5 py-3"
+              >
+                Cancel
+              </button>
 
-</h2>
-
-<select
-className="border rounded p-3 w-full mb-4"
-value={selectedIntern}
-onChange={(e)=>setSelectedIntern(e.target.value)}
->
-
-<option value="">
-Select Intern
-</option>
-
-{interns.map((intern: Intern) => (
-
-<option
-key={intern.id}
-value={intern.id}
->
-
-{intern.name}
-
-</option>
-
-))}
-
-</select>
-
-<input
-placeholder="Meeting Point"
-className="border rounded p-3 w-full mb-4"
-value={meetingPointId}
-onChange={(e)=>setMeetingPointId(e.target.value)}
-/>
-
-<div className="flex gap-4">
-
-<button
-onClick={()=>setShowAssignModal(false)}
-className="border rounded px-5 py-3"
->
-
-Cancel
-
-</button>
-
-<button
-  onClick={assignIntern}
-  className="bg-black text-white rounded px-5 py-3"
->
-  Assign
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-)}
+              <button
+                onClick={assignIntern}
+                className="bg-black text-white rounded px-5 py-3"
+              >
+                Assign
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
-
-  }
+}
