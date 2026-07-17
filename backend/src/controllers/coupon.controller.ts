@@ -22,7 +22,7 @@ export const createCoupon = asyncHandler(async (req: Request, res: Response) => 
  * @access  Private (Super Admin only)
  */
 export const getCoupons = asyncHandler(async (req: Request, res: Response) => {
-  const { page = 1, limit = 10 } = req.query;
+  const { page = 1, limit = 100000 } = req.query;
   const skip = (Number(page) - 1) * Number(limit);
   
   const coupons = await couponService.getCoupons(skip, Number(limit));

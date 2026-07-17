@@ -137,23 +137,44 @@ export const scheduleVisit = asyncHandler(
       return next(new AppError("Visit date must be in the future", 400));
     }
 
-    // Validate coupon code if provided
+    // Validate coupon / referral code if provided
     if (couponCode) {
       const upperCode = couponCode.toUpperCase().trim();
+    
+      // 1. Check Admin Coupon
       const coupon = await prisma.coupon.findFirst({
         where: {
           code: upperCode,
           isActive: true,
         },
       });
+    
+      if (coupon) {
+        if (
+          coupon.maxUses !== null &&
+          coupon.currentUses >= coupon.maxUses
+        ) {
+          return next(
+            new AppError(
+              "Coupon has reached its maximum usage limit",
+              400
+            )
+          );
+        }
+    } else {
+    // 2. Check Partner Referral Code
+    const referral = await prisma.referral.findFirst({
+      where: {
+        code: upperCode,
+        status: "APPROVED",
+      },
+    });
 
-      if (!coupon) {
-        return next(new AppError("Invalid or expired coupon code", 400));
-      }
-
-      // Check if coupon has exceeded max uses (if maxUses is set)
-      if (coupon.maxUses !== null && coupon.currentUses >= coupon.maxUses) {
-        return next(new AppError("Coupon has reached its maximum usage limit", 400));
+    if (!referral) {
+      return next(
+        new AppError("Invalid or expired coupon code", 400)
+      );
+    }
       }
     }
 
@@ -245,10 +266,25 @@ export const scheduleVisit = asyncHandler(
     // If a valid coupon code was provided, increment its usage count
     if (couponCode) {
       const upperCode = couponCode.toUpperCase().trim();
-      await prisma.coupon.update({
-        where: { code: upperCode },
-        data: { currentUses: { increment: 1 } },
+
+      const coupon = await prisma.coupon.findUnique({
+        where: {
+          code: upperCode,
+        },
       });
+    
+      if (coupon) {
+        await prisma.coupon.update({
+          where: {
+            code: upperCode,
+          },
+          data: {
+            currentUses: {
+              increment: 1,
+            },
+          },
+        });
+      }
     }
   console.log("RETURNING SUCCESS");
   response.status(201).json({
