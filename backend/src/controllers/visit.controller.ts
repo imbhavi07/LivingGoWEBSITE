@@ -137,16 +137,6 @@ export const scheduleVisit = asyncHandler(
       return next(new AppError("Visit date must be in the future", 400));
     }
 
-    // Validate time slot format and range
-    if (!isValidTimeSlot(timeSlot)) {
-      return next(
-        new AppError(
-          "Invalid time slot. Time slots must be between 8:00 AM and 10:00 PM in 20-minute increments.",
-          400
-        )
-      );
-    }
-
     // Validate coupon code if provided
     if (couponCode) {
       const upperCode = couponCode.toUpperCase().trim();
