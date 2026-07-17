@@ -166,7 +166,7 @@ export default function LeadDashboard() {
               </h2>
 
               <p className="mt-2 text-gray-500">
-                You don't have any assigned visits yet.
+                You dont have any assigned visits yet.
               </p>
             </div>
           )}

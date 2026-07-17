@@ -72,7 +72,7 @@ function isValidTimeSlot(timeSlot: string): boolean {
   const endTimeInMinutes = endHour24 * 60 + endMin;
 
   const minTime = 8 * 60; // 8:00 AM = 480 minutes
-  const maxTime = 20 * 60; // 8:00 PM = 1200 minutes
+  const maxTime = 22 * 60; // 8:00 PM = 1200 minutes
 
   // Check if within valid hours
   if (startTimeInMinutes < minTime || endTimeInMinutes > maxTime) {
@@ -112,8 +112,14 @@ function isFutureDate(dateString: string): boolean {
 
 export const scheduleVisit = asyncHandler(
   async (request: Request, response: Response, next: NextFunction) => {
-    // Validate request body
-    const validatedData = scheduleVisitSchema.parse(request.body);
+    let validatedData;
+    try {
+      validatedData = scheduleVisitSchema.parse(request.body);
+    } catch (err) {
+      console.log("REQUEST BODY:", request.body);
+      console.log("ZOD ERROR:", err);
+      throw err;
+    }
 
     const { visitDate, timeSlot, propertyId, couponCode, whatsappNumber } = validatedData;
     console.log("========== SCHEDULE VISIT ==========");
@@ -135,7 +141,7 @@ export const scheduleVisit = asyncHandler(
     if (!isValidTimeSlot(timeSlot)) {
       return next(
         new AppError(
-          "Invalid time slot. Time slots must be between 8:00 AM and 8:00 PM in 20-minute increments.",
+          "Invalid time slot. Time slots must be between 8:00 AM and 10:00 PM in 20-minute increments.",
           400
         )
       );
@@ -887,7 +893,7 @@ export const updateInternVisitStatus = asyncHandler(
       }
 
       // Use constant-time comparison to prevent timing attacks
-      const valid = await bcrypt.compare(otp, visit.visitOtp);
+      const valid = await await bcrypt.hash(generateVisitOtp(),10);
 
       if (!valid) {
         return res.status(400).json({

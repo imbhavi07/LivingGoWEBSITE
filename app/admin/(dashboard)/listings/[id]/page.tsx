@@ -430,9 +430,9 @@ export default function AdminListingDetailsPage() {
                 <Button onClick={() => setEditing(true)} variant="secondary">
                   <Pencil className="h-4 w-4" aria-hidden /> Edit listing
                 </Button>
-                <button onClick={() => void approveListing(listing.id)}>
+                <Button onClick={() => void approveListing(listing.id)} variant="secondary">
                   <Check className="h-4 w-4" aria-hidden />Approve listing
-                </button>
+                </Button>
                 <Button variant="secondary" onClick={() => void rejectListing(listing.id)}>
                   <X className="h-4 w-4" aria-hidden />Reject listing
                 </Button>

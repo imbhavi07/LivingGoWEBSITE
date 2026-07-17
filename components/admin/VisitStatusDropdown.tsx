@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { Button } from "@/components/Button";
-type VisitStatus = "SCHEDULED" | "VISIT_COMPLETED" | "PRE_BOOKED" | "FULLY_BOOKED" | "CONVERTED_OTHER_PROPERTY" | "LOST";
+import { ChevronDown } from "lucide-react";
+export type VisitStatus = "SCHEDULED" | "VISIT_COMPLETED" | "PRE_BOOKED" | "FULLY_BOOKED" | "CONVERTED_OTHER_PROPERTY" | "LOST";
 
 interface VisitStatusDropdownProps {
   visitId: string;
