@@ -14,7 +14,7 @@ const ADMIN_ROLES: Record<string, "admin" | "SUPER_ADMIN"> = {
   "semwalb3@gmail.com": "SUPER_ADMIN",
   "rctaccommodations@gmail.com": "SUPER_ADMIN",
 
-  "falitnautiyal7@gmail.com": "admin",
+  "falitnautiyal7@gmail.com": "SUPER_ADMIN",
   "heypragya345@gmail.com": "admin",
   "shaannothere@gmail.com": "SUPER_ADMIN",
   "techshaan@hotmail.com": "admin",
