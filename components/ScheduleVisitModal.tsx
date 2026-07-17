@@ -21,10 +21,10 @@ export function ScheduleVisitModal({ propertyId, propertyCode, onClose }: Schedu
   
   const generateTimeSlots = () => {
     const slots: string[] = [];
-    let hour = 9;
+    let hour = 8;
     let minute = 0;
 
-    while (hour < 19) {
+    while (hour < 20) {
       const start = new Date();
       start.setHours(hour, minute, 0, 0);
 
@@ -243,7 +243,12 @@ export function ScheduleVisitModal({ propertyId, propertyCode, onClose }: Schedu
                   </div>
                   {errorMessage && <p className="mt-2 text-sm text-red-600">{errorMessage}</p>}
                 </div>
-                <div className="space-y-4">
+              </div>
+            </div>
+
+            {/* Sticky Footer (Referral & Buttons) */}
+            <div className="shrink-0 border-t border-black/5 bg-white px-6 py-5 z-20 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
+                       <div className="space-y-4">
                   <div className="flex items-center space-x-3">
                     <span className="h-5 w-5 text-ink">📱</span>
                     <div>
@@ -260,11 +265,6 @@ export function ScheduleVisitModal({ propertyId, propertyCode, onClose }: Schedu
                   />
                   {errorMessage && <p className="mt-2 text-sm text-red-600">{errorMessage}</p>}
                 </div>
-              </div>
-            </div>
-
-            {/* Sticky Footer (Referral & Buttons) */}
-            <div className="shrink-0 border-t border-black/5 bg-white px-6 py-5 z-20 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
               <div className="space-y-5">
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
