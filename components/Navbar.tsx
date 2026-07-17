@@ -10,6 +10,7 @@ import { usePathname } from "next/navigation";
 import { motion, Variants } from "framer-motion";
 import { Playpen_Sans } from 'next/font/google';
 import { Button } from "@/components/Button";
+
 const playpenSans = Playpen_Sans({
   subsets: ['latin'],
   variable: '--font-playpensans', 
@@ -49,8 +50,25 @@ const desktopItem: Variants = {
 };
 
 // --- Mobile Animation Physics ---
-const mobileContainer: Variants = {
+const mobileContainerBottom: Variants = {
   hidden: { y: 200, opacity: 0, scale: 0.3 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    scale: 1,
+    transition: { 
+      type: "spring", 
+      stiffness: 80, 
+      damping: 12,    
+      delay: 1,       
+      delayChildren: 1.3, 
+      staggerChildren: 0.1 
+    }
+  }
+};
+
+const mobileContainerTop: Variants = {
+  hidden: { y: -200, opacity: 0, scale: 0.3 },
   visible: {
     y: 0,
     opacity: 1,
@@ -89,6 +107,9 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Check if we are currently viewing a specific property details page
+  const isPropertyPage = pathname.startsWith("/properties/");
 
   useEffect(() => setMounted(true), []);
 
@@ -216,10 +237,13 @@ export function Navbar() {
 
       {/* MOBILE LIQUID GLASS NAVIGATION */}
       <motion.nav 
-        variants={mobileContainer}
+        variants={isPropertyPage ? mobileContainerTop : mobileContainerBottom}
         initial="hidden"
         animate="visible"
-        className="fixed inset-x-4 bottom-4 z-50 grid grid-cols-4 rounded-[2rem] bg-white/15 p-2 shadow-[0_12px_40px_rgba(0,0,0,0.12)] border border-white/40 md:hidden"
+        className={cn(
+          "fixed inset-x-4 z-50 grid grid-cols-4 rounded-[2rem] bg-white/15 p-2 shadow-[0_12px_40px_rgba(0,0,0,0.12)] border border-white/40 md:hidden",
+          isPropertyPage ? "top-4" : "bottom-4"
+        )}
         style={{
           backdropFilter: "blur(30px) saturate(170%)",
           WebkitBackdropFilter: "blur(30px) saturate(170%)",

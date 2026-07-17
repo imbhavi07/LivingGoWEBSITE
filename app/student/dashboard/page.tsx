@@ -1,11 +1,14 @@
-import { PrismaClient, Prisma } from "@prisma/client";
+import { PrismaClient } from '@prisma/client'
+import type { Prisma } from "@prisma/client";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 
-import { CheckCircle, Clock, XCircle, MapPin, ReceiptText, Home, Building2, Navigation, ExternalLink} from "lucide-react";
+import { CheckCircle, Clock, XCircle, MapPin, ReceiptText, Home, Building2, Navigation, ExternalLink, Calendar } from "lucide-react";
 import { format } from "date-fns";
+
+const prisma = new PrismaClient();
 
 type PaymentWithProperty = Prisma.TokenPaymentGetPayload<{
   include: {
@@ -22,7 +25,7 @@ type PaymentWithProperty = Prisma.TokenPaymentGetPayload<{
   };
 }>;
 
-const prisma = new PrismaClient();
+
 
 // Force dynamic rendering so the dashboard is always fresh
 export const dynamic = "force-dynamic";
@@ -36,14 +39,32 @@ export default async function StudentDashboardPage() {
   }
 
   // Find the internal User record using the Clerk ID
-  const user = await prisma.user.findUnique({
+  const user = await (prisma as any).user.findUnique({
     where: { clerkId: userId }
   });
+
+  // Fetch the student's visits
+  let visits: any[] = [];
+  if (user) {
+    visits = await (prisma as any).visit.findMany({
+      where: { studentId: user.id },
+      include: {
+        property: {
+          select: {
+            id: true,
+            title: true,
+            propertyCode: true,
+          },
+        },
+      },
+      orderBy: { visitDate: 'desc' },
+    });
+  }
 
   // Fetch the student's token payments using INTERNAL User ID (cuid)
   let payments: PaymentWithProperty[] = [];
   if (user) {
-    payments = await prisma.tokenPayment.findMany({
+    payments = await (prisma as any).tokenPayment.findMany({
       where: { studentId: user.id },
       include: {
         property: {
@@ -84,6 +105,61 @@ export default async function StudentDashboardPage() {
           <CheckCircle className="h-4 w-4" />
           Refer & Earn
         </Link>
+      </div>
+
+      {/* My Scheduled Visits */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-black text-ink mb-4">My Scheduled Visits</h2>
+        {visits.length === 0 ? (
+          <div className="flex flex-col items-center justify-center rounded-3xl bg-white px-6 py-12 text-center shadow-soft border border-black/5">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-linen mb-4">
+              <Calendar className="h-8 w-8 text-clay" />
+            </div>
+            <h3 className="text-xl font-black text-ink">No scheduled visits</h3>
+            <p className="mt-2 max-w-md text-sm text-muted">
+              You haven&apos;t scheduled any visits yet. Book a visit to a property to see it here.
+            </p>
+            <Link
+              href="/listings"
+              className="mt-6 rounded-full bg-ink px-6 py-3 text-sm font-semibold text-white hover:bg-ink/90 transition-colors"
+            >
+              Browse Properties
+            </Link>
+          </div>
+        ) : (
+          <div className="grid gap-6">
+            {visits.map((visit) => (
+              <div key={visit.id} className="border border-black/5 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-black text-ink">{visit.property?.title ?? 'Unknown Property'}</h3>
+                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                      {visit.leadStatus}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 text-sm text-muted">
+                    <div>
+                      <p className="font-bold">Property ID</p>
+                      <p>{visit.property?.propertyCode ?? 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="font-bold">Date</p>
+                      <p>{format(new Date(visit.visitDate), 'PPP')}</p>
+                    </div>
+                    <div>
+                      <p className="font-bold">Time Slot</p>
+                      <p>{visit.timeSlot}</p>
+                    </div>
+                    <div>
+                      <p className="font-bold">Token ID</p>
+                      <p className="font-mono">{visit.tokenId}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {payments.length === 0 ? (
