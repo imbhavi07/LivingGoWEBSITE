@@ -4,6 +4,7 @@ import { useState } from "react";
 import { X, CheckCircle, Loader2, AlertCircle, Calendar, Clock } from "lucide-react";
 import { apiClient, getApiErrorMessage } from "@/lib/api/client";
 import { Button } from "@/components/Button";
+
 type ScheduleVisitModalProps = {
   propertyId: string;
   propertyCode: string;
@@ -17,40 +18,39 @@ export function ScheduleVisitModal({ propertyId, propertyCode, onClose }: Schedu
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [visitDate, setVisitDate] = useState<string>("");
   const [timeSlot, setTimeSlot] = useState<string>("");
+  
   const generateTimeSlots = () => {
-  const slots: string[] = [];
+    const slots: string[] = [];
+    let hour = 9;
+    let minute = 0;
 
-  let hour = 9;
-  let minute = 0;
+    while (hour < 19) {
+      const start = new Date();
+      start.setHours(hour, minute, 0, 0);
 
-  while (hour < 19) {
-    const start = new Date();
-    start.setHours(hour, minute, 0, 0);
+      const end = new Date(start);
+      end.setMinutes(end.getMinutes() + 20);
 
-    const end = new Date(start);
-    end.setMinutes(end.getMinutes() + 20);
+      const format = (date: Date) =>
+        date.toLocaleTimeString("en-IN", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        });
 
-    const format = (date: Date) =>
-      date.toLocaleTimeString("en-IN", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      });
+      slots.push(`${format(start)} - ${format(end)}`);
 
-    slots.push(`${format(start)} - ${format(end)}`);
+      minute += 20;
 
-    minute += 20;
-
-    if (minute >= 60) {
-      minute = 0;
-      hour++;
+      if (minute >= 60) {
+        minute = 0;
+        hour++;
+      }
     }
-  }
+    return slots;
+  };
 
-  return slots;
-};
-
-const TIME_SLOTS = generateTimeSlots();
+  const TIME_SLOTS = generateTimeSlots();
   const [couponCode, setCouponCode] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [whatsappNumber, setWhatsappNumber] = useState<string>("");
@@ -113,7 +113,8 @@ const TIME_SLOTS = generateTimeSlots();
   };
 
   const isValidWhatsAppNumber = (number: string): boolean => {
-    const whatsappRegex = /^\\+91[0-9]{10}$/;
+    // FIXED: Accept either standard 10 digits OR +91 followed by 10 digits
+    const whatsappRegex = /^(?:\+91)?[0-9]{10}$/;
     return whatsappRegex.test(number);
   };
 
@@ -137,12 +138,17 @@ const TIME_SLOTS = generateTimeSlots();
       return;
     }
     if (!isValidWhatsAppNumber(whatsappNumber)) {
-      setErrorMessage("Please enter a valid WhatsApp number (e.g., +919876543210)");
+      setErrorMessage("Please enter a valid 10-digit WhatsApp number");
       return;
     }
 
     setIsSubmitting(true);
     setErrorMessage(null);
+
+    // FIXED: Format the number with +91 if the user didn't include it so the backend doesn't crash
+    const formattedWhatsappNumber = whatsappNumber.startsWith("+91")
+      ? whatsappNumber
+      : `+91${whatsappNumber}`;
 
     try {
       const response = await apiClient.post("/visits/schedule", {
@@ -150,7 +156,7 @@ const TIME_SLOTS = generateTimeSlots();
         visitDate: new Date(visitDate).toISOString(),
         timeSlot,
         couponCode: couponCode || null,
-        whatsappNumber: whatsappNumber,
+        whatsappNumber: formattedWhatsappNumber,
       });
 
       setVisitDetails(response.data.data);
@@ -242,14 +248,14 @@ const TIME_SLOTS = generateTimeSlots();
                     <span className="h-5 w-5 text-ink">📱</span>
                     <div>
                       <p className="font-semibold text-ink">WhatsApp Number</p>
-                      <p className="text-sm text-muted">Enter your WhatsApp number (e.g., +919876543210)</p>
+                      <p className="text-sm text-muted">Enter your WhatsApp number (e.g., 9876543210)</p>
                     </div>
                   </div>
                   <input
                     type="tel"
                     value={whatsappNumber}
                     onChange={(e) => setWhatsappNumber(e.target.value.replace(/\s/g, ''))} // Remove spaces
-                    placeholder="+919876543210"
+                    placeholder="9876543210"
                     className="w-full px-4 py-3 bg-white border border-black/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-ink transition-all duration-200"
                   />
                   {errorMessage && <p className="mt-2 text-sm text-red-600">{errorMessage}</p>}
