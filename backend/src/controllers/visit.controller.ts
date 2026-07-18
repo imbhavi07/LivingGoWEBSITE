@@ -292,23 +292,14 @@ export const scheduleVisit = asyncHandler(
 
     data: {
       visitId: visit.id,
-
       tokenId: visit.tokenId,
-
       visitOtp: visit.visitOtp,
-
       visitDate: visit.visitDate,
-
       timeSlot: visit.timeSlot,
-
       couponCode: visit.couponCode,
-
       status: visit.leadStatus,
-
       supervisor: VISIT_CONFIG.supervisor,
-
       student: visit.student,
-
       property: visit.property,
     },
   });

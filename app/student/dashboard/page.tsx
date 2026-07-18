@@ -1,5 +1,4 @@
 import { PrismaClient } from '@prisma/client'
-import type { Prisma } from "@prisma/client";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -10,24 +9,6 @@ import { format } from "date-fns";
 
 const prisma = new PrismaClient();
 
-type PaymentWithProperty = Prisma.TokenPaymentGetPayload<{
-  include: {
-    property: {
-      select: {
-        id: true;
-        title: true;
-        location: true;
-        images: true;
-        lat: true;
-        lng: true;
-      };
-    };
-  };
-}>;
-
-
-
-// Force dynamic rendering so the dashboard is always fresh
 export const dynamic = "force-dynamic";
 
 export default async function StudentDashboardPage() {
@@ -62,7 +43,7 @@ export default async function StudentDashboardPage() {
   }
 
   // Fetch the student's token payments using INTERNAL User ID (cuid)
-  let payments: PaymentWithProperty[] = [];
+  let payments: any[] = [];
   if (user) {
     payments = await (prisma as any).tokenPayment.findMany({
       where: { studentId: user.id },
@@ -132,12 +113,12 @@ export default async function StudentDashboardPage() {
               <div key={visit.id} className="border border-black/5 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-black text-ink">{visit.property?.title ?? 'Unknown Property'}</h3>
+                    <h3 className="text-lg font-black text-ink">{visit.property?.id ?? 'Unknown Property'}</h3>
                     <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
                       {visit.leadStatus}
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 text-sm text-muted">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-muted">
                     <div>
                       <p className="font-bold">Property ID</p>
                       <p>{visit.property?.propertyCode ?? 'N/A'}</p>
@@ -153,6 +134,12 @@ export default async function StudentDashboardPage() {
                     <div>
                       <p className="font-bold">Token ID</p>
                       <p className="font-mono">{visit.tokenId}</p>
+                    </div>
+                    <div>
+                      <p className="font-bold">Visit OTP</p>
+                      <p className="font-mono text-lg font-black text-green-700">
+                        {visit.visitOtp}
+                      </p>
                     </div>
                   </div>
                 </div>
