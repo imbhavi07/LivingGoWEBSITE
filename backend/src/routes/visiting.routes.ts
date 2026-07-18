@@ -49,3 +49,13 @@ visitingRouter.get(
   "/interns",
   internController.getInterns
 );
+
+visitingRouter.patch(
+  "/interns/:id/toggle",
+  internController.toggleInternStatus
+);
+
+visitingRouter.delete(
+  "/interns/:id",
+  internController.deleteIntern
+);

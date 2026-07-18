@@ -353,26 +353,15 @@ enum ListingSource {
 }
 
 model Intern {
-
   id String @id @default(cuid())
-
   supervisorId String
-
   supervisor User @relation("SupervisorInterns", fields: [supervisorId], references: [id])
-
   name String
-
   phone String
-
   username String @unique
-
   passwordHash String
-
   active Boolean @default(true)
-
   createdAt DateTime @default(now())
-
   updatedAt DateTime @updatedAt
-
   visits Visit[]
 }

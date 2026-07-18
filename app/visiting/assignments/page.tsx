@@ -85,6 +85,8 @@ export default function VisitingDashboard() {
       }
     );
     setInterns(response.data.interns);
+    setSelectedIntern(visit.intern?.id || "");
+    setMeetingPointId(visit.meetingPointId || "");
     setShowAssignModal(true);
   }
 
@@ -162,7 +164,7 @@ export default function VisitingDashboard() {
             {visit.intern ? (
               <div className="mt-6 rounded-2xl border border-green-200 bg-green-50 p-5">
                 <h3 className="mb-3 text-lg font-bold text-green-800">
-                  Assigned Lead
+                  Assigned Intern
                 </h3>
                 <div className="space-y-2">
                   <p>
@@ -181,6 +183,14 @@ export default function VisitingDashboard() {
                     <span className="font-semibold">Meeting Point:</span>{" "}
                     {visit.meetingPointId || "-"}
                   </p>
+                  <div className="mt-5">
+                    <button
+                      className="bg-orange-600 text-white px-4 py-2 rounded"
+                      onClick={()=>openAssignModal(visit)}
+                    >
+                      Reassign Intern
+                    </button>
+                  </div>
                   <div className="mt-6">
                     <button
                       onClick={() => {
@@ -202,31 +212,23 @@ export default function VisitingDashboard() {
 
                         const message = encodeURIComponent(
                           `Hi ${visit.student.name},
-
-Your LivingGo property visit has been scheduled.
-
-👤 Assigned Lead:
-${visit.intern?.name}
-
-📞 Contact:
-${visit.intern?.phone}
-
-📍 Meeting Point:
-${visit.meetingPointId}
-
-📅 Date:
-${new Date(visit.visitDate).toLocaleDateString()}
-
-⏰ Time:
-${visit.timeSlot}
-
-🏠 Property:
-${visit.property.title}
-
-Please be available on time.
-
-Thank you,
-LivingGo`
+                          Your LivingGo property visit has been scheduled.
+                          Assigned LivingGo Partner:
+                          ${visit.intern?.name}
+                          Contact:
+                          ${visit.intern?.phone}
+                          Meeting Point:
+                          ${visit.meetingPointId}
+                          Date:
+                          ${new Date(visit.visitDate).toLocaleDateString()}
+                          Time:
+                          ${visit.timeSlot}
+                          Property:
+                          ${visit.property.title}
+                          Please be available on time.
+                          Only provide the OTP once our team member gets to you.
+                          Thank you,
+                          LivingGo`
                         );
                         window.open(
                           `https://wa.me/${cleanPhone}?text=${message}`,

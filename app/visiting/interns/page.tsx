@@ -119,6 +119,8 @@ export default function InternPage() {
               <th>Name</th>
               <th>Username</th>
               <th>Status</th>
+              <th>Block</th>
+              <th>Delete</th>
 
             </tr>
 
@@ -134,17 +136,56 @@ export default function InternPage() {
                 <td>{intern.name}</td>
                 <td>{intern.username}</td>
                 <td>
-                  {intern.active ? "Active" : "Inactive"}
+                  {intern.active ? "Active" : "Blocked"}
                 </td>
-              </tr>
+                <td>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={intern.active}
+                      onChange={async () => {
+                        await apiClient.patch(
+                          `/visiting/interns/${intern.id}/toggle`,
+                          {},
+                          {
+                            headers: {
+                              Authorization: `Bearer ${localStorage.getItem("visiting_token")}`,
+                            },
+                          }
+                        );
+                        loadInterns();
+                      }}
+                    />
+                    <div className="w-14 h-8 bg-gray-300 rounded-full peer peer-checked:bg-green-500 transition-all"></div>
+                    <div className="absolute left-1 top-1 h-6 w-6 rounded-full bg-white transition-all peer-checked:translate-x-6"></div>
+                  </label>
+                </td>
+
+                <td>
+                  <button
+                    className="bg-red-600 text-white px-3 py-2 rounded"
+                    onClick={async()=>{
+                    if(!confirm("Delete this intern permanently?")) return;
+                    await apiClient.delete(
+                      `/visiting/interns/${intern.id}`,
+                      {
+                        headers:{
+                        Authorization:`Bearer ${localStorage.getItem("visiting_token")}`,
+                      },
+                    }
+                  );
+                  loadInterns();
+                  }}
+                  >
+                  Delete
+                  </button>
+                  </td>
+                </tr>
             ))}
-
           </tbody>
-
         </table>
-
       </div>
-
     </main>
   );
 }
