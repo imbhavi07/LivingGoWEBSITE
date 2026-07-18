@@ -239,7 +239,7 @@ export const getAdminCoupons = asyncHandler(async (_request: Request, response: 
       return {
         id: coupon.id,
         partnerName,
-        couponCode: coupon.code,
+        code: coupon.code,
         totalVisits,
         totalConvertedBookings,
         type: "ADMIN",
@@ -260,7 +260,7 @@ export const getAdminCoupons = asyncHandler(async (_request: Request, response: 
   const partnerCoupons = referrals.map((referral) => ({
     id: referral.id,
     partnerName: referral.user?.name ?? "Unknown",
-    couponCode: referral.code,
+    code: referral.code,
     totalVisits: referral.invites,
     totalConvertedBookings: referral.successful,
     type: "PARTNER",

@@ -278,36 +278,46 @@ export default function CouponManagement() {
                 <tr key={coupon.id} className="border-b border-ink/10 hover:bg-linen/50 transition-colors">
                   <td className="px-6 py-4 font-mono text-sm font-bold">{coupon.code}</td>
                   <td className="px-6 py-4 text-sm">
-                    {coupon.discountType === "PERCENTAGE" ? `${coupon.value}% off` : `₹${coupon.value} off`}
+                    {coupon.discountType
+                    ? coupon.discountType === "PERCENTAGE"
+                      ? `${coupon.value}% off`
+                      : `₹${coupon.value} off`
+                    : (
+                      <span className="text-ink/40">Referral Code</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-sm">
-                    {coupon.targetPlans.length > 0 ? coupon.targetPlans.join(", ") : <span className="text-ink/40">All plans</span>}
+                    {coupon.targetPlans?.length
+                      ? coupon.targetPlans.join(", ")
+                      : <span className="text-ink/40">Referral Code</span>}
                   </td>
                   <td className="px-6 py-4 text-sm text-ink/80">
-                    {new Date(coupon.validFrom).toLocaleDateString()} to {new Date(coupon.validTo).toLocaleDateString()}
+                    {coupon.validFrom && coupon.validTo
+                    ? `${new Date(coupon.validFrom).toLocaleDateString()} to ${new Date(coupon.validTo).toLocaleDateString()}`
+                    : <span className="text-ink/40">No expiry</span>}
                   </td>
                   <td className="px-6 py-4 text-sm flex items-center space-x-3 mt-1">
                     <span className={`text-xs font-bold ${coupon.isActive ? "text-moss" : "text-clay"}`}>
-                      {coupon.isActive ? "Active" : "Inactive"}
+                      {(coupon.isActive ?? true) ? "Active" : "Inactive"}
                     </span>
                     <label className="relative inline-flex h-6 w-11 cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={coupon.isActive}
+                        checked={coupon.isActive ?? true}
                         onChange={(e) => handleToggleStatus(coupon.id, e.target.checked)}
                         className="sr-only peer"
                         disabled={toggling.has(coupon.id)}
                       />
                       <div className="w-11 h-6 bg-ink/20 rounded-full peer peer-focus-visible:ring-2 peer-focus-visible:ring-ink peer-checked:bg-moss transition-colors">
-                        <div className={`inline-block h-5 w-5 mt-0.5 ml-0.5 rounded-full bg-white shadow transition-transform ${coupon.isActive ? 'translate-x-5' : 'translate-x-0'}`}></div>
+                        <div className={`inline-block h-5 w-5 mt-0.5 ml-0.5 rounded-full bg-white shadow transition-transform ${(coupon.isActive ?? true) ? "translate-x-5" : "translate-x-0"}`}></div>
                       </div>
                     </label>
                   </td>
                   <td className="px-6 py-4 text-center space-x-2">
                     <button
                       onClick={() => handleEditCoupon(coupon)}
+                      disabled={!coupon.discountType || updating || creating}
                       className="px-3 py-1.5 text-xs font-bold bg-ink/5 text-ink rounded hover:bg-ink/10 transition-colors disabled:opacity-50"
-                      disabled={updating || creating}
                     >
                       Edit
                     </button>
