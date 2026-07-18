@@ -253,7 +253,6 @@ const propertyCardSelect = {
 } satisfies Prisma.PropertySelect;
 
 export async function getProperties(query: Record<string, unknown>, viewerRole?: Role) {
-  // Check for infinite scroll flag
   const infiniteScroll = query.infiniteScroll === "true";
 
   let page: number, limit: number, skip: number;
@@ -263,38 +262,43 @@ export async function getProperties(query: Record<string, unknown>, viewerRole?:
     limit = pagination.limit;
     skip = pagination.skip;
   } else {
-    // For infinite scroll, we want all results (use a reasonable upper bound)
     page = 1;
-    limit = 10000; // Large enough to get all approved properties
+    limit = 10000;
     skip = 0;
   }
 
   const status = query.status as PropertyStatus | undefined;
   
-  // ✅ FIXED: Separated generic text search, exact location dropdown, and extracted maxBudget
   const search = String(query.search ?? "").trim(); 
   const location = String(query.location ?? "").trim();
   const maxBudget = query.budget ? Number(query.budget) : undefined;
 
+  // ✅ FIXED: Split the search string by spaces into an array of individual words
+  const searchWords = search ? search.split(/\s+/).filter(word => word.length > 0) : [];
+
   const where: Prisma.PropertyWhereInput = {
     status: viewerRole === "admin" ? status : "approved",
-    ...(search
+    
+    // ✅ FIXED: Cross-examine every single keyword against title, description, location, or code
+    ...(searchWords.length > 0
       ? {
-          OR: [
-            { title: { contains: search, mode: "insensitive" } },
-            { location: { contains: search, mode: "insensitive" } },
-            { propertyCode: { contains: search, mode: "insensitive" } },
-          ],
+          AND: searchWords.map(word => ({
+            OR: [
+              { title: { contains: word, mode: "insensitive" } },
+              { description: { contains: word, mode: "insensitive" } },
+              { location: { contains: word, mode: "insensitive" } },
+              { propertyCode: { contains: word, mode: "insensitive" } },
+            ],
+          })),
         }
       : {}),
-    // ✅ FIXED: Applies specific location, roomType, preference, and price budget dynamically
+
     ...(location ? { location: { contains: location, mode: "insensitive" } } : {}),
     ...(query.roomType ? { roomType: query.roomType as RoomType } : {}),
     ...(query.preference ? { preference: query.preference as GenderPreference } : {}),
     ...(maxBudget && maxBudget < 45000 ? { price: { lte: maxBudget } } : {})
   };
 
-  // ✅ FIXED: Updated cache key to include all new filter variables so users don't get stale arrays
   const cacheKey = `properties:${JSON.stringify({ status: where.status, search, location, budget: maxBudget, roomType: where.roomType, preference: where.preference, page, limit, infiniteScroll })}`;
   if (!viewerRole) {
     const cachedEntry = cache.get(cacheKey);
