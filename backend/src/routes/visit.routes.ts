@@ -21,6 +21,11 @@ visitRouter.get(
   visitController.getInterns
 );
 
+visitRouter.patch(
+    "/lead/visit/:id/verify-otp",
+    visitController.verifyVisitOtp
+);
+
 visitRouter.post(
   "/interns",
   visitController.createIntern
