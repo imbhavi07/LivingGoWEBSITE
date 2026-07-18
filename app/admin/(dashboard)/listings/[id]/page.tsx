@@ -10,7 +10,6 @@ import { AdminStatusBadge } from "@/components/admin/AdminStatusBadge";
 import { Button } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { AdminPropertyForm } from "@/components/admin/AdminPropertyForm";
-import { approveListing, rejectListing, updateListingWithFormData } from "@/lib/api/admin";
 import { OwnerListingStatus } from "@/types/owner";
 import { useAdminListing } from "@/hooks/useAdmin";
 import { useToast } from "@/contexts/ToastContext";
@@ -18,6 +17,9 @@ import { formatPrice } from "@/lib/utils";
 import { PanoramaUploadModal } from "@/components/admin/PanoramaUploadModal";
 import { updatePanorama, deletePanorama, replacePanoramaImage} from "@/lib/api/panoramas";
 import {
+  approveListing, 
+  rejectListing, 
+  updateListing, // ✅ Changed from updateListingWithFormData to send clean JSON
   addPropertyImages,
   deletePropertyImage,
   replacePropertyImage
@@ -35,10 +37,18 @@ export default function AdminListingDetailsPage() {
   const [editingSortOrder, setEditingSortOrder] = useState(0);
   const [deleteListingId, setDeleteListingId] = useState<string | null>(null);
   
-  async function handleSave(data: FormData) {
+  // ✅ FIXED: Now accepts clean JSON data and files separately to prevent 500 crashes
+  async function handleSave(data: any, files: File[]) {
     setIsSaving(true);
     try {
-      await updateListingWithFormData(params.id, data);
+      // 1. Send the clean JSON payload (Preserves numbers and arrays)
+      await updateListing(params.id, data);
+      
+      // 2. Upload any new images added via the form
+      if (files && files.length > 0) {
+        await addPropertyImages(params.id, files);
+      }
+
       await mutate();
       setEditing(false);
       showToast("Listing updated successfully!", "success");
@@ -73,7 +83,7 @@ export default function AdminListingDetailsPage() {
               </Button>
             </div>
             <AdminPropertyForm
-              // ✅ FIXED: Passed all necessary properties so the form binds correctly
+              // ✅ FIXED: Passed all necessary properties & bypassed TS errors with `as any`
               initialData={{
                 id: listing.id,
                 title: listing.title,
@@ -103,7 +113,6 @@ export default function AdminListingDetailsPage() {
                 securityDepositMonths: (listing as any).securityDepositMonths,
                 managerContact: (listing as any).managerContact,
                 securityContact: (listing as any).securityContact,
-                // ✅ FIXED: Added manualOwnerName to the data mapping
                 manualOwnerName: (listing as any).manualOwnerName, 
               } as any}
               onSave={handleSave}
