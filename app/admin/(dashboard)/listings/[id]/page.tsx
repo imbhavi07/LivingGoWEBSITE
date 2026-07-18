@@ -103,6 +103,8 @@ export default function AdminListingDetailsPage() {
                 securityDepositMonths: (listing as any).securityDepositMonths,
                 managerContact: (listing as any).managerContact,
                 securityContact: (listing as any).securityContact,
+                // ✅ FIXED: Added manualOwnerName to the data mapping
+                manualOwnerName: (listing as any).manualOwnerName, 
               } as any}
               onSave={handleSave}
               onCancel={() => setEditing(false)}

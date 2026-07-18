@@ -304,56 +304,56 @@ export function AdminPropertyForm({ initialData, onSave, onCancel }: AdminProper
     const payload: OwnerPropertyPayload = {
       ...parsed.data,
       imageFiles: imageFiles,
-      roomTypeMappings: [], // Empty array as required by API
+      roomTypeMappings: [], 
       lat: pickedLocation.lat,
       lng: pickedLocation.lng,
     };
 
-    // Handle manual owner name for SUPER_ADMIN
     const manualOwnerName = formData.get("manualOwnerName") as string | null;
-    if (manualOwnerName && manualOwnerName.trim() !== "") {
-      // If manual owner name is provided but no owner is linked,
-      // the backend should handle setting source: 'LISTED'
-      // We'll pass it in the FormData directly
-    }
 
     try {
-      // Convert payload to FormData for API call
-      const formData = new FormData();
-      formData.append("title", payload.title);
-      formData.append("description", payload.description);
-      formData.append("price", String(payload.price));
-      if (payload.priceSingle !== undefined) formData.append("priceSingle", String(payload.priceSingle));
-      if (payload.bedsSingle !== undefined) formData.append("bedsSingle", String(payload.bedsSingle));
-      if (payload.priceDouble !== undefined) formData.append("priceDouble", String(payload.priceDouble));
-      if (payload.bedsDouble !== undefined) formData.append("bedsDouble", String(payload.bedsDouble));
-      if (payload.priceTriple !== undefined) formData.append("priceTriple", String(payload.priceTriple));
-      if (payload.bedsTriple !== undefined) formData.append("bedsTriple", String(payload.bedsTriple));
-      if (payload.securityDepositMonths !== undefined) formData.append("securityDepositMonths", String(payload.securityDepositMonths));
-      formData.append("location", payload.location);
-      if (payload.lat !== undefined) formData.append("lat", String(payload.lat));
-      if (payload.lng !== undefined) formData.append("lng", String(payload.lng));
-      formData.append("roomType", payload.roomType);
-      if (payload.sharedType !== undefined) formData.append("sharedType", payload.sharedType);
-      formData.append("preference", payload.preference);
-      if (payload.mealPlan !== undefined) formData.append("mealPlan", payload.mealPlan);
-      formData.append("mealTimes", JSON.stringify(payload.mealTimes ?? []));
-      if (payload.curfewTime !== undefined) formData.append("curfewTime", payload.curfewTime);
-      if (payload.noticePeriod !== undefined) formData.append("noticePeriod", payload.noticePeriod);
-      if (payload.rulesStrictness !== undefined) formData.append("rulesStrictness", payload.rulesStrictness);
-      formData.append("facilities", JSON.stringify(payload.facilities));
+      const apiFormData = new FormData();
+      apiFormData.append("title", payload.title);
+      apiFormData.append("description", payload.description);
+      apiFormData.append("price", String(payload.price));
+      if (payload.priceSingle !== undefined) apiFormData.append("priceSingle", String(payload.priceSingle));
+      if (payload.bedsSingle !== undefined) apiFormData.append("bedsSingle", String(payload.bedsSingle));
+      if (payload.priceDouble !== undefined) apiFormData.append("priceDouble", String(payload.priceDouble));
+      if (payload.bedsDouble !== undefined) apiFormData.append("bedsDouble", String(payload.bedsDouble));
+      if (payload.priceTriple !== undefined) apiFormData.append("priceTriple", String(payload.priceTriple));
+      if (payload.bedsTriple !== undefined) apiFormData.append("bedsTriple", String(payload.bedsTriple));
+      if (payload.securityDepositMonths !== undefined) apiFormData.append("securityDepositMonths", String(payload.securityDepositMonths));
+      apiFormData.append("location", payload.location);
+      if (payload.lat !== undefined) apiFormData.append("lat", String(payload.lat));
+      if (payload.lng !== undefined) apiFormData.append("lng", String(payload.lng));
+      apiFormData.append("roomType", payload.roomType);
+      if (payload.sharedType !== undefined) apiFormData.append("sharedType", payload.sharedType);
+      apiFormData.append("preference", payload.preference);
+      if (payload.mealPlan !== undefined) apiFormData.append("mealPlan", payload.mealPlan);
+      apiFormData.append("mealTimes", JSON.stringify(payload.mealTimes ?? []));
+      if (payload.curfewTime !== undefined) apiFormData.append("curfewTime", payload.curfewTime);
+      if (payload.noticePeriod !== undefined) apiFormData.append("noticePeriod", payload.noticePeriod);
+      if (payload.rulesStrictness !== undefined) apiFormData.append("rulesStrictness", payload.rulesStrictness);
+      apiFormData.append("facilities", JSON.stringify(payload.facilities));
 
-      // Add image files
+      // ✅ FIXED: Actually appending the contact numbers to the FormData!
+      if (payload.managerContact) apiFormData.append("managerContact", payload.managerContact);
+      else apiFormData.append("managerContact", "");
+
+      if (payload.securityContact) apiFormData.append("securityContact", payload.securityContact);
+      else apiFormData.append("securityContact", "");
+
       payload.imageFiles?.forEach((file) => {
-        formData.append("images", file);
+        apiFormData.append("images", file);
       });
 
-      // Add manual owner name if provided
       if (manualOwnerName && manualOwnerName.trim() !== "") {
-        formData.append("manualOwnerName", manualOwnerName.trim());
+        apiFormData.append("manualOwnerName", manualOwnerName.trim());
+      } else {
+        apiFormData.append("manualOwnerName", "");
       }
 
-      await onSave(formData);
+      await onSave(apiFormData);
       showToast("Property saved successfully!", "success");
       onCancel();
     } catch (err) {
@@ -406,6 +406,8 @@ export function AdminPropertyForm({ initialData, onSave, onCancel }: AdminProper
                 type="text"
                 className="input"
                 placeholder="e.g., Ramesh Kumar"
+                // ✅ FIXED: Bound the default value to the input field so it renders
+                defaultValue={(initialData as any)?.manualOwnerName || ""}
               />
               <p className="text-xs text-muted">Use this if the property owner is not registered on the platform.</p>
             </label>
