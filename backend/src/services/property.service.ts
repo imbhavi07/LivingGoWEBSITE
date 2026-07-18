@@ -270,39 +270,32 @@ export async function getProperties(query: Record<string, unknown>, viewerRole?:
   }
 
   const status = query.status as PropertyStatus | undefined;
-  const search = String(query.location ?? "").trim();
+  
+  // ✅ FIXED: Separated generic text search, exact location dropdown, and extracted maxBudget
+  const search = String(query.search ?? "").trim(); 
+  const location = String(query.location ?? "").trim();
+  const maxBudget = query.budget ? Number(query.budget) : undefined;
+
   const where: Prisma.PropertyWhereInput = {
     status: viewerRole === "admin" ? status : "approved",
     ...(search
       ? {
           OR: [
-            {
-              title: {
-                contains: search,
-                mode: "insensitive",
-              },
-            },
-            {
-              location: {
-                contains: search,
-                mode: "insensitive",
-              },
-            },
-            {
-              propertyCode: {
-                contains: search,
-                mode: "insensitive",
-              },
-            },
+            { title: { contains: search, mode: "insensitive" } },
+            { location: { contains: search, mode: "insensitive" } },
+            { propertyCode: { contains: search, mode: "insensitive" } },
           ],
         }
       : {}),
-    roomType: query.roomType as RoomType | undefined,
-    preference: query.preference as GenderPreference | undefined,
+    // ✅ FIXED: Applies specific location, roomType, preference, and price budget dynamically
+    ...(location ? { location: { contains: location, mode: "insensitive" } } : {}),
+    ...(query.roomType ? { roomType: query.roomType as RoomType } : {}),
+    ...(query.preference ? { preference: query.preference as GenderPreference } : {}),
+    ...(maxBudget && maxBudget < 45000 ? { price: { lte: maxBudget } } : {})
   };
 
-  // Include infiniteScroll in cache key to avoid mixing cached results
-  const cacheKey = `properties:${JSON.stringify({ status: where.status, search, roomType: where.roomType, preference: where.preference, page, limit, infiniteScroll })}`;
+  // ✅ FIXED: Updated cache key to include all new filter variables so users don't get stale arrays
+  const cacheKey = `properties:${JSON.stringify({ status: where.status, search, location, budget: maxBudget, roomType: where.roomType, preference: where.preference, page, limit, infiniteScroll })}`;
   if (!viewerRole) {
     const cachedEntry = cache.get(cacheKey);
     if (cachedEntry && Date.now() - cachedEntry.timestamp < CACHE_TTL_MS) {
@@ -323,8 +316,6 @@ export async function getProperties(query: Record<string, unknown>, viewerRole?:
     prisma.property.count({ where }),
   ]);
 
-  // For infinite scroll, we don't need pagination metadata in the same way
-  // But we keep the same structure for compatibility with frontend
   const result = {
     items,
     meta: {
