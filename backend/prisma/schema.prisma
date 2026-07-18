@@ -251,24 +251,25 @@ model Referral {
 }
 
 model Visit {
-  id              String      @id @default(cuid())
-  tokenId         String      @unique
-  studentId       String
-  propertyId      String
-  assignedLeadId  String?
-  intern Intern? @relation(fields: [assignedLeadId], references: [id])
-  meetingPointId  String?
-  visitDate       DateTime
-  timeSlot        String
-  visitOtp        String
-  couponCode      String?
-  leadStatus      VisitStatus @default(SCHEDULED)
-  notes           String?
-  whatsappNumber  String?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  student         User        @relation("UserVisits", fields: [studentId], references: [id])
-  property        Property    @relation("PropertyVisits", fields: [propertyId], references: [id])
+  id                  String        @id @default(cuid())
+  tokenId             String        @unique
+  studentId           String
+  propertyId          String
+  assignedLeadId      String?
+  intern              Intern?       @relation(fields: [assignedLeadId], references: [id])
+  meetingPointId      String?
+  visitDate           DateTime
+  timeSlot            String
+  visitOtp            String
+  visitOtpVerified    Boolean       @default(false)
+  couponCode          String?
+  leadStatus          VisitStatus   @default(SCHEDULED)
+  notes               String?
+  whatsappNumber      String?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  student             User          @relation("UserVisits", fields: [studentId], references: [id])
+  property            Property      @relation("PropertyVisits", fields: [propertyId], references: [id])
   @@index([studentId])
   @@index([propertyId])
   @@index([tokenId])
