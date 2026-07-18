@@ -10,8 +10,8 @@ export function buttonClasses(variant: ButtonProps["variant"] = "primary", size:
   return cn(
     "inline-flex items-center justify-center gap-2 rounded-full font-semibold transition focus:outline-none focus:ring-2 focus:ring-ink/20 disabled:cursor-not-allowed disabled:opacity-60",
     size === "sm" && "min-h-9 px-3 text-xs",
-    size === "md" && "min-h-11 px-5 text-sm",
-    size === "lg" && "min-h-14 px-6 text-base",
+    size === "md" && "min-h-10 px-4 text-xs sm:min-h-11 sm:px-5 sm:text-sm",
+    size === "lg" && "min-h-12 px-5 text-sm sm:min-h-14 sm:px-6 sm:text-base",
     variant === "primary" && "bg-ink text-white shadow-soft hover:bg-black",
     variant === "secondary" && "bg-white text-ink shadow-soft ring-1 ring-black/5 hover:bg-linen",
     variant === "ghost" && "bg-transparent text-ink hover:bg-black/5",

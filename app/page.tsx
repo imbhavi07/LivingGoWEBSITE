@@ -86,53 +86,55 @@ export default function HomePage() {
                 Govt. Approved Platform
               </p>
             </LiquidGlass>
-            <Image
-              src={logo}
-              alt="LivingGo Logo"
-              width={992}
-              height={597}
-              priority
-              className="ml-[-50px] md:ml-[15px] mt-[-40px] md:mt-5 h-auto w-auto scale-75 md:scale-100 drop-shadow-[0_4px_3px_rgba(0,0,0,0.3)]"
-            />
+            <div className="ml-[-50px] md:ml-[15px] mt-[-40px] md:mt-5 relative w-[280px] md:w-auto h-auto max-w-full">
+              <Image
+                src={logo}
+                alt="LivingGo Logo"
+                width={992}
+                height={597}
+                priority
+                className="ml-[20px] md:ml-[15px] mt-[3px] md:mt-5 h-auto w-auto scale-75 md:scale-100 drop-shadow-[0_4px_3px_rgba(0,0,0,0.3)]"
+              />
+            </div>
             <p className="mt-[-30px] md:mt-5 max-w-xl md:text-2xl text-xl leading-7 md:leading-8 md:text-ink text-brown [-webkit-text-stroke:0.1px_#000] drop-shadow-md font-black" style={EBGaramond.style}>
               A Government of India approved, and verified platform.
             </p>
 
             {/* INSTANT REDIRECT SEARCH BAR */}
-            <button 
+            <button
               onClick={() => router.push('/listings')}
               className="mt-6 flex w-full max-w-lg items-center gap-2 rounded-full bg-white p-2 shadow-xl ring-2 ring-black/5 transition-all hover:ring-ink/20 text-left group"
             >
               <div className="flex pl-4">
-                <Search className="h-6 w-6 text-gray-400 group-hover:text-ink transition-colors" />
+                <Search className="h-5 w-5 text-gray-400 group-hover:text-ink transition-colors" />
               </div>
-              <span className="w-full bg-transparent px-2 py-3 text-lg font-medium text-gray-400">
+              <span className="w-full bg-transparent px-2 py-2 text-base font-medium text-gray-400">
                 Search PGs...
               </span>
-              <span className="rounded-full bg-ink px-8 py-3 text-lg font-black text-white transition-transform group-hover:scale-105 group-hover:bg-ink/90">
+              <span className="rounded-full bg-ink px-6 py-2 text-base font-black text-white transition-transform group-hover:scale-105 group-hover:bg-ink/90">
                 Search
               </span>
             </button>
 
             {/* SPLIT MOBILE BUTTONS / DESKTOP CALL BUTTON */}
-            <div className="mt-8 flex w-full gap-3 sm:w-auto sm:inline-flex">
+            <div className="mt-6 flex w-full gap-2 sm:w-auto sm:inline-flex sm:gap-3">
               <a
                 href="tel:+916200232083"
-                className="flex-1 inline-flex items-center justify-center gap-2 sm:gap-3 rounded-full bg-[#7F9D75] border-2 border-emerald-950 px-2 py-4 sm:px-10 sm:py-5 text-base sm:text-2xl font-black text-white shadow-[0_8px_25px_rgba(127,157,117,0.4)] transition-all duration-300 hover:scale-105 hover:bg-[#6b8b5f] w-full sm:w-auto"
+                className="flex-1 inline-flex items-center justify-center gap-2 sm:gap-3 rounded-full bg-[#7F9D75] border-2 border-emerald-950 px-2 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-lg font-black text-white shadow-[0_8px_25px_rgba(127,157,117,0.4)] transition-all duration-300 hover:scale-105 hover:bg-[#6b8b5f] w-full sm:w-auto"
               >
-                <Phone className="h-5 w-5 sm:h-6 sm:w-6" /> 
-                <span>Call Us <sup className="hidden sm:inline text-sm font-bold">24x7</sup></span>
+                <Phone className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span>Call Us <sup className="hidden sm:inline text-xs font-bold">24x7</sup></span>
               </a>
 
               {/* Refer & Earn - MOBILE ONLY (Hidden on Desktop) */}
-              <Link 
-                href="/earn" 
-                className="flex-1 flex sm:hidden items-center justify-center gap-1.5 rounded-full bg-white border-2 border-ink px-1 py-4 text-[15px] leading-none font-black text-ink shadow-lg transition-transform hover:scale-105"
+              <Link
+                href="/earn"
+                className="flex-1 flex sm:hidden items-center justify-center gap-1.5 rounded-full bg-white border-2 border-ink px-1 py-2.5 text-sm leading-none font-black text-ink shadow-lg transition-transform hover:scale-105"
               >
                 <div style={{ perspective: 400 }} className="flex items-center justify-center">
                   {/* OPTIMIZED TO PURE CSS */}
                   <span
-                    className="inline-block text-lg drop-shadow-[0_2px_3px_rgba(0,0,0,0.15)] origin-center text-amber-600 font-bold animate-spin-y"
+                    className="inline-block text-sm drop-shadow-[0_2px_3px_rgba(0,0,0,0.15)] origin-center text-amber-600 font-bold animate-spin-y"
                     style={{ transformStyle: "preserve-3d" }}
                   >
                     ₹
@@ -194,12 +196,12 @@ export default function HomePage() {
           </motion.div>
 
           {/* MOBILE BUTTON LAYOUT (Find PGs Only, Refer is moved up) */}
-          <div className="md:hidden mt-6 flex flex-col gap-4 w-full">
-            <Link 
-              href="/listings" 
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-ink border-2 border-white px-8 py-5 text-xl font-black text-white shadow-xl transition-transform hover:scale-105 w-full"
+          <div className="md:hidden mt-6 flex flex-col gap-3 w-full">
+            <Link
+              href="/listings"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-ink border-2 border-white px-6 py-4 text-lg font-black text-white shadow-xl transition-transform hover:scale-105 w-full"
             >
-              Find PGs <ArrowRight className="h-6 w-6" aria-hidden />
+              Find PGs <ArrowRight className="h-5 w-5" aria-hidden />
             </Link>
           </div>
         </motion.div>
