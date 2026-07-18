@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from "next/link";
 import confetti from 'canvas-confetti';
 import { Button } from "@/components/Button";
 // Define the shape of our tracking records to satisfy TypeScript/ESLint
@@ -210,6 +211,20 @@ export default function EarnPage() {
                 />
                 <p className="mt-1 text-xs text-ink/50">
                   Your final code will be: <span className="font-mono">{generatedCode ? generatedCode + '500' : 'XXXXXX500'}</span>
+                </p>
+              </div>
+
+              {/* Legal disclaimer */}
+              <div className="pt-2 pb-1 text-center">
+                <p className="text-xs text-muted">
+                  By generating a code, you agree to our{" "}
+                  <Link
+                    href="/legal/partner-agreement"
+                    className="font-bold underline hover:text-ink transition-colors"
+                  >
+                    Terms of use
+                  </Link>
+                  .
                 </p>
               </div>
 
