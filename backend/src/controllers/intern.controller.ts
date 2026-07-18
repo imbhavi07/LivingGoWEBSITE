@@ -47,6 +47,13 @@ export const internLogin = asyncHandler(
         role: Role.INTERN
       });
 
+      if (!intern.active) {
+        return res.status(403).json({
+          success: false,
+          message: "Your ID has been blocked. Contact your supervising manager.",
+        });
+      }
+
       return res.json({
         success: true,
         token,
@@ -160,6 +167,63 @@ export const getInterns = asyncHandler(
       });
 
     }
+  }
+);
+
+export const deleteIntern = asyncHandler(
+  async (req: Request, res: Response) => {
+
+    await prisma.visit.updateMany({
+      where: {
+        assignedLeadId: String(req.params.id),
+      },
+      data: {
+        assignedLeadId: null,
+        leadStatus: "SCHEDULED",
+      },
+    });
+
+    await prisma.intern.delete({
+      where: {
+        id: String(req.params.id),
+      },
+    });
+
+    return res.json({
+      success: true,
+    });
+  }
+);
+
+export const toggleInternStatus = asyncHandler(
+  async (req: Request, res: Response) => {
+
+    const intern = await prisma.intern.findUnique({
+      where: {
+        id: String(req.params.id),
+      },
+    });
+
+    if (!intern) {
+      return res.status(404).json({
+        success: false,
+        message: "Intern not found",
+      });
+    }
+
+    const updated = await prisma.intern.update({
+      where: {
+        id: intern.id,
+      },
+      data: {
+        active: !intern.active,
+      },
+    });
+
+    return res.json({
+      success: true,
+      intern: updated,
+    });
   }
 );
 

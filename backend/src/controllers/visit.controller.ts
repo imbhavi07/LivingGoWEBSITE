@@ -544,24 +544,17 @@ export const assignLead = asyncHandler(
         });
       }
 
-      if (visit.leadStatus !== "SCHEDULED") {
-        return res.status(400).json({
-          success: false,
-          message: "Lead already assigned.",
-        });
-      }
-
       const { internId, meetingPointId } = req.body;
 
       const updatedVisit = await prisma.visit.update({
         where: {
           id: visitId,
         },
-        data: {
-          leadStatus: "ASSIGNED",
-          assignedLeadId: internId,
-          meetingPointId: meetingPointId
-        },
+        data:{
+          assignedLeadId:internId,
+          meetingPointId,
+          leadStatus:"ASSIGNED"
+        }
       });
 
       return res.json({
