@@ -137,7 +137,7 @@ export default async function StudentDashboardPage() {
                       {visit.leadStatus}
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-4 text-sm text-muted">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-muted">
                     <div>
                       <p className="font-bold">Property ID</p>
                       <p>{visit.property?.propertyCode ?? 'N/A'}</p>
@@ -153,6 +153,12 @@ export default async function StudentDashboardPage() {
                     <div>
                       <p className="font-bold">Token ID</p>
                       <p className="font-mono">{visit.tokenId}</p>
+                    </div>
+                    <div>
+                      <p className="font-bold">Visit OTP</p>
+                      <p className="font-mono text-lg font-black text-green-700">
+                        {visit.visitOtp}
+                      </p>
                     </div>
                   </div>
                 </div>
