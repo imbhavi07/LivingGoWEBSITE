@@ -236,13 +236,13 @@ export function Navbar() {
       </motion.header>
 
       {/* MOBILE LIQUID GLASS NAVIGATION */}
-      <motion.nav 
+      <motion.nav
         variants={isPropertyPage ? mobileContainerTop : mobileContainerBottom}
         initial="hidden"
         animate="visible"
         className={cn(
-          "fixed inset-x-4 z-50 grid grid-cols-4 rounded-[2rem] bg-white/15 p-2 shadow-[0_12px_40px_rgba(0,0,0,0.12)] border border-white/40 md:hidden",
-          isPropertyPage ? "top-4" : "bottom-4"
+          "fixed inset-x-4 z-50 grid grid-cols-4 rounded-[1.5rem] bg-white/15 p-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.12)] border border-white/40 md:hidden",
+          isPropertyPage ? "top-3" : "bottom-3"
         )}
         style={{
           backdropFilter: "blur(30px) saturate(170%)",
@@ -250,8 +250,8 @@ export function Navbar() {
         }}
       >
         {/* Specular Diagonal Light Sheen Overlay */}
-        <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-br from-white/25 via-transparent to-transparent pointer-events-none" />
-        <div className="absolute inset-0 rounded-[2rem] ring-1 ring-inset ring-white/40 pointer-events-none" />
+        <div className="absolute inset-0 rounded-[1.5rem] bg-gradient-to-br from-white/25 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 rounded-[1.5rem] ring-1 ring-inset ring-white/40 pointer-events-none" />
 
         {navLinks.map((item) => {
           const Icon = item.icon;
@@ -261,13 +261,13 @@ export function Navbar() {
               <Link
                 href={item.href}
                 className={cn(
-                  "flex w-full min-h-14 flex-col items-center justify-center rounded-3xl text-xs font-semibold text-ink transition",
+                  "flex w-full min-h-11 flex-col items-center justify-center rounded-2xl text-[10px] font-semibold text-ink transition",
                   isActive && "bg-ink text-white shadow-md"
                 )}
                 aria-label={item.label}
               >
-                <Icon className="h-5 w-5" aria-hidden />
-                <span className="mt-1">{item.label}</span>
+                <Icon className="h-4 w-4" aria-hidden />
+                <span className="mt-0.5">{item.label}</span>
               </Link>
             </motion.div>
           );
@@ -279,38 +279,38 @@ export function Navbar() {
               <Link
                 href={role === "admin" ? "/admin/dashboard" : "/owner/dashboard"}
                 className={cn(
-                  "flex w-full min-h-14 flex-col items-center justify-center rounded-3xl text-xs font-semibold text-ink transition",
+                  "flex w-full min-h-11 flex-col items-center justify-center rounded-2xl text-[10px] font-semibold text-ink transition",
                   (pathname === "/owner/dashboard" || pathname === "/admin/dashboard") && "bg-ink text-white shadow-md"
                 )}
                 aria-label="Account"
               >
-                <UserRound className="h-5 w-5" aria-hidden />
-                <span className="mt-1">Account</span>
+                <UserRound className="h-4 w-4" aria-hidden />
+                <span className="mt-0.5">Account</span>
               </Link>
             ) : (
               <Link
                 href="/student/dashboard"
                 className={cn(
-                  "flex w-full min-h-14 flex-col items-center justify-center rounded-3xl text-xs font-semibold text-muted transition",
+                  "flex w-full min-h-11 flex-col items-center justify-center rounded-2xl text-[10px] font-semibold text-muted transition",
                   pathname === "/student/dashboard" && "bg-ink text-white shadow-md"
                 )}
                 aria-label="Dashboard"
               >
-                <UserRound className="h-5 w-5" aria-hidden />
-                <span className="mt-1">Dashboard</span>
+                <UserRound className="h-4 w-4" aria-hidden />
+                <span className="mt-0.5">Dashboard</span>
               </Link>
             )
           ) : (
             <Link
               href="/login"
               className={cn(
-                "flex w-full min-h-14 flex-col items-center justify-center rounded-3xl text-xs font-semibold text-muted transition",
+                "flex w-full min-h-11 flex-col items-center justify-center rounded-2xl text-[10px] font-semibold text-muted transition",
                 pathname === "/login" && "bg-ink text-white shadow-md"
               )}
               aria-label="Sign in"
             >
-              <UserRound className="h-5 w-5" aria-hidden />
-              <span className="mt-1">Sign in</span>
+              <UserRound className="h-4 w-4" aria-hidden />
+              <span className="mt-0.5">Sign in</span>
             </Link>
           )}
         </motion.div>

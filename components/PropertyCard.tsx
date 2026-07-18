@@ -208,7 +208,7 @@ export function PropertyCard({ property, saved, onSave, priority = false }: Prop
 
           {/* Stacked CTA Buttons */}
           <button
-            className="w-full rounded-3xl bg-[#78b264] py-3.5 text-[13px] font-bold tracking-wider text-white shadow-soft transition hover:bg-ink focus:outline-none focus:ring-2 focus:ring-ink/20"
+            className="w-full rounded-3xl bg-[#78b264] py-3 text-[12px] sm:py-3.5 sm:text-[13px] font-bold tracking-wider text-white shadow-soft transition hover:bg-ink focus:outline-none focus:ring-2 focus:ring-ink/20"
             onClick={(e) => {
               e.stopPropagation();
               router.push(`/properties/${property.id}`);
@@ -216,9 +216,9 @@ export function PropertyCard({ property, saved, onSave, priority = false }: Prop
           >
             Pre-Book
           </button>
-          
+
           <button
-            className="w-full rounded-3xl bg-[#60c0be] py-3.5 text-[13px] font-bold tracking-wider text-white shadow-soft transition hover:bg-ink focus:outline-none focus:ring-2 focus:ring-ink/20"
+            className="w-full rounded-3xl bg-[#60c0be] py-3 text-[12px] sm:py-3.5 sm:text-[13px] font-bold tracking-wider text-white shadow-soft transition hover:bg-ink focus:outline-none focus:ring-2 focus:ring-ink/20"
             onClick={(e) => {
               e.stopPropagation();
               router.push(`/properties/${property.id}?scheduleVisit=true`);

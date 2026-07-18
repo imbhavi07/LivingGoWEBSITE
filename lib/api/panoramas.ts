@@ -1,4 +1,5 @@
 import { apiClient } from "./client";
+import imageCompression from "browser-image-compression";
 
 export type Panorama = {
   id: string;
@@ -6,6 +7,14 @@ export type Panorama = {
   imageUrl: string;
   publicId?: string;
   sortOrder: number;
+};
+
+// Compression configuration specifically tuned for 360 panoramas
+const panoramaCompressionOptions = {
+  maxSizeMB: 9, // Safely under Cloudinary's 10MB strict limit
+  maxWidthOrHeight: 8192, // Keep resolution high so the sphere isn't blurry
+  useWebWorker: true,
+  preserveExif: true, // CRITICAL: This keeps the 360 metadata intact
 };
 
 export async function getPropertyPanoramas(propertyId: string) {
@@ -25,10 +34,16 @@ export async function uploadPanorama(
   }
 ) {
   const formData = new FormData();
-
-  // Removed client-side compression to preserve 360 EXIF metadata
   formData.append("title", payload.title);
-  formData.append("image", payload.image); // Use original image to preserve EXIF
+
+  try {
+    // Compress the image before appending
+    const compressedFile = await imageCompression(payload.image, panoramaCompressionOptions);
+    formData.append("image", compressedFile, compressedFile.name);
+  } catch (error) {
+    console.error("Compression failed, falling back to original", error);
+    formData.append("image", payload.image);
+  }
 
   if (payload.sortOrder !== undefined) {
     formData.append("sortOrder", String(payload.sortOrder));
@@ -76,7 +91,14 @@ export async function replacePanoramaImage(
 ) {
   const formData = new FormData();
 
-  formData.append("image", image); // Use original image to preserve EXIF
+  try {
+    // Compress the replacement image as well
+    const compressedFile = await imageCompression(image, panoramaCompressionOptions);
+    formData.append("image", compressedFile, compressedFile.name);
+  } catch (error) {
+    console.error("Compression failed, falling back to original", error);
+    formData.append("image", image);
+  }
 
   const { data } = await apiClient.put(
     `/admin/properties/panoramas/${panoramaId}/image`,

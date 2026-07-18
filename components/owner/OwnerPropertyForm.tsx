@@ -339,12 +339,12 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
             </label>
 
             <div className="space-y-2">
-              <span className="text-sm font-bold text-ink">PG Type</span>
+              <span className="text-xs sm:text-sm font-bold text-ink">PG Type</span>
               <div className="grid grid-cols-3 gap-2 rounded-2xl bg-linen p-1">
                 {(["Girls", "Boys", "Any"] as const).map((type) => (
                   <label
                     key={type}
-                    className={`relative flex cursor-pointer items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold transition ${
+                    className={`relative flex cursor-pointer items-center justify-center gap-2 rounded-xl py-2 sm:py-3 text-xs sm:text-sm font-bold transition ${
                       preference === type
                       ? "bg-white shadow-soft text-ink"
                       : "text-muted hover:text-ink"
@@ -373,7 +373,7 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
                   type="button"
                   onClick={handleUseCurrentLocation}
                   disabled={isGettingLocation}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-black/10 bg-linen py-3 text-sm font-bold text-ink transition hover:bg-oat disabled:opacity-60"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-black/10 bg-linen py-2.5 sm:py-3 text-xs sm:text-sm font-bold text-ink transition hover:bg-oat disabled:opacity-60"
                 >
                   {isGettingLocation
                     ? <Loader2 className="h-4 w-4 animate-spin" />
@@ -384,7 +384,7 @@ export function OwnerPropertyForm({ property }: OwnerPropertyFormProps) {
                 <button
                   type="button"
                   onClick={() => setShowMapPicker(true)}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-black/10 bg-linen py-3 text-sm font-bold text-ink transition hover:bg-oat"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-black/10 bg-linen py-2.5 sm:py-3 text-xs sm:text-sm font-bold text-ink transition hover:bg-oat"
                 >
                   <MapPin className="h-4 w-4" aria-hidden />
                   Pick on map
