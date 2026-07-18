@@ -247,11 +247,7 @@ export const getAdminCoupons = asyncHandler(async (_request: Request, response: 
     })
   );
 
-  // Partner referral codes
   const referrals = await prisma.referral.findMany({
-    where: {
-      status: "APPROVED",
-    },
     include: {
       user: {
         select: {

@@ -918,13 +918,10 @@ export const updateInternVisitStatus = asyncHandler(
         });
       }
 
-      // Use constant-time comparison to prevent timing attacks
-      const valid = await await bcrypt.hash(generateVisitOtp(),10);
-
-      if (!valid) {
+      if (!visit.visitOtpVerified) {
         return res.status(400).json({
-          success: false,
-          message: "Invalid OTP",
+            success:false,
+            message:"Verify student OTP first."
         });
       }
 
@@ -954,3 +951,46 @@ export const updateInternVisitStatus = asyncHandler(
     }
   }
 );
+
+export const verifyVisitOtp = asyncHandler(
+ async (req: Request & InternRequest,res: Response)=>{
+
+   const internId=req.intern!.id;
+   const visitId = String(req.params.id);
+   const {otp}=req.body;
+
+   const visit=await prisma.visit.findFirst({
+      where:{
+         id:visitId,
+         assignedLeadId:internId
+      }
+   });
+
+   if(!visit){
+      return res.status(404).json({
+         success:false,
+         message:"Visit not found"
+      });
+   }
+
+   if(visit.visitOtp!==otp){
+      return res.status(400).json({
+         success:false,
+         message:"Invalid OTP"
+      });
+   }
+
+   await prisma.visit.update({
+      where:{
+         id:visit.id
+      },
+      data:{
+         visitOtpVerified:true
+      }
+   });
+
+   return res.json({
+      success:true
+   });
+
+ });
