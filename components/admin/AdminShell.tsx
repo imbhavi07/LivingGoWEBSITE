@@ -113,7 +113,7 @@ function AdminSidebar({ onNavigate, onSignOut}: { onNavigate?: () => void; onSig
               onClick={onNavigate}
               className={cn(
                 "flex min-h-12 items-center gap-3 rounded-2xl px-4 text-sm font-bold text-white/60 transition hover:bg-white/10 hover:text-white",
-                active && "bg-white text-ink hover:bg-white hover:text-ink"
+                active && "bg-white/40 text-ink hover:bg-white hover:text-ink"
               )}
             >
               <Icon className="h-5 w-5" aria-hidden />
