@@ -106,7 +106,7 @@ type Panorama = {
   [key: string]: unknown;
 };
 
-const LOCATION_REGEX = /(Civil Lines|Kamla Nagar|Hudson Lane|Vijay Nagar|North Campus|Satya Niketan)/i;
+const LOCATION_REGEX = /(Malka Ganj|Civil Lines|Kamla Nagar|Hudson Lane|Vijay Nagar|North Campus|Satya Niketan|Shakti Nagar|Roop Nagar|GTB Nagar)/i;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function PropertyClient({ property }: { property: any }) {

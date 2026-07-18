@@ -201,38 +201,39 @@ export const getAllProperties = asyncHandler(async (request: Request, response: 
 
 
 export const getAdminCoupons = asyncHandler(async (_request: Request, response: Response) => {
+  // Admin-created coupons
   const coupons = await prisma.coupon.findMany({
     select: {
       id: true,
       code: true,
       affiliateId: true,
-    }
+    },
   });
 
-  const couponsWithStats = await Promise.all(
+  const adminCoupons = await Promise.all(
     coupons.map(async (coupon) => {
-      let partnerName = "Unknown";
+      let partnerName = "Admin";
+
       if (coupon.affiliateId) {
         const partner = await prisma.user.findUnique({
           where: { id: coupon.affiliateId },
-          select: { name: true }
+          select: { name: true },
         });
-        partnerName = partner?.name || "Unknown";
+
+        partnerName = partner?.name ?? "Unknown";
       }
 
       const totalVisits = await prisma.visit.count({
         where: {
-          couponCode: coupon.code
-        }
+          couponCode: coupon.code,
+        },
       });
 
-      const convertedBookingsCount = await prisma.visit.count({
+      const totalConvertedBookings = await prisma.visit.count({
         where: {
           couponCode: coupon.code,
-          leadStatus: {
-            equals: "FULLY_BOOKED" as VisitStatus
-          }
-        }
+          leadStatus: VisitStatus.SCHEDULED
+        },
       });
 
       return {
@@ -240,12 +241,39 @@ export const getAdminCoupons = asyncHandler(async (_request: Request, response: 
         partnerName,
         couponCode: coupon.code,
         totalVisits,
-        totalConvertedBookings: convertedBookingsCount
+        totalConvertedBookings,
+        type: "ADMIN",
       };
     })
   );
 
-  response.json(couponsWithStats);
+  // Partner referral codes
+  const referrals = await prisma.referral.findMany({
+    where: {
+      status: "APPROVED",
+    },
+    include: {
+      user: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
+  const partnerCoupons = referrals.map((referral) => ({
+    id: referral.id,
+    partnerName: referral.user?.name ?? "Unknown",
+    couponCode: referral.code,
+    totalVisits: referral.invites,
+    totalConvertedBookings: referral.successful,
+    type: "PARTNER",
+  }));
+
+  response.json([
+    ...adminCoupons,
+    ...partnerCoupons,
+  ]);
 });
 
 export const addPropertyImages = asyncHandler(async (req: Request, res: Response) => {
