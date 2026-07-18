@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { X, CheckCircle, Loader2, AlertCircle, Calendar, Clock } from "lucide-react";
 import { apiClient, getApiErrorMessage } from "@/lib/api/client";
 import { Button } from "@/components/Button";
@@ -242,6 +243,20 @@ export function ScheduleVisitModal({ propertyId, propertyCode, onClose }: Schedu
                     placeholder="e.g., ABC123"
                     className="w-full px-4 py-3 bg-white border border-black/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-ink transition-all duration-200"
                   />
+                </div>
+
+                {/* Legal disclaimer */}
+                <div className="pb-3 text-center sm:text-left">
+                  <p className="text-xs text-muted">
+                    By scheduling a visit, you agree to our{" "}
+                    <Link
+                      href="/legal/student-discount-terms"
+                      className="font-bold underline hover:text-ink transition-colors"
+                    >
+                      Terms of Use
+                    </Link>
+                    .
+                  </p>
                 </div>
 
                 <div className="flex justify-end space-x-3 pt-2">

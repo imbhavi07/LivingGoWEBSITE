@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { X, CheckCircle, Loader2, AlertCircle, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import QRCode from "react-qr-code";
+import Link from "next/link";
 import confetti from 'canvas-confetti';
 import { Button } from "@/components/Button";
 // Confetti celebration function
@@ -199,6 +200,19 @@ export function LockPropertyModal({ propertyId, propertyCode, monthlyRent, onClo
                   )}
                 </div>
               </div>
+              {/* Legal disclaimer */}
+                <div className="pb-3 text-center sm:text-left">
+                  <p className="text-xs text-muted">
+                    By pre-booking a property, you agree to our{" "}
+                    <Link
+                      href="/legal/student-discount-terms"
+                      className="font-bold underline hover:text-ink transition-colors"
+                    >
+                      Terms of Use
+                    </Link>
+                    .
+                  </p>
+                </div>
 
               <div className="flex justify-between items-center px-2">
                 <span className="text-sm font-bold text-muted">Total Payable</span>
