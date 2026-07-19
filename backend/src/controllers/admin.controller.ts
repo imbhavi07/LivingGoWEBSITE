@@ -8,21 +8,12 @@ import { prisma } from "../config/prisma";
 import { AppError } from "../utils/app-error";
 import { getPropertyRating } from "../services/property.service";
 import { uploadImage, uploadPanorama, deleteCloudinaryImage } from "../services/cloudinary.service";
-import { z } from "zod";
+
 import type { Prisma } from "@prisma/client";
-import { VisitStatus } from "@prisma/client";
+
 
 const clerkClient = createClerkClient({
   secretKey: process.env.CLERK_SECRET_KEY!,
-});
-
-// Validation schema for admin-created review
-const createAdminReviewSchema = z.object({
-  body: z.object({
-    studentName: z.string().min(1).max(100),
-    rating: z.number().min(1).max(5),
-    content: z.string().min(1).max(2000)
-  })
 });
 
 export const getStats = asyncHandler(async (_request: Request, response: Response) => {
@@ -229,19 +220,7 @@ export const getAdminCoupons = asyncHandler(async (_request: Request, response: 
 
         partnerName = partner?.name ?? "Unknown";
       }
-
-      const totalVisits = await prisma.visit.count({
-        where: {
-          couponCode: coupon.code,
-        },
-      });
-
-      const totalConvertedBookings = await prisma.visit.count({
-        where: {
-          couponCode: coupon.code,
-          leadStatus: VisitStatus.SCHEDULED
-        },
-      });
+      
 
       return {
         id: coupon.id,
