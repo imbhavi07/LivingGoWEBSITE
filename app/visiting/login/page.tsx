@@ -26,7 +26,6 @@ export default function UnifiedLoginPage() {
       setLoading(true);
       await apiClient.post("/visits/send-otp", { email });
       setOtpSent(true);
-      alert("OTP sent successfully.");
     } catch (err: unknown) {
         const error = err as { response?: { data?: { message?: string } } };
         alert(error?.response?.data?.message ?? "Failed to send OTP.");
