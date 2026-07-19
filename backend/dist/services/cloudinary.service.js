@@ -13,10 +13,12 @@ async function uploadImage(file) {
             folder: "LivingGo/properties",
             resource_type: "image",
             chunk_size: 60000000,
+            // Auto-convert HEIC/HEIF/AVIF to WebP for browser compatibility
+            format: "webp",
             transformation: [
                 {
                     quality: "auto:good",
-                    format: "jpg"
+                    fetch_format: "auto"
                 }
             ]
         }, (error, result) => {
@@ -52,14 +54,16 @@ async function uploadPanorama(file) {
         const stream = cloudinary_1.cloudinary.uploader.upload_stream({
             folder: "LivingGo/panoramas",
             resource_type: "image",
-            chunk_size: 0,
+            chunk_size: 60000000,
+            // Auto-convert HEIC/HEIF/AVIF to WebP for browser compatibility
+            format: "webp",
             transformation: [
                 {
                     width: 6000,
                     height: 3000,
                     crop: "limit",
                     quality: "auto:good",
-                    fetch_format: "webp"
+                    fetch_format: "auto"
                 }
             ]
         }, (error, result) => {

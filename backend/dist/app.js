@@ -9,6 +9,7 @@ const morgan_1 = __importDefault(require("morgan"));
 const cors_1 = __importDefault(require("cors")); // Use the standard library
 const routes_1 = require("./routes");
 const panorama_routes_1 = require("./routes/panorama.routes");
+const whatsapp_routes_1 = require("./routes/whatsapp.routes"); // ✅ Added WhatsApp Router import
 const security_middleware_1 = require("./middleware/security.middleware");
 const error_middleware_1 = require("./middleware/error.middleware");
 const earn_routes_1 = __importDefault(require("./routes/earn.routes"));
@@ -22,6 +23,7 @@ exports.app.use(express_1.default.json({ limit: "50mb" }));
 exports.app.use(express_1.default.urlencoded({ extended: true, limit: "50mb" }));
 exports.app.use('/api/earn', earn_routes_1.default);
 exports.app.use("/api/panoramas", panorama_routes_1.panoramaRouter);
+exports.app.use("/api/webhooks/whatsapp", whatsapp_routes_1.whatsappRouter); // ✅ Mounted the WhatsApp webhook route
 exports.app.use("/api", routes_1.apiRouter);
 exports.app.use((0, cors_1.default)({
     origin: ["http://localhost:3000", "https://livinggo.in", "https://www.livinggo.in"],

@@ -131,7 +131,7 @@ export function PanoramaUploadModal({
             <input
             id="panoramaImage"
               type="file"
-              accept=".jpg,.jpeg,.png,.webp"
+              accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.avif"
               onChange={(e) =>
                 setImage(e.target.files?.[0] ?? null)
             }

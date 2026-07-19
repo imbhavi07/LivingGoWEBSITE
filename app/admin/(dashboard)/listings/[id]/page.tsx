@@ -129,7 +129,7 @@ export default function AdminListingDetailsPage() {
                 <input
                   type="file"
                   multiple
-                  accept="image/*"
+                  accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.avif"
                   onChange={async (e) => {
                     const files = Array.from(
                       e.target.files || []
@@ -175,7 +175,7 @@ export default function AdminListingDetailsPage() {
                     <label>Replace Image</label>
                     <input
                       type="file"
-                      accept="image/*"
+                      accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.avif"
                       onChange={async (e) => {
                         const file = e.target.files?.[0];
                         if (!file) return;
@@ -289,7 +289,7 @@ export default function AdminListingDetailsPage() {
             <input
             placeholder= "Edit panaroma"
             type="file"
-            accept=".jpg,.jpeg,.png,.webp"
+            accept=".jpg,.jpeg,.png,.webp,.heic,.heif,.avif"
             className="w-full rounded border p-2"
             onChange={async (e) => {
               const file = e.target.files?.[0];

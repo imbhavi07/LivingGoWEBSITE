@@ -21,7 +21,7 @@ exports.createCoupon = (0, async_handler_1.asyncHandler)(async (req, res) => {
  * @access  Private (Super Admin only)
  */
 exports.getCoupons = (0, async_handler_1.asyncHandler)(async (req, res) => {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 100000 } = req.query;
     const skip = (Number(page) - 1) * Number(limit);
     const coupons = await couponService.getCoupons(skip, Number(limit));
     const total = await prisma_1.prisma.coupon.count();

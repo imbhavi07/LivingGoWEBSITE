@@ -194,7 +194,6 @@ const propertyCardSelect = {
     },
 };
 async function getProperties(query, viewerRole) {
-    // Check for infinite scroll flag
     const infiniteScroll = query.infiniteScroll === "true";
     let page, limit, skip;
     if (!infiniteScroll) {
@@ -204,44 +203,37 @@ async function getProperties(query, viewerRole) {
         skip = pagination.skip;
     }
     else {
-        // For infinite scroll, we want all results (use a reasonable upper bound)
         page = 1;
-        limit = 10000; // Large enough to get all approved properties
+        limit = 10000;
         skip = 0;
     }
     const status = query.status;
-    const search = String(query.location ?? "").trim();
+    const search = String(query.search ?? "").trim();
+    const location = String(query.location ?? "").trim();
+    const maxBudget = query.budget ? Number(query.budget) : undefined;
+    // ✅ FIXED: Split the search string by spaces into an array of individual words
+    const searchWords = search ? search.split(/\s+/).filter(word => word.length > 0) : [];
     const where = {
         status: viewerRole === "admin" ? status : "approved",
-        ...(search
+        // ✅ FIXED: Cross-examine every single keyword against title, description, location, or code
+        ...(searchWords.length > 0
             ? {
-                OR: [
-                    {
-                        title: {
-                            contains: search,
-                            mode: "insensitive",
-                        },
-                    },
-                    {
-                        location: {
-                            contains: search,
-                            mode: "insensitive",
-                        },
-                    },
-                    {
-                        propertyCode: {
-                            contains: search,
-                            mode: "insensitive",
-                        },
-                    },
-                ],
+                AND: searchWords.map(word => ({
+                    OR: [
+                        { title: { contains: word, mode: "insensitive" } },
+                        { description: { contains: word, mode: "insensitive" } },
+                        { location: { contains: word, mode: "insensitive" } },
+                        { propertyCode: { contains: word, mode: "insensitive" } },
+                    ],
+                })),
             }
             : {}),
-        roomType: query.roomType,
-        preference: query.preference,
+        ...(location ? { location: { contains: location, mode: "insensitive" } } : {}),
+        ...(query.roomType ? { roomType: query.roomType } : {}),
+        ...(query.preference ? { preference: query.preference } : {}),
+        ...(maxBudget && maxBudget < 45000 ? { price: { lte: maxBudget } } : {})
     };
-    // Include infiniteScroll in cache key to avoid mixing cached results
-    const cacheKey = `properties:${JSON.stringify({ status: where.status, search, roomType: where.roomType, preference: where.preference, page, limit, infiniteScroll })}`;
+    const cacheKey = `properties:${JSON.stringify({ status: where.status, search, location, budget: maxBudget, roomType: where.roomType, preference: where.preference, page, limit, infiniteScroll })}`;
     if (!viewerRole) {
         const cachedEntry = cache.get(cacheKey);
         if (cachedEntry && Date.now() - cachedEntry.timestamp < CACHE_TTL_MS) {
@@ -260,8 +252,6 @@ async function getProperties(query, viewerRole) {
         }),
         prisma_1.prisma.property.count({ where }),
     ]);
-    // For infinite scroll, we don't need pagination metadata in the same way
-    // But we keep the same structure for compatibility with frontend
     const result = {
         items,
         meta: {
