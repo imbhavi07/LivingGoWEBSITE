@@ -3,6 +3,7 @@ import morgan from "morgan";
 import cors from "cors"; // Use the standard library
 import { apiRouter } from "./routes";
 import { panoramaRouter } from "./routes/panorama.routes";
+import { whatsappRouter } from "./routes/whatsapp.routes"; // ✅ Added WhatsApp Router import
 import {
   apiLimiter,
   compressionMiddleware,
@@ -28,6 +29,7 @@ app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 app.use('/api/earn', earnRoutes);
 app.use("/api/panoramas", panoramaRouter);
+app.use("/api/webhooks/whatsapp", whatsappRouter); // ✅ Mounted the WhatsApp webhook route
 app.use("/api", apiRouter);
 
 app.use(cors({
