@@ -587,8 +587,7 @@ export const getInterns = asyncHandler(
 
       const interns = await prisma.intern.findMany({
         where: {
-          supervisorId,
-          active: true,
+          supervisorId
         },
         orderBy: {
           name: "asc",
