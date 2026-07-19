@@ -8,6 +8,7 @@ import { Button } from "@/components/Button";
 interface Coupon {
   id: string;
   code: string;
+  type?: "ADMIN" | "PARTNER";
   discountType: "FIXED" | "PERCENTAGE";
   value: number;
   validFrom: string;
@@ -19,6 +20,8 @@ interface Coupon {
   affiliateId?: string;
   createdAt: string;
   updatedAt: string;
+  uses?: number;
+  successful?: number;
 }
 
 interface CouponFormData {
@@ -267,9 +270,10 @@ export default function CouponManagement() {
               <tr className="border-b border-ink/20 bg-linen/50">
                 <th className="text-left px-6 py-4 text-xs font-bold text-ink/60 uppercase tracking-wider">Code</th>
                 <th className="text-left px-6 py-4 text-xs font-bold text-ink/60 uppercase tracking-wider">Discount</th>
+                <th className="text-left px-6 py-4 text-xs font-bold text-ink/60 uppercase tracking-wider">Uses</th>
+                <th className="text-left px-6 py-4 text-xs font-bold text-ink/60 uppercase tracking-wider">Successful</th>
                 <th className="text-left px-6 py-4 text-xs font-bold text-ink/60 uppercase tracking-wider">Target Plans</th>
                 <th className="text-left px-6 py-4 text-xs font-bold text-ink/60 uppercase tracking-wider">Validity</th>
-                <th className="text-left px-6 py-4 text-xs font-bold text-ink/60 uppercase tracking-wider">Status</th>
                 <th className="text-center px-6 py-4 text-xs font-bold text-ink/60 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
@@ -278,36 +282,46 @@ export default function CouponManagement() {
                 <tr key={coupon.id} className="border-b border-ink/10 hover:bg-linen/50 transition-colors">
                   <td className="px-6 py-4 font-mono text-sm font-bold">{coupon.code}</td>
                   <td className="px-6 py-4 text-sm">
-                    {coupon.discountType === "PERCENTAGE" ? `${coupon.value}% off` : `₹${coupon.value} off`}
+                    {coupon.discountType
+                    ? coupon.discountType === "PERCENTAGE"
+                      ? `${coupon.value}% off`
+                      : `₹${coupon.value} off`
+                    : (
+                      <span className="text-ink/40">Referral Code</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-center text-sm font-semibold">
+                    {coupon.uses ?? 0}
+                  </td>
+                  <td className="px-6 py-4 text-center text-sm font-semibold text-green-600">
+                    {coupon.successful ?? 0}
                   </td>
                   <td className="px-6 py-4 text-sm">
-                    {coupon.targetPlans.length > 0 ? coupon.targetPlans.join(", ") : <span className="text-ink/40">All plans</span>}
+                    {coupon.type === "PARTNER" ? (
+                      <span className="text-ink/40">Referral Code</span>
+                    ) : coupon.targetPlans?.length ? (
+                      coupon.targetPlans.join(", ")
+                    ) : (
+                      <span className="text-ink/40">Coupon Code</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-sm text-ink/80">
-                    {new Date(coupon.validFrom).toLocaleDateString()} to {new Date(coupon.validTo).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 text-sm flex items-center space-x-3 mt-1">
-                    <span className={`text-xs font-bold ${coupon.isActive ? "text-moss" : "text-clay"}`}>
-                      {coupon.isActive ? "Active" : "Inactive"}
-                    </span>
-                    <label className="relative inline-flex h-6 w-11 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={coupon.isActive}
-                        onChange={(e) => handleToggleStatus(coupon.id, e.target.checked)}
-                        className="sr-only peer"
-                        disabled={toggling.has(coupon.id)}
-                      />
-                      <div className="w-11 h-6 bg-ink/20 rounded-full peer peer-focus-visible:ring-2 peer-focus-visible:ring-ink peer-checked:bg-moss transition-colors">
-                        <div className={`inline-block h-5 w-5 mt-0.5 ml-0.5 rounded-full bg-white shadow transition-transform ${coupon.isActive ? 'translate-x-5' : 'translate-x-0'}`}></div>
-                      </div>
-                    </label>
+                    {coupon.type === "PARTNER" ? (
+                      <span className="text-ink/40">No Expiry</span>
+                    ) : coupon.validFrom && coupon.validTo ? (
+                      <>
+                        {new Date(coupon.validFrom).toLocaleDateString()} to{" "}
+                        {new Date(coupon.validTo).toLocaleDateString()}
+                      </>
+                    ) : (
+                      <span className="text-ink/40">No Expiry</span>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-center space-x-2">
                     <button
                       onClick={() => handleEditCoupon(coupon)}
+                      disabled={!coupon.discountType || updating || creating}
                       className="px-3 py-1.5 text-xs font-bold bg-ink/5 text-ink rounded hover:bg-ink/10 transition-colors disabled:opacity-50"
-                      disabled={updating || creating}
                     >
                       Edit
                     </button>

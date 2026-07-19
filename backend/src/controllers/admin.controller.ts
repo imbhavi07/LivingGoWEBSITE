@@ -201,12 +201,19 @@ export const getAllProperties = asyncHandler(async (request: Request, response: 
 
 
 export const getAdminCoupons = asyncHandler(async (_request: Request, response: Response) => {
-  // Admin-created coupons
   const coupons = await prisma.coupon.findMany({
     select: {
       id: true,
       code: true,
       affiliateId: true,
+      discountType: true,
+      value: true,
+      validFrom: true,
+      validTo: true,
+      targetPlans: true,
+      isActive: true,
+      currentUses: true,
+      maxUses: true,
     },
   });
 
@@ -239,10 +246,16 @@ export const getAdminCoupons = asyncHandler(async (_request: Request, response: 
       return {
         id: coupon.id,
         partnerName,
-        couponCode: coupon.code,
-        totalVisits,
-        totalConvertedBookings,
+        code: coupon.code,
         type: "ADMIN",
+        uses: coupon.currentUses,
+        successful: coupon.currentUses,
+        discountType: coupon.discountType,
+        value: coupon.value,
+        targetPlans: coupon.targetPlans,
+        validFrom: coupon.validFrom,
+        validTo: coupon.validTo,
+        isActive: coupon.isActive,
       };
     })
   );
@@ -260,16 +273,16 @@ export const getAdminCoupons = asyncHandler(async (_request: Request, response: 
   const partnerCoupons = referrals.map((referral) => ({
     id: referral.id,
     partnerName: referral.user?.name ?? "Unknown",
-    couponCode: referral.code,
-    totalVisits: referral.invites,
-    totalConvertedBookings: referral.successful,
+    code: referral.code,
     type: "PARTNER",
+    uses: referral.invites,
+    successful: referral.successful,
+    isActive: true,
   }));
-
-  response.json([
+    response.json([
     ...adminCoupons,
     ...partnerCoupons,
-  ]);
+    ]);
 });
 
 export const addPropertyImages = asyncHandler(async (req: Request, res: Response) => {

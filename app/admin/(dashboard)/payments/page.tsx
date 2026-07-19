@@ -97,16 +97,16 @@ export default function AdminPaymentsPage() {
                   <div className="flex-1 min-w-0 space-y-2">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="rounded-full bg-linen px-3 py-1 text-xs font-bold text-ink">
-                        {payment.student.name}
+                        {payment.student?.name ?? "Unknown Student"}
                       </span>
-                      <span className="text-xs text-muted">{payment.student.email}</span>
+                      <span className="text-xs text-muted">{payment.student?.email ?? "-"}</span>
                       {payment.student.phone && (
                         <span className="text-xs text-muted">• {payment.student.phone}</span>
                       )}
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <p className="font-black text-ink">{payment.property.title}</p>
+                      <p className="font-black text-ink">{payment.property?.title ?? "Deleted Property"}</p>
                       <a
                         href={`/admin/listings/${payment.property.id}`}
                         target="_blank"
@@ -118,7 +118,7 @@ export default function AdminPaymentsPage() {
                     </div>
                     <p className="text-sm text-muted">{payment.property.location}</p>
                     <p className="text-sm text-muted">
-                      Owner: <span className="font-bold text-ink">{payment.property.owner.name}</span>
+                      Owner: <span className="font-bold text-ink">{payment.property?.owner?.name ?? "-"}</span>
                       {payment.property.owner.phone && <span> • {payment.property.owner.phone}</span>}
                     </p>
 

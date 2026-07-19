@@ -113,7 +113,7 @@ export default async function StudentDashboardPage() {
               <div key={visit.id} className="border border-black/5 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-black text-ink">{visit.property?.id ?? 'Unknown Property'}</h3>
+                    <h3 className="text-lg font-black text-ink">{visit.property?.propertyCode ?? 'Unknown Property'}</h3>
                     <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
                       {visit.leadStatus}
                     </span>
