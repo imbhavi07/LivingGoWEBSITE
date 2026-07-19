@@ -4,18 +4,38 @@ import Image from "next/image";
 import { ImagePlus, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/Button";
+
 type ImageUploaderProps = {
   images: string[];
   onChange: (images: string[]) => void;
   onFilesChange?: (files: File[]) => void;
 };
 
+async function convertHeicToPreview(file: File): Promise<string> {
+  if (file.type === "image/heic" || file.type === "image/heif" || file.type === "image/heic-sequence") {
+    try {
+      // Dynamic import to avoid SSR issues with heic2any
+      const heic2any = (await import("heic2any")).default;
+      const blob = await heic2any({
+        blob: file,
+        toType: "image/jpeg",
+        quality: 0.8,
+      });
+      return URL.createObjectURL(blob as Blob);
+    } catch {
+      // Fallback: return original URL if conversion fails
+      return URL.createObjectURL(file);
+    }
+  }
+  return URL.createObjectURL(file);
+}
+
 export function ImageUploader({ images, onChange, onFilesChange }: ImageUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  function handleUpload(nextFiles: FileList | null) {
+  async function handleUpload(nextFiles: FileList | null) {
     if (!nextFiles?.length) return;
 
     setIsUploading(true);
@@ -23,16 +43,23 @@ export function ImageUploader({ images, onChange, onFilesChange }: ImageUploader
 
     try {
       const accepted = Array.from(nextFiles);
-      const invalid = accepted.find((file) => !["image/jpeg", "image/png", "image/webp", "image/jpg", "image/gif", "image/bmp", "image/heif", "image/heic"].includes(file.type));
+      const invalid = accepted.find((file) => !["image/jpeg", "image/png", "image/webp", "image/jpg", "image/gif", "image/bmp", "image/heif", "image/heic", "image/heic-sequence", "image/avif"].includes(file.type));
       if (invalid) {
-        setError("Only JPEG, PNG, WebP, JPG, GIF, BMP, HEIF, and HEIC images are allowed.");
+        setError("Only JPEG, PNG, WebP, JPG, GIF, BMP, HEIF, HEIC, HEIC sequence, and AVIF images are allowed.");
         return;
       }
 
       const mergedFiles = [...files, ...accepted];
       setFiles(mergedFiles);
       onFilesChange?.(mergedFiles);
-      onChange([...images, ...accepted.map((file) => URL.createObjectURL(file))]);
+
+      // Convert HEIC/HEIF to JPEG for preview
+      const previewUrls = await Promise.all(
+        accepted.map(async (file) => {
+          return convertHeicToPreview(file);
+        })
+      );
+      onChange([...images, ...previewUrls]);
     } catch {
       setError("Image preview failed. Please try another image.");
     } finally {
@@ -57,7 +84,7 @@ export function ImageUploader({ images, onChange, onFilesChange }: ImageUploader
         <span className="mt-1 text-xs text-muted">Select multiple photos for gallery preview</span>
         <input
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp,image/gif,image/bmp,image/heif,image/heic,image/avif,.jpg,.jpeg,.png,.webp,.gif,.bmp,.heif,.heic,.avif"
           multiple
           className="sr-only"
           disabled={isUploading}

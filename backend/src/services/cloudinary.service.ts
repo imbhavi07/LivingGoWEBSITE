@@ -9,10 +9,12 @@ export async function uploadImage(file: Express.Multer.File) {
         folder: "LivingGo/properties",
         resource_type: "image",
         chunk_size: 60000000,
+        // Auto-convert HEIC/HEIF/AVIF to WebP for browser compatibility
+        format: "webp",
         transformation: [
           {
             quality: "auto:good",
-            format: "jpg"
+            fetch_format: "auto"
           }
         ]
       },
@@ -50,15 +52,16 @@ export async function uploadPanorama(file: Express.Multer.File) {
       {
         folder: "LivingGo/panoramas",
         resource_type: "image",
-        chunk_size: 60000000, 
-        
+        chunk_size: 60000000,
+        // Auto-convert HEIC/HEIF/AVIF to WebP for browser compatibility
+        format: "webp",
         transformation: [
           {
             width: 6000,
             height: 3000,
             crop: "limit",
             quality: "auto:good",
-            fetch_format: "webp"
+            fetch_format: "auto"
           }
         ]
       },

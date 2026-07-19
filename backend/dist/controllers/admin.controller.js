@@ -44,6 +44,7 @@ const app_error_1 = require("../utils/app-error");
 const property_service_2 = require("../services/property.service");
 const cloudinary_service_1 = require("../services/cloudinary.service");
 const zod_1 = require("zod");
+const client_1 = require("@prisma/client");
 const clerkClient = (0, backend_1.createClerkClient)({
     secretKey: process.env.CLERK_SECRET_KEY,
 });
@@ -201,44 +202,64 @@ exports.getAllProperties = (0, async_handler_1.asyncHandler)(async (request, res
     response.json(await adminService.getAllProperties(request.query));
 });
 exports.getAdminCoupons = (0, async_handler_1.asyncHandler)(async (_request, response) => {
+    // Admin-created coupons
     const coupons = await prisma_1.prisma.coupon.findMany({
         select: {
             id: true,
             code: true,
             affiliateId: true,
-        }
+        },
     });
-    const couponsWithStats = await Promise.all(coupons.map(async (coupon) => {
-        let partnerName = "Unknown";
+    const adminCoupons = await Promise.all(coupons.map(async (coupon) => {
+        let partnerName = "Admin";
         if (coupon.affiliateId) {
             const partner = await prisma_1.prisma.user.findUnique({
                 where: { id: coupon.affiliateId },
-                select: { name: true }
+                select: { name: true },
             });
-            partnerName = partner?.name || "Unknown";
+            partnerName = partner?.name ?? "Unknown";
         }
         const totalVisits = await prisma_1.prisma.visit.count({
             where: {
-                couponCode: coupon.code
-            }
+                couponCode: coupon.code,
+            },
         });
-        const convertedBookingsCount = await prisma_1.prisma.visit.count({
+        const totalConvertedBookings = await prisma_1.prisma.visit.count({
             where: {
                 couponCode: coupon.code,
-                leadStatus: {
-                    equals: "FULLY_BOOKED"
-                }
-            }
+                leadStatus: client_1.VisitStatus.SCHEDULED
+            },
         });
         return {
             id: coupon.id,
             partnerName,
             couponCode: coupon.code,
             totalVisits,
-            totalConvertedBookings: convertedBookingsCount
+            totalConvertedBookings,
+            type: "ADMIN",
         };
     }));
-    response.json(couponsWithStats);
+    const referrals = await prisma_1.prisma.referral.findMany({
+        include: {
+            user: {
+                select: {
+                    name: true,
+                },
+            },
+        },
+    });
+    const partnerCoupons = referrals.map((referral) => ({
+        id: referral.id,
+        partnerName: referral.user?.name ?? "Unknown",
+        couponCode: referral.code,
+        totalVisits: referral.invites,
+        totalConvertedBookings: referral.successful,
+        type: "PARTNER",
+    }));
+    response.json([
+        ...adminCoupons,
+        ...partnerCoupons,
+    ]);
 });
 exports.addPropertyImages = (0, async_handler_1.asyncHandler)(async (req, res) => {
     const propertyId = String(req.params.id);
@@ -276,9 +297,16 @@ exports.replacePropertyImage = (0, async_handler_1.asyncHandler)(async (req, res
 exports.deletePropertyImage = (0, async_handler_1.asyncHandler)(async (req, res) => {
     const propertyId = String(req.params.id);
     const imageId = String(req.params.imageId);
+    console.log("PROPERTY ID:", req.params.id);
+    console.log("IMAGE ID:", req.params.imageId);
     const image = await prisma_1.prisma.propertyImage.findUnique({
-        where: { id: imageId, propertyId },
+        where: {
+            id: imageId,
+        },
     });
+    if (!image || image.propertyId !== propertyId) {
+        throw new app_error_1.AppError("Image not found", 404);
+    }
     if (!image) {
         throw new app_error_1.AppError("Image not found", 404);
     }
@@ -286,6 +314,7 @@ exports.deletePropertyImage = (0, async_handler_1.asyncHandler)(async (req, res)
         await (0, cloudinary_service_1.deleteCloudinaryImage)(image.publicId);
     }
     await adminService.deletePropertyImage(imageId);
+    console.log("DELETE SUCCESS");
     res.status(204).send();
 });
 exports.createAdminReview = (0, async_handler_1.asyncHandler)(async (req, res) => {

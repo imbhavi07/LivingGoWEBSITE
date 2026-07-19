@@ -42,6 +42,7 @@ exports.visitRouter.post("/send-otp", visitController.sendSupervisorOtp);
 exports.visitRouter.post("/verify-otp", visitController.verifySupervisorOtp);
 exports.visitRouter.use(auth_middleware_1.clerkAuthenticate);
 exports.visitRouter.get("/interns", visitController.getInterns);
+exports.visitRouter.patch("/lead/visit/:id/verify-otp", visitController.verifyVisitOtp);
 exports.visitRouter.post("/interns", visitController.createIntern);
 // visitRouter.put(
 //   "/interns/:id/toggle",

@@ -49,7 +49,7 @@ const resend = new resend_1.Resend(process.env.RESEND_API_KEY);
 const ADMIN_ROLES = {
     "semwalb3@gmail.com": "SUPER_ADMIN",
     "rctaccommodations@gmail.com": "SUPER_ADMIN",
-    "falitnautiyal7@gmail.com": "admin",
+    "falitnautiyal7@gmail.com": "SUPER_ADMIN",
     "heypragya345@gmail.com": "admin",
     "shaannothere@gmail.com": "SUPER_ADMIN",
     "techshaan@hotmail.com": "admin",

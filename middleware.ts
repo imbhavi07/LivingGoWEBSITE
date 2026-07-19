@@ -34,7 +34,7 @@ export default clerkMiddleware(async (auth, request) => {
     pathname === '/maintenance' ||
     pathname.startsWith('/assets') ||
     pathname.startsWith('/images') ||
-    pathname.match(/\.(png|jpg|jpeg|gif|svg|ico)$/)
+    pathname.match(/\.(png|jpg|jpeg|gif|svg|ico|heic)$/)
   ) {
     return NextResponse.next();
   }

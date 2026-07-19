@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateInternVisitStatus = exports.getInternDashboard = exports.getInterns = exports.createIntern = exports.internLogin = void 0;
+exports.updateInternVisitStatus = exports.getInternDashboard = exports.toggleInternStatus = exports.deleteIntern = exports.getInterns = exports.createIntern = exports.internLogin = void 0;
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const prisma_1 = require("../config/prisma");
 const async_handler_1 = require("../utils/async-handler");
@@ -35,6 +35,12 @@ exports.internLogin = (0, async_handler_1.asyncHandler)(async (req, res) => {
             username: intern.username,
             role: client_1.Role.INTERN
         });
+        if (!intern.active) {
+            return res.status(403).json({
+                success: false,
+                message: "Your ID has been blocked. Contact your supervising manager.",
+            });
+        }
         return res.json({
             success: true,
             token,
@@ -112,6 +118,50 @@ exports.getInterns = (0, async_handler_1.asyncHandler)(async (req, res) => {
         });
     }
 });
+exports.deleteIntern = (0, async_handler_1.asyncHandler)(async (req, res) => {
+    await prisma_1.prisma.visit.updateMany({
+        where: {
+            assignedLeadId: String(req.params.id),
+        },
+        data: {
+            assignedLeadId: null,
+            leadStatus: "SCHEDULED",
+        },
+    });
+    await prisma_1.prisma.intern.delete({
+        where: {
+            id: String(req.params.id),
+        },
+    });
+    return res.json({
+        success: true,
+    });
+});
+exports.toggleInternStatus = (0, async_handler_1.asyncHandler)(async (req, res) => {
+    const intern = await prisma_1.prisma.intern.findUnique({
+        where: {
+            id: String(req.params.id),
+        },
+    });
+    if (!intern) {
+        return res.status(404).json({
+            success: false,
+            message: "Intern not found",
+        });
+    }
+    const updated = await prisma_1.prisma.intern.update({
+        where: {
+            id: intern.id,
+        },
+        data: {
+            active: !intern.active,
+        },
+    });
+    return res.json({
+        success: true,
+        intern: updated,
+    });
+});
 exports.getInternDashboard = (0, async_handler_1.asyncHandler)(async (req, res) => {
     try {
         const internId = req.intern.id;
@@ -125,6 +175,7 @@ exports.getInternDashboard = (0, async_handler_1.asyncHandler)(async (req, res) 
                         id: true,
                         name: true,
                         phone: true,
+                        visitOtpVerified: true,
                     },
                 },
                 property: {
@@ -134,6 +185,7 @@ exports.getInternDashboard = (0, async_handler_1.asyncHandler)(async (req, res) 
                         title: true,
                         location: true,
                         price: true,
+                        visitOtpVerified: true,
                     },
                 },
             },
