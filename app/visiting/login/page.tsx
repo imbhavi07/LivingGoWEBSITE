@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { apiClient } from "@/lib/api/client";
-import { Button } from "@/components/Button";
 export default function UnifiedLoginPage() {
   // Tab State: 'supervisor' or 'intern'
   const [activeTab, setActiveTab] = useState<"supervisor" | "intern">("supervisor");

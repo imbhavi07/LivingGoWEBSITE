@@ -34,7 +34,6 @@ export default function LeadDashboard() {
   const [otp, setOtp] = useState("");
   const [otpVerified, setOtpVerified] = useState(false);
   const [verifyingOtp, setVerifyingOtp] = useState(false);
-  const otpEntered = otp.trim().length > 0;
   const [status, setStatus] = useState("");
   const [showLockDialog, setShowLockDialog] = useState(false);
   const FINAL_STATUSES = [
@@ -276,6 +275,9 @@ export default function LeadDashboard() {
                 <h3 className="mb-4 text-xl font-bold">
                   Update Visit Status
                 </h3>
+                <p className="mt-2 text-sm text-gray-500">
+                  Step 1 • Verify the students OTP before updating the visit status.
+                </p>
                 <input
                   disabled={visit.isLocked}
                   type="text"
@@ -289,13 +291,26 @@ export default function LeadDashboard() {
                   }}
                   className="mb-4 w-full rounded-xl border p-3"
                 />
-                <Button
-                  className="mt-3 w-full"
-                  disabled={!otp || verifyingOtp}
-                  onClick={verifyOtp}
-                >
-                  {verifyingOtp ? "Verifying..." : "Verify OTP"}
-                </Button>
+                <div className="mt-4">
+                  {otpVerified ? (
+                    <div className="rounded-xl border border-green-200 bg-green-50 py-3 text-center font-semibold text-green-700">
+                      ✅ OTP Verified Successfully
+                    </div>
+                  ) : (
+                    <Button
+                      className="w-full rounded-xl bg-blue-600 py-3 text-white hover:bg-blue-700"
+                      disabled={!otp || verifyingOtp}
+                      onClick={verifyOtp}
+                    >
+                      {verifyingOtp ? "Verifying..." : "Verify Student OTP"}
+                    </Button>
+                  )}
+                </div>
+                <div className="mt-8 mb-4">
+                  <h4 className="text-lg font-semibold text-gray-800">
+                    Step 2 • Select Visit Outcome
+                  </h4>
+                </div>
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
                   <Button
                     disabled={!otpVerified || visit.isLocked}
@@ -379,6 +394,11 @@ export default function LeadDashboard() {
                     Only your supervisor can unlock or modify it.
                   </div>
                 )}
+                <div className="mt-8 mb-4">
+                  <h4 className="text-lg font-semibold text-gray-800">
+                    Step 3 • Save Visit Status
+                  </h4>
+                </div>
                 <Button
                   onClick={() => {
                     if (!FINAL_STATUSES.includes(status)) {
