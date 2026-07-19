@@ -53,6 +53,7 @@ export default function VisitingDashboard() {
   const [interns, setInterns] = useState<Intern[]>([]);
   const [selectedIntern, setSelectedIntern] = useState("");
   const [meetingPointId, setMeetingPointId] = useState("");
+  const [filter, setFilter] = useState< "ALL" | "ASSIGNED" | "SCHEDULED" | "SUCCESSFUL" >("ALL");
   
   useEffect(() => {
     loadVisits();
@@ -127,9 +128,66 @@ export default function VisitingDashboard() {
     }
   }
 
+  const filteredVisits = visits.filter((visit) => {
+    switch (filter) {
+      case "SUCCESSFUL":
+        return visit.leadStatus === "SUCCESSFUL";
+      case "SCHEDULED":
+        return visit.leadStatus === "SCHEDULED";
+      case "ASSIGNED":
+        return visit.leadStatus !== "SCHEDULED";
+      default:
+        return true;
+    }
+  });
+
   return (
     <main className="min-h-screen bg-gray-100 p-8">
       <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex flex-wrap gap-3">
+          <Button
+            variant={filter === "ALL" ? "primary" : "secondary"}
+            onClick={() => setFilter("ALL")}
+          >
+            All ({visits.length})
+          </Button>
+          <Button
+            variant={filter === "ASSIGNED" ? "primary" : "secondary"}
+            onClick={() => setFilter("ASSIGNED")}
+          >
+            Assigned (
+            {
+              visits.filter(
+                v => v.leadStatus !== "SCHEDULED"
+              ).length
+            }
+            )
+          </Button>
+          <Button
+            variant={filter === "SCHEDULED" ? "primary" : "secondary"}
+            onClick={() => setFilter("SCHEDULED")}
+          >
+            Scheduled (
+            {
+              visits.filter(
+                v => v.leadStatus === "SCHEDULED"
+              ).length
+            }
+            )
+          </Button>
+          <Button
+            variant={filter === "SUCCESSFUL" ? "primary" : "secondary"}
+            onClick={() => setFilter("SUCCESSFUL")}
+          >
+            Successful (
+            {
+              visits.filter(
+                v => v.leadStatus === "SUCCESSFUL"
+              ).length
+            }
+            )
+          </Button>
+        </div>        
         <div>
           <h1 className="text-3xl font-bold">
             Visit Assignments
@@ -144,7 +202,7 @@ export default function VisitingDashboard() {
       </div>
       {loading && <div>Loading...</div>}
       <div className="space-y-6">
-        {visits.map((visit) => (
+        {filteredVisits.map((visit) => (
           <div
             key={visit.id}
             className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md transition"
