@@ -155,9 +155,18 @@ export default function VisitingDashboard() {
                   <h2 className="text-xl font-bold">
                     {visit.property.title}
                   </h2>
-
-                  <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-semibold text-yellow-700">
-                    {visit.leadStatus}
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                      visit.leadStatus === "ASSIGNED"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : visit.leadStatus === "SCHEDULED"
+                        ? "bg-red-100 text-red-700"
+                        : visit.leadStatus === "SUCCESSFUL"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-blue-100 text-blue-700"
+                    }`}
+                  >
+                    {visit.leadStatus.replaceAll("_", " ")}
                   </span>
                 </div>
 
