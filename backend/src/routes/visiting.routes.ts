@@ -59,3 +59,9 @@ visitingRouter.delete(
   "/interns/:id",
   internController.deleteIntern
 );
+
+visitingRouter.post(
+  "/lead/verify-otp",
+  internAuthenticate,
+  internController.verifyVisitOtp
+);

@@ -420,3 +420,29 @@ export const updateInternVisitStatus = asyncHandler(
     }
   }
 );
+
+export const verifyVisitOtp = asyncHandler(
+  async (req: InternRequest, res: Response) => {
+    const { visitId, otp } = req.body;
+
+    const internId = req.intern!.id;
+
+    const visit = await prisma.visit.findFirst({
+      where: {
+        id: visitId,
+        assignedLeadId: internId,
+      },
+    });
+
+    if (!visit) {
+      return res.status(404).json({
+        success: false,
+        message: "Visit not found",
+      });
+    }
+
+    return res.json({
+      success: otp === visit.visitOtp,
+    });
+  }
+);

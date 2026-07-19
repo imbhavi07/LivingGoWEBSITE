@@ -14,7 +14,9 @@ export default function VisitingNavbar() {
   const isDashboardActive = pathname.startsWith('/visiting/dashboard');
   const isInternsActive = pathname.startsWith('/visiting/interns');
   const isAssignmentsActive = pathname.startsWith('/visiting/assignments');
-
+    if (pathname.startsWith("/visiting/lead")) {
+    return null;
+  }
   return (
     <nav className="fixed bottom-0 left-0 right-0 flex h-16 items-center justify-around bg-white/90 backdrop-blur-md border-t border-gray-200/50 shadow-lg z-50">
       {/* Dashboard Tab */}

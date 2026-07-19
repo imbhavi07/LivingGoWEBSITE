@@ -32,6 +32,8 @@ export default function LeadDashboard() {
   const [visits, setVisits] = useState<Visit[]>([]);
   const [selectedVisit, setSelectedVisit] = useState<string | null>(null);
   const [otp, setOtp] = useState("");
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
   const otpEntered = otp.trim().length > 0;
   const [status, setStatus] = useState("");
   const [showLockDialog, setShowLockDialog] = useState(false);
@@ -73,11 +75,46 @@ export default function LeadDashboard() {
       setLoading(false);
     }
   }
+  async function verifyOtp() {
+    if (!selectedVisit) return;
+
+    setVerifyingOtp(true);
+
+    try {
+      const res = await apiClient.post(
+        "/visiting/lead/verify-otp",
+        {
+          visitId: selectedVisit,
+          otp,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (res.data.success) {
+        setOtpVerified(true);
+        alert("OTP verified successfully.");
+      } else {
+        setOtpVerified(false);
+        alert("Invalid OTP.");
+      }
+    } catch (err) {
+      console.error(err);
+      setOtpVerified(false);
+      alert("OTP verification failed.");
+    } finally {
+      setVerifyingOtp(false);
+    }
+  }
+
   async function updateStatus() {
     if (!selectedVisit) return false;
     try {
       await apiClient.patch(
-        `/visiting/lead/visit/${selectedVisit}`,
+        `/visiting/lead/${selectedVisit}`,
         {
           otp,
           status,
@@ -95,6 +132,7 @@ export default function LeadDashboard() {
       );
       setSelectedVisit(null);
       setOtp("");
+      setOtpVerified(false);
       setStatus("");
       await loadVisits();
       return true;
@@ -247,12 +285,20 @@ export default function LeadDashboard() {
                   onChange={(e) => {
                     setSelectedVisit(visit.id);
                     setOtp(e.target.value);
+                    setOtpVerified(false);
                   }}
                   className="mb-4 w-full rounded-xl border p-3"
                 />
+                <Button
+                  className="mt-3 w-full"
+                  disabled={!otp || verifyingOtp}
+                  onClick={verifyOtp}
+                >
+                  {verifyingOtp ? "Verifying..." : "Verify OTP"}
+                </Button>
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
                   <Button
-                    disabled={!otpEntered || visit.isLocked}
+                    disabled={!otpVerified || visit.isLocked}
                     onClick={() => {
                       setSelectedVisit(visit.id);
                       setStatus("MET");
@@ -267,7 +313,7 @@ export default function LeadDashboard() {
                     Reached
                   </Button>
                   <Button
-                    disabled={!otpEntered || visit.isLocked}
+                    disabled={!otpVerified || visit.isLocked}
                     onClick={() => {
                       setSelectedVisit(visit.id);
                       setStatus("SUCCESSFUL");
@@ -282,7 +328,7 @@ export default function LeadDashboard() {
                     Successful
                   </Button>
                   <Button
-                    disabled={!otpEntered || visit.isLocked}
+                    disabled={!otpVerified || visit.isLocked}
                     onClick={() => {
                       setSelectedVisit(visit.id);
                       setStatus("NOT_SUCCESSFUL");
@@ -297,7 +343,7 @@ export default function LeadDashboard() {
                     Not Successful
                   </Button>
                   <Button
-                    disabled={!otpEntered || visit.isLocked}
+                    disabled={!otpVerified || visit.isLocked}
                     onClick={() => {
                       setSelectedVisit(visit.id);
                       setStatus("INTERESTED_OTHER_PROPERTY");
@@ -344,7 +390,7 @@ export default function LeadDashboard() {
                   disabled={
                     !status ||
                     selectedVisit !== visit.id ||
-                    (status !== "NOT_MET" && !otpEntered)||
+                    (status !== "NOT_MET" && !otpVerified)||
                     visit.isLocked
                   }
                   className="mt-5 w-full rounded-xl bg-black py-3 font-bold text-white disabled:cursor-not-allowed disabled:opacity-50"
