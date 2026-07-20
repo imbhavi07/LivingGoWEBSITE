@@ -117,7 +117,7 @@ export function CollegeCards() {
             {[...colleges, ...colleges].map((college, idx) => (
               <Link
                 key={`${college.id}-${idx}`}
-                href={`/colleges/${college.id}`}
+                href={`/listings?college=${encodeURIComponent(college.name)}`}
                 className="w-[200px] shrink-0 group block"
                 aria-label={`View PGs near ${college.name}`}
               >
