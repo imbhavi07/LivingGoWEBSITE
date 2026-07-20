@@ -1,286 +1,62 @@
 "use client";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { ArrowRight, ShieldCheck, Search, Phone } from "lucide-react";
-import { FeaturedPropertyCard } from "@/components/FeaturedPropertyCard";
-import { useWishlist } from "@/hooks/useWishlist";
+
+import { useEffect, useState } from "react";
+import { Hero } from "@/components/Hero";
+import { CollegeCards } from "@/components/CollegeCards";
+import { FeaturedPGs } from "@/components/FeaturedPGs";
+import { TrustGrid } from "@/components/TrustGrid";
+import { BottomCTA } from "@/components/BottomCTA";
+import { getProperties } from "@/lib/api/properties";
 import type { Property } from "@/types/property";
-import { LiquidGlass } from "@/components/LiquidGlass";
-import { useState, useEffect } from "react";
-import Image from "next/image";
-import logo from "@/assets/logo.png";
-import { FeaturesSection } from "@/components/FeaturesSection";
-import { toProperty } from "@/lib/api/types";
-import { motion, Variants, useAnimation } from "framer-motion";
-import { EB_Garamond } from "next/font/google";
-import { Button } from "@/components/Button";
-
-const EBGaramond = EB_Garamond({
-  subsets: ['latin'],
-  variable: '--font-eb_garamond',
-  display: 'swap',
-});
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.2, delay: 0.1, delayChildren: 0.3 } }
-};
-
-const slideUp: Variants = {
-  hidden: { y: 60, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 60, damping: 8 } }
-};
 
 export default function HomePage() {
-  const controls = useAnimation();
-  const router = useRouter();
-
-  useEffect(() => {
-    const fireAnimation = () => {
-      controls.start("visible");
-    };
-
-    window.addEventListener("introAnimationComplete", fireAnimation);
-    
-    if (sessionStorage.getItem("intro_skipped") === "true") {
-      fireAnimation();
-    }
-
-    return () => {
-      window.removeEventListener("introAnimationComplete", fireAnimation);
-    };
-  }, [controls]);
-
-  return (
-    <main className="bg-[#f9e7d3] min-h-screen flex flex-col">
-      {/* INJECTED PURE CSS FOR HARDWARE-ACCELERATED ANIMATIONS */}
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes spinY {
-          from { transform: rotateY(0deg); }
-          to { transform: rotateY(360deg); }
-        }
-        .animate-spin-y {
-          animation: spinY 2.5s linear infinite;
-        }
-        @keyframes marquee {
-          from { transform: translateX(0%); }
-          to { transform: translateX(-50%); }
-        }
-        .animate-marquee {
-          animation: marquee 12s linear infinite;
-        }
-      `}} />
-
-      <section className="relative w-full overflow-hidden">
-
-        <motion.div 
-          variants={containerVariants}
-          initial="hidden"
-          animate={controls}
-          className="relative z-10 mx-auto grid max-w-7xl gap-10 px-4 pb-12 pt-8 sm:px-6 md:grid-cols-[1fr_1.08fr] md:items-center md:pt-16 lg:px-8"
-        >
-          {/* Animated Text/Hero Group */}
-          <motion.div variants={slideUp}>
-            <LiquidGlass className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-bold text-white shadow-soft">
-              <p className="flex items-center text-ink gap-2 drop-shadow-[0_2px_2px_rgba(0,0,0,0.2)]">
-                Govt. Approved Platform
-              </p>
-            </LiquidGlass>
-            <div className="ml-[-50px] md:ml-[15px] mt-[-40px] md:mt-5 relative w-[280px] md:w-auto h-auto max-w-full">
-              <Image
-                src={logo}
-                alt="LivingGo Logo"
-                width={992}
-                height={597}
-                priority
-                className="ml-[20px] md:ml-[15px] mt-[3px] md:mt-5 h-auto w-auto scale-75 md:scale-100 drop-shadow-[0_4px_3px_rgba(0,0,0,0.3)]"
-              />
-            </div>
-            <p className="mt-[-30px] md:mt-5 max-w-xl md:text-2xl text-xl leading-7 md:leading-8 md:text-ink text-brown [-webkit-text-stroke:0.1px_#000] drop-shadow-md font-black" style={EBGaramond.style}>
-              A Government of India approved, and verified platform.
-            </p>
-
-            {/* INSTANT REDIRECT SEARCH BAR */}
-            <button
-              onClick={() => router.push('/listings')}
-              className="mt-6 flex w-full max-w-lg items-center gap-2 rounded-full bg-white p-2 shadow-xl ring-2 ring-black/5 transition-all hover:ring-ink/20 text-left group"
-            >
-              <div className="flex pl-4">
-                <Search className="h-5 w-5 text-gray-400 group-hover:text-ink transition-colors" />
-              </div>
-              <span className="w-full bg-transparent px-2 py-2 text-base font-medium text-gray-400">
-                Search PGs...
-              </span>
-              <span className="rounded-full bg-ink px-6 py-2 text-base font-black text-white transition-transform group-hover:scale-105 group-hover:bg-ink/90">
-                Search
-              </span>
-            </button>
-
-            {/* SPLIT MOBILE BUTTONS / DESKTOP CALL BUTTON */}
-            <div className="mt-6 flex w-full gap-2 sm:w-auto sm:inline-flex sm:gap-3">
-              <a
-                href="tel:+916200232083"
-                className="flex-1 inline-flex items-center justify-center gap-2 sm:gap-3 rounded-full bg-[#7F9D75] border-2 border-emerald-950 px-2 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-lg font-black text-white shadow-[0_8px_25px_rgba(127,157,117,0.4)] transition-all duration-300 hover:scale-105 hover:bg-[#6b8b5f] w-full sm:w-auto"
-              >
-                <Phone className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span>Call Us <sup className="hidden sm:inline text-xs font-bold">24x7</sup></span>
-              </a>
-
-              {/* Refer & Earn - MOBILE ONLY (Hidden on Desktop) */}
-              <Link
-                href="/earn"
-                className="flex-1 flex sm:hidden items-center justify-center gap-1.5 rounded-full bg-white border-2 border-ink px-1 py-2.5 text-sm leading-none font-black text-ink shadow-lg transition-transform hover:scale-105"
-              >
-                <div style={{ perspective: 400 }} className="flex items-center justify-center">
-                  {/* OPTIMIZED TO PURE CSS */}
-                  <span
-                    className="inline-block text-sm drop-shadow-[0_2px_3px_rgba(0,0,0,0.15)] origin-center text-amber-600 font-bold animate-spin-y"
-                    style={{ transformStyle: "preserve-3d" }}
-                  >
-                    ₹
-                  </span>
-                </div>
-                <span>Refer & Earn</span>
-              </Link>
-            </div>
-            
-
-            {/* SUPERSIZED AND BALANCED SECONDARY BUTTONS (DESKTOP ONLY) */}
-            <div className="hidden mt-8 gap-4 sm:flex sm:flex-row items-stretch">
-              {/* FIND PGs WITH WHITE OUTLINE & SYNCED SIZING */}
-              <Link 
-                href="/listings" 
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-ink border-2 border-white px-9 py-4 text-xl font-black text-white shadow-xl transition-all hover:scale-105 hover:shadow-2xl hover:bg-ink/90 min-w-[220px]"
-              >
-                Find PGs <ArrowRight className="h-6 w-6" aria-hidden />
-              </Link>
-              
-              {/* REFER & EARN WITH SPINNING 3D RUPEE LOGO */}
-              <Link 
-                href="/earn" 
-                className="inline-flex items-center justify-center gap-3 rounded-full bg-white border-2 border-ink px-9 py-4 text-xl font-black text-ink shadow-lg transition-all hover:scale-105 hover:bg-linen min-w-[220px]"
-              >
-                <div style={{ perspective: 400 }} className="flex items-center justify-center">
-                  {/* OPTIMIZED TO PURE CSS */}
-                  <span
-                    className="inline-block text-2xl drop-shadow-[0_2px_3px_rgba(0,0,0,0.15)] origin-center text-amber-600 font-bold animate-spin-y"
-                    style={{ transformStyle: "preserve-3d" }}
-                  >
-                    ₹
-                  </span>
-                </div>
-                <span>Refer & Earn</span>
-                <ArrowRight className="h-6 w-6" aria-hidden />
-              </Link>
-            </div>
-          </motion.div>
-
-          {/* Animated Featured Card */}
-          <motion.div variants={slideUp} className="mt-[-10px] md:mt-[1px] relative mx-auto w-full max-w-[510px]">
-            <Image
-              src="/assets/ui-panel.png"
-              alt="Featured Property Panel"
-              width={510}
-              height={650}
-              className="block h-auto w-full drop-shadow-[0_10px_15px_#FF9152]"
-            />
-            <div className="absolute inset-0 px-[10%] pb-[5%] pt-[28%] sm:pt-[30%] flex flex-col items-center">
-              <div className="mb-3 flex items-center gap-2 font-bold text-ink -translate-x-[10px] text-[15.5px]">
-                <ShieldCheck className="h-4 w-4 text-ink" aria-hidden />
-                Featured this week
-              </div>
-              <div className="w-[85%] max-w-[280px] mx-auto mt-2">
-                <PropertyPreview />
-              </div>
-            </div>
-          </motion.div>
-
-          {/* MOBILE BUTTON LAYOUT (Find PGs Only, Refer is moved up) */}
-          <div className="md:hidden mt-6 flex flex-col gap-3 w-full">
-            <Link
-              href="/listings"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-ink border-2 border-white px-6 py-4 text-lg font-black text-white shadow-xl transition-transform hover:scale-105 w-full"
-            >
-              Find PGs <ArrowRight className="h-5 w-5" aria-hidden />
-            </Link>
-          </div>
-        </motion.div>
-        
-        {/* 🔥 INFINITE MARQUEE TICKER 🔥 */}
-        <div className="relative z-30 flex w-full overflow-hidden bg-ink py-4 shadow-xl md:mt-4">
-          {/* OPTIMIZED TO PURE CSS */}
-          <div className="flex w-max flex-nowrap items-center animate-marquee">
-            {[...Array(2)].map((_, i) => (
-              <div key={i} className="flex flex-nowrap gap-12 px-6 text-sm md:text-base font-black uppercase tracking-widest text-[#f9e7d3]">
-                <span className="whitespace-nowrap">No Brokerage</span>
-                <span className="whitespace-nowrap opacity-50">•</span>
-                <span className="whitespace-nowrap">DigiLocker Verified</span>
-                <span className="whitespace-nowrap opacity-50">•</span>
-                <span className="whitespace-nowrap">360 Virtual Tour</span>
-                <span className="whitespace-nowrap opacity-50">•</span>
-                <span className="whitespace-nowrap">No Brokerage</span>
-                <span className="whitespace-nowrap opacity-50">•</span>
-                <span className="whitespace-nowrap">DigiLocker Verified</span>
-                <span className="whitespace-nowrap opacity-50">•</span>
-                <span className="whitespace-nowrap">360 Virtual Tour</span>
-                <span className="whitespace-nowrap opacity-50">•</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="relative z-10 w-full bg-[#f9e7d3]">
-          <FeaturesSection />
-        </div>
-      </section>
-    </main>
-  );
-}
-
-function PropertyPreview() {
-  const wishlist = useWishlist();
-  const [properties, setProperties] = useState<Property[]>([]);
+  const [featuredProps, setFeaturedProps] = useState<Property[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchFeatured() {
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/properties/featured`, {
-          cache: "no-store"
-        });
+    let isMounted = true;
+    let retryCount = 0;
+    const maxRetries = 3;
 
-        if (res.ok) {
-          const rawData = await res.json();
-          if (Array.isArray(rawData)) {
-            setProperties(rawData.map(toProperty));
-          } else if (rawData && typeof rawData === 'object') {
-            setProperties((rawData.data || [rawData]).map(toProperty));
-          }
+    async function loadFeatured() {
+      try {
+        const data = await getProperties();
+        if (data?.properties && isMounted) {
+          // Pass all properties to the marquee instead of just 5
+          setFeaturedProps(data.properties);
+          setIsLoading(false);
         }
-      } catch (error) {
-        console.error("Failed to fetch featured properties:", error);
-      } finally {
-        setIsLoading(false);
+      } catch (e) {
+        console.error(`Fetch failed (Attempt ${retryCount + 1}/${maxRetries}):`, e);
+        if (retryCount < maxRetries && isMounted) {
+          retryCount++;
+          setTimeout(loadFeatured, 2000); // Wait 2s before retry
+        } else if (isMounted) {
+          setIsLoading(false); // Stop loading if out of retries
+        }
       }
     }
+    loadFeatured();
 
-    fetchFeatured();
+    return () => { isMounted = false; };
   }, []);
 
-  if (isLoading) return <div className="h-[280px] w-full animate-pulse rounded-xl bg-gray-200/50"></div>;
-  if (properties.length === 0) return null;
-
   return (
-    <div className="w-full flex overflow-x-auto snap-x snap-mandatory gap-4 pb-4 -mb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-      {properties.map((property) => (
-        <div key={property.id} className="snap-center shrink-0 w-full [&>article]:drop-shadow-xl">
-          <FeaturedPropertyCard
-            property={property}
-            saved={wishlist.isSaved(property.id)}
-            onSave={wishlist.toggle}
-          />
-        </div>
-      ))}
-    </div>
+    <main className="bg-brand-bg min-h-screen">
+      <Hero />
+      <CollegeCards  />
+
+      {/* If still loading, render a placeholder state or the empty section so the layout doesn't jump */}
+      {isLoading ? (
+        <section className="px-4 py-10 bg-brand-bg min-h-[300px] flex items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-green border-t-transparent" />
+        </section>
+      ) : (
+        <FeaturedPGs properties={featuredProps} />
+      )}
+
+      <TrustGrid />
+      <BottomCTA />
+    </main>
   );
 }

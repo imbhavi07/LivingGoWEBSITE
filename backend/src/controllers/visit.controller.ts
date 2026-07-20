@@ -11,6 +11,7 @@ import { VISIT_CONFIG } from "../config/visit.config";
 import { sendWhatsAppMessage } from "../services/whatsapp.service";
 import { Role } from "@prisma/client";
 import type { InternRequest } from "../middleware/intern.middleware";
+import { queueVisitCreated } from "../queues/whatsapp.queue";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const SUPERVISOR_EMAILS = [
@@ -262,6 +263,24 @@ export const scheduleVisit = asyncHandler(
       console.error("Failed to send WhatsApp message:", whatsappError);
       // We don't want to fail the request if WhatsApp fails, so we just log the error.
     }
+
+    // Queue VISIT_CREATED job for WhatsApp processing (fire-and-forget, doesn't block response)
+    queueVisitCreated({
+      phoneNumber: whatsappNumber.replace("+91", "91"), // Convert +91 to 91 format for E.164
+      userRole: "student",
+      visitId: visit.id,
+      visitToken: visit.tokenId,
+      studentName: visit.student.name,
+      studentPhone: visit.student.phone || whatsappNumber.replace("+91", "91"),
+      propertyId: visit.property.id,
+      propertyTitle: visit.property.title,
+      propertyLocation: visit.property.location,
+      visitDate: visit.visitDate.toISOString(),
+      timeSlot: visit.timeSlot,
+      visitOtp: visit.visitOtp,
+    }).catch((err) => {
+      console.error("Failed to queue VISIT_CREATED job:", err);
+    });
 
     // If a valid coupon code was provided, increment its usage count
     if (couponCode) {

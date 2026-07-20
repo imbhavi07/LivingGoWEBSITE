@@ -73,7 +73,7 @@ exports.adminRouter.get("/properties/:id/manage", (0, validate_middleware_1.vali
 exports.adminRouter.post("/properties", upload_middleware_1.uploadImages, (0, validate_middleware_1.validate)(property_validation_1.createPropertySchema), propertyController.createProperty);
 // Admin coupon creation endpoint
 exports.adminRouter.post("/coupons", couponController.createCoupon);
-exports.adminRouter.get("/coupons", couponController.getCoupons);
+exports.adminRouter.get("/coupons", adminController.getAdminCoupons);
 // Admin review endpoints
 exports.adminRouter.post("/properties/:id/reviews", (0, validate_middleware_1.validate)(property_validation_1.propertyIdSchema), adminController.createAdminReview);
 exports.adminRouter.delete("/reviews/:id", (0, validate_middleware_1.validate)(admin_validation_1.adminIdSchema), adminController.deleteAdminReview);

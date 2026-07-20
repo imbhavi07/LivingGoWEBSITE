@@ -15,6 +15,7 @@ const jwt_1 = require("../utils/jwt");
 const visit_config_1 = require("../config/visit.config");
 const whatsapp_service_1 = require("../services/whatsapp.service");
 const client_1 = require("@prisma/client");
+const whatsapp_queue_1 = require("../queues/whatsapp.queue");
 const resend = new resend_1.Resend(process.env.RESEND_API_KEY);
 const SUPERVISOR_EMAILS = [
     "mffalit@gmail.com",
@@ -219,6 +220,23 @@ exports.scheduleVisit = (0, async_handler_1.asyncHandler)(async (request, respon
         console.error("Failed to send WhatsApp message:", whatsappError);
         // We don't want to fail the request if WhatsApp fails, so we just log the error.
     }
+    // Queue VISIT_CREATED job for WhatsApp processing (fire-and-forget, doesn't block response)
+    (0, whatsapp_queue_1.queueVisitCreated)({
+        phoneNumber: whatsappNumber.replace("+91", "91"), // Convert +91 to 91 format for E.164
+        userRole: "student",
+        visitId: visit.id,
+        visitToken: visit.tokenId,
+        studentName: visit.student.name,
+        studentPhone: visit.student.phone || whatsappNumber.replace("+91", "91"),
+        propertyId: visit.property.id,
+        propertyTitle: visit.property.title,
+        propertyLocation: visit.property.location,
+        visitDate: visit.visitDate.toISOString(),
+        timeSlot: visit.timeSlot,
+        visitOtp: visit.visitOtp,
+    }).catch((err) => {
+        console.error("Failed to queue VISIT_CREATED job:", err);
+    });
     // If a valid coupon code was provided, increment its usage count
     if (couponCode) {
         const upperCode = couponCode.toUpperCase().trim();
@@ -460,8 +478,7 @@ exports.getInterns = (0, async_handler_1.asyncHandler)(async (req, res) => {
         const supervisorId = req.user.id;
         const interns = await prisma_1.prisma.intern.findMany({
             where: {
-                supervisorId,
-                active: true,
+                supervisorId
             },
             orderBy: {
                 name: "asc",

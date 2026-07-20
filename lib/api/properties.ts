@@ -21,18 +21,14 @@ export async function getProperties(
       ...(filters?.preference && { preference: filters.preference }),
     };
 
-    // Only add pagination params if not infinite scroll
     if (!infiniteScroll) {
       params.page = page;
       params.limit = limit;
     } else {
-      // For infinite scroll, we still need to tell backend to return all
       params.infiniteScroll = "true";
     }
 
-    const { data } = await apiClient.get<
-      PaginatedResponse<ApiProperty>
-    >("/properties", {
+    const { data } = await apiClient.get<PaginatedResponse<ApiProperty>>("/properties", {
       params,
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -43,23 +39,27 @@ export async function getProperties(
 
     const properties = data.items.map((p, i) => toProperty(p, i));
 
-    const filteredProperties = filters?.budget
-      ? properties.filter(
-          (property) => property.price <= Number(filters.budget)
-        )
-      : properties;
+    // THE FIX: Bulletproof budget filtering - safe parsing + missing-price fallback
+    let filteredProperties = properties;
+    if (filters?.budget) {
+      const budgetVal = Number(String(filters.budget).replace(/[^0-9]/g, ''));
+      if (!isNaN(budgetVal) && budgetVal > 0) {
+        filteredProperties = filteredProperties.filter(
+          (property) => (property.price ?? Infinity) <= budgetVal
+        );
+      }
+    }
 
     return {
       properties: filteredProperties,
       meta: data.meta,
     };
   } catch (error) {
-    throw new Error(
-      `Failed to load properties: ${getApiErrorMessage(
-        error,
-        "Unknown error"
-      )}`
-    );
+    console.error("[getProperties] API fetch failed:", error);
+    return {
+      properties: [],
+      meta: { total: 0, page: 1, limit: 0, totalPages: 0 },
+    };
   }
 }
 
@@ -68,11 +68,7 @@ export async function getProperty(id: string) {
     const { data } = await apiClient.get<ApiProperty>(`/properties/${id}`);
     return toProperty(data);
   } catch (error) {
-    throw new Error(
-      `Failed to load property: ${getApiErrorMessage(
-        error,
-        "Unknown error"
-      )}`
-    );
+    console.error("[getProperty] API fetch failed:", error);
+    return null;
   }
 }

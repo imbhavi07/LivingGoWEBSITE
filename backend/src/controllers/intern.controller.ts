@@ -245,7 +245,6 @@ export const getInternDashboard = asyncHandler(
               id: true,
               name: true,
               phone: true,
-              visitOtpVerified:true,
             },
           },
 
@@ -256,7 +255,6 @@ export const getInternDashboard = asyncHandler(
               title: true,
               location: true,
               price: true,
-              visitOtpVerified:true,
             },
           },
         },
