@@ -102,12 +102,13 @@ export function Header() {
                   >
                     {user?.imageUrl ? (
                       <Image
-                        src={user.imageUrl}
-                        alt="Profile"
+                        src={user.imageUrl || "/assets/default-avatar.png"}
+                        alt={user?.fullName || "Profile"}
                         width={32}
                         height={32}
-                        className="h-8 w-8 rounded-full object-cover"
+                        className="h-8 w-8 rounded-full object-cover flex-shrink-0"
                         aria-hidden="true"
+                        unoptimized
                       />
                     ) : (
                       <User className="h-5 w-5 text-brand-dark/70" aria-hidden="true" />
