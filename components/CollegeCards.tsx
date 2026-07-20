@@ -15,7 +15,7 @@ const colleges: College[] = [
     id: "stephens",
     name: "St. Stephen's College",
     image: "/assets/college_pics/stephens_pic.jpg",
-    logo: "/assets/college_pics/stephens_logo.png",
+    logo: "/assets/college_pics/stephens_logo.jpg",
   },
   {
     id: "hindu",
@@ -62,7 +62,7 @@ const colleges: College[] = [
   {
     id: "miranda",
     name: "Miranda House",
-    image: "/assets/college_pics/drc_pic.jpg",
+    image: "/assets/college_pics/miranda.jpg",
     logo: "/assets/college_pics/miranda_logo.jpg",
   },
   {
