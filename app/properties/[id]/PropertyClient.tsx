@@ -609,7 +609,7 @@ export default function PropertyClient({ property }: { property: any }) {
               {/* Row 2: Enquire + Schedule Visit */}
               <div className="flex w-full items-center gap-2.5 relative z-10">
                 <a
-                  href={`https://wa.me/919355405403?text=${encodeURIComponent(
+                  href={`https://wa.me/917018453582?text=${encodeURIComponent(
                     `Hi, I'm interested in property *${property?.propertyCode ?? ""}* listed on LivingGo.`
                   )}`}
                   target="_blank"
