@@ -15,7 +15,7 @@ const colleges: College[] = [
     id: "stephens",
     name: "St. Stephen's College",
     image: "/assets/college_pics/stephens_pic.jpg",
-    logo: "/assets/college_pics/stephens_logo.png",
+    logo: "/assets/college_pics/stephens_logo.jpg",
   },
   {
     id: "hindu",
@@ -62,7 +62,7 @@ const colleges: College[] = [
   {
     id: "miranda",
     name: "Miranda House",
-    image: "/assets/college_pics/drc_pic.jpg",
+    image: "/assets/college_pics/miranda_pic.jpeg",
     logo: "/assets/college_pics/miranda_logo.jpg",
   },
   {
@@ -77,7 +77,7 @@ export function CollegeCards() {
   const marqueeStyle = `
     @keyframes college-marquee {
       0% { transform: translateX(0%); }
-      100% { transform: translateX(-30%); }
+      100% { transform: translateX(-50%); }
     }
     .animate-college-marquee {
       display: flex;
@@ -90,7 +90,8 @@ export function CollegeCards() {
   `;
 
   return (
-    <section className="px-4 py-10 bg-brand-bg mt-[-10px]" aria-label="Colleges">
+    // Removed the negative margin shift that caused layout clipping glitches
+    <section className="px-4 py-10 bg-brand-bg" aria-label="Colleges">
       <div className="mx-auto max-w-7xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -109,20 +110,21 @@ export function CollegeCards() {
           </Link>
         </div>
 
-        {/* Infinite Scroll Marquee Container */}
-        <div className="relative flex w-full overflow-hidden -mx-4 px-4 pb-4">
+        {/* 🔴 FIXED: Cleared the negative horizontal margins breaking the mobile container viewport */}
+        <div className="relative flex w-full overflow-hidden pb-4">
           <style dangerouslySetInnerHTML={{ __html: marqueeStyle }} />
-          {/* Changed gap to gap-4 for a clean visual separation without large empty zones */}
+          
+          {/* Loopable marquee layout row container */}
           <div className="animate-college-marquee gap-4">
             {[...colleges, ...colleges].map((college, idx) => (
               <Link
                 key={`${college.id}-${idx}`}
-                href={`/colleges/${college.id}`}
+                href={`/listings?college=${encodeURIComponent(college.name)}`}
                 className="w-[200px] shrink-0 group block"
                 aria-label={`View PGs near ${college.name}`}
               >
-                {/* College Card - Layout Width now matches parent wrapper exactly */}
-                <div className="relative aspect-[4/3] w-full rounded-4xl overflow-hidden bg-brand-dark/5 group-hover:shadow-xl group-hover:border-brand-green/30 transition-all duration-300 border border-brand-dark/10">
+                {/* 🔴 FIXED: Re-fitted border styling and scaled layout constraints down slightly */}
+                <div className="relative aspect-[4/3] w-full rounded-3xl overflow-hidden bg-brand-dark/5 group-hover:shadow-xl group-hover:border-brand-green/30 transition-all duration-300 border border-brand-dark/10">
                   {/* College Image */}
                   <Image
                     src={college.image}
