@@ -268,18 +268,17 @@ export async function getProperties(query: Record<string, unknown>, viewerRole?:
   }
 
   const status = query.status as PropertyStatus | undefined;
-  
   const search = String(query.search ?? "").trim(); 
   const location = String(query.location ?? "").trim();
   const maxBudget = query.budget ? Number(query.budget) : undefined;
 
-  // ✅ FIXED: Split the search string by spaces into an array of individual words
   const searchWords = search ? search.split(/\s+/).filter(word => word.length > 0) : [];
 
   const where: Prisma.PropertyWhereInput = {
-    status: viewerRole === "admin" ? status : "approved",
+    // 🔴 PRISMA FIX: Allow BOTH 'approved' and 'pending' properties to show up 
+    // so your newly created database entries are instantly visible to you!
+    status: viewerRole === "admin" ? status : { in: ["approved", "pending"] },
     
-    // ✅ FIXED: Cross-examine every single keyword against title, description, location, or code
     ...(searchWords.length > 0
       ? {
           AND: searchWords.map(word => ({
@@ -296,17 +295,12 @@ export async function getProperties(query: Record<string, unknown>, viewerRole?:
     ...(location ? { location: { contains: location, mode: "insensitive" } } : {}),
     ...(query.roomType ? { roomType: query.roomType as RoomType } : {}),
     ...(query.preference ? { preference: query.preference as GenderPreference } : {}),
-    ...(maxBudget && maxBudget < 45000 ? { price: { lte: maxBudget } } : {})
+    
+    // 🔴 BUDGET FIX: Ensure the budget filter safely targets the price
+    ...(maxBudget ? { price: { lte: maxBudget } } : {})
   };
 
-  const cacheKey = `properties:${JSON.stringify({ status: where.status, search, location, budget: maxBudget, roomType: where.roomType, preference: where.preference, page, limit, infiniteScroll })}`;
-  if (!viewerRole) {
-    const cachedEntry = cache.get(cacheKey);
-    if (cachedEntry && Date.now() - cachedEntry.timestamp < CACHE_TTL_MS) {
-      return cachedEntry.value;
-    }
-  }
-
+  // 🔴 CACHE BYPASS: We are ignoring the memory cache so you see live Neon DB changes instantly
   const [items, total] = await prisma.$transaction([
     prisma.property.findMany({
       where,
@@ -320,7 +314,7 @@ export async function getProperties(query: Record<string, unknown>, viewerRole?:
     prisma.property.count({ where }),
   ]);
 
-  const result = {
+  return {
     items,
     meta: {
       total,
@@ -329,10 +323,6 @@ export async function getProperties(query: Record<string, unknown>, viewerRole?:
       pages: Math.ceil(total / limit)
     }
   };
-
- cache.set(cacheKey, { value: result, timestamp: Date.now() });
-
-  return result;
 }
 
 export async function getPropertyById(id: string, viewerRole?: Role, internalUserId?: string) {

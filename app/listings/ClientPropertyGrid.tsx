@@ -17,7 +17,7 @@ export function ClientPropertyGrid({ properties }: { properties: Property[] }) {
   }
 
   return (
-    <section className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <section className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full pb-24 relative z-10">
       {properties.map((property) => (
         <PropertyCard
           key={property.id}

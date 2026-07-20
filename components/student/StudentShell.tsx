@@ -8,7 +8,6 @@ import { useState } from "react";
 import { Button } from "@/components/Button";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import logo from "@/assets/logo.png";
 import { useAuth } from "@/hooks/useAuth";
 
 const studentLinks = [
@@ -69,7 +68,7 @@ function StudentSidebar({ onNavigate, onSignOut }: { onNavigate?: () => void; on
         className="hidden items-center gap-2 text-2xl font-black text-ink lg:flex"
       >
         <Image
-          src={logo}
+          src="/assets/logo.png"
           alt="LivingGo Logo"
           width={992} // Fallback width for Next.js Image optimization
           height={597} // Fallback height

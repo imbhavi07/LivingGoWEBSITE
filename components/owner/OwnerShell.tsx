@@ -9,7 +9,6 @@ import { Button } from "@/components/Button";
 import { useOwnerAuth } from "@/hooks/useOwnerAuth";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import logo from "@/assets/logo.png";
 
 const ownerLinks = [
   { href: "/owner/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -32,12 +31,12 @@ export function OwnerShell({ children }: { children: ReactNode }) {
         <div className="flex items-center justify-between">
           {/* THE FIX: Pointed href to "/" instead of the dashboard */}
           <Link href="/" className="flex items-center gap-2 text-xl font-black text-ink">
-            <Image 
-              src={logo} 
-              alt="PG Management App" 
-              width={992} 
-              height={597} 
-              className="h-8 w-auto object-contain" 
+            <Image
+              src="/assets/logo.png"
+              alt="PG Management App"
+              width={992}
+              height={597}
+              className="h-8 w-auto object-contain"
             />
             <span>Owner</span>
           </Link>
@@ -55,12 +54,12 @@ export function OwnerShell({ children }: { children: ReactNode }) {
             <div className="mb-5 flex items-center justify-between">
               {/* THE FIX: Converted this static div into a Link pointing to "/" */}
               <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-2 text-xl font-black text-ink">
-                <Image 
-                  src={logo} 
-                  alt="Best PG Management Software" 
-                  width={992} 
-                  height={597} 
-                  className="h-8 w-auto object-contain" 
+                <Image
+                  src="/assets/logo.png"
+                  alt="Best PG Management Software"
+                  width={992}
+                  height={597}
+                  className="h-8 w-auto object-contain"
                 />
                 <span>Owner</span>
               </Link>
@@ -85,17 +84,17 @@ function OwnerSidebar({ onNavigate, onSignOut }: { onNavigate?: () => void; onSi
     <div className="flex h-full flex-col">
       {/* Desktop Sidebar Logo */}
       {/* THE FIX: Pointed href to "/" */}
-      <Link 
-        href="/" 
-        onClick={onNavigate} 
+      <Link
+        href="/"
+        onClick={onNavigate}
         className="hidden items-center gap-2 text-2xl font-black text-ink lg:flex"
       >
-        <Image 
-          src={logo} 
-          alt="LivingGo Logo" 
-          width={992} 
-          height={597} 
-          className="h-14 w-auto object-contain" 
+        <Image
+          src="/assets/logo.png"
+          alt="LivingGo Logo"
+          width={992}
+          height={597}
+          className="h-14 w-auto object-contain"
         />
         <span>Owner</span>
       </Link>

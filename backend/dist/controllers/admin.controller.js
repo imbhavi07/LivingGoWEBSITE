@@ -202,12 +202,19 @@ exports.getAllProperties = (0, async_handler_1.asyncHandler)(async (request, res
     response.json(await adminService.getAllProperties(request.query));
 });
 exports.getAdminCoupons = (0, async_handler_1.asyncHandler)(async (_request, response) => {
-    // Admin-created coupons
     const coupons = await prisma_1.prisma.coupon.findMany({
         select: {
             id: true,
             code: true,
             affiliateId: true,
+            discountType: true,
+            value: true,
+            validFrom: true,
+            validTo: true,
+            targetPlans: true,
+            isActive: true,
+            currentUses: true,
+            maxUses: true,
         },
     });
     const adminCoupons = await Promise.all(coupons.map(async (coupon) => {
@@ -233,10 +240,16 @@ exports.getAdminCoupons = (0, async_handler_1.asyncHandler)(async (_request, res
         return {
             id: coupon.id,
             partnerName,
-            couponCode: coupon.code,
-            totalVisits,
-            totalConvertedBookings,
+            code: coupon.code,
             type: "ADMIN",
+            uses: coupon.currentUses,
+            successful: coupon.currentUses,
+            discountType: coupon.discountType,
+            value: coupon.value,
+            targetPlans: coupon.targetPlans,
+            validFrom: coupon.validFrom,
+            validTo: coupon.validTo,
+            isActive: coupon.isActive,
         };
     }));
     const referrals = await prisma_1.prisma.referral.findMany({
@@ -251,10 +264,11 @@ exports.getAdminCoupons = (0, async_handler_1.asyncHandler)(async (_request, res
     const partnerCoupons = referrals.map((referral) => ({
         id: referral.id,
         partnerName: referral.user?.name ?? "Unknown",
-        couponCode: referral.code,
-        totalVisits: referral.invites,
-        totalConvertedBookings: referral.successful,
+        code: referral.code,
         type: "PARTNER",
+        uses: referral.invites,
+        successful: referral.successful,
+        isActive: true,
     }));
     response.json([
         ...adminCoupons,

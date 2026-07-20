@@ -1,4 +1,4 @@
-@import url('https://googleapis.com');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -32,25 +32,24 @@ html {
 
 body {
   margin: 0;
-  background: #f7f3ed;
-  color: #573715;
+  background: #FDFBF7;
+  color: #3E2723;
+  font-family: var(--font-nunito), Nunito, system-ui, sans-serif;
 }
 
-@keyframes loginPanel {
-  from {
-    opacity: 0;
-    transform: translateY(18px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+/* Global text selection color */
+::selection {
+  background-color: #8C9970;
+  color: #FDFBF7;
 }
 
-@layer components {
-  .input {
-    @apply h-10 w-full rounded-2xl border border-black/10 bg-linen px-4 text-sm font-medium text-ink outline-none transition placeholder:text-muted/70 focus:border-ink/30 focus:ring-4 focus:ring-ink/5 sm:h-12;
-  }
+/* Hide scrollbar utility */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 /* Mobile-first responsive typography utilities */
@@ -84,4 +83,47 @@ body {
 .animate-gradient-flow {
   background-size: 200% 200%;
   animation: gradient-flow 2s ease infinite;
+}
+
+@keyframes spin-y {
+  from { transform: rotateY(0deg); }
+  to { transform: rotateY(360deg); }
+}
+.animate-spin-y {
+  animation: spin-y 2.5s linear infinite;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0%); }
+  to { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 12s linear infinite;
+}
+
+/* Focus visible styles for accessibility */
+:focus-visible {
+  outline: 2px solid #6A7B4D;
+  outline-offset: 2px;
+}
+
+/* Smooth transitions for interactive elements */
+button, a, [role="button"] {
+  transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Custom scrollbar for webkit */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #FDFBF7;
+}
+::-webkit-scrollbar-thumb {
+  background: #8C9970;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #6A7B4D;
 }

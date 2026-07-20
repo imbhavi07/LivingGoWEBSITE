@@ -99,7 +99,6 @@ exports.getInterns = (0, async_handler_1.asyncHandler)(async (req, res) => {
         const interns = await prisma_1.prisma.intern.findMany({
             where: {
                 supervisorId: String(supervisorId),
-                active: true,
             },
             orderBy: {
                 name: "asc",
@@ -175,7 +174,6 @@ exports.getInternDashboard = (0, async_handler_1.asyncHandler)(async (req, res) 
                         id: true,
                         name: true,
                         phone: true,
-                        visitOtpVerified: true,
                     },
                 },
                 property: {
@@ -185,7 +183,6 @@ exports.getInternDashboard = (0, async_handler_1.asyncHandler)(async (req, res) 
                         title: true,
                         location: true,
                         price: true,
-                        visitOtpVerified: true,
                     },
                 },
             },
