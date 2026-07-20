@@ -8,3 +8,4 @@ node_modules/
 backend/.env
 
 .worktrees/
+/backend/.env.*
