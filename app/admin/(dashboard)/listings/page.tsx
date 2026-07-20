@@ -30,11 +30,70 @@ const optimizeImageUrl = (url: string | undefined): string => {
 
 export default function AdminListingsPage() {
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<
+    | "NEWEST"
+    | "OLDEST"
+    | "PRICE_LOW"
+    | "PRICE_HIGH"
+    | "NAME_ASC"
+    | "NAME_DESC"
+  >("NEWEST");
   const { listings, isLoading, approve, reject, remove } = useAdminListings(search);
+  const sortedListings = [...listings].sort((a, b) => {
+    switch (sortBy) {
+      case "PRICE_LOW":
+        return a.price - b.price;
+      case "PRICE_HIGH":
+        return b.price - a.price;
+      case "NAME_ASC":
+        return a.title.localeCompare(b.title);
+      case "NAME_DESC":
+        return b.title.localeCompare(a.title);
+      case "OLDEST":
+        return (
+          new Date(a.submittedAt).getTime() -
+          new Date(b.submittedAt).getTime()
+        );
+      default:
+        return (
+          new Date(b.submittedAt).getTime() -
+          new Date(a.submittedAt).getTime()
+        );
+    }
+  }); 
 
   return (
     <AdminShell>
-      <div className="mb-6 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+
+        <AdminSearch
+          value={search}
+          onChange={setSearch}
+          placeholder="Search listings, owners, status"
+        />
+
+        <select
+          value={sortBy}
+          onChange={(e) =>
+            setSortBy(e.target.value as typeof sortBy)
+          }
+          className="rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm font-medium shadow-sm outline-none focus:border-clay"
+        >
+          <option value="NEWEST">Newest First</option>
+          <option value="OLDEST">Oldest First</option>
+          <option value="PRICE_LOW">
+            Price: Low → High
+          </option>
+          <option value="PRICE_HIGH">
+            Price: High → Low
+          </option>
+          <option value="NAME_ASC">
+            Name: A → Z
+          </option>
+          <option value="NAME_DESC">
+            Name: Z → A
+          </option>
+        </select>
         <div>
           <p className="text-sm font-black uppercase text-clay">Listing moderation</p>
           <h1 className="mt-2 text-3xl font-black text-ink sm:text-5xl">Submitted properties</h1>
@@ -47,7 +106,7 @@ export default function AdminListingsPage() {
       ) : null}
       {!isLoading && listings.length ? (
         <section className="overflow-hidden rounded-3xl bg-white shadow-soft ring-1 ring-black/5">
-          {listings.map((listing) => (
+          {sortedListings.map((listing) => (
             <article key={listing.id} className="grid gap-4 border-b border-black/5 p-4 last:border-0 xl:grid-cols-[112px_1fr_auto] xl:items-center">
               <div className="relative h-28 overflow-hidden rounded-2xl bg-oat xl:h-24">
                 <Image src={optimizeImageUrl(listing.images[0]?.url)} alt={listing.title} fill className="object-cover" sizes="128px" />

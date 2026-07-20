@@ -15,21 +15,24 @@ export default function InternPage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [showAll, setShowAll] = useState(true);
   const [loading, setLoading] = useState(false);
 
   async function loadInterns() {
-    const res = await apiClient.get("/visiting/interns", {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("visiting_token")}`,
-      },
-    });
-
+    const res = await apiClient.get(
+      `/visiting/interns?showAll=${showAll}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("visiting_token")}`,
+        },
+      }
+    );
     setInterns(res.data.interns);
   }
 
   useEffect(() => {
     loadInterns();
-  }, []);
+  }, [showAll]);
 
   async function createIntern() {
     if (!name || !password) {
@@ -105,7 +108,28 @@ export default function InternPage() {
       </div>
 
       <div className="rounded-xl border bg-white p-6">
-
+        <div className="mb-4 flex gap-2">
+          <Button
+            onClick={() => setShowAll(true)}
+            className={
+              showAll
+                ? "bg-black text-white"
+                : "bg-gray-200 text-black"
+            }
+          >
+            All Interns
+          </Button>
+          <Button
+            onClick={() => setShowAll(false)}
+            className={
+              !showAll
+                ? "bg-black text-white"
+                : "bg-gray-200 text-black"
+            }
+          >
+            My Interns
+          </Button>
+        </div>
         <h2 className="text-2xl font-bold mb-6">
           Existing Interns
         </h2>

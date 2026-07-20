@@ -263,6 +263,7 @@ model Visit {
   visitOtp            String
   visitOtpVerified    Boolean       @default(false)
   couponCode          String?
+  referralCounted     Boolean       @default(false) 
   leadStatus          VisitStatus   @default(SCHEDULED)
   notes               String?
   whatsappNumber      String?
@@ -270,6 +271,7 @@ model Visit {
   updatedAt           DateTime      @updatedAt
   student             User          @relation("UserVisits", fields: [studentId], references: [id])
   property            Property      @relation("PropertyVisits", fields: [propertyId], references: [id])
+  isLocked            Boolean       @default(false)
   @@index([studentId])
   @@index([propertyId])
   @@index([tokenId])

@@ -53,6 +53,7 @@ export default function VisitingDashboard() {
   const [interns, setInterns] = useState<Intern[]>([]);
   const [selectedIntern, setSelectedIntern] = useState("");
   const [meetingPointId, setMeetingPointId] = useState("");
+  const [filter, setFilter] = useState< "ALL" | "ASSIGNED" | "SCHEDULED" | "SUCCESSFUL" >("ALL");
   
   useEffect(() => {
     loadVisits();
@@ -127,129 +128,191 @@ export default function VisitingDashboard() {
     }
   }
 
+  const filteredVisits = visits.filter((visit) => {
+    switch (filter) {
+      case "SUCCESSFUL":
+        return visit.leadStatus === "SUCCESSFUL";
+      case "SCHEDULED":
+        return visit.leadStatus === "SCHEDULED";
+      case "ASSIGNED":
+        return visit.leadStatus !== "SCHEDULED";
+      default:
+        return true;
+    }
+  });
+
   return (
     <main className="min-h-screen bg-gray-100 p-8">
-      <h1 className="mb-8 text-4xl font-black">LivingGo Visiting Dashboard</h1>
+      <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex flex-wrap gap-3">
+          <Button
+            variant={filter === "ALL" ? "primary" : "secondary"}
+            onClick={() => setFilter("ALL")}
+          >
+            All ({visits.length})
+          </Button>
+          <Button
+            variant={filter === "ASSIGNED" ? "primary" : "secondary"}
+            onClick={() => setFilter("ASSIGNED")}
+          >
+            Assigned (
+            {
+              visits.filter(
+                v => v.leadStatus !== "SCHEDULED"
+              ).length
+            }
+            )
+          </Button>
+          <Button
+            variant={filter === "SCHEDULED" ? "primary" : "secondary"}
+            onClick={() => setFilter("SCHEDULED")}
+          >
+            Scheduled (
+            {
+              visits.filter(
+                v => v.leadStatus === "SCHEDULED"
+              ).length
+            }
+            )
+          </Button>
+          <Button
+            variant={filter === "SUCCESSFUL" ? "primary" : "secondary"}
+            onClick={() => setFilter("SUCCESSFUL")}
+          >
+            Successful (
+            {
+              visits.filter(
+                v => v.leadStatus === "SUCCESSFUL"
+              ).length
+            }
+            )
+          </Button>
+        </div>        
+        <div>
+          <h1 className="text-3xl font-bold">
+            Visit Assignments
+          </h1>
+          <p className="text-gray-500 mt-1">
+            Assign and manage student visits.
+          </p>
+        </div>
+        <span className="rounded-full bg-gray-900 px-4 py-2 text-sm font-semibold text-white">
+          {visits.length} Visits
+        </span>
+      </div>
       {loading && <div>Loading...</div>}
       <div className="space-y-6">
-        {visits.map((visit) => (
-          <div key={visit.id} className="rounded-2xl bg-white p-6 shadow">
-            <div className="grid grid-cols-2 gap-6">
+        {filteredVisits.map((visit) => (
+          <div
+            key={visit.id}
+            className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm hover:shadow-md transition"
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <h2 className="text-xl font-bold">
+                    {visit.property.title}
+                  </h2>
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                      visit.leadStatus === "ASSIGNED"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : visit.leadStatus === "SCHEDULED"
+                        ? "bg-red-100 text-red-700"
+                        : visit.leadStatus === "SUCCESSFUL"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-blue-100 text-blue-700"
+                    }`}
+                  >
+                    {visit.leadStatus.replaceAll("_", " ")}
+                  </span>
+                </div>
+
+                <p className="mt-1 text-gray-600">
+                  {visit.property.location}
+                </p>
+
+                <p className="mt-2 text-2xl font-bold">
+                  ₹{visit.property.price}
+                </p>
+
+                <p className="mt-1 text-sm text-gray-500">
+                  {new Date(visit.visitDate).toLocaleDateString()} • {visit.timeSlot}
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  variant="secondary"
+                  onClick={() => openAssignModal(visit)}
+                >
+                  {visit.intern ? "Reassign" : "Assign"}
+                </Button>
+
+                {visit.intern && (
+                  <Button
+                    onClick={() => {
+                      /* your WhatsApp code */
+                    }}
+                  >
+                    WhatsApp
+                  </Button>
+                )}
+              </div>
+            </div>
+              
+            <div className="mt-5 grid grid-cols-3 gap-6 border-t pt-4">
+              
               <div>
-                <h2 className="font-bold">Student</h2>
-                <p>{visit.student.name}</p>
-                <p>{visit.student.phone}</p>
-                {visit.whatsappNumber && (
-                  <p className="text-sm text-green-600 mt-1">
-                    WhatsApp: {visit.whatsappNumber}
+                <p className="text-xs uppercase text-gray-500">
+                  Student
+                </p>
+              
+                <p className="font-semibold">
+                  {visit.student.name}
+                </p>
+              
+                <p className="text-sm text-gray-600">
+                  {visit.student.phone}
+                </p>
+              </div>
+              
+              <div>
+                <p className="text-xs uppercase text-gray-500">
+                  Assigned Intern
+                </p>
+              
+                {visit.intern ? (
+                  <>
+                    <p className="font-semibold">
+                      {visit.intern.name}
+                    </p>
+                
+                    <p className="text-sm text-gray-600">
+                      {visit.intern.username}
+                    </p>
+                
+                    <p className="text-sm text-gray-600">
+                      {visit.meetingPointId || "-"}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-gray-500">
+                    Not Assigned
                   </p>
                 )}
               </div>
+              
               <div>
-                <h2 className="font-bold">Property</h2>
-                <p>{visit.property.propertyCode}</p>
-                <p>{visit.property.title}</p>
-                <p>₹{visit.property.price}</p>
-              </div>
-              <div>
-                <h2 className="font-bold">Visit</h2>
-                <p>{new Date(visit.visitDate).toLocaleDateString()}</p>
-                <p>{visit.timeSlot}</p>
-              </div>
-              <div>
-                <h2 className="font-bold">Coupon</h2>
-                <p>{visit.couponCode ?? "-"}</p>
+                <p className="text-xs uppercase text-gray-500">
+                  Coupon
+                </p>
+              
+                <p className="font-semibold">
+                  {visit.couponCode || "-"}
+                </p>
               </div>
             </div>
-            {visit.intern ? (
-              <div className="mt-6 rounded-2xl border border-green-200 bg-green-50 p-5">
-                <h3 className="mb-3 text-lg font-bold text-green-800">
-                  Assigned Intern
-                </h3>
-                <div className="space-y-2">
-                  <p>
-                    <span className="font-semibold">Name:</span>{" "}
-                    {visit.intern.name}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Username:</span>{" "}
-                    {visit.intern.username}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Phone:</span>{" "}
-                    {visit.intern.phone}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Meeting Point:</span>{" "}
-                    {visit.meetingPointId || "-"}
-                  </p>
-                  <div className="mt-5">
-                    <button
-                      className="bg-orange-600 text-white px-4 py-2 rounded"
-                      onClick={()=>openAssignModal(visit)}
-                    >
-                      Reassign Intern
-                    </button>
-                  </div>
-                  <div className="mt-6">
-                    <button
-                      onClick={() => {
-                        // Prioritize WhatsApp number, fallback to student profile phone
-                        const phoneToSend = visit.whatsappNumber || visit.student.phone;
-
-                        if (!phoneToSend) {
-                          alert("Student WhatsApp number is not available.");
-                          return;
-                        }
-
-                        // Clean up the number by removing +, spaces, dashes to ensure wa.me link works perfectly
-                        let cleanPhone = phoneToSend.replace(/\D/g, "");
-
-                        // Standardize the Indian country code if missing
-                        if (cleanPhone.length === 10) {
-                          cleanPhone = `91${cleanPhone}`;
-                        }
-
-                        const message = encodeURIComponent(
-                          `Hi ${visit.student.name},
-                          Your LivingGo property visit has been scheduled.
-                          Assigned LivingGo Partner:
-                          ${visit.intern?.name}
-                          Contact:
-                          ${visit.intern?.phone}
-                          Meeting Point:
-                          ${visit.meetingPointId}
-                          Date:
-                          ${new Date(visit.visitDate).toLocaleDateString()}
-                          Time:
-                          ${visit.timeSlot}
-                          Property:
-                          ${visit.property.title}
-                          Please be available on time.
-                          Only provide the OTP once our team member gets to you.
-                          Thank you,
-                          LivingGo`
-                        );
-                        window.open(
-                          `https://wa.me/${cleanPhone}?text=${message}`,
-                          "_blank"
-                        );
-                      }}
-                      className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
-                    >
-                      Send WhatsApp to Student
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <button
-                onClick={() => openAssignModal(visit)}
-                className="mt-6 rounded-xl bg-black px-5 py-3 text-white"
-              >
-                Assign Lead
-              </button>
-            )}
           </div>
         ))}
       </div>

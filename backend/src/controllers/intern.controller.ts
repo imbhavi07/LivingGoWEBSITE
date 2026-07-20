@@ -142,11 +142,14 @@ export const getInterns = asyncHandler(
   ) => {
     try {
       const supervisorId = req.user!.id;
-
+      const showAll = req.query.showAll === "true";
       const interns = await prisma.intern.findMany({
-        where: {
-          supervisorId: String(supervisorId),
-        },
+        where: showAll
+          ? {}
+          : {
+              supervisorId: String(supervisorId),
+            },
+          
         orderBy: {
           name: "asc",
         },
@@ -237,6 +240,14 @@ export const getInternDashboard = asyncHandler(
       const visits = await prisma.visit.findMany({
         where: {
           assignedLeadId: internId,
+          leadStatus: {
+            notIn: [
+              "SUCCESSFUL",
+              "NOT_SUCCESSFUL",
+              "NOT_MET",
+              "INTERESTED_OTHER_PROPERTY"
+            ],
+          },
         },
 
         include: {
@@ -310,15 +321,34 @@ export const updateInternVisitStatus = asyncHandler(
         });
       }
 
-      // Use constant-time comparison to prevent timing attacks
-      const isValid = otp === visit.visitOtp;
+      if (visit.isLocked) {
+      return res.status(403).json({
 
-      if (!isValid) {
-        return res.status(400).json({
           success: false,
-          message: "Invalid OTP",
-        });
+
+          message: "This visit has been locked. Contact your supervisor to modify it.",
+
+      });
+
+    }
+
+      // Use constant-time comparison to prevent timing attacks
+      if (status !== "NOT_MET") {
+        const isValid = String(otp).trim() === String(visit.visitOtp).trim();
+        if (!isValid) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid OTP",
+          });
+        }
       }
+
+      const finalStatuses = [
+        "SUCCESSFUL",
+        "NOT_SUCCESSFUL",
+        "NOT_MET",
+        "INTERESTED_OTHER_PROPERTY",
+      ];
 
       const updated = await prisma.visit.update({
         where: {
@@ -326,8 +356,53 @@ export const updateInternVisitStatus = asyncHandler(
         },
         data: {
           leadStatus: status,
+          isLocked: finalStatuses.includes(status),
         },
       });
+
+      if (
+        visit.couponCode &&
+        !visit.referralCounted &&
+        finalStatuses.includes(status)
+      ) {
+        const referral = await prisma.referral.findFirst({
+          where: {
+            code: visit.couponCode,
+            status: "APPROVED",
+          },
+        });
+      
+        if (referral) {
+          await prisma.$transaction(async (tx) => {
+            await tx.referral.update({
+              where: {
+                id: referral.id,
+              },
+              data: {
+                invites: {
+                  increment: 1,
+                },
+                ...(status === "SUCCESSFUL"
+                  ? {
+                      successful: {
+                        increment: 1,
+                      },
+                    }
+                  : {}),
+              },
+            });
+
+            await tx.visit.update({
+              where: {
+                id: visit.id,
+              },
+              data: {
+                referralCounted: true,
+              },
+            });
+          });
+        }
+      }
 
       return res.json({
         success: true,
@@ -343,5 +418,31 @@ export const updateInternVisitStatus = asyncHandler(
       });
 
     }
+  }
+);
+
+export const verifyVisitOtp = asyncHandler(
+  async (req: InternRequest, res: Response) => {
+    const { visitId, otp } = req.body;
+
+    const internId = req.intern!.id;
+
+    const visit = await prisma.visit.findFirst({
+      where: {
+        id: visitId,
+        assignedLeadId: internId,
+      },
+    });
+
+    if (!visit) {
+      return res.status(404).json({
+        success: false,
+        message: "Visit not found",
+      });
+    }
+
+    return res.json({
+      success: otp === visit.visitOtp,
+    });
   }
 );
