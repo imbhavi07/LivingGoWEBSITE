@@ -95,7 +95,7 @@ export default function AboutPage() {
 
                   <Image
                     src={member.image}
-                    alt={member.name}
+                    alt={`${member.name}, ${member.role} at LivingGo - ${member.designation}`}
                     fill
                     className="object-cover"
                   />
@@ -141,7 +141,7 @@ export default function AboutPage() {
 
                   <Image
                     src={member.image}
-                    alt={member.name}
+                    alt={`${member.name}, ${member.role} at LivingGo - ${member.designation}`}
                     fill
                     className="object-cover"
                   />

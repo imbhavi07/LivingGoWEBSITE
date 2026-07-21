@@ -41,10 +41,10 @@ export function BottomCTA() {
             it now uses `h-[95%] md:h-[100%]`. This mathematically forces the image to stop growing the second it hits the ceiling. 
           */}
           <div className="absolute right-[-5%] sm:right-0 md:right-8 bottom-0 h-[95%] md:h-[100%] w-[55%] sm:w-[45%] md:w-[40%] max-w-[420px] z-10 pointer-events-none flex items-end justify-end">
-            <img 
-              src="/assets/mascots/hello.png" 
-              alt="LivingGo Mascot" 
-              className="w-full h-full object-contain object-bottom drop-shadow-[0_10px_20px_rgba(0,0,0,0.15)]" 
+            <img
+              src="/assets/mascots/hello.png"
+              alt="LivingGo friendly mascot welcoming students to browse verified PG listings near top Delhi colleges"
+              className="w-full h-full object-contain object-bottom drop-shadow-[0_10px_20px_rgba(0,0,0,0.15)]"
             />
           </div>
           

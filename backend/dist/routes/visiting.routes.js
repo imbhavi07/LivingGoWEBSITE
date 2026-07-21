@@ -53,3 +53,4 @@ exports.visitingRouter.post("/interns", internController.createIntern);
 exports.visitingRouter.get("/interns", internController.getInterns);
 exports.visitingRouter.patch("/interns/:id/toggle", internController.toggleInternStatus);
 exports.visitingRouter.delete("/interns/:id", internController.deleteIntern);
+exports.visitingRouter.post("/lead/verify-otp", intern_middleware_1.internAuthenticate, internController.verifyVisitOtp);

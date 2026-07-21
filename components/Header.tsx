@@ -26,7 +26,7 @@ export function Header() {
           <Link href="/" className="flex items-center shrink-0" aria-label="LivingGo Home">
             <Image
               src="/assets/logo.png"
-              alt="LivingGo"
+              alt="LivingGo - Find Verified Student PGs & Rooms in Delhi Near Top Colleges"
               className="h-14 md:h-16 w-auto object-contain"
               width={128}
               height={64}

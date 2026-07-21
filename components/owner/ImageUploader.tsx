@@ -9,6 +9,7 @@ type ImageUploaderProps = {
   images: string[];
   onChange: (images: string[]) => void;
   onFilesChange?: (files: File[]) => void;
+  propertyTitle?: string;
 };
 
 async function convertHeicToPreview(file: File): Promise<string> {
@@ -30,7 +31,7 @@ async function convertHeicToPreview(file: File): Promise<string> {
   return URL.createObjectURL(file);
 }
 
-export function ImageUploader({ images, onChange, onFilesChange }: ImageUploaderProps) {
+export function ImageUploader({ images, onChange, onFilesChange, propertyTitle }: ImageUploaderProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -94,9 +95,9 @@ export function ImageUploader({ images, onChange, onFilesChange }: ImageUploader
       {error ? <p className="rounded-2xl bg-white p-3 text-sm font-semibold text-clay shadow-soft">{error}</p> : null}
       {images.length ? (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {images.map((image) => (
+          {images.map((image, index) => (
             <div key={image} className="relative aspect-square overflow-hidden rounded-2xl bg-oat">
-              <Image src={image} alt="Uploaded property" fill className="object-cover" sizes="160px" unoptimized />
+              <Image src={image} alt={`${propertyTitle || "Property"} image ${index + 1} - ${propertyTitle ? `${propertyTitle} PG listing` : "Uploaded property photo"}`} fill className="object-cover" sizes="160px" unoptimized />
               <button
                 type="button"
                 onClick={() => removeImage(image)}

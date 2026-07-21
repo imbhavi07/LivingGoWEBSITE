@@ -134,7 +134,7 @@ function AdminLoginForm() {
           <div className="space-y-4">
             {/* Email input */}
             <label className="block space-y-2">
-              <span className="text-sm font-bold text-ink">Admin email</span>
+              <span className="text-sm rounded-2xl px-4 py-4 bg-ink font-bold text-white">Admin email</span>
               <input
                 type="email"
                 value={email}
@@ -158,6 +158,7 @@ function AdminLoginForm() {
 
             {/* Send OTP button */}
             <Button
+              variant="primary"
               className="w-full"
               disabled={!isValidEmail || isLoading}
               onClick={() => void handleSendOtp()}
