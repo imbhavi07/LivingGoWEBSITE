@@ -51,12 +51,45 @@ export default async function PropertyDetailsPage({ params }: { params: Promise<
     );
   }
 
-  return <PropertyClient property={property} />;
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Accommodation',
+    name: property.title,
+    description: property.description,
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: property.location,
+      addressRegion: 'Delhi',
+      addressCountry: 'IN',
+    },
+    offers: {
+      '@type': 'Offer',
+      price: property.price,
+      priceCurrency: 'INR',
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <PropertyClient property={property} />
+    </>
+  );
 }
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const property = await getProperty(params.id);
-  
+
+  if (!property) {
+    return {
+      title: 'Property not found',
+      description: 'The requested listing could not be found.',
+    };
+  }
+
   return {
     title: `${property.title} | Best ${property.roomType} PG in ${property.location}, Delhi`,
     description: `Looking for a PG in ${property.location}? Book ${property.title}. Amenities include ${property.facilities.slice(0, 3).join(', ')}. Rent starts at ₹${property.price}/month.`,
