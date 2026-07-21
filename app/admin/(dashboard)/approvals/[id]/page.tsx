@@ -82,14 +82,14 @@ function DigitalIdentityBadge({ approval }: { approval: OwnerApproval }) {
       <div className="flex mt-4">
         <Image
           src={approval.aadhaarFrontUrl}
-          alt="Aadhaar Front"
+          alt={`${approval.name} Aadhaar card front side - Owner verification document`}
           width={96}
           height={128}
           className="w-24 h-32 rounded-lg object-cover"
         />
         <Image
           src={approval.aadhaarBackUrl}
-          alt="Aadhaar Back"
+          alt={`${approval.name} Aadhaar card back side - Owner verification document`}
           width={96}
           height={128}
           className="w-24 h-32 rounded-lg object-cover ml-4"

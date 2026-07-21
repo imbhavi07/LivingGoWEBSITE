@@ -33,7 +33,7 @@ export function OwnerShell({ children }: { children: ReactNode }) {
           <Link href="/" className="flex items-center gap-2 text-xl font-black text-ink">
             <Image
               src="/assets/logo.png"
-              alt="PG Management App"
+              alt="LivingGo - Verified Student PG Management Platform for Property Owners"
               width={992}
               height={597}
               className="h-8 w-auto object-contain"
@@ -56,7 +56,7 @@ export function OwnerShell({ children }: { children: ReactNode }) {
               <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-2 text-xl font-black text-ink">
                 <Image
                   src="/assets/logo.png"
-                  alt="Best PG Management Software"
+                  alt="LivingGo - Verified Student PG Management Platform for Property Owners"
                   width={992}
                   height={597}
                   className="h-8 w-auto object-contain"
@@ -91,7 +91,7 @@ function OwnerSidebar({ onNavigate, onSignOut }: { onNavigate?: () => void; onSi
       >
         <Image
           src="/assets/logo.png"
-          alt="LivingGo Logo"
+          alt="LivingGo - Verified Student PG Management Platform for Property Owners"
           width={992}
           height={597}
           className="h-14 w-auto object-contain"

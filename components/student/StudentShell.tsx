@@ -69,7 +69,7 @@ function StudentSidebar({ onNavigate, onSignOut }: { onNavigate?: () => void; on
       >
         <Image
           src="/assets/logo.png"
-          alt="LivingGo Logo"
+          alt="LivingGo - Find Verified Student PGs & Rooms in Delhi Near Top Colleges"
           width={992} // Fallback width for Next.js Image optimization
           height={597} // Fallback height
           className="h-16 w-auto object-contain" // Controls the actual display size

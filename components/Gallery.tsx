@@ -11,11 +11,19 @@ type GalleryImage = {
 type GalleryProps = {
   images: GalleryImage[];
   title: string;
+  location?: string;
+  roomType?: string;
+  preference?: string;
+  propertyCode?: string;
 };
 
 export function Gallery({
   images,
   title,
+  location = "Delhi",
+  roomType = "Premium",
+  preference = "Students",
+  propertyCode,
 }: GalleryProps) {
   const [showAll, setShowAll] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -39,7 +47,7 @@ export function Gallery({
           >
             <Image
               src={images[0].url}
-              alt={title}
+              alt={`${preference} ${roomType} room at ${propertyCode || title} PG in ${location}, Delhi - Main view`}
               fill
               priority // Forces instant loading for the hero image
               // THE FIX: Tells Next.js exactly what size to generate
@@ -62,10 +70,10 @@ export function Gallery({
               >
                 <Image
                   src={image.url}
-                  alt={`${title} view ${index + 2}`}
+                  alt={`${preference} ${roomType} room at ${propertyCode || title} PG in ${location}, Delhi - View ${index + 2}`}
                   fill
                   // Give priority to the first 2 small images as they are likely above the fold on desktop
-                  priority={index < 2} 
+                  priority={index < 2}
                   // THE FIX: Tells Next.js these are small grid images, don't download 4K!
                   sizes="(max-width: 768px) 50vw, (max-width: 1200px) 16vw, 250px"
                   className="object-cover" unoptimized
@@ -125,7 +133,7 @@ export function Gallery({
               <div className="relative h-[75vh] w-full max-w-6xl overflow-hidden rounded-3xl">
                 <Image
                   src={images[selectedIndex].url}
-                  alt={`${title} ${selectedIndex + 1}`}
+                  alt={`${preference} ${roomType} room at ${propertyCode || title} PG in ${location}, Delhi - Photo ${selectedIndex + 1} of ${images.length}`}
                   fill
                   className="object-contain"
                   sizes="100vw"

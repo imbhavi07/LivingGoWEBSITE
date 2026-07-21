@@ -118,7 +118,7 @@ export function PropertyCard({ property, saved, onSave, priority = false }: Prop
       <div className="relative aspect-[4/3] w-full shrink-0 overflow-hidden bg-neutral-100">
         <Image
           src={optimizeImageUrl(property.images[0]?.url)}
-          alt={property.title}
+          alt={`${property.preference === "Any" ? "Boys & Girls" : property.preference} ${property.roomType} room at ${property.title} PG in ${property.location?.split(",")[0]?.trim() || "North Campus"}, Delhi - ${property.propertyCode || "Verified Student Housing"}`}
           fill
           priority={priority}
           className="object-cover transition-transform duration-700 group-hover:scale-105"

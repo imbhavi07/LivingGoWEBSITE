@@ -16,7 +16,7 @@ function createRedisConnection() {
         throw new Error("REDIS_URL environment variable is required");
     }
     redisClient = new ioredis_1.default(redisUrl, {
-        maxRetriesPerRequest: 3,
+        maxRetriesPerRequest: null,
         retryStrategy: (times) => {
             if (times > 3)
                 return null; // Stop retrying

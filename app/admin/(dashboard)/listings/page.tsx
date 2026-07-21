@@ -109,7 +109,7 @@ export default function AdminListingsPage() {
           {sortedListings.map((listing) => (
             <article key={listing.id} className="grid gap-4 border-b border-black/5 p-4 last:border-0 xl:grid-cols-[112px_1fr_auto] xl:items-center">
               <div className="relative h-28 overflow-hidden rounded-2xl bg-oat xl:h-24">
-                <Image src={optimizeImageUrl(listing.images[0]?.url)} alt={listing.title} fill className="object-cover" sizes="128px" />
+                <Image src={optimizeImageUrl(listing.images[0]?.url)} alt={`${listing.title} PG in ${listing.location} - Admin preview`} fill className="object-cover" sizes="128px" />
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2">

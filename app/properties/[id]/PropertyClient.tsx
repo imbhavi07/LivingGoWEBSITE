@@ -229,7 +229,7 @@ export default function PropertyClient({ property }: { property: any }) {
   return (
     <>
       <main className="mx-auto max-w-7xl px-4 py-6 pb-48 sm:px-6 md:py-10 md:pb-10 lg:px-8">
-        <Gallery images={displayedImages} title={property?.propertyCode || "Property View"}/>
+        <Gallery images={displayedImages} title={property?.propertyCode || "Property View"} location={maskedLocation} roomType={property?.roomType} preference={property?.preference} propertyCode={property?.propertyCode}/>
         
         {property?.panoramas && property.panoramas.length > 0 && (
            <div className="mt-6 rounded-3xl bg-white p-5 shadow-soft">
