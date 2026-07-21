@@ -11,7 +11,7 @@ export async function convertHeicToJpeg(
   });
 
   return await sharp(Buffer.from(converted))
-    .rotate() // Fix iPhone orientation
+    .rotate()
     .jpeg({
       quality: 90,
       mozjpeg: true,

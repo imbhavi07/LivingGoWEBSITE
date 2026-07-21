@@ -140,19 +140,45 @@ export async function addPropertyImages(
 ) {
   const formData = new FormData();
 
-  // Dynamically import to avoid server-side issues
-  const imageCompression = (await import('browser-image-compression')).default;
+  const imageCompression = (
+    await import("browser-image-compression")
+  ).default;
 
-  // Options to keep files safely under the proxy ceiling (~3MB max)
-  const options = { maxSizeMB: 3.5, maxWidthOrHeight: 4096, useWebWorker: true };
+  const options = {
+    maxSizeMB: 3.5,
+    maxWidthOrHeight: 4096,
+    useWebWorker: true,
+  };
 
-  // Compress all files concurrently in parallel
-  const compressedFiles = await Promise.all(
-    files.map(file => imageCompression(file, options))
-  );
+  const uploadFiles: File[] = [];
 
-  compressedFiles.forEach((file) => {
-     formData.append("images", file);
+  for (const file of files) {
+    const isHeic =
+      file.type.includes("heic") ||
+      file.type.includes("heif") ||
+      file.name.toLowerCase().endsWith(".heic") ||
+      file.name.toLowerCase().endsWith(".heif");
+
+    if (isHeic) {
+      uploadFiles.push(file);
+    } else {
+      try {
+        const compressed = await imageCompression(file, options);
+        uploadFiles.push(compressed);
+      } catch (err) {
+        console.warn(
+          "Compression failed. Uploading original file:",
+          file.name,
+          err
+        );
+
+        uploadFiles.push(file);
+      }
+    }
+  }
+
+  uploadFiles.forEach((file) => {
+    formData.append("images", file);
   });
 
   const { data } = await apiClient.post(
@@ -160,8 +186,8 @@ export async function addPropertyImages(
     formData,
     {
       headers: {
-        'Content-Type': 'multipart/form-data',
-      }
+        "Content-Type": "multipart/form-data",
+      },
     }
   );
 
@@ -184,19 +210,45 @@ export async function replacePropertyImage(
 ) {
   const formData = new FormData();
 
-  // Dynamically import to avoid server-side issues
-  const imageCompression = (await import('browser-image-compression')).default;
-  const options = { maxSizeMB: 3.5, maxWidthOrHeight: 4096, useWebWorker: true };
-  const compressedFile = await imageCompression(file, options);
+  const imageCompression = (
+    await import("browser-image-compression")
+  ).default;
 
-  formData.append('images', compressedFile);
+  const options = {
+    maxSizeMB: 3.5,
+    maxWidthOrHeight: 4096,
+    useWebWorker: true,
+  };
+
+  const isHeic =
+    file.type.includes("heic") ||
+    file.type.includes("heif") ||
+    file.name.toLowerCase().endsWith(".heic") ||
+    file.name.toLowerCase().endsWith(".heif");
+
+  if (isHeic) {
+    formData.append("images", file);
+  } else {
+    try {
+      const compressed = await imageCompression(file, options);
+      formData.append("images", compressed);
+    } catch (err) {
+      console.warn(
+        "Compression failed. Uploading original file:",
+        file.name,
+        err
+      );
+
+      formData.append("images", file);
+    }
+  }
 
   const { data } = await apiClient.put(
     `/admin/properties/${propertyId}/images/${imageId}`,
     formData,
     {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        "Content-Type": "multipart/form-data",
       },
     }
   );
