@@ -54,14 +54,30 @@ export default async function PropertyDetailsPage({ params }: { params: Promise<
   return <PropertyClient property={property} />;
 }
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const property = await getProperty(params.id);
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  // 1. Await params for Next.js 15 compatibility
+  const { id } = await params;
+  const property = await getProperty(id);
   
+  // 2. If the property doesn't exist, return fallback metadata instantly (Prevents crash!)
+  if (!property) {
+    return {
+      title: 'Property Not Found | LivingGo',
+      description: 'The requested property could not be found.',
+    };
+  }
+
+  // 3. Safely handle the facilities array (Prevents the .slice() crash!)
+  const safeFacilities = Array.isArray(property.facilities) ? property.facilities : [];
+  const facilitiesText = safeFacilities.length > 0 
+    ? `Amenities include ${safeFacilities.slice(0, 3).join(', ')}.` 
+    : '';
+
   return {
-    title: `${property.title} | Best ${property.roomType} PG in ${property.location}, Delhi`,
-    description: `Looking for a PG in ${property.location}? Book ${property.title}. Amenities include ${property.facilities.slice(0, 3).join(', ')}. Rent starts at ₹${property.price}/month.`,
+    title: `${property.title || 'Premium'} | Best ${property.roomType || 'Shared'} PG in ${property.location || 'Delhi'}`,
+    description: `Looking for a PG in ${property.location || 'Delhi'}? Book ${property.title || 'this property'}. ${facilitiesText} Rent starts at ₹${property.price || 'affordable rates'}/month.`,
     alternates: {
-      canonical: `https://livinggo.in/properties/${property.id}`,
+      canonical: `https://livinggo.in/properties/${id}`,
     },
   };
 }
