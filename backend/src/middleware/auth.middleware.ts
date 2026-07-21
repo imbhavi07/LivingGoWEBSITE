@@ -45,30 +45,6 @@ export async function clerkAuthenticate(request: Request, _response: Response, n
     return next(new AppError("Authentication token is required", 401));
   }
 
-  if (process.env.NODE_ENV === 'development' && token === 'development-token') {
-    const devEmail = 'dev@example.com';
-    let user = await prisma.user.findUnique({ where: { email: devEmail } });
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          email: devEmail,
-          name: 'Dev User',
-          role: 'owner',
-          status: 'active',
-          clerkId: 'dev_clerk_id',
-          passwordHash: 'dummy_hash',
-        },
-      });
-    }
-    request.user = {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      verificationStatus: user.verificationStatus
-    };
-    return next();
-  }
-
   // Ensure clerk secret key is configured
   if (!process.env.CLERK_SECRET_KEY) {
     console.error("❌ Clerk authentication: CLERK_SECRET_KEY is not defined");
