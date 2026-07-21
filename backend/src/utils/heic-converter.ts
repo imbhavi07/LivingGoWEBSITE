@@ -1,13 +1,20 @@
 import convert from "heic-convert";
+import sharp from "sharp";
 
 export async function convertHeicToJpeg(
   file: Express.Multer.File
 ): Promise<Buffer> {
-  const outputBuffer = await convert({
+  const converted = await convert({
     buffer: file.buffer,
     format: "JPEG",
-    quality: 0.9,
+    quality: 1,
   });
 
-  return Buffer.from(outputBuffer);
+  return await sharp(Buffer.from(converted))
+    .rotate() // Fix iPhone orientation
+    .jpeg({
+      quality: 90,
+      mozjpeg: true,
+    })
+    .toBuffer();
 }
