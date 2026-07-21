@@ -196,7 +196,7 @@ export default async function StudentDashboardPage() {
                     {imageUrl ? (
                       <Image
                         src={imageUrl}
-                        alt={payment.property.title}
+                        alt={`${payment.property.title} PG in ${payment.property.location} - Student booking confirmation`}
                         fill
                         className="object-cover"
                         unoptimized

@@ -80,7 +80,7 @@ export default function AdminDashboardPage() {
                           <img
                             className="h-8 w-8 rounded-full"
                             src={visit.student?.imageUrl ?? "/placeholder-profile.jpg"}
-                            alt=""
+                            alt={visit.student?.name ? `${visit.student.name} profile photo` : "Student profile photo"}
                           />
                         </div>
                         <div className="flex-1">

@@ -7,7 +7,7 @@ export default function MaintenancePage() {
       <div className="hidden md:block relative w-full h-full">
         <Image
           src="/maintenance-h.png"
-          alt="Maintenance"
+          alt="LivingGo student housing platform temporarily under maintenance - verified PGs and rooms coming back soon"
           fill
           priority
           className="object-cover object-center"
@@ -18,7 +18,7 @@ export default function MaintenancePage() {
       <div className="block md:hidden relative w-full h-full">
         <Image
           src="/maintenance-v.png"
-          alt="Maintenance"
+          alt="LivingGo student housing platform temporarily under maintenance - verified PGs and rooms coming back soon"
           fill
           priority
           className="object-cover object-center"

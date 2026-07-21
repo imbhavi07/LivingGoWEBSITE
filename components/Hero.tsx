@@ -36,7 +36,7 @@ export function Hero() {
             <div className="w-full flex justify-end">
               <Image
                 src="/assets/mascots/coffee.png"
-                alt="LivingGo Mascot"
+                alt="LivingGo mascot holding coffee - Find verified student PGs in Delhi"
                 className="w-full max-w-[220px] sm:max-w-[280px] md:max-w-[320px] h-auto object-contain drop-shadow-[0_8_24_rgba(62,39,35,0.1)]"
                 priority={true}
                 width={280}

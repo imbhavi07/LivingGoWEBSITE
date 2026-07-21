@@ -1,4 +1,5 @@
 import { EmptyState } from "@/components/EmptyState";
+import { Metadata } from "next";
 import PropertyClient from "./PropertyClient";
 
 async function getProperty(id: string) {
@@ -51,4 +52,16 @@ export default async function PropertyDetailsPage({ params }: { params: Promise<
   }
 
   return <PropertyClient property={property} />;
+}
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const property = await getProperty(params.id);
+  
+  return {
+    title: `${property.title} | Best ${property.roomType} PG in ${property.location}, Delhi`,
+    description: `Looking for a PG in ${property.location}? Book ${property.title}. Amenities include ${property.facilities.slice(0, 3).join(', ')}. Rent starts at ₹${property.price}/month.`,
+    alternates: {
+      canonical: `https://livinggo.in/properties/${property.id}`,
+    },
+  };
 }

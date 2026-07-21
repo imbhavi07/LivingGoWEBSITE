@@ -49,7 +49,7 @@ export default function IntroOverlay() {
         <div className="relative aspect-video w-full max-w-4xl mx-auto">
           <Image
             src="/bootup-animation.webp"
-            alt="LivingGo Intro Animation"
+            alt="LivingGo animated intro showing student finding their perfect PG in Delhi"
             fill
             priority
             unoptimized

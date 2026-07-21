@@ -1,4 +1,4 @@
-import { env } from "./config/env.js";
+import { env } from "./config/env";
 import { prisma } from "./config/prisma.js";
 import { app } from "./app.js";
 import { closeAllWorkers } from "./queues/index.js";

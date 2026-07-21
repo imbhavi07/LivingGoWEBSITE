@@ -62,7 +62,7 @@ export function FeaturedPropertyCard({ property, saved, onSave }: FeaturedProper
               key={`${property.id}-image-${index}`}
               // THE FIX IS HERE: add .url to extract the actual image link
               src={typeof image === 'string' ? image : (image as { url: string }).url}
-              alt={`Beautiful, verified student rooms in ${property.location}`}
+              alt={`${property.preference === "Any" ? "Boys & Girls" : property.preference} ${property.roomType} room at ${property.title} PG in ${property.location?.split(",")[0]?.trim() || "North Campus"}, Delhi - View ${index + 1}`}
               fill
               className={`object-cover transition-all duration-1000 group-hover:scale-105 ${
                 index === currentImageIndex ? "opacity-100 z-10" : "opacity-0 z-0"

@@ -107,7 +107,7 @@ export function TrustGrid() {
           <div className="relative w-full h-full min-h-[160px] sm:min-h-[260px] col-start-1 row-start-3 row-span-2 flex items-end justify-center md:justify-end overflow-hidden pointer-events-none mt-2 sm:mt-0">
             <Image
               src="/assets/mascots/pointing.png"
-              alt="LivingGo Mascot Pointing"
+              alt="LivingGo mascot pointing to verified student PG listings with zero brokerage"
               fill
               className="object-contain object-bottom md:object-right-bottom drop-shadow-[0_15px_35px_rgba(62,39,35,0.15)]"
               priority={false}

@@ -52,7 +52,7 @@ export default function OwnerPropertiesPage() {
               
               {/* 1. Clickable Image Panel */}
               <Link href={`/owner/properties/${property.id}`} className="relative h-28 overflow-hidden rounded-2xl bg-oat md:h-24 hover:opacity-80 transition-opacity block">
-                <Image src={optimizeImageUrl(property.images[0])} alt={property.title} fill className="object-cover" sizes="120px" unoptimized />
+                <Image src={optimizeImageUrl(property.images[0])} alt={`${property.title} PG in ${property.location} - Owner dashboard preview`} fill className="object-cover" sizes="120px" unoptimized />
               </Link>
               
               <div>

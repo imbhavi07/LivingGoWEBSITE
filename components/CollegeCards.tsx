@@ -128,7 +128,7 @@ export function CollegeCards() {
                   {/* College Image */}
                   <Image
                     src={college.image}
-                    alt={college.name}
+                    alt={`Verified PGs and student housing near ${college.name}, North Campus Delhi`}
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                     sizes="200px"
@@ -142,7 +142,7 @@ export function CollegeCards() {
                     <div className="w-14 h-14 rounded-xl bg-white/90 backdrop-blur-sm p-1.5 shadow-card drop-shadow-xl relative">
                       <Image
                         src={college.logo}
-                        alt={`${college.name} logo`}
+                        alt={`${college.name} college logo`}
                         fill
                         className="object-contain rounded-lg p-1"
                         sizes="56px"

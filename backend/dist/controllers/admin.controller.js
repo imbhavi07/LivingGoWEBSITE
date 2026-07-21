@@ -43,18 +43,8 @@ const prisma_1 = require("../config/prisma");
 const app_error_1 = require("../utils/app-error");
 const property_service_2 = require("../services/property.service");
 const cloudinary_service_1 = require("../services/cloudinary.service");
-const zod_1 = require("zod");
-const client_1 = require("@prisma/client");
 const clerkClient = (0, backend_1.createClerkClient)({
     secretKey: process.env.CLERK_SECRET_KEY,
-});
-// Validation schema for admin-created review
-const createAdminReviewSchema = zod_1.z.object({
-    body: zod_1.z.object({
-        studentName: zod_1.z.string().min(1).max(100),
-        rating: zod_1.z.number().min(1).max(5),
-        content: zod_1.z.string().min(1).max(2000)
-    })
 });
 exports.getStats = (0, async_handler_1.asyncHandler)(async (_request, response) => {
     response.json(await adminService.getAdminStats());
@@ -226,17 +216,6 @@ exports.getAdminCoupons = (0, async_handler_1.asyncHandler)(async (_request, res
             });
             partnerName = partner?.name ?? "Unknown";
         }
-        const totalVisits = await prisma_1.prisma.visit.count({
-            where: {
-                couponCode: coupon.code,
-            },
-        });
-        const totalConvertedBookings = await prisma_1.prisma.visit.count({
-            where: {
-                couponCode: coupon.code,
-                leadStatus: client_1.VisitStatus.SCHEDULED
-            },
-        });
         return {
             id: coupon.id,
             partnerName,

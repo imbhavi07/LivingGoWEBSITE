@@ -18,7 +18,7 @@ export default function TeamCard({
       <div className="relative mx-auto h-32 w-32 overflow-hidden rounded-full">
         <Image
           src={image}
-          alt={name}
+          alt={`${name}, ${role} at LivingGo${designation ? ` - ${designation}` : ""}`}
           fill
           className="object-cover"
         />

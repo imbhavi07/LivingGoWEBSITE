@@ -153,7 +153,7 @@ export default function AdminListingDetailsPage() {
                 />
               </div>
                 <div className="grid gap-3 md:grid-cols-3">
-                  {listing.images.map((image) => (
+                  {listing.images.map((image, index) => (
                 <div
                   key={image.id}
                   className="relative overflow-hidden rounded-2xl"
@@ -164,7 +164,7 @@ export default function AdminListingDetailsPage() {
                         "/upload/",
                         "/upload/f_auto,q_auto,w_800/"
                       )}
-                      alt={listing.title}
+                      alt={`${listing.title} PG in ${listing.location} - Property image ${index + 1}`}
                       fill
                       className="object-cover"
                       unoptimized
@@ -257,7 +257,7 @@ export default function AdminListingDetailsPage() {
         <div className="relative h-20 w-32 overflow-hidden rounded-lg">
           <Image
             src={panorama.imageUrl}
-            alt={panorama.title}
+            alt={`${listing.title} PG - 360° Virtual Tour: ${panorama.title}`}
             fill
             className="object-cover"
             unoptimized
