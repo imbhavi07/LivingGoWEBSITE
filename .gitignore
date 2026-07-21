@@ -9,3 +9,7 @@ backend/.env
 
 .worktrees/
 /backend/.env.*
+backend/.env
+.env
+.env.*
+!.env.example
