@@ -19,13 +19,15 @@ export interface BaseJobPayload {
 
 export type VisitJobType =
   | "VISIT_CREATED"
+  | "INTERN_CREATED"
   | "INTERN_ASSIGNED"
   | "VISIT_OTP_SENT"
   | "VISIT_CONFIRMED"
   | "VISIT_RESCHEDULED"
   | "VISIT_CANCELLED"
   | "STUDENT_ARRIVAL_ALERT"
-  | "OTP_VERIFY";
+  | "OTP_VERIFY"
+  | "GUIDE_ASSIGNED_STUDENT";
 
 export interface VisitCreatedPayload extends BaseJobPayload {
   type: "VISIT_CREATED";
@@ -42,6 +44,14 @@ export interface VisitCreatedPayload extends BaseJobPayload {
   assignedInternId?: string;
 }
 
+export interface InternCreatedPayload extends BaseJobPayload {
+  type: "INTERN_CREATED";
+  internId: string;
+  internName: string;
+  internPhone: string;
+  welcomeMessage?: string;
+}
+
 export interface InternAssignedPayload extends BaseJobPayload {
   type: "INTERN_ASSIGNED";
   visitId: string;
@@ -50,6 +60,23 @@ export interface InternAssignedPayload extends BaseJobPayload {
   internName: string;
   internPhone: string;
   studentName: string;
+  propertyTitle: string;
+  propertyLocation: string;
+  visitDate: string;
+  timeSlot: string;
+  visitOtp: string;
+  mapsLink: string;
+  emergencyContact: string;
+}
+
+export interface GuideAssignedStudentPayload extends BaseJobPayload {
+  type: "GUIDE_ASSIGNED_STUDENT";
+  visitId: string;
+  visitToken: string;
+  studentName: string;
+  studentPhone: string;
+  internName: string;
+  internPhone: string;
   propertyTitle: string;
   propertyLocation: string;
   visitDate: string;
@@ -108,11 +135,13 @@ export interface StudentArrivalAlertPayload extends BaseJobPayload {
 
 export type VisitQueuePayload =
   | VisitCreatedPayload
+  | InternCreatedPayload
   | InternAssignedPayload
   | VisitOtpSentPayload
   | VisitConfirmedPayload
   | OTPVerifyPayload
-  | StudentArrivalAlertPayload;
+  | StudentArrivalAlertPayload
+  | GuideAssignedStudentPayload;
 
 // ============================================
 // REMINDER QUEUE JOBS (whatsapp:reminder)
@@ -290,7 +319,8 @@ export type MarketingJobType =
   | "BROADCAST"
   | "RE_ENGAGEMENT"
   | "REFERRAL_INVITE"
-  | "PROMOTIONAL_OFFER";
+  | "PROMOTIONAL_OFFER"
+  | "STUDENT_REGISTERED";
 
 export interface WelcomeJourneyPayload extends BaseJobPayload {
   type: "WELCOME_JOURNEY";
@@ -323,11 +353,17 @@ export interface ReferralInvitePayload extends BaseJobPayload {
   rewardAmount: number;
 }
 
+export interface StudentRegisteredPayload extends BaseJobPayload {
+  type: "STUDENT_REGISTERED";
+  studentName: string;
+}
+
 export type MarketingQueuePayload =
   | WelcomeJourneyPayload
   | BroadcastPayload
   | ReEngagementPayload
-  | ReferralInvitePayload;
+  | ReferralInvitePayload
+  | StudentRegisteredPayload;
 
 // ============================================
 // OWNER QUEUE JOBS (whatsapp:owner)

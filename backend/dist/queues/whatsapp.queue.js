@@ -2,7 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.dlqQueues = exports.queues = exports.ownerQueue = exports.marketingQueue = exports.paymentQueue = exports.reminderQueue = exports.visitQueue = void 0;
 exports.queueVisitCreated = queueVisitCreated;
+exports.queueInternCreated = queueInternCreated;
 exports.queueInternAssigned = queueInternAssigned;
+exports.queueGuideAssignedStudent = queueGuideAssignedStudent;
 exports.queueVisitOtpSent = queueVisitOtpSent;
 exports.queueVisitConfirmed = queueVisitConfirmed;
 exports.queueOTPVerify = queueOTPVerify;
@@ -102,11 +104,37 @@ async function queueVisitCreated(payload) {
         priority: 10,
     });
 }
+async function queueInternCreated(payload) {
+    const jobId = generateJobId("INTERN_CREATED", payload.internPhone);
+    return exports.visitQueue.add("INTERN_CREATED", {
+        ...payload,
+        type: "INTERN_CREATED",
+        jobId,
+        timestamp: Date.now(),
+        priority: 10,
+    }, {
+        jobId,
+        priority: 10,
+    });
+}
 async function queueInternAssigned(payload) {
     const jobId = generateJobId("INTERN_ASSIGNED", payload.visitToken);
     return exports.visitQueue.add("INTERN_ASSIGNED", {
         ...payload,
         type: "INTERN_ASSIGNED",
+        jobId,
+        timestamp: Date.now(),
+        priority: 10,
+    }, {
+        jobId,
+        priority: 10,
+    });
+}
+async function queueGuideAssignedStudent(payload) {
+    const jobId = generateJobId("GUIDE_ASSIGNED_STUDENT", payload.visitToken);
+    return exports.visitQueue.add("GUIDE_ASSIGNED_STUDENT", {
+        ...payload,
+        type: "GUIDE_ASSIGNED_STUDENT",
         jobId,
         timestamp: Date.now(),
         priority: 10,

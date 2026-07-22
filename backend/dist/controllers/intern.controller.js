@@ -9,6 +9,7 @@ const prisma_1 = require("../config/prisma");
 const async_handler_1 = require("../utils/async-handler");
 const jwt_1 = require("../utils/jwt");
 const client_1 = require("@prisma/client");
+const whatsapp_queue_1 = require("../queues/whatsapp.queue");
 exports.internLogin = (0, async_handler_1.asyncHandler)(async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -80,6 +81,16 @@ exports.createIntern = (0, async_handler_1.asyncHandler)(async (req, res) => {
                 passwordHash,
             },
         });
+        // Queue welcome WhatsApp message for the new intern (fire-and-forget)
+        (0, whatsapp_queue_1.queueInternCreated)({
+            phoneNumber: phone.replace("+91", "91"),
+            userRole: "intern",
+            internId: intern.id,
+            internName: intern.name,
+            internPhone: intern.phone.replace("+91", "91"),
+        }).catch((err) => {
+            console.error("Failed to queue INTERN_CREATED job:", err);
+        });
         return res.json({
             success: true,
             intern
@@ -102,6 +113,7 @@ exports.getInterns = (0, async_handler_1.asyncHandler)(async (req, res) => {
                 ? {}
                 : {
                     supervisorId: String(supervisorId),
+                    active: true,
                 },
             orderBy: {
                 name: "asc",
@@ -185,6 +197,7 @@ exports.getInternDashboard = (0, async_handler_1.asyncHandler)(async (req, res) 
                         id: true,
                         name: true,
                         phone: true,
+                        visitOtpVerified: true,
                     },
                 },
                 property: {
@@ -194,6 +207,7 @@ exports.getInternDashboard = (0, async_handler_1.asyncHandler)(async (req, res) 
                         title: true,
                         location: true,
                         price: true,
+                        visitOtpVerified: true,
                     },
                 },
             },

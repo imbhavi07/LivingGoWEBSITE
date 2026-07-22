@@ -11,7 +11,12 @@ import { VISIT_CONFIG } from "../config/visit.config";
 import { sendWhatsAppMessage } from "../services/whatsapp.service";
 import { Role } from "@prisma/client";
 import type { InternRequest } from "../middleware/intern.middleware";
-import { queueVisitCreated } from "../queues/whatsapp.queue";
+import {
+  queueVisitCreated,
+  queueInternCreated,
+  queueInternAssigned,
+  queueGuideAssignedStudent
+} from "../queues/whatsapp.queue";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const SUPERVISOR_EMAILS = [
@@ -265,6 +270,7 @@ export const scheduleVisit = asyncHandler(
     }
 
     // Queue VISIT_CREATED job for WhatsApp processing (fire-and-forget, doesn't block response)
+    // Now uses visit_reminder_24h template instead of welcome_student
     queueVisitCreated({
       phoneNumber: whatsappNumber.replace("+91", "91"), // Convert +91 to 91 format for E.164
       userRole: "student",
@@ -569,12 +575,66 @@ export const assignLead = asyncHandler(
         where: {
           id: visitId,
         },
-        data:{
-          assignedLeadId:internId,
+        data: {
+          assignedLeadId: internId,
           meetingPointId,
-          leadStatus:"ASSIGNED"
+          leadStatus: "ASSIGNED"
         }
       });
+
+      // Fetch the intern to get their phone number and name for WhatsApp notifications
+      const intern = await prisma.intern.findUnique({
+        where: { id: internId },
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+        },
+      });
+
+      if (intern) {
+        // Queue INTERN_ASSIGNED job for the intern (fire-and-forget)
+        queueInternAssigned({
+          phoneNumber: intern.phone.replace("+91", "91"),
+          userRole: "intern",
+          visitId: visit.id,
+          visitToken: visit.tokenId,
+          internId: intern.id,
+          internName: intern.name,
+          internPhone: intern.phone.replace("+91", "91"),
+          studentName: visit.student.name,
+          propertyTitle: visit.property.title,
+          propertyLocation: visit.property.location,
+          visitDate: visit.visitDate.toISOString(),
+          timeSlot: visit.timeSlot,
+          visitOtp: visit.visitOtp,
+          mapsLink: `https://maps.google.com/?q=${encodeURIComponent(visit.property.location)}`,
+          emergencyContact: visit.property.owner?.phone?.replace("+91", "91") || "",
+        }).catch((err) => {
+          console.error("Failed to queue INTERN_ASSIGNED job:", err);
+        });
+
+        // Queue GUIDE_ASSIGNED_STUDENT job for the student (fire-and-forget)
+        queueGuideAssignedStudent({
+          phoneNumber: visit.student.phone?.replace("+91", "91") || visit.whatsappNumber?.replace("+91", "91") || "",
+          userRole: "student",
+          visitId: visit.id,
+          visitToken: visit.tokenId,
+          studentName: visit.student.name,
+          studentPhone: visit.student.phone?.replace("+91", "91") || visit.whatsappNumber?.replace("+91", "91") || "",
+          internName: intern.name,
+          internPhone: intern.phone.replace("+91", "91"),
+          propertyTitle: visit.property.title,
+          propertyLocation: visit.property.location,
+          visitDate: visit.visitDate.toISOString(),
+          timeSlot: visit.timeSlot,
+          visitOtp: visit.visitOtp,
+          mapsLink: `https://maps.google.com/?q=${encodeURIComponent(visit.property.location)}`,
+          emergencyContact: visit.property.owner?.phone?.replace("+91", "91") || "",
+        }).catch((err) => {
+          console.error("Failed to queue GUIDE_ASSIGNED_STUDENT job:", err);
+        });
+      }
 
       return res.json({
         success: true,
@@ -746,6 +806,17 @@ export const createIntern = asyncHandler(
           },
 
         });
+
+      // Queue welcome WhatsApp message for the new intern (fire-and-forget)
+      queueInternCreated({
+        phoneNumber: phone.replace("+91", "91"),
+        userRole: "intern",
+        internId: intern.id,
+        internName: intern.name,
+        internPhone: intern.phone.replace("+91", "91"),
+      }).catch((err) => {
+        console.error("Failed to queue INTERN_CREATED job:", err);
+      });
 
       return res.json({
 

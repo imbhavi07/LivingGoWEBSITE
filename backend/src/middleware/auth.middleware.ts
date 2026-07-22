@@ -10,7 +10,7 @@ export async function authenticate(request: Request, _response: Response, next: 
   const token = header?.startsWith("Bearer ") ? header.slice(7) : null;
 
   if (!token) {
-    return next(new AppError("Authentication token is required", 401));
+    return next(new AppError("Please Sign-in First 😉", 401));
   }
 
   try {

@@ -16,6 +16,7 @@ import {
   MarketingQueuePayload,
   OwnerQueuePayload,
   VisitCreatedPayload,
+  InternCreatedPayload,
   InternAssignedPayload,
   VisitOtpSentPayload,
   VisitConfirmedPayload,
@@ -36,6 +37,7 @@ import {
   BroadcastPayload,
   ReEngagementPayload,
   ReferralInvitePayload,
+  StudentRegisteredPayload,
   NewLeadPayload,
   VisitStartedPayload,
   VisitCompletedPayload,
@@ -43,6 +45,7 @@ import {
   WeeklyReportPayload,
   LowOccupancyPayload,
   ListingExpiryPayload,
+  GuideAssignedStudentPayload,
 } from "./types/whatsapp-jobs";
 import {
   getCurrentStep,
@@ -75,6 +78,8 @@ const BASE_URL = `https://graph.facebook.com/${META_API_VERSION}/${PHONE_NUMBER_
 // Template names from environment (with fallbacks)
 const TEMPLATES = {
   WELCOME_STUDENT: process.env.WHATSAPP_TEMPLATE_WELCOME || "welcome_student",
+  INTERN_WELCOME: process.env.WHATSAPP_TEMPLATE_INTERN_WELCOME || "intern_welcome",
+  HELLO_WORLD: process.env.WHATSAPP_TEMPLATE_HELLO_WORLD || "hello_world",
   VISIT_REMINDER_24H: process.env.WHATSAPP_TEMPLATE_VISIT_REMINDER_24H || "visit_reminder_24h",
   VISIT_REMINDER_2H: process.env.WHATSAPP_TEMPLATE_VISIT_REMINDER_2H || "visit_reminder_2h",
   VISIT_REMINDER_30M: process.env.WHATSAPP_TEMPLATE_VISIT_REMINDER_30M || "visit_reminder_30m",
@@ -332,6 +337,68 @@ function buildVisitReminderPayload(phone: string, data: VisitReminderPayload) {
   return payload;
 }
 
+// --- INTERN CREATED (Welcome) ---
+function buildInternCreatedPayload(phone: string, data: InternCreatedPayload) {
+  // Try intern_welcome template first, fallback to hello_world if template error
+  const payload = buildTemplatePayload(phone, TEMPLATES.INTERN_WELCOME, "en", [
+    {
+      type: "body",
+      parameters: [
+        { type: "text", text: data.internName },  // {{1}} - intern name
+      ],
+    },
+  ]);
+
+  console.log(`[TEMPLATE_BUILDER] Built INTERN_CREATED payload for ${phone} (intern: ${data.internName})`);
+  console.log(`[TEMPLATE_BUILDER] Template: ${TEMPLATES.INTERN_WELCOME}`);
+  return payload;
+}
+
+// --- INTERN ASSIGNED (Visit Reminder 24H to Intern) ---
+function buildInternAssignedPayload(phone: string, data: InternAssignedPayload) {
+  const payload = buildTemplatePayload(phone, TEMPLATES.VISIT_REMINDER_24H, "en", [
+    {
+      type: "body",
+      parameters: [
+        { type: "text", text: data.internName },    // {{1}} - Intern Name
+        { type: "text", text: data.propertyTitle }, // {{2}} - Property Title/Code
+        { type: "text", text: data.timeSlot },      // {{3}} - Time
+      ],
+    },
+  ]);
+
+  console.log(`[TEMPLATE_BUILDER] Built INTERN_ASSIGNED payload for ${phone} (intern: ${data.internName}, token: ${data.visitToken})`);
+  return payload;
+}
+
+// --- GUIDE ASSIGNED STUDENT (Visit Reminder 30M to Student) ---
+function buildGuideAssignedStudentPayload(phone: string, data: GuideAssignedStudentPayload) {
+  const payload = buildTemplatePayload(phone, TEMPLATES.VISIT_REMINDER_30M, "en", [
+    {
+      type: "header",
+      parameters: [{ type: "text", text: "🚗 Visit in 30 Minutes" }],
+    },
+    {
+      type: "body",
+      parameters: [
+        { type: "text", text: data.studentName },      // {{1}} - student name
+        { type: "text", text: data.propertyTitle },    // {{2}} - property title
+        { type: "text", text: data.propertyLocation }, // {{3}} - property location
+        { type: "text", text: `${data.visitDate}, ${data.timeSlot}` }, // {{4}} - visit date & time
+        { type: "text", text: data.visitOtp },         // {{5}} - visit OTP
+        { type: "text", text: data.internName },       // {{6}} - intern name
+        { type: "text", text: data.internPhone },      // {{7}} - intern phone
+        { type: "text", text: data.mapsLink },         // {{8}} - maps link
+        { type: "text", text: data.emergencyContact }, // {{9}} - emergency contact
+      ],
+    },
+  ]);
+
+  console.log(`[TEMPLATE_BUILDER] Built GUIDE_ASSIGNED_STUDENT payload for ${phone} (student: ${data.studentName}, token: ${data.visitToken})`);
+  console.log(`[TEMPLATE_BUILDER] Template: ${TEMPLATES.VISIT_REMINDER_30M}`);
+  return payload;
+}
+
 // --- WELCOME JOURNEY ---
 function buildWelcomeJourneyPayload(phone: string, data: WelcomeJourneyPayload) {
   const stepMessages: Record<string, string> = {
@@ -558,21 +625,31 @@ function buildStudentArrivalPayload(phone: string, data: StudentArrivalAlertPayl
   return payload;
 }
 
-// --- VISIT CREATED (Student) ---
+// --- VISIT CREATED (Student - Visit Reminder 24H) ---
 function buildVisitCreatedPayload(phone: string, data: VisitCreatedPayload) {
-  // WELCOME_STUDENT template parameters mapping:
-  // {{1}} = studentName (ONLY PARAMETER - template expects exactly 1)
-  const payload = buildTemplatePayload(phone, TEMPLATES.WELCOME_STUDENT, "en", [
+  const payload = buildTemplatePayload(phone, TEMPLATES.VISIT_REMINDER_24H, "en", [
     {
       type: "body",
       parameters: [
-        { type: "text", text: data.studentName },  // {{1}} - only parameter
+        { type: "text", text: data.studentName },   // {{1}}
+        { type: "text", text: data.propertyTitle }, // {{2}}
+        { type: "text", text: data.timeSlot },      // {{3}}
       ],
     },
+    // Meta requires these if your Quick Replies were created as 'Dynamic'
+    {
+      type: "button",
+      sub_type: "quick_reply",
+      index: "0",
+      parameters: [{ type: "payload", payload: `CONFIRM_${data.visitToken}` }]
+    },
+    {
+      type: "button",
+      sub_type: "quick_reply",
+      index: "1",
+      parameters: [{ type: "payload", payload: `RESCHEDULE_${data.visitToken}` }]
+    }
   ]);
-
-  console.log(`[TEMPLATE_BUILDER] Built VISIT_CREATED payload for ${phone} (token: ${data.visitToken})`);
-  console.log(`[TEMPLATE_BUILDER] Template: ${TEMPLATES.WELCOME_STUDENT}`);
   return payload;
 }
 
@@ -838,7 +915,9 @@ export const visitWorker = new Worker<VisitQueuePayload>(
     const { data } = job;
     const jobContext = { jobId: job.id, jobName: job.name };
 
-    console.log(`[VISIT_WORKER] 📥 Processing job ${job.id} (${job.name}) - Type: ${data.type}, Token: ${data.visitToken || "N/A"}, Phone: ${data.phoneNumber || "N/A"}`);
+    // Safe access to visitToken since not all payload types have it
+    const visitToken = "visitToken" in data ? data.visitToken : "N/A";
+    console.log(`[VISIT_WORKER] 📥 Processing job ${job.id} (${job.name}) - Type: ${data.type}, Token: ${visitToken}, Phone: ${data.phoneNumber || "N/A"}`);
     console.log(`[VISIT_WORKER] Job data:`, JSON.stringify(data, null, 2));
 
     try {
@@ -846,79 +925,104 @@ export const visitWorker = new Worker<VisitQueuePayload>(
         case "VISIT_CREATED": {
           const payload = data as VisitCreatedPayload;
 
-          console.log(`[VISIT_WORKER] VISIT_CREATED - Sending welcome_student template to student ${payload.phoneNumber} for visit ${payload.visitToken}`);
+          console.log(`[VISIT_WORKER] VISIT_CREATED - Sending visit_reminder_24h template to student ${payload.phoneNumber} for visit ${payload.visitToken}`);
 
-          // Send WhatsApp welcome message to student immediately (welcome_student template)
-          console.log(`[VISIT_WORKER] Sending welcome_student to student ${payload.phoneNumber} for visit ${payload.visitToken}`);
+          // Send WhatsApp visit confirmation to student (visit_reminder_24h template)
+          console.log(`[VISIT_WORKER] Sending visit_reminder_24h to student ${payload.phoneNumber} for visit ${payload.visitToken}`);
           const visitCreatedPayload = buildVisitCreatedPayload(payload.phoneNumber, payload);
-          await sendMetaApiRequest(visitCreatedPayload, { ...jobContext, phoneNumber: payload.phoneNumber, templateName: TEMPLATES.WELCOME_STUDENT });
+          await sendMetaApiRequest(visitCreatedPayload, { ...jobContext, phoneNumber: payload.phoneNumber, templateName: TEMPLATES.VISIT_REMINDER_24H });
 
-          // NOTE: Intern assignment and other workflows disabled for template testing
-          // Only welcome_student template is sent here
           break;
         }
 
-        // DISABLED: INTERN_ASSIGNED case - only testing welcome_student and visit_reminder_24h
-        // case "INTERN_ASSIGNED": {
-        //   const payload = data as InternAssignedPayload;
-        //   console.log(`[VISIT_WORKER] INTERN_ASSIGNED - Sending WhatsApp to intern ${payload.phoneNumber} for visit ${payload.visitToken}`);
-        //   const metaPayload = buildNewVisitAssignmentPayload(payload.phoneNumber, payload);
-        //   await sendMetaApiRequest(metaPayload, { ...jobContext, phoneNumber: payload.phoneNumber, templateName: TEMPLATES.NEW_VISIT_ASSIGNMENT });
-        //
-        //   // Set session for intern
-        //   await setCurrentStep(payload.phoneNumber, "awaiting_visit_confirmation");
-        //   await setContext(payload.phoneNumber, {
-        //     visitId: payload.visitId,
-        //     visitToken: payload.visitToken,
-        //     studentName: payload.studentName,
-        //     propertyTitle: payload.propertyTitle,
-        // DISABLED: INTERN_ASSIGNED case - only testing welcome_student and visit_reminder_24h
-        // case "INTERN_ASSIGNED": {
-        //   const payload = data as InternAssignedPayload;
-        //   console.log(`[VISIT_WORKER] INTERN_ASSIGNED - Sending WhatsApp to intern ${payload.phoneNumber} for visit ${payload.visitToken}`);
-        //   const metaPayload = buildNewVisitAssignmentPayload(payload.phoneNumber, payload);
-        //   await sendMetaApiRequest(metaPayload, { ...jobContext, phoneNumber: payload.phoneNumber, templateName: TEMPLATES.NEW_VISIT_ASSIGNMENT });
-        //
-        //   // Set session for intern
-        //   await setCurrentStep(payload.phoneNumber, "awaiting_visit_confirmation");
-        //   await setContext(payload.phoneNumber, {
-        //     visitId: payload.visitId,
-        //     visitToken: payload.visitToken,
-        //     studentName: payload.studentName,
-        //     propertyTitle: payload.propertyTitle,
-        //   });
-        //   console.log(`[VISIT_WORKER] ✅ Session set for intern ${payload.phoneNumber}`);
-        //   break;
-        // }
+        case "INTERN_CREATED": {
+          const payload = data as InternCreatedPayload;
+
+          console.log(`[VISIT_WORKER] INTERN_CREATED - Sending intern_welcome template to intern ${payload.phoneNumber} (intern: ${payload.internName})`);
+
+          // Try intern_welcome template, fallback to hello_world on template error (e.g., 131049 template not found)
+          try {
+            const internCreatedPayload = buildInternCreatedPayload(payload.phoneNumber, payload);
+            await sendMetaApiRequest(internCreatedPayload, { ...jobContext, phoneNumber: payload.phoneNumber, templateName: TEMPLATES.INTERN_WELCOME });
+            console.log(`[VISIT_WORKER] ✅ Sent intern_welcome to intern ${payload.phoneNumber}`);
+          } catch (templateError) {
+            const errorMessage = templateError instanceof Error ? templateError.message : String(templateError);
+            if (errorMessage.includes("131049") || errorMessage.includes("TEMPLATE_NOT_FOUND") || errorMessage.includes("template not found")) {
+              console.warn(`[VISIT_WORKER] ⚠️ intern_welcome template not found/approved, falling back to hello_world for intern ${payload.phoneNumber}`);
+              const fallbackPayload = buildTemplatePayload(payload.phoneNumber, TEMPLATES.HELLO_WORLD, "en", [
+                {
+                  type: "body",
+                  parameters: [{ type: "text", text: payload.internName }],
+                },
+              ]);
+              await sendMetaApiRequest(fallbackPayload, { ...jobContext, phoneNumber: payload.phoneNumber, templateName: TEMPLATES.HELLO_WORLD });
+              console.log(`[VISIT_WORKER] ✅ Sent hello_world fallback to intern ${payload.phoneNumber}`);
+            } else {
+              throw templateError;
+            }
+          }
+          break;
+        }
+
+        case "INTERN_ASSIGNED": {
+          const payload = data as InternAssignedPayload;
+
+          console.log(`[VISIT_WORKER] INTERN_ASSIGNED - Sending visit_reminder_24h template to intern ${payload.phoneNumber} for visit ${payload.visitToken}`);
+
+          const internAssignedPayload = buildInternAssignedPayload(payload.phoneNumber, payload);
+          await sendMetaApiRequest(internAssignedPayload, { ...jobContext, phoneNumber: payload.phoneNumber, templateName: TEMPLATES.VISIT_REMINDER_24H });
+
+          // Set session for intern
+          await setCurrentStep(payload.phoneNumber, "awaiting_visit_confirmation");
+          await setContext(payload.phoneNumber, {
+            visitId: payload.visitId,
+            visitToken: payload.visitToken,
+            studentName: payload.studentName,
+            propertyTitle: payload.propertyTitle,
+            propertyLocation: payload.propertyLocation,
+            visitDate: payload.visitDate,
+            timeSlot: payload.timeSlot,
+            visitOtp: payload.visitOtp,
+            mapsLink: payload.mapsLink,
+            emergencyContact: payload.emergencyContact,
+          });
+          console.log(`[VISIT_WORKER] ✅ Session set for intern ${payload.phoneNumber}`);
+          break;
+        }
+
+        case "GUIDE_ASSIGNED_STUDENT": {
+          const payload = data as GuideAssignedStudentPayload;
+
+          console.log(`[VISIT_WORKER] GUIDE_ASSIGNED_STUDENT - Sending visit_reminder_30m template to student ${payload.phoneNumber} for visit ${payload.visitToken}`);
+
+          const guideAssignedPayload = buildGuideAssignedStudentPayload(payload.phoneNumber, payload);
+          await sendMetaApiRequest(guideAssignedPayload, { ...jobContext, phoneNumber: payload.phoneNumber, templateName: TEMPLATES.VISIT_REMINDER_30M });
+
+          // Set session for student
+          await setCurrentStep(payload.phoneNumber, "visit_scheduled");
+          await setContext(payload.phoneNumber, {
+            visitId: payload.visitId,
+            visitToken: payload.visitToken,
+            studentName: payload.studentName,
+            internName: payload.internName,
+            internPhone: payload.internPhone,
+            propertyTitle: payload.propertyTitle,
+            propertyLocation: payload.propertyLocation,
+            visitDate: payload.visitDate,
+            timeSlot: payload.timeSlot,
+            visitOtp: payload.visitOtp,
+            mapsLink: payload.mapsLink,
+            emergencyContact: payload.emergencyContact,
+          });
+          console.log(`[VISIT_WORKER] ✅ Session set for student ${payload.phoneNumber}`);
+          break;
+        }
 
         // DISABLED: VISIT_OTP_SENT - only testing welcome_student and visit_reminder_24h
-        // case "VISIT_OTP_SENT": {
-        //   const payload = data as VisitOtpSentPayload;
-        //   console.log(`[VISIT_WORKER] VISIT_OTP_SENT - Sending OTP to student ${payload.phoneNumber} for visit ${payload.visitToken} (OTP: ${payload.visitOtp})`);
-        //   const metaPayload = buildVisitOtpPayload(payload.phoneNumber, payload);
-        //   await sendMetaApiRequest(metaPayload, { ...jobContext, phoneNumber: payload.phoneNumber, templateName: TEMPLATES.VISIT_OTP });
-        //
-        //   // Set session for student
-        //   await setCurrentStep(payload.phoneNumber, "awaiting_otp");
-        //   await setContext(payload.phoneNumber, {
-        //     visitId: payload.visitId,
-        //     visitToken: payload.visitToken,
-        //     visitOtp: payload.visitOtp,
-        //     internName: payload.internName,
-        //     internPhone: payload.internPhone,
-        //   });
-        //   console.log(`[VISIT_WORKER] ✅ Session set for student ${payload.phoneNumber}`);
-        //   break;
-        // }
+        // case "VISIT_OTP_SENT": { ... }
 
         // DISABLED: VISIT_CONFIRMED - only testing welcome_student and visit_reminder_24h
-        // case "VISIT_CONFIRMED": {
-        //   const payload = data as VisitConfirmedPayload;
-        //   console.log(`[VISIT_WORKER] VISIT_CONFIRMED - Sending confirmation to student ${payload.phoneNumber} for visit ${payload.visitToken}`);
-        //   const metaPayload = buildVisitConfirmedPayload(payload.phoneNumber, payload);
-        //   await sendMetaApiRequest(metaPayload, { ...jobContext, phoneNumber: payload.phoneNumber, templateName: TEMPLATES.VISIT_OTP });
-        //   break;
-        // }
+        // case "VISIT_CONFIRMED": { ... }
 
         // DISABLED: OTP_VERIFY - only testing welcome_student and visit_reminder_24h
         // The full OTP verification workflow has been disabled for template testing
@@ -926,9 +1030,6 @@ export const visitWorker = new Worker<VisitQueuePayload>(
           // Disabled for testing - only welcome_student and visit_reminder_24h templates active
           break;
         }
-
-        // DISABLED: VISIT_CONFIRMED - only testing welcome_student and visit_reminder_24h
-        // case "VISIT_CONFIRMED": { ... }
 
         // DISABLED: STUDENT_ARRIVAL_ALERT case - only testing welcome_student and visit_reminder_24h
         // case "STUDENT_ARRIVAL_ALERT": { ... }
@@ -986,7 +1087,15 @@ export const reminderWorker = new Worker<ReminderQueuePayload>(
           break;
         }
 
-        // DISABLED: VISIT_2H and VISIT_30M - only testing visit_reminder_24h
+        case "VISIT_30M": {
+          const payload = data as VisitReminderPayload;
+          console.log(`[REMINDER_WORKER] VISIT_30M reminder for ${phone} (token: ${payload.visitToken}, property: ${payload.propertyTitle})`);
+          metaPayload = buildVisitReminderPayload(phone, payload);
+          await sendMetaApiRequest(metaPayload, { ...jobContext, templateName: TEMPLATES.VISIT_REMINDER_30M });
+          break;
+        }
+
+        // DISABLED: VISIT_2H - only testing visit_reminder_24h and visit_reminder_30m
         // case "VISIT_2H":
         // case "VISIT_30M": {
         //   const payload = data as VisitReminderPayload;
@@ -1174,6 +1283,22 @@ export const marketingWorker = new Worker<MarketingQueuePayload>(
           console.log(`[MARKETING_WORKER] REFERRAL_INVITE for ${phone} (referrer: ${payload.referrerName}, code: ${payload.referrerCode})`);
           metaPayload = buildReferralInvitePayload(phone, payload);
           await sendMetaApiRequest(metaPayload, { ...jobContext, templateName: "text" });
+          break;
+        }
+
+        case "STUDENT_REGISTERED": {
+          const payload = data as StudentRegisteredPayload;
+          console.log(`[MARKETING_WORKER] STUDENT_REGISTERED for ${phone} (student: ${payload.studentName})`);
+          // Use welcome_student template for new student registration
+          const studentRegisteredPayload = buildTemplatePayload(phone, TEMPLATES.WELCOME_STUDENT, "en", [
+            {
+              type: "body",
+              parameters: [
+                { type: "text", text: payload.studentName },
+              ],
+            },
+          ]);
+          await sendMetaApiRequest(studentRegisteredPayload, { ...jobContext, templateName: TEMPLATES.WELCOME_STUDENT });
           break;
         }
       }
