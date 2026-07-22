@@ -506,4 +506,34 @@ export const replacePanoramaImage = asyncHandler(async (req: Request, res: Respo
   res.json(updatedPanorama);
 });
 
-// ✅ FIXED: Removed the fake uploadPanorama function completely!
+export const deleteCoupon = asyncHandler(async (req: Request, res: Response) => {
+  const id = String(req.params.id);
+
+  // Try deleting from Coupon table first
+  const coupon = await prisma.coupon.findUnique({
+    where: { id },
+  });
+
+  if (coupon) {
+    await prisma.coupon.delete({
+      where: { id },
+    });
+
+    return res.status(204).send();
+  }
+
+  // Otherwise delete from Referral table
+  const referral = await prisma.referral.findUnique({
+    where: { id },
+  });
+
+  if (referral) {
+    await prisma.referral.delete({
+      where: { id },
+    });
+
+    return res.status(204).send();
+  }
+
+  throw new AppError("Coupon or Referral not found", 404);
+});

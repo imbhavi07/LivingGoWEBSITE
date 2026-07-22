@@ -643,7 +643,20 @@ export async function getPropertyRating(propertyId: string) {
 export async function getPropertyReviews(propertyId: string) {
   return prisma.review.findMany({
     where: { propertyId },
-    orderBy: { createdAt: "desc" },
+    orderBy: {
+      createdAt: "desc",
+    },
+    select: {
+      id: true,
+      createdAt: true,
+      comment: true,
+      cleanliness: true,
+      food: true,
+      security: true,
+      management: true,
+      location: true,
+      studentName: true,
+    },
   });
 }
 
