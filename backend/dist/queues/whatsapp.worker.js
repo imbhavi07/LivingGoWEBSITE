@@ -6,6 +6,7 @@ const bullmq_1 = require("bullmq");
 const client_1 = require("@prisma/client");
 const redis_1 = require("../config/redis");
 const whatsapp_queue_1 = require("./whatsapp.queue");
+const redis_session_1 = require("./redis.session");
 // ============================================
 // INITIALIZATION
 // ============================================
@@ -17,6 +18,8 @@ const BASE_URL = `https://graph.facebook.com/${META_API_VERSION}/${PHONE_NUMBER_
 // Template names from environment (with fallbacks)
 const TEMPLATES = {
     WELCOME_STUDENT: process.env.WHATSAPP_TEMPLATE_WELCOME || "welcome_student",
+    INTERN_WELCOME: process.env.WHATSAPP_TEMPLATE_INTERN_WELCOME || "intern_welcome",
+    HELLO_WORLD: process.env.WHATSAPP_TEMPLATE_HELLO_WORLD || "hello_world",
     VISIT_REMINDER_24H: process.env.WHATSAPP_TEMPLATE_VISIT_REMINDER_24H || "visit_reminder_24h",
     VISIT_REMINDER_2H: process.env.WHATSAPP_TEMPLATE_VISIT_REMINDER_2H || "visit_reminder_2h",
     VISIT_REMINDER_30M: process.env.WHATSAPP_TEMPLATE_VISIT_REMINDER_30M || "visit_reminder_30m",
@@ -232,6 +235,72 @@ function buildVisitReminderPayload(phone, data) {
     ]);
     console.log(`[TEMPLATE_BUILDER] Built VISIT_REMINDER payload for ${phone} (type: ${data.type}, token: ${data.visitToken})`);
     console.log(`[TEMPLATE_BUILDER] Template: ${templateMap[data.type]}`);
+    return payload;
+}
+// --- INTERN CREATED (Welcome) ---
+function buildInternCreatedPayload(phone, data) {
+    // Try intern_welcome template first, fallback to hello_world if template error
+    const payload = buildTemplatePayload(phone, TEMPLATES.INTERN_WELCOME, "en", [
+        {
+            type: "body",
+            parameters: [
+                { type: "text", text: data.internName }, // {{1}} - intern name
+            ],
+        },
+    ]);
+    console.log(`[TEMPLATE_BUILDER] Built INTERN_CREATED payload for ${phone} (intern: ${data.internName})`);
+    console.log(`[TEMPLATE_BUILDER] Template: ${TEMPLATES.INTERN_WELCOME}`);
+    return payload;
+}
+// --- INTERN ASSIGNED (Visit Reminder 24H to Intern) ---
+function buildInternAssignedPayload(phone, data) {
+    const payload = buildTemplatePayload(phone, TEMPLATES.VISIT_REMINDER_24H, "en", [
+        {
+            type: "header",
+            parameters: [{ type: "text", text: "📅 Visit Tomorrow" }],
+        },
+        {
+            type: "body",
+            parameters: [
+                { type: "text", text: data.internName }, // {{1}} - intern name
+                { type: "text", text: data.studentName }, // {{2}} - student name
+                { type: "text", text: data.propertyTitle }, // {{3}} - property title
+                { type: "text", text: data.propertyLocation }, // {{4}} - property location
+                { type: "text", text: `${data.visitDate}, ${data.timeSlot}` }, // {{5}} - visit date & time
+                { type: "text", text: data.visitOtp }, // {{6}} - visit OTP
+                { type: "text", text: data.mapsLink }, // {{7}} - maps link
+                { type: "text", text: data.emergencyContact }, // {{8}} - emergency contact
+            ],
+        },
+    ]);
+    console.log(`[TEMPLATE_BUILDER] Built INTERN_ASSIGNED payload for ${phone} (intern: ${data.internName}, token: ${data.visitToken})`);
+    console.log(`[TEMPLATE_BUILDER] Template: ${TEMPLATES.VISIT_REMINDER_24H}`);
+    return payload;
+}
+// --- GUIDE ASSIGNED STUDENT (Visit Reminder 30M to Student) ---
+function buildGuideAssignedStudentPayload(phone, data) {
+    const payload = buildTemplatePayload(phone, TEMPLATES.VISIT_REMINDER_30M, "en", [
+        {
+            type: "header",
+            parameters: [{ type: "text", text: "🚗 Visit in 30 Minutes" }],
+        },
+        {
+            type: "body",
+            parameters: [
+                { type: "text", text: data.studentName }, // {{1}} - student name
+                { type: "text", text: data.propertyTitle }, // {{2}} - property title
+                { type: "text", text: data.propertyLocation }, // {{3}} - property location
+                { type: "text", text: `${data.visitDate}, ${data.timeSlot}` }, // {{4}} - visit date & time
+                { type: "text", text: data.visitOtp }, // {{5}} - visit OTP
+                { type: "text", text: data.internName }, // {{6}} - intern name
+                { type: "text", text: data.internPhone }, // {{7}} - intern phone
+                { type: "text", text: data.mapsLink }, // {{8}} - maps link
+                { type: "text", text: data.emergencyContact }, // {{9}} - emergency contact
+            ],
+        },
+    ]);
+    console.log(`[TEMPLATE_BUILDER] Built GUIDE_ASSIGNED_STUDENT payload for ${phone} (student: ${data.studentName}, token: ${data.visitToken})`);
+    console.log(`[TEMPLATE_BUILDER] Template: ${TEMPLATES.VISIT_REMINDER_30M}`);
     return payload;
 }
 // --- WELCOME JOURNEY ---
@@ -647,307 +716,125 @@ function buildAdminSystemAlertPayload(phone, alertType, message, severity) {
 exports.visitWorker = new bullmq_1.Worker("whatsapp-visit", async (job) => {
     const { data } = job;
     const jobContext = { jobId: job.id, jobName: job.name };
-    console.log(`[VISIT_WORKER] 📥 Processing job ${job.id} (${job.name}) - Type: ${data.type}, Token: ${data.visitToken || "N/A"}, Phone: ${data.phoneNumber || "N/A"}`);
+    // Safe access to visitToken since not all payload types have it
+    const visitToken = "visitToken" in data ? data.visitToken : "N/A";
+    console.log(`[VISIT_WORKER] 📥 Processing job ${job.id} (${job.name}) - Type: ${data.type}, Token: ${visitToken}, Phone: ${data.phoneNumber || "N/A"}`);
     console.log(`[VISIT_WORKER] Job data:`, JSON.stringify(data, null, 2));
     try {
         switch (data.type) {
-            case "VISIT_CREATED":
-                {
-                    const payload = data;
-                    console.log(`[VISIT_WORKER] VISIT_CREATED - Sending welcome_student template to student ${payload.phoneNumber} for visit ${payload.visitToken}`);
-                    // Send WhatsApp welcome message to student immediately (welcome_student template)
-                    console.log(`[VISIT_WORKER] Sending welcome_student to student ${payload.phoneNumber} for visit ${payload.visitToken}`);
-                    const visitCreatedPayload = buildVisitCreatedPayload(payload.phoneNumber, payload);
-                    await sendMetaApiRequest(visitCreatedPayload, { ...jobContext, phoneNumber: payload.phoneNumber, templateName: TEMPLATES.WELCOME_STUDENT });
-                    // NOTE: Intern assignment and other workflows disabled for template testing
-                    // Only welcome_student template is sent here
-                    break;
-                }
-                // DISABLED: INTERN_ASSIGNED case - only testing welcome_student and visit_reminder_24h
-                // case "INTERN_ASSIGNED": {
-                //   const payload = data as InternAssignedPayload;
-                //   console.log(`[VISIT_WORKER] INTERN_ASSIGNED - Sending WhatsApp to intern ${payload.phoneNumber} for visit ${payload.visitToken}`);
-                //   const metaPayload = buildNewVisitAssignmentPayload(payload.phoneNumber, payload);
-                //   await sendMetaApiRequest(metaPayload, { ...jobContext, phoneNumber: payload.phoneNumber, templateName: TEMPLATES.NEW_VISIT_ASSIGNMENT });
-                //
-                //   // Set session for intern
-                //   await setCurrentStep(payload.phoneNumber, "awaiting_visit_confirmation");
-                //   await setContext(payload.phoneNumber, {
-                //     visitId: payload.visitId,
-                //     visitToken: payload.visitToken,
-                //     studentName: payload.studentName,
-                //     propertyTitle: payload.propertyTitle,
-                // DISABLED: INTERN_ASSIGNED case - only testing welcome_student and visit_reminder_24h
-                // case "INTERN_ASSIGNED": {
-                //   const payload = data as InternAssignedPayload;
-                //   console.log(`[VISIT_WORKER] INTERN_ASSIGNED - Sending WhatsApp to intern ${payload.phoneNumber} for visit ${payload.visitToken}`);
-                //   const metaPayload = buildNewVisitAssignmentPayload(payload.phoneNumber, payload);
-                //   await sendMetaApiRequest(metaPayload, { ...jobContext, phoneNumber: payload.phoneNumber, templateName: TEMPLATES.NEW_VISIT_ASSIGNMENT });
-                //
-                //   // Set session for intern
-                //   await setCurrentStep(payload.phoneNumber, "awaiting_visit_confirmation");
-                //   await setContext(payload.phoneNumber, {
-                //     visitId: payload.visitId,
-                //     visitToken: payload.visitToken,
-                //     studentName: payload.studentName,
-                //     propertyTitle: payload.propertyTitle,
-                //   });
-                //   console.log(`[VISIT_WORKER] ✅ Session set for intern ${payload.phoneNumber}`);
-                //   break;
-                // }
-                // DISABLED: VISIT_OTP_SENT - only testing welcome_student and visit_reminder_24h
-                // case "VISIT_OTP_SENT": {
-                //   const payload = data as VisitOtpSentPayload;
-                //   console.log(`[VISIT_WORKER] VISIT_OTP_SENT - Sending OTP to student ${payload.phoneNumber} for visit ${payload.visitToken} (OTP: ${payload.visitOtp})`);
-                //   const metaPayload = buildVisitOtpPayload(payload.phoneNumber, payload);
-                //   await sendMetaApiRequest(metaPayload, { ...jobContext, phoneNumber: payload.phoneNumber, templateName: TEMPLATES.VISIT_OTP });
-                //
-                //   // Set session for student
-                //   await setCurrentStep(payload.phoneNumber, "awaiting_otp");
-                //   await setContext(payload.phoneNumber, {
-                //     visitId: payload.visitId,
-                //     visitToken: payload.visitToken,
-                //     visitOtp: payload.visitOtp,
-                //     internName: payload.internName,
-                //     internPhone: payload.internPhone,
-                //   });
-                //   console.log(`[VISIT_WORKER] ✅ Session set for student ${payload.phoneNumber}`);
-                //   break;
-                // }
-                // DISABLED: VISIT_CONFIRMED - only testing welcome_student and visit_reminder_24h
-                // case "VISIT_CONFIRMED": {
-                //   const payload = data as VisitConfirmedPayload;
-                //   console.log(`[VISIT_WORKER] VISIT_CONFIRMED - Sending confirmation to student ${payload.phoneNumber} for visit ${payload.visitToken}`);
-                //   const metaPayload = buildVisitConfirmedPayload(payload.phoneNumber, payload);
-                //   await sendMetaApiRequest(metaPayload, { ...jobContext, phoneNumber: payload.phoneNumber, templateName: TEMPLATES.VISIT_OTP });
-                //   break;
-                // }
-                // DISABLED: OTP_VERIFY - only testing welcome_student and visit_reminder_24h
-                // const payload = data as OTPVerifyPayload;
-                // console.log(`[VISIT_WORKER] OTP_VERIFY - Verifying OTP for visit ${payload.visitToken} from ${payload.phoneNumber} (attempt: ${payload.attemptNumber || 1})`);
-                //
-                // // Acquire lock to prevent concurrent processing
-                // const lockAcquired = await acquireVisitLock(payload.visitId, `otp_verify_${payload.phoneNumber}`);
-                // if (!lockAcquired) {
-                //   console.log(`⏳ [VISIT_WORKER] Visit ${payload.visitId} is locked, re-queueing OTP verify`);
-                //   const { queueOTPVerify } = await import("./whatsapp.queue.js");
-                //   await queueOTPVerify(payload);
-                //   return;
-                // }
-                //
-                // try {
-                //   // Find the visit
-                //   const visit = await prisma.visit.findUnique({
-                //     where: { id: payload.visitId },
-                //     include: {
-                //       student: true,
-                //       property: true,
-                //       intern: true,
-                //     },
-                //   });
-                //
-                //   if (!visit) {
-                //     throw new Error(`Visit ${payload.visitId} not found`);
-                //   }
-                //
-                //   if (visit.visitOtpVerified) {
-                //     console.log(`ℹ️ [VISIT_WORKER] Visit ${payload.visitToken} already OTP verified`);
-                //     return;
-                //   }
-                //
-                //   // Verify OTP
-                //   const isMatch = payload.providedOtp.trim() === visit.visitOtp.trim();
-                //   console.log(`[VISIT_WORKER] OTP check: provided="${payload.providedOtp.trim()}" expected="${visit.visitOtp.trim()}" match=${isMatch}`);
-                //
-                //   if (isMatch) {
-                //     // OTP MATCHED - KEY WORKFLOW
-                //     console.log(`✅ [VISIT_WORKER] OTP MATCHED for visit ${payload.visitToken} - Updating visit status to MET`);
-                //     await prisma.visit.update({
-                //       where: { id: payload.visitId },
-                //       data: {
-                //         visitOtpVerified: true,
-                //         leadStatus: "MET",
-                //       },
-                //     });
-                //
-                //     // Send immediate WhatsApp confirmation to student using VISIT_OTP template (auth template)
-                //     // VISIT_OTP template params: {{1}}=studentName, {{2}}=visitOtp, {{3}}=propertyTitle, {{4}}=propertyLocation, {{5}}=visitDate+timeSlot, {{6}}=internName, {{7}}=internPhone, {{8}}=mapsLink, {{9}}=emergencyContact
-                //     console.log(`[VISIT_WORKER] Sending immediate OTP verified confirmation to student ${payload.phoneNumber} for visit ${payload.visitToken}`);
-                //     const otpVerifiedPayload = buildTemplatePayload(payload.phoneNumber, TEMPLATES.VISIT_OTP, "en", [
-                //       {
-                //         type: "body",
-                //         parameters: [
-                //           { type: "text", text: visit.student.name },
-                //           { type: "text", text: payload.providedOtp }, // The verified OTP code
-                //           { type: "text", text: visit.property.title },
-                //           { type: "text", text: visit.property.location },
-                //           { type: "text", text: `${visit.visitDate.toISOString().split("T")[0]}, ${visit.timeSlot}` },
-                //           { type: "text", text: visit.intern?.name || "Not assigned" },
-                //           { type: "text", text: visit.intern?.phone || "N/A" },
-                //           { type: "text", text: `https://maps.google.com/?q=${encodeURIComponent(visit.property.location)}` },
-                //           { type: "text", text: "Emergency: 112" },
-                //         ],
-                //       },
-                //     ]);
-                //     await sendMetaApiRequest(otpVerifiedPayload, { ...jobContext, phoneNumber: payload.phoneNumber, templateName: TEMPLATES.VISIT_OTP });
-                //
-                //     // Mark session as verified
-                //     await setOtpVerified(payload.phoneNumber, payload.visitId);
-                //     await resetAttemptCount(payload.phoneNumber);
-                //     await clearCurrentStep(payload.phoneNumber);
-                //
-                //     // Send confirmation to student
-                //     const { queueVisitConfirmed } = await import("./whatsapp.queue.js");
-                //     await queueVisitConfirmed({
-                //       phoneNumber: payload.phoneNumber,
-                //       userRole: "student",
-                //       visitId: payload.visitId,
-                //       visitToken: payload.visitToken,
-                //       studentName: visit.student.name,
-                //       propertyTitle: visit.property.title,
-                //       visitDate: visit.visitDate.toISOString().split("T")[0],
-                //       timeSlot: visit.timeSlot,
-                //     });
-                //     console.log(`[VISIT_WORKER] ✅ Queued VISIT_CONFIRMED for student`);
-                //
-                //     // Notify intern of student arrival
-                //     if (visit.intern) {
-                //       const { queueStudentArrivalAlert } = await import("./whatsapp.queue.js");
-                //       await queueStudentArrivalAlert({
-                //         phoneNumber: visit.intern.phone,
-                //         userRole: "intern",
-                //         visitId: payload.visitId,
-                //         visitToken: payload.visitToken,
-                //         internId: visit.intern.id,
-                //         internName: visit.intern.name,
-                //         internPhone: visit.intern.phone,
-                //         studentName: visit.student.name,
-                //         studentPhone: visit.student.phone || payload.phoneNumber,
-                //         propertyTitle: visit.property.title,
-                //         visitOtp: visit.visitOtp,
-                //       });
-                //       console.log(`[VISIT_WORKER] ✅ Queued STUDENT_ARRIVAL_ALERT for intern ${visit.intern.name}`);
-                //     }
-                //
-                //     // Notify owner
-                //     if (visit.property.ownerId) {
-                //       const owner = await prisma.user.findUnique({ where: { id: visit.property.ownerId } });
-                //       if (owner?.phone) {
-                //         const { queueVisitStarted } = await import("./whatsapp.queue.js");
-                //         await queueVisitStarted({
-                //           phoneNumber: owner.phone,
-                //           userRole: "owner",
-                //           visitId: payload.visitId,
-                //           visitToken: payload.visitToken,
-                //           ownerId: owner.id,
-                //           ownerName: owner.name,
-                //           studentName: visit.student.name,
-                //           propertyTitle: visit.property.title,
-                //           internName: visit.intern?.name || "N/A",
-                //           startedAt: new Date().toISOString(),
-                //         });
-                //         console.log(`[VISIT_WORKER] ✅ Queued VISIT_STARTED for owner ${owner.name}`);
-                //       }
-                //     }
-                //
-                //     console.log(`✅ [VISIT_WORKER] OTP verified for visit ${payload.visitToken} - Full workflow completed`);
-                //   } else {
-                //     // OTP MISMATCH
-                //     const attemptCount = await incrementAttemptCount(payload.phoneNumber);
-                //     const maxAttempts = 3;
-                //     const remaining = maxAttempts - attemptCount;
-                //
-                //     console.log(`❌ [VISIT_WORKER] OTP MISMATCH for visit ${payload.visitToken} - Attempt ${attemptCount}/${maxAttempts}, ${remaining} remaining`);
-                //
-                //     if (remaining > 0) {
-                //       // Send retry message
-                //       console.log(`[VISIT_WORKER] Sending retry message to ${payload.phoneNumber} (${remaining} attempts left)`);
-                //       await sendMetaApiRequest(buildTextPayload(payload.phoneNumber,
-                //         `❌ Invalid OTP. ${remaining} attempt${remaining > 1 ? "s" : ""} remaining.\n\nPlease enter the 6-digit OTP shared with you.`
-                //       ), { ...jobContext, phoneNumber: payload.phoneNumber });
-                //
-                //       // Re-queue for next attempt
-                //       const { queueOTPVerify } = await import("./whatsapp.queue.js");
-                //       await queueOTPVerify({
-                //         ...payload,
-                //         attemptNumber: attemptCount,
-                //       });
-                //       console.log(`[VISIT_WORKER] ✅ Re-queued OTP_VERIFY for attempt ${attemptCount + 1}`);
-                //     } else {
-                //       // Max attempts exceeded
-                //       console.error(`🚨 [VISIT_WORKER] MAX OTP ATTEMPTS EXCEEDED for visit ${payload.visitToken} - Alerting supervisors`);
-                //       await sendMetaApiRequest(buildTextPayload(payload.phoneNumber,
-                //         `❌ Maximum OTP attempts exceeded. Visit ${payload.visitToken} requires manual verification.\n\nOur team has been notified.`
-                //       ), { ...jobContext, phoneNumber: payload.phoneNumber });
-                //
-                //       // Alert supervisors
-                //       const supervisors = await prisma.user.findMany({
-                //         where: { role: "SUPERVISOR", status: "active" },
-                //         select: { phone: true, name: true },
-                //       });
-                //
-                //       for (const sup of supervisors) {
-                //         if (sup.phone) {
-                //           await sendMetaApiRequest(buildSupervisorEscalationPayload(
-                //             sup.phone,
-                //             visit.student.name,
-                //             payload.phoneNumber,
-                //             `OTP verification failed for visit ${payload.visitToken} after ${maxAttempts} attempts`
-                //           ), { ...jobContext, phoneNumber: sup.phone, templateName: TEMPLATES.SUPERVISOR_ESCALATION });
-                //         }
-                //       }
-                //       console.log(`[VISIT_WORKER] ✅ Alerted ${supervisors.length} supervisors`);
-                //
-                //       await resetAttemptCount(payload.phoneNumber);
-                //     }
-                //   }
-                // } finally {
-                //   await releaseVisitLock(payload.visitId, `otp_verify_${payload.phoneNumber}`);
-                // }
+            case "VISIT_CREATED": {
+                const payload = data;
+                console.log(`[VISIT_WORKER] VISIT_CREATED - Sending welcome_student template to student ${payload.phoneNumber} for visit ${payload.visitToken}`);
+                // Send WhatsApp welcome message to student immediately (welcome_student template)
+                console.log(`[VISIT_WORKER] Sending welcome_student to student ${payload.phoneNumber} for visit ${payload.visitToken}`);
+                const visitCreatedPayload = buildVisitCreatedPayload(payload.phoneNumber, payload);
+                await sendMetaApiRequest(visitCreatedPayload, { ...jobContext, phoneNumber: payload.phoneNumber, templateName: TEMPLATES.WELCOME_STUDENT });
                 break;
+            }
+            case "INTERN_CREATED": {
+                const payload = data;
+                console.log(`[VISIT_WORKER] INTERN_CREATED - Sending intern_welcome template to intern ${payload.phoneNumber} (intern: ${payload.internName})`);
+                // Try intern_welcome template, fallback to hello_world on template error (e.g., 131049 template not found)
+                try {
+                    const internCreatedPayload = buildInternCreatedPayload(payload.phoneNumber, payload);
+                    await sendMetaApiRequest(internCreatedPayload, { ...jobContext, phoneNumber: payload.phoneNumber, templateName: TEMPLATES.INTERN_WELCOME });
+                    console.log(`[VISIT_WORKER] ✅ Sent intern_welcome to intern ${payload.phoneNumber}`);
+                }
+                catch (templateError) {
+                    const errorMessage = templateError instanceof Error ? templateError.message : String(templateError);
+                    if (errorMessage.includes("131049") || errorMessage.includes("TEMPLATE_NOT_FOUND") || errorMessage.includes("template not found")) {
+                        console.warn(`[VISIT_WORKER] ⚠️ intern_welcome template not found/approved, falling back to hello_world for intern ${payload.phoneNumber}`);
+                        const fallbackPayload = buildTemplatePayload(payload.phoneNumber, TEMPLATES.HELLO_WORLD, "en", [
+                            {
+                                type: "body",
+                                parameters: [{ type: "text", text: payload.internName }],
+                            },
+                        ]);
+                        await sendMetaApiRequest(fallbackPayload, { ...jobContext, phoneNumber: payload.phoneNumber, templateName: TEMPLATES.HELLO_WORLD });
+                        console.log(`[VISIT_WORKER] ✅ Sent hello_world fallback to intern ${payload.phoneNumber}`);
+                    }
+                    else {
+                        throw templateError;
+                    }
+                }
+                break;
+            }
+            case "INTERN_ASSIGNED": {
+                const payload = data;
+                console.log(`[VISIT_WORKER] INTERN_ASSIGNED - Sending visit_reminder_24h template to intern ${payload.phoneNumber} for visit ${payload.visitToken}`);
+                const internAssignedPayload = buildInternAssignedPayload(payload.phoneNumber, payload);
+                await sendMetaApiRequest(internAssignedPayload, { ...jobContext, phoneNumber: payload.phoneNumber, templateName: TEMPLATES.VISIT_REMINDER_24H });
+                // Set session for intern
+                await (0, redis_session_1.setCurrentStep)(payload.phoneNumber, "awaiting_visit_confirmation");
+                await (0, redis_session_1.setContext)(payload.phoneNumber, {
+                    visitId: payload.visitId,
+                    visitToken: payload.visitToken,
+                    studentName: payload.studentName,
+                    propertyTitle: payload.propertyTitle,
+                    propertyLocation: payload.propertyLocation,
+                    visitDate: payload.visitDate,
+                    timeSlot: payload.timeSlot,
+                    visitOtp: payload.visitOtp,
+                    mapsLink: payload.mapsLink,
+                    emergencyContact: payload.emergencyContact,
+                });
+                console.log(`[VISIT_WORKER] ✅ Session set for intern ${payload.phoneNumber}`);
+                break;
+            }
+            case "GUIDE_ASSIGNED_STUDENT": {
+                const payload = data;
+                console.log(`[VISIT_WORKER] GUIDE_ASSIGNED_STUDENT - Sending visit_reminder_30m template to student ${payload.phoneNumber} for visit ${payload.visitToken}`);
+                const guideAssignedPayload = buildGuideAssignedStudentPayload(payload.phoneNumber, payload);
+                await sendMetaApiRequest(guideAssignedPayload, { ...jobContext, phoneNumber: payload.phoneNumber, templateName: TEMPLATES.VISIT_REMINDER_30M });
+                // Set session for student
+                await (0, redis_session_1.setCurrentStep)(payload.phoneNumber, "visit_scheduled");
+                await (0, redis_session_1.setContext)(payload.phoneNumber, {
+                    visitId: payload.visitId,
+                    visitToken: payload.visitToken,
+                    studentName: payload.studentName,
+                    internName: payload.internName,
+                    internPhone: payload.internPhone,
+                    propertyTitle: payload.propertyTitle,
+                    propertyLocation: payload.propertyLocation,
+                    visitDate: payload.visitDate,
+                    timeSlot: payload.timeSlot,
+                    visitOtp: payload.visitOtp,
+                    mapsLink: payload.mapsLink,
+                    emergencyContact: payload.emergencyContact,
+                });
+                console.log(`[VISIT_WORKER] ✅ Session set for student ${payload.phoneNumber}`);
+                break;
+            }
+            // DISABLED: VISIT_OTP_SENT - only testing welcome_student and visit_reminder_24h
+            // case "VISIT_OTP_SENT": { ... }
+            // DISABLED: VISIT_CONFIRMED - only testing welcome_student and visit_reminder_24h
+            // case "VISIT_CONFIRMED": { ... }
+            // DISABLED: OTP_VERIFY - only testing welcome_student and visit_reminder_24h
+            // The full OTP verification workflow has been disabled for template testing
+            case "OTP_VERIFY": {
+                // Disabled for testing - only welcome_student and visit_reminder_24h templates active
+                break;
+            }
+            // DISABLED: STUDENT_ARRIVAL_ALERT case - only testing welcome_student and visit_reminder_24h
+            // case "STUDENT_ARRIVAL_ALERT": { ... }
         }
-        // DISABLED: STUDENT_ARRIVAL_ALERT case - only testing welcome_student and visit_reminder_24h
-        // case "STUDENT_ARRIVAL_ALERT": {
-        //   const payload = data as StudentArrivalAlertPayload;
-        //   console.log(`[VISIT_WORKER] STUDENT_ARRIVAL_ALERT - Notifying intern ${payload.phoneNumber} for visit ${payload.visitToken}`);
-        //   const metaPayload = buildStudentArrivalPayload(payload.phoneNumber, payload);
-        //   await sendMetaApiRequest(metaPayload, { ...jobContext, phoneNumber: payload.phoneNumber, templateName: TEMPLATES.STUDENT_ARRIVAL });
-        //
-        //   await setCurrentStep(payload.phoneNumber, "awaiting_otp");
-        //   await setContext(payload.phoneNumber, {
-        //     visitId: payload.visitId,
-        //     visitToken: payload.visitToken,
-        //     studentName: payload.studentName,
-        //     studentPhone: payload.studentPhone,
-        //     visitOtp: payload.visitOtp,
-        //   });
-        //   console.log(`[VISIT_WORKER] ✅ Session set for intern ${payload.phoneNumber}`);
-        //   break;
-        // }
+        console.log(`[VISIT_WORKER] ✅ Job ${job.id} (${job.name}) completed successfully`);
     }
-    finally {
+    catch (error) {
+        console.error(`❌ [VISIT_WORKER] Job ${job.id} (${job.name}) failed:`, error);
+        console.error(`   Attempts made: ${job.attemptsMade}/${job.opts.attempts}`);
+        console.error(`   Job data:`, JSON.stringify(job.data, null, 2));
+        // Move to DLQ on final failure
+        if (job.attemptsMade >= (job.opts.attempts || 3)) {
+            console.error(`🚨 [VISIT_WORKER] Job ${job.id} moved to DLQ after ${job.attemptsMade} attempts`);
+            await whatsapp_queue_1.dlqQueues.visit.add(job.name, job.data, { jobId: job.id });
+        }
+        throw error;
     }
-    console.log(`[VISIT_WORKER] ✅ Job ${job.id} (${job.name}) completed successfully`);
-});
-try { }
-catch (error) {
-    console.error(`❌ [VISIT_WORKER] Job ${job.id} (${job.name}) failed:`, error);
-    console.error(`   Attempts made: ${job.attemptsMade}/${job.opts.attempts}`);
-    console.error(`   Job data:`, JSON.stringify(job.data, null, 2));
-    // Move to DLQ on final failure
-    if (job.attemptsMade >= (job.opts.attempts || 3)) {
-        console.error(`🚨 [VISIT_WORKER] Job ${job.id} moved to DLQ after ${job.attemptsMade} attempts`);
-        await whatsapp_queue_1.dlqQueues.visit.add(job.name, job.data, { jobId: job.id });
-    }
-    throw error;
-}
-{
+}, {
     connection: (0, redis_1.createRedisConnection)(),
-        concurrency;
-    5,
-    ;
-}
-;
+    concurrency: 5,
+});
 // --- REMINDER QUEUE WORKER ---
 exports.reminderWorker = new bullmq_1.Worker("whatsapp-reminder", async (job) => {
     const { data } = job;
@@ -972,7 +859,14 @@ exports.reminderWorker = new bullmq_1.Worker("whatsapp-reminder", async (job) =>
                 await sendMetaApiRequest(metaPayload, { ...jobContext, templateName: TEMPLATES.VISIT_REMINDER_24H });
                 break;
             }
-            // DISABLED: VISIT_2H and VISIT_30M - only testing visit_reminder_24h
+            case "VISIT_30M": {
+                const payload = data;
+                console.log(`[REMINDER_WORKER] VISIT_30M reminder for ${phone} (token: ${payload.visitToken}, property: ${payload.propertyTitle})`);
+                metaPayload = buildVisitReminderPayload(phone, payload);
+                await sendMetaApiRequest(metaPayload, { ...jobContext, templateName: TEMPLATES.VISIT_REMINDER_30M });
+                break;
+            }
+            // DISABLED: VISIT_2H - only testing visit_reminder_24h and visit_reminder_30m
             // case "VISIT_2H":
             // case "VISIT_30M": {
             //   const payload = data as VisitReminderPayload;

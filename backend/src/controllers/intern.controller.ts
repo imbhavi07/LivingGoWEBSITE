@@ -7,6 +7,7 @@ import { asyncHandler } from "../utils/async-handler";
 import { signJwt } from "../utils/jwt";
 import { Role } from "@prisma/client";
 import type { InternRequest } from "../middleware/intern.middleware";
+import { queueInternCreated } from "../queues/whatsapp.queue";
 
 export const internLogin = asyncHandler(
   async (
@@ -113,6 +114,17 @@ export const createIntern = asyncHandler(
           },
 
         });
+
+      // Queue welcome WhatsApp message for the new intern (fire-and-forget)
+      queueInternCreated({
+        phoneNumber: phone.replace("+91", "91"),
+        userRole: "intern",
+        internId: intern.id,
+        internName: intern.name,
+        internPhone: intern.phone.replace("+91", "91"),
+      }).catch((err) => {
+        console.error("Failed to queue INTERN_CREATED job:", err);
+      });
 
       return res.json({
 
