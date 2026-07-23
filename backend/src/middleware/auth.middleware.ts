@@ -10,7 +10,7 @@ export async function authenticate(request: Request, _response: Response, next: 
   const token = header?.startsWith("Bearer ") ? header.slice(7) : null;
 
   if (!token) {
-    return next(new AppError("Authentication token is required", 401));
+    return next(new AppError("Sign In to Continue", 401));
   }
 
   try {
@@ -42,7 +42,7 @@ export async function clerkAuthenticate(request: Request, _response: Response, n
 
   if (!token) {
     console.error("❌ Clerk authentication: Missing Authorization header or token");
-    return next(new AppError("Authentication token is required", 401));
+    return next(new AppError("Sign In To Continue", 401));
   }
 
   // Ensure clerk secret key is configured
