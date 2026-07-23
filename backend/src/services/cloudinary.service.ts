@@ -4,12 +4,19 @@ import { cloudinary } from "../config/cloudinary";
 import { convertHeicToJpeg } from "../utils/heic-converter";
 
 export async function uploadImage(file: Express.Multer.File) {
+  console.log({
+    name: file.originalname,
+    mime: file.mimetype,
+    size: file.size,
+  });
   let uploadBuffer = file.buffer;
 
   if (
     file.mimetype === "image/heic" ||
     file.mimetype === "image/heif" ||
-    file.mimetype === "image/heic-sequence"
+    file.mimetype === "image/heic-sequence" ||
+    file.originalname.toLowerCase().endsWith(".heic") ||
+    file.originalname.toLowerCase().endsWith(".heif")
   ) {
     console.log("Converting HEIC to JPEG...");
     uploadBuffer = await convertHeicToJpeg(file);
@@ -66,7 +73,9 @@ export async function uploadPanorama(file: Express.Multer.File) {
   if (
     file.mimetype === "image/heic" ||
     file.mimetype === "image/heif" ||
-    file.mimetype === "image/heic-sequence"
+    file.mimetype === "image/heic-sequence" ||
+    file.originalname.toLowerCase().endsWith(".heic") ||
+    file.originalname.toLowerCase().endsWith(".heif")
   ) {
     console.log("Converting HEIC to JPEG...");
     uploadBuffer = await convertHeicToJpeg(file);

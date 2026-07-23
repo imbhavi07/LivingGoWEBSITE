@@ -48,6 +48,7 @@ adminRouter.post("/properties", uploadImages, validate(createPropertySchema), pr
 // Admin coupon creation endpoint
 adminRouter.post("/coupons", couponController.createCoupon);
 adminRouter.get("/coupons", adminController.getAdminCoupons);
+adminRouter.delete("/coupons/:id", adminController.deleteCoupon);
 
 // Admin review endpoints
 adminRouter.post("/properties/:id/reviews", validate(propertyIdSchema), adminController.createAdminReview);

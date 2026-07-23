@@ -176,7 +176,7 @@ export function ReviewSection({ propertyId, rating, reviews: initialReviews, use
               <div key={review.id} className="rounded-2xl bg-white p-5 shadow-soft">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-bold text-ink">{review.student.name}</p>
+                    <p className="font-bold text-ink">{review.student?.name ?? "Existing Resident"}</p>
                     <p className="text-xs text-muted">
                       {new Date(review.createdAt).toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" })}
                     </p>
