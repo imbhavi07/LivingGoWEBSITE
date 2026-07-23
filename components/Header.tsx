@@ -11,6 +11,9 @@ export function Header() {
   const pathname = usePathname();
   const { isLoaded, isSignedIn, user } = useUser();
 
+  // Check if current route is a property detail page
+  const isPropertyDetailPage = pathname?.startsWith("/properties/") || pathname?.startsWith("/listings/");
+
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/listings", label: "Listings" },
@@ -18,7 +21,12 @@ export function Header() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-brand-bg/95 backdrop-blur-md border-b border-brand-dark/10">
+    <header
+      className={cn(
+        "sticky top-0 z-50 w-full bg-brand-bg/95 backdrop-blur-md border-b border-brand-dark/10",
+        isPropertyDetailPage && "hidden md:block" // Hides header on mobile view only for property pages
+      )}
+    >
       <div className="mx-auto max-w-7xl px-4 py-3">
         <div className="flex items-center justify-between">
           
