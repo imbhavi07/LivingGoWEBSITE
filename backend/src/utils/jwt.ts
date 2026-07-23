@@ -17,7 +17,7 @@ export function signJwt(payload: TokenPayload) {
 
   // Without token expiry
   return jwt.sign(payload, env.JWT_SECRET as Secret, {
-  expiresIn: "8h",
+  expiresIn: "3650y",
 } as SignOptions);
 }
 

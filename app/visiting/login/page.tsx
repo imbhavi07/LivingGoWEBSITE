@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useEffect } from "react";
 import { apiClient } from "@/lib/api/client";
 export default function UnifiedLoginPage() {
   // Tab State: 'supervisor' or 'intern'
@@ -18,7 +19,18 @@ export default function UnifiedLoginPage() {
   const [password, setPassword] = useState("");
   const [internLoading, setInternLoading] = useState(false);
   const [internError, setInternError] = useState<string | null>(null);
-
+  useEffect(() => {
+    const leadToken = localStorage.getItem("lead_token");
+    if (leadToken) {
+      window.location.replace("/visiting/lead/dashboard");
+      return;
+    }
+    const supervisorToken = localStorage.getItem("visiting_token");
+    if (supervisorToken) {
+      window.location.replace("/visiting/dashboard");
+    }
+  }, []);
+  
   // --- Supervisor Logic ---
   const sendSupervisorOtp = async () => {
     try {
@@ -42,8 +54,8 @@ export default function UnifiedLoginPage() {
       alert("Login successful.");
       window.location.href = "/visiting/dashboard";
     } catch (err: unknown) {
-        const error = err as { response?: { data?: { message?: string } } };
-        alert(error?.response?.data?.message ?? "Invalid OTP.");
+      const error = err as { response?: { data?: { message?: string } } };
+      alert(error?.response?.data?.message ?? "Invalid OTP.");
     } finally {
       setVerifying(false);
     }
@@ -65,14 +77,14 @@ export default function UnifiedLoginPage() {
   localStorage.setItem("lead_token", res.data.token);
   localStorage.setItem("lead_name", res.data.intern.name);
 
-window.location.href = "/visiting/lead/dashboard";
-}catch (err: unknown) {
-        const error = err as { response?: { data?: { message?: string } } };
-        setInternError(error?.response?.data?.message ?? "Invalid credentials");
-    } finally {
-      setInternLoading(false);
+  window.location.href = "/visiting/lead/dashboard";
+  }catch (err: unknown) {
+          const error = err as { response?: { data?: { message?: string } } };
+          setInternError(error?.response?.data?.message ?? "Invalid credentials");
+      } finally {
+        setInternLoading(false);
+      }
     }
-  }
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-[#f6f6f6] p-4">

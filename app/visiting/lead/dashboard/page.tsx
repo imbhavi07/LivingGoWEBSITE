@@ -36,6 +36,9 @@ export default function LeadDashboard() {
   const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [status, setStatus] = useState("");
   const [showLockDialog, setShowLockDialog] = useState(false);
+  useEffect(() => {
+    console.log("Lead Token:", localStorage.getItem("lead_token"));
+  }, []);
   const FINAL_STATUSES = [
     "SUCCESSFUL",
     "NOT_SUCCESSFUL",

@@ -8,7 +8,7 @@ export function WhatsAppButton() {
   const pathname = usePathname();
   
   // Kill the button instantly if the user is on an owner or admin page
-  if (pathname?.startsWith("/owner") || pathname?.startsWith("/admin")) {
+  if (pathname?.startsWith("/owner") || pathname?.startsWith("/admin") || pathname?.startsWith("/visiting")) {
     return null;
   }
 
