@@ -475,14 +475,19 @@ export async function createReview(
     throw new AppError("Student not found", 404);
   }
 
-  // Create review - safely cast the data object to bypass strict shape mismatches without explicit 'any'
   const review = await prisma.review.create({
     data: {
       propertyId,
+      studentId,
       studentName: student.name,
-      ...body,
-      isAdminGenerated: false 
-    } as unknown as Prisma.ReviewUncheckedCreateInput
+      cleanliness: body.cleanliness,
+      food: body.food,
+      security: body.security,
+      management: body.management,
+      location: body.location,
+      comment: body.comment,
+      isAdminGenerated: false,
+    },
   });
 
   return review;
