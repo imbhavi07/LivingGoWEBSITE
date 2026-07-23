@@ -50,8 +50,12 @@ export function Navbar() {
 
   useEffect(() => setMounted(true), []);
 
-  // Hide entirely on specific dashboards
-  if (pathname.startsWith("/student/dashboard") || pathname.startsWith("/visiting")) {
+  // Hide navbar completely on these routes
+  if (
+    pathname.startsWith("/student/dashboard") ||
+    pathname.startsWith("/visiting") ||
+    pathname.startsWith("/properties/")
+  ) {
     return null;
   }
 
