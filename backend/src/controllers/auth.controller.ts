@@ -7,6 +7,7 @@ import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { Resend } from "resend";
 import { signJwt } from "../utils/jwt";
+import { queueStudentRegistered } from "../queues/whatsapp.queue";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -26,6 +27,18 @@ const ADMIN_ROLES: Record<string, "admin" | "SUPER_ADMIN"> = {
 
 export const signup = asyncHandler(async (request: Request, response: Response) => {
   const result = await authService.signup(request.body);
+
+  // Trigger STUDENT_REGISTERED WhatsApp queue job for new student registrations
+  if (result.user.role === "student" && result.user.phone) {
+    queueStudentRegistered({
+      phoneNumber: result.user.phone.replace("+91", "91"),
+      userRole: "student",
+      studentName: result.user.name,
+    }).catch((err) => {
+      console.error("Failed to queue STUDENT_REGISTERED job:", err);
+    });
+  }
+
   response.status(201).json(result);
 });
 

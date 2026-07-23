@@ -40,19 +40,25 @@ export type SessionStep =
   | "awaiting_feedback"
   | "awaiting_documents"
   | "awaiting_payment_utr"
-  | "awaiting_help_response";
+  | "awaiting_help_response"
+  | "visit_scheduled";
 
 export interface SessionContext {
   visitId?: string;
   visitToken?: string;
   propertyId?: string;
   propertyTitle?: string;
+  propertyLocation?: string;
+  visitDate?: string;
+  timeSlot?: string;
   internId?: string;
   internName?: string;
   internPhone?: string;
   studentName?: string;
   studentPhone?: string;
   visitOtp?: string;
+  mapsLink?: string;
+  emergencyContact?: string;
   assignedAt?: number;
   attemptCount?: number;
   lastMessageAt?: number;

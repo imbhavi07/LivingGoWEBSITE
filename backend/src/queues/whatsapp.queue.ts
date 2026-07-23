@@ -10,6 +10,7 @@ import {
   MarketingQueuePayload,
   OwnerQueuePayload,
   VisitCreatedPayload,
+  InternCreatedPayload,
   InternAssignedPayload,
   VisitOtpSentPayload,
   VisitConfirmedPayload,
@@ -30,6 +31,7 @@ import {
   BroadcastPayload,
   ReEngagementPayload,
   ReferralInvitePayload,
+  StudentRegisteredPayload,
   NewLeadPayload,
   VisitStartedPayload,
   VisitCompletedPayload,
@@ -37,6 +39,7 @@ import {
   WeeklyReportPayload,
   LowOccupancyPayload,
   ListingExpiryPayload,
+  GuideAssignedStudentPayload,
   QueueName,
   JobPriority,
 } from "./types/whatsapp-jobs";
@@ -115,6 +118,20 @@ export async function queueVisitCreated(payload: Omit<VisitCreatedPayload, "type
   });
 }
 
+export async function queueInternCreated(payload: Omit<InternCreatedPayload, "type" | "jobId" | "timestamp" | "priority">): Promise<Job<VisitQueuePayload>> {
+  const jobId = generateJobId("INTERN_CREATED", payload.internPhone);
+  return visitQueue.add("INTERN_CREATED", {
+    ...payload,
+    type: "INTERN_CREATED",
+    jobId,
+    timestamp: Date.now(),
+    priority: 10,
+  } as InternCreatedPayload, {
+    jobId,
+    priority: 10,
+  });
+}
+
 export async function queueInternAssigned(payload: Omit<InternAssignedPayload, "type" | "jobId" | "timestamp" | "priority">): Promise<Job<VisitQueuePayload>> {
   const jobId = generateJobId("INTERN_ASSIGNED", payload.visitToken);
   return visitQueue.add("INTERN_ASSIGNED", {
@@ -124,6 +141,20 @@ export async function queueInternAssigned(payload: Omit<InternAssignedPayload, "
     timestamp: Date.now(),
     priority: 10,
   } as InternAssignedPayload, {
+    jobId,
+    priority: 10,
+  });
+}
+
+export async function queueGuideAssignedStudent(payload: Omit<GuideAssignedStudentPayload, "type" | "jobId" | "timestamp" | "priority">): Promise<Job<VisitQueuePayload>> {
+  const jobId = generateJobId("GUIDE_ASSIGNED_STUDENT", payload.visitToken);
+  return visitQueue.add("GUIDE_ASSIGNED_STUDENT", {
+    ...payload,
+    type: "GUIDE_ASSIGNED_STUDENT",
+    jobId,
+    timestamp: Date.now(),
+    priority: 10,
+  } as GuideAssignedStudentPayload, {
     jobId,
     priority: 10,
   });
@@ -430,6 +461,20 @@ export async function queueReferralInvite(payload: Omit<ReferralInvitePayload, "
   } as ReferralInvitePayload, {
     jobId,
     priority: 1,
+  });
+}
+
+export async function queueStudentRegistered(payload: Omit<StudentRegisteredPayload, "type" | "jobId" | "timestamp" | "priority">): Promise<Job<MarketingQueuePayload>> {
+  const jobId = generateJobId("STUDENT_REGISTERED", payload.phoneNumber);
+  return marketingQueue.add("STUDENT_REGISTERED", {
+    ...payload,
+    type: "STUDENT_REGISTERED",
+    jobId,
+    timestamp: Date.now(),
+    priority: 10,
+  } as StudentRegisteredPayload, {
+    jobId,
+    priority: 10,
   });
 }
 

@@ -9,14 +9,11 @@ const server = app.listen(env.PORT, () => {
   console.log(`🚀 Server running on port ${env.PORT} in ${env.NODE_ENV} mode`);
   console.log(`📡 WhatsApp webhook: http://localhost:${env.PORT}/api/webhooks/whatsapp`);
 
-  // 🔴 REDIS RESCUE: We are temporarily commenting out the background workers
-  // This stops the 'ENOTFOUND' loop from choking the server and blocking API requests.
-  /*
+  // ✅ WHATSAPP WORKERS ENABLED: All 5 BullMQ workers now start on boot
   initializeWhatsAppWorkers();
   initializeCronJobs().catch((err) => {
     console.error("❌ Failed to initialize cron jobs:", err);
   });
-  */
 });
 
 function initializeWhatsAppWorkers(): void {
