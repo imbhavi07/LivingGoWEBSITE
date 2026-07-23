@@ -10,7 +10,7 @@ export async function GET() {
   try {
     const { userId: clerkId } = await auth();
     if (!clerkId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Please Sign-in First 😉' }, { status: 401 });
     }
 
     // 1. Find the internal User record using the Clerk ID
