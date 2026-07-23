@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     const { userId: clerkId } = await auth();
 
     if (!clerkId) {
-      return NextResponse.json({ error: 'Unauthorized. Please log in.' }, { status: 401 });
+      return NextResponse.json({ error: 'Please Sign-in First 😉' }, { status: 401 });
     }
 
     // 1. CRITICAL FIX: Find the internal user record
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: 'User profile not found in database.' }, { status: 404 });
+      return NextResponse.json({ error: 'Profile Does Not Exist 😭' }, { status: 404 });
     }
 
     const body = await request.json();
@@ -77,7 +77,7 @@ export async function POST(request: Request) {
 
   } catch (error: unknown) {
     console.error('Submit UTR Error:', error);
-    return NextResponse.json({ error: 'Failed to record transaction.' }, { status: 500 });
+    return NextResponse.json({ error: 'Network Error on your end. Try Again!!' }, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }

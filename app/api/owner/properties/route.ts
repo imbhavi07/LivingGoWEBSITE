@@ -6,7 +6,7 @@ import { auth } from '@clerk/nextjs/server';
 export async function GET(request: Request) {
   const { userId: clerkId } = await auth();
   if (!clerkId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Please Sign-in First 😉" }, { status: 401 });
   }
 
   const { getToken } = await auth();
@@ -35,7 +35,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const { userId: clerkId } = await auth();
   if (!clerkId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Please Sign-in First 😉" }, { status: 401 });
   }
 
   const { getToken } = await auth();

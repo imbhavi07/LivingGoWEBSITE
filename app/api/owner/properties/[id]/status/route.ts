@@ -10,7 +10,7 @@ export async function PATCH(
   const { id } = await params;
   const { userId: clerkId } = await auth();
   if (!clerkId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Please Sign-in First 😉" }, { status: 401 });
   }
 
   // Get the session token to forward to backend
