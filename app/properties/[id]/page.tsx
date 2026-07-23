@@ -73,8 +73,19 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     ? `Amenities include ${safeFacilities.slice(0, 3).join(', ')}.` 
     : '';
 
+  // 4. Build the dynamic SEO title based on available data
+  let dynamicTitle = 'Best PG | LivingGo';
+  
+  if (property.location && property.price) {
+    dynamicTitle = `Best PG in ${property.location} under ₹${property.price} | LivingGo`;
+  } else if (property.location) {
+    dynamicTitle = `Best PG in ${property.location} | LivingGo`;
+  } else if (property.price) {
+    dynamicTitle = `Best PG under ₹${property.price} | LivingGo`;
+  }
+
   return {
-    title: `${property.title || 'Premium'} | Best ${property.roomType || 'Shared'} PG in ${property.location || 'Delhi'}`,
+    title: dynamicTitle,
     description: `Looking for a PG in ${property.location || 'Delhi'}? Book ${property.title || 'this property'}. ${facilitiesText} Rent starts at ₹${property.price || 'affordable rates'}/month.`,
     alternates: {
       canonical: `https://livinggo.in/properties/${id}`,
