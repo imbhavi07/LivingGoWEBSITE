@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     const { userId } = await auth();
 
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized. Please log in.' }, { status: 401 });
+      return NextResponse.json({ error: 'Please Sign-in First 😉' }, { status: 401 });
     }
 
     const body = await request.json();

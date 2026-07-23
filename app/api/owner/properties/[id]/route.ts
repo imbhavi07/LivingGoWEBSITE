@@ -10,7 +10,7 @@ export async function GET(
   const { id } = await params;
   const { userId: clerkId } = await auth();
   if (!clerkId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Please Sign-in First 😉" }, { status: 401 });
   }
 
   const { getToken } = await auth();
@@ -44,7 +44,7 @@ export async function PUT(
   const { id } = await params;
   const { userId: clerkId } = await auth();
   if (!clerkId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Please Sign-in First 😉" }, { status: 401 });
   }
 
   const { getToken } = await auth();
@@ -81,7 +81,7 @@ export async function DELETE(
   const { id } = await params;
   const { userId: clerkId } = await auth();
   if (!clerkId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Please Sign-in First 😉" }, { status: 401 });
   }
 
   const { getToken } = await auth();
